@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
-  <meta name="description" content="ZeldTrade — Un journal de trading complet fait par un trader pour les traders. Spécialisé prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips). Analyse IA, calculs précis, multi-comptes.">
-  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="Journal de trading français spécialisé prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips) + comptes crypto (Binance, Coinbase) et fonds propres. IA Groq pour analyser tes charts TradingView, multi-comptes, RGPD natif. Made in France 🇫🇷">
+  <meta name="theme-color" content="#7c3aed">
+
+  <!-- Favicon (v0.9.212) -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="alternate icon" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/favicon.svg">
 
   <!-- Google Search Console verification -->
   <meta name="google-site-verification" content="IATcfjbZzBPV-3C6XqrgB860ldwwGT5tHFV_L9-z_q4">
@@ -17,17 +22,17 @@
   <meta property="og:site_name" content="ZeldTrade">
   <meta property="og:locale" content="fr_FR">
   <meta property="og:locale:alternate" content="en_US">
-  <meta property="og:title" content="ZeldTrade — Journal de trading prop firm">
-  <meta property="og:description" content="Journal de trading français spécialisé prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips). Analyse IA, calculs précis, multi-comptes, conforme RGPD.">
+  <meta property="og:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
+  <meta property="og:description" content="Journal de trading français spécialisé prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips) + crypto (Binance, Coinbase) et fonds propres. IA Groq, multi-comptes, RGPD natif.">
   <meta property="og:url" content="https://zeldtrade.com/">
-  <meta property="og:image" content="https://zeldtrade.com/og-image.png">
+  <meta property="og:image" content="https://zeldtrade.com/favicon.svg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="ZeldTrade — Journal de trading prop firm">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="ZeldTrade — Journal de trading prop firm">
-  <meta name="twitter:description" content="Journal de trading français spécialisé prop firms. Analyse IA, multi-comptes, RGPD.">
-  <meta name="twitter:image" content="https://zeldtrade.com/og-image.png">
+  <meta name="twitter:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
+  <meta name="twitter:description" content="Spécialisé prop firms (Apex, FTMO, Topstep, Lucid, FP) + crypto et fonds propres. IA Groq, multi-comptes.">
+  <meta name="twitter:image" content="https://zeldtrade.com/favicon.svg">
 
   <!-- SEO -->
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -53,7 +58,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=(), midi=(), serial=(), hid=(), idle-detection=(), screen-wake-lock=(), display-capture=(), picture-in-picture=(), autoplay=(), encrypted-media=(), interest-cohort=(), browsing-topics=(), join-ad-interest-group=(), run-ad-auction=()">
 
-  <title>ZeldTrade — Journal de trading prop firm</title>
+  <title>ZeldTrade · Journal de trading prop firm, crypto et fonds propres</title>
 
   <!-- Structured data (JSON-LD) — aide Google à comprendre le site -->
   <script type="application/ld+json">
@@ -1354,14 +1359,9 @@
     }
     .demo-logo {
       width: 32px; height: 32px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #7c3aed, #5b21b6);
-      color: #fff;
-      font-weight: 800;
-      font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
       margin: 0 0 12px;
     }
+    .demo-logo svg { display: block; width: 100%; height: 100%; }
     .demo-side-item {
       font-size: 11.5px;
       color: var(--muted);
@@ -2359,10 +2359,10 @@
   <nav class="nav">
     <div class="nav-inner">
       <a href="/" class="nav-brand">
-        <span class="nav-brand-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M2 11.5L5.5 8L8 10.5L13.5 5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M10 5H13.5V8.5" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <span class="nav-brand-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="M28 28 L72 28 L72 38 L41 65 L72 65 L72 72 L28 72 L28 62 L59 35 L28 35 Z" fill="#fff"/>
+            <circle cx="78" cy="22" r="4.5" fill="#f472b6"/>
           </svg>
         </span>
         <span>ZeldTrade</span>
@@ -2772,7 +2772,20 @@
       <div class="demo-app">
         <!-- Sidebar -->
         <aside class="demo-sidebar">
-          <div class="demo-logo">Z</div>
+          <div class="demo-logo" aria-hidden="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="demoLogoBg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#a78bfa"/>
+                  <stop offset="55%" stop-color="#7c3aed"/>
+                  <stop offset="100%" stop-color="#5b21b6"/>
+                </linearGradient>
+              </defs>
+              <rect width="100" height="100" rx="22" fill="url(#demoLogoBg)"/>
+              <path d="M28 28 L72 28 L72 38 L41 65 L72 65 L72 72 L28 72 L28 62 L59 35 L28 35 Z" fill="#fff"/>
+              <circle cx="78" cy="22" r="4.5" fill="#f472b6"/>
+            </svg>
+          </div>
           <div class="demo-side-item active">📝 Nouveau trade</div>
           <div class="demo-side-item">📊 Dashboard</div>
           <div class="demo-side-item">📓 Journal</div>
@@ -3327,7 +3340,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.211</span>
+      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.212</span>
     </div>
   </footer>
 

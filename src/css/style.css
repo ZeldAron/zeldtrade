@@ -85,7 +85,7 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-.logo-mark svg { width: 14px; height: 14px; stroke: white; }
+.logo-mark svg { width: 16px; height: 16px; display: block; }
 
 .logo-text {
   font-family: 'Geist Mono', monospace;
@@ -1794,7 +1794,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   justify-content: center;
   box-shadow: 0 8px 24px rgba(124,58,237,0.4);
 }
-.login-logo-mark svg { width: 30px; height: 30px; stroke: white; }
+.login-logo-mark svg { width: 34px; height: 34px; display: block; }
 
 .login-title {
   font-size: 20px;

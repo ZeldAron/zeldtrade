@@ -24,7 +24,8 @@
   <meta http-equiv="Pragma" content="no-cache">
 
   <title>ZeldTrade — Journal de trading pour traders en prop firm</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%237c3aed'/%3E%3Cpolyline points='5,7 19,7 5,17 19,17' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/favicon.svg">
   <meta name="description" content="Journal de trading pensé pour les traders en prop firm. Suivi de performance, gestion des règles d'évaluation Apex, Topstep, FTMO, Lucid, calculatrice de position. Sans Excel.">
   <meta name="keywords" content="journal de trading, prop firm, Apex, Topstep, FTMO, Lucid, day trading, S&P 500, performance trading, calculatrice position">
   <meta name="author" content="ZeldTrade">
@@ -45,7 +46,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=0.9.211">
+  <link rel="stylesheet" href="css/style.css?v=0.9.212">
   <!-- Background dark dès le chargement HTML (évite flash blanc avant CSS) -->
   <style>html,body{background:#0d1117 !important;color:#e6edf3}</style>
 </head>
@@ -66,8 +67,9 @@
       <div class="login-card" id="loginCard">
         <div class="login-logo">
           <div class="logo-mark login-logo-mark">
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="5,6 19,6 5,18 19,18"/>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path d="M28 28 L72 28 L72 38 L41 65 L72 65 L72 72 L28 72 L28 62 L59 35 L28 35 Z" fill="#fff"/>
+              <circle cx="78" cy="22" r="4.5" fill="#f472b6"/>
             </svg>
           </div>
           <div class="login-title">ZeldTrade</div>
@@ -185,8 +187,9 @@
   <div id="loginLoader" class="lp-loader" style="display:none">
     <div class="loader-logo">
       <div class="logo-mark login-logo-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="5,6 19,6 5,18 19,18"/>
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M28 28 L72 28 L72 38 L41 65 L72 65 L72 72 L28 72 L28 62 L59 35 L28 35 Z" fill="#fff"/>
+          <circle cx="78" cy="22" r="4.5" fill="#f472b6"/>
         </svg>
       </div>
       <div class="login-title">ZeldTrade</div>
@@ -635,7 +638,7 @@
 
           <div class="settings-section">
             <h3 data-i18n="set.about">À propos</h3>
-            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px">0.9.211</span></div>
+            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px">0.9.212</span></div>
             <div class="settings-row"><label data-i18n="set.stack">Stack</label><span style="color:var(--muted);font-size:12px">HTML · CSS · JS vanilla</span></div>
           </div>
         </div>
@@ -886,29 +889,29 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js" integrity="sha384-oFrOL1TiREYNET0lsYF3LjQuyi2gL7vhjH1X8vFr+umcmzAdPELopeSgbcrv4uRm" crossorigin="anonymous"></script>
-  <script src="js/firebase.js?v=0.9.211"></script>
+  <script src="js/firebase.js?v=0.9.212"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous"></script>
-  <script src="js/i18n.js?v=0.9.211"></script>
+  <script src="js/i18n.js?v=0.9.212"></script>
   <script src="js/lib/jspdf.umd.min.js?v=3.0.1"></script>
-  <script src="js/auth.js?v=0.9.211"></script>
-  <script src="js/store.js?v=0.9.211"></script>
-  <script src="js/calc.js?v=0.9.211"></script>
-  <script src="js/modal.js?v=0.9.211"></script>
-  <script src="js/ui.js?v=0.9.211"></script>
-  <script src="js/pages/dashboard.js?v=0.9.211"></script>
-  <script src="js/pages/analytics.js?v=0.9.211"></script>
-  <script src="js/pages/export-pdf.js?v=0.9.211"></script>
-  <script src="js/pages/settings.js?v=0.9.211"></script>
-  <script src="js/pages/goals.js?v=0.9.211"></script>
-  <script src="js/pages/calendar.js?v=0.9.211"></script>
-  <script src="js/pages/micro.js?v=0.9.211"></script>
-  <script src="js/pages/outils.js?v=0.9.211"></script>
-  <script src="js/pages/offers.js?v=0.9.211"></script>
-  <script src="js/contact.js?v=0.9.211"></script>
-  <script src="js/app.js?v=0.9.211"></script>
+  <script src="js/auth.js?v=0.9.212"></script>
+  <script src="js/store.js?v=0.9.212"></script>
+  <script src="js/calc.js?v=0.9.212"></script>
+  <script src="js/modal.js?v=0.9.212"></script>
+  <script src="js/ui.js?v=0.9.212"></script>
+  <script src="js/pages/dashboard.js?v=0.9.212"></script>
+  <script src="js/pages/analytics.js?v=0.9.212"></script>
+  <script src="js/pages/export-pdf.js?v=0.9.212"></script>
+  <script src="js/pages/settings.js?v=0.9.212"></script>
+  <script src="js/pages/goals.js?v=0.9.212"></script>
+  <script src="js/pages/calendar.js?v=0.9.212"></script>
+  <script src="js/pages/micro.js?v=0.9.212"></script>
+  <script src="js/pages/outils.js?v=0.9.212"></script>
+  <script src="js/pages/offers.js?v=0.9.212"></script>
+  <script src="js/contact.js?v=0.9.212"></script>
+  <script src="js/app.js?v=0.9.212"></script>
 
-  <script src="js/app-bootstrap.js?v=0.9.211"></script>
+  <script src="js/app-bootstrap.js?v=0.9.212"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent
