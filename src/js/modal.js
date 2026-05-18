@@ -568,7 +568,7 @@ const Modal = (() => {
           upsellHtml = ` <a href="#" id="aiUpsellLink" style="color:var(--accent-l);font-size:11px;text-decoration:underline">Passe Funded pour analyse approfondie via Claude →</a>`;
         }
 
-        statusEl.innerHTML = `<span style="color:var(--green)">${i18n.t('modal.levels.detected')}</span>${missing}${warningHtml}${upsellHtml} <span style="color:var(--muted);font-size:10px">via Groq</span>`;
+        statusEl.innerHTML = `<span style="color:var(--green)">${i18n.t('modal.levels.detected')}</span>${missing}${warningHtml}${upsellHtml} <span style="color:var(--muted);font-size:10px">via IA</span>`;
 
         const _upsellLink = document.getElementById('aiUpsellLink');
         if (_upsellLink) {

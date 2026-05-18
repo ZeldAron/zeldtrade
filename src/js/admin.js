@@ -216,7 +216,7 @@ const Admin = (() => {
 
   // ── Forcer email_verified=true sur un compte (v0.9.144) ─────────────────────
   async function markUserVerified(uid, email, btn) {
-    if (!confirm(`Forcer email_verified=true pour ${email} ?\n\nUtilise cette action si l'utilisateur ne reçoit pas l'email Firebase (souvent en spam). L'IA Groq sera débloquée immédiatement.`)) return;
+    if (!confirm(`Forcer email_verified=true pour ${email} ?\n\nUtilise cette action si l'utilisateur ne reçoit pas l'email Firebase (souvent en spam). L'IA Vision sera débloquée immédiatement.`)) return;
     if (!_fbFunctions) { toast('SDK Functions non chargé.', true); return; }
     const orig = btn.textContent;
     btn.disabled = true;
@@ -523,18 +523,20 @@ const Admin = (() => {
     // Construction via DOM API (pas innerHTML user-injection — sécurité)
     wrap.textContent = '';
 
-    // Section 1 — Clé Groq (info)
+    // Section 1 — Clés API IA (admin info)
     const sectionGroq = document.createElement('div');
     sectionGroq.style.cssText = 'max-width:560px;margin-bottom:32px';
     sectionGroq.innerHTML = `
-      <h3 style="margin:0 0 6px;font-size:15px">Clé API Groq</h3>
+      <h3 style="margin:0 0 6px;font-size:15px">Clés API IA Vision</h3>
       <p style="font-size:12px;color:var(--muted);line-height:1.6">
-        La clé Groq est dans <strong>Google Secret Manager</strong>, utilisée uniquement par
-        la Cloud Function <code>analyzeChart</code>. Jamais exposée au client.
+        Les clés des fournisseurs IA tiers sont dans <strong>Google Secret Manager</strong>, utilisées uniquement par
+        la Cloud Function <code>analyzeChart</code>. Jamais exposées au client.
       </p>
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:14px;font-family:monospace;font-size:12px;color:var(--muted);line-height:1.7">
-        # Update :<br>
-        <span style="color:var(--text)">firebase functions:secrets:set GROQ_API_KEY</span>
+        # IA standard (Groq Llama 4) :<br>
+        <span style="color:var(--text)">firebase functions:secrets:set GROQ_API_KEY</span><br><br>
+        # IA avancée (Anthropic Claude) :<br>
+        <span style="color:var(--text)">firebase functions:secrets:set CLAUDE_API_KEY</span>
       </div>`;
     wrap.appendChild(sectionGroq);
 
