@@ -204,13 +204,18 @@ const Modal = (() => {
   // ── Groq Vision API (via Cloud Function — clé API jamais exposée au client) ──
   async function analyzeWithGroq(imageB64, _unusedApiKey, direction) {
     const isLong = direction !== 'short';
-    // v0.9.219 — Prompt insiste sur les LABELS d'ORDRES (LMT/STP/SL/TP/OCO).
-    // L'IA confondait les lignes d'indicateurs (VPOC, VWAP, MA) avec des niveaux de trade.
+    // v0.9.220 — Prompt insiste sur les LABELS d'ORDRES (LMT/STP/SL/TP/OCO)
+    // + gestion des screenshots split-screen (Sierra Chart, multi-monitor setup).
     const prompt =
       `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart).\n` +
       `This is a ${isLong ? 'LONG' : 'SHORT'} trade.\n\n` +
 
-      `MOST IMPORTANT RULE: Only consider horizontal lines/boxes that have an ORDER LABEL next to them.\n` +
+      `STEP 1 — If the screenshot shows MULTIPLE chart panels side-by-side (Sierra Chart split-screen,\n` +
+      `dual-monitor capture, etc.), FOCUS ONLY on the panel that contains visible ORDER LABELS\n` +
+      `(LMT, STP, SL, TP, OCO). Ignore other panels (volume profile, orderbook, reversal chart, footprint).\n` +
+      `Pick the 3 prices from THE SAME panel — never mix prices from different panels.\n\n` +
+
+      `STEP 2 — In that panel, only consider horizontal lines/boxes that have an ORDER LABEL next to them.\n` +
       `Valid order labels (case-insensitive): "LMT", "STP", "STP LMT", "SL", "TP", "OCO", "Limit", "Stop",\n` +
       `"Take Profit", "Stop Loss", or a small position icon (cart 🛒, briefcase 💼) with "Brut" or "P&L" or "USD".\n\n` +
 
@@ -220,7 +225,8 @@ const Modal = (() => {
       `- Volume bars, profile histograms on the right side\n` +
       `- The current live price ticker (top-left "B:", "C:", "Ch:")\n` +
       `- Right-axis labels with ⊕ symbol or HH:MM countdown timer\n` +
-      `- Any horizontal line WITHOUT an order label nearby (it's likely an indicator)\n\n` +
+      `- Any horizontal line WITHOUT an order label nearby (it's likely an indicator)\n` +
+      `- Right-axis prices in OTHER panels (e.g. orderbook side panel)\n\n` +
 
       `Find EXACTLY 3 horizontal levels that have order labels and assign them:\n` +
       `${isLong
@@ -415,7 +421,23 @@ const Modal = (() => {
             [parsedTrade.sl, parsedTrade.tp1] = [parsedTrade.tp1, parsedTrade.sl];
         }
         const missing = (!entry || !sl || !tp1) ? ` <span style="color:var(--amber)">${i18n.t('modal.complete.step3')}</span>` : '';
-        statusEl.innerHTML = `<span style="color:var(--green)">${i18n.t('modal.levels.detected')}</span>${missing} <span style="color:var(--muted);font-size:10px">via Groq</span>`;
+
+        // v0.9.220 — Détection R:R aberrant → warning visible
+        let warningHtml = '';
+        if (parsedTrade.entry && parsedTrade.sl && parsedTrade.tp1) {
+          const e = Number(parsedTrade.entry);
+          const s = Number(parsedTrade.sl);
+          const t = Number(parsedTrade.tp1);
+          const risk   = Math.abs(e - s);
+          const reward = Math.abs(t - e);
+          const rr     = risk > 0 ? reward / risk : 0;
+          // R:R aberrant (très bas < 0.2 ou très haut > 15) ou écart Entry-TP < 1 point
+          if (rr < 0.2 || rr > 15 || reward < 1 || risk < 1) {
+            warningHtml = ` <span style="color:var(--red);font-weight:600">⚠ R:R suspect (${rr.toFixed(2)}) — vérifie les valeurs</span>`;
+          }
+        }
+
+        statusEl.innerHTML = `<span style="color:var(--green)">${i18n.t('modal.levels.detected')}</span>${missing}${warningHtml} <span style="color:var(--muted);font-size:10px">via Groq</span>`;
       }
 
       function renderEditablePills() {
