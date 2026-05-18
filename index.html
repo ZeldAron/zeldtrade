@@ -1434,6 +1434,15 @@
       bottom: 24px;
       opacity: 0;
       pointer-events: none;
+      /* v0.9.213 — force GPU layer pour éviter flicker Firefox (animation + parent transition) */
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      will-change: opacity;
+    }
+    /* v0.9.213 — Force GPU sur le conteneur démo (parent des keyframes loop) */
+    .demo-window {
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
     }
     .demo-stage-1 { animation: demoStage 12s infinite; animation-delay: 0s; }
     .demo-stage-2 { animation: demoStage 12s infinite; animation-delay: -8s; }
@@ -2276,15 +2285,20 @@
         gap: 4px;
         box-shadow: 0 12px 32px -8px rgba(0,0,0,0.6);
         opacity: 0;
-        transform: translateY(-8px);
+        visibility: hidden;
+        transform: translate3d(0, -8px, 0);
         pointer-events: none;
-        transition: opacity 0.2s, transform 0.2s;
+        transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0.2s;
+        will-change: opacity, transform;
+        backface-visibility: hidden;
         z-index: 100;
       }
       .nav-links.is-open {
         opacity: 1;
-        transform: translateY(0);
+        visibility: visible;
+        transform: translate3d(0, 0, 0);
         pointer-events: auto;
+        transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0s linear 0s;
       }
       .nav-link {
         font-size: 14px;
@@ -3340,7 +3354,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.212</span>
+      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.213</span>
     </div>
   </footer>
 
@@ -3350,7 +3364,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js"></script>
   <script src="js/landing-contact.js?v=0.9.172"></script>
   <script src="js/landing-pricing.js?v=0.9.198"></script>
-  <script src="js/landing-animations.js?v=0.9.204" defer></script>
+  <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.210" defer></script>
 
 </body>
