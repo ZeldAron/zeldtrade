@@ -256,11 +256,11 @@ const Modal = (() => {
       `{"entry":0.00,"sl":0.00,"tp1":0.00}\n` +
       `Use null for any value you cannot read with certainty.`;
 
+    // v0.9.217 — Retiré llama-3.2-vision-preview (deprecated par Groq, retourne 404).
+    // Llama 4 Scout/Maverick sont les modèles vision officiels en GA.
     const GROQ_MODELS = [
       'meta-llama/llama-4-scout-17b-16e-instruct',
       'meta-llama/llama-4-maverick-17b-128e-instruct',
-      'llama-3.2-90b-vision-preview',
-      'llama-3.2-11b-vision-preview',
     ];
 
     // Appel via Cloud Function (clé Groq côté serveur, quota enforce côté serveur)
