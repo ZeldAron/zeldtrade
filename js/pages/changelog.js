@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.230',
+      date: '2026-05-19',
+      time: '20:00',
+      tags: ['security'],
+      title: 'Audit sécurité : 5 fixes (rules email_verified + Stripe webhook hardening)',
+      titleEn: 'Security audit: 5 fixes (rules email_verified + Stripe webhook hardening)',
+      items: [
+        { type: 'security', text: 'Rules Firestore : email_verified désormais requis pour écrire/supprimer tes trades, settings, comptes, spreads et groupes. Defense-in-depth contre XSS / token volé (la création du compte et l\'activation Pro restent accessibles avant vérification).', textEn: 'Firestore rules: email_verified now required to write/delete your trades, settings, accounts, spreads, groups. Defense-in-depth against XSS / stolen token (signup and Pro activation still work before verification).' },
+        { type: 'security', text: 'Stripe webhook : tolérance timestamp 300s explicite (anti-replay), Content-Type strict (415 si non-JSON), validation croisée customer ↔ doc stored (anti-forge de `metadata.uid`).', textEn: 'Stripe webhook: explicit 300s timestamp tolerance (anti-replay), strict Content-Type (415 if non-JSON), customer cross-check against stored doc (anti `metadata.uid` forgery).' },
+        { type: 'security', text: 'Échecs de paiement Stripe : désormais tracés dans `auditLogs` + ton doc `users/{uid}/data/stripe` est annoté avec `lastPaymentFailed*`. Aide à comprendre pourquoi un downgrade arrive.', textEn: 'Stripe payment failures: now traced in `auditLogs` + your `users/{uid}/data/stripe` doc tagged with `lastPaymentFailed*`. Helps explaining a downgrade.' },
+      ],
+    },
+    {
       version: '0.9.229',
       date: '2026-05-19',
       time: '18:30',
