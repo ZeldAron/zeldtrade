@@ -204,35 +204,35 @@ const Modal = (() => {
   // ── Groq Vision API (via Cloud Function — clé API jamais exposée au client) ──
   async function analyzeWithGroq(imageB64, _unusedApiKey, direction) {
     const isLong = direction !== 'short';
-    // v0.9.218 — Prompt simplifié (1500 → 500 chars). L'IA se perdait dans les
-    // 3 patterns. Approche directe : trouver les 3 prix horizontaux + assigner
-    // selon position (haut/milieu/bas), peu importe la couleur/label.
+    // v0.9.219 — Prompt insiste sur les LABELS d'ORDRES (LMT/STP/SL/TP/OCO).
+    // L'IA confondait les lignes d'indicateurs (VPOC, VWAP, MA) avec des niveaux de trade.
     const prompt =
-      `You are reading a trading chart screenshot (TradingView, NinjaTrader, etc.).\n` +
-      `This is a ${isLong ? 'LONG' : 'SHORT'} trade — find EXACTLY 3 horizontal price levels on the chart.\n\n` +
+      `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart).\n` +
+      `This is a ${isLong ? 'LONG' : 'SHORT'} trade.\n\n` +
 
-      `These 3 levels can be:\n` +
-      `- Horizontal lines drawn on the chart\n` +
-      `- Colored boxes/rectangles\n` +
-      `- Price labels on the right axis (read the EXACT number shown)\n` +
-      `- Labels with text like "LMT", "STP", "STP LMT", "SL", "TP", "OCO"\n\n` +
+      `MOST IMPORTANT RULE: Only consider horizontal lines/boxes that have an ORDER LABEL next to them.\n` +
+      `Valid order labels (case-insensitive): "LMT", "STP", "STP LMT", "SL", "TP", "OCO", "Limit", "Stop",\n` +
+      `"Take Profit", "Stop Loss", or a small position icon (cart 🛒, briefcase 💼) with "Brut" or "P&L" or "USD".\n\n` +
 
-      `Assign them by position on the chart:\n` +
+      `IGNORE these lines (they are indicators, NOT trade levels):\n` +
+      `- VPOC (Volume Point of Control — usually an orange/yellow horizontal line)\n` +
+      `- VWAP, MA, EMA, SMA, Dynamic, Anchored lines\n` +
+      `- Volume bars, profile histograms on the right side\n` +
+      `- The current live price ticker (top-left "B:", "C:", "Ch:")\n` +
+      `- Right-axis labels with ⊕ symbol or HH:MM countdown timer\n` +
+      `- Any horizontal line WITHOUT an order label nearby (it's likely an indicator)\n\n` +
+
+      `Find EXACTLY 3 horizontal levels that have order labels and assign them:\n` +
       `${isLong
-        ? `- TOP (highest price)    → tp1\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → sl`
-        : `- TOP (highest price)    → sl\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → tp1`}\n\n` +
-
-      `IGNORE:\n` +
-      `- The current live price ticker (often top-left, "B:", "C:", "Ch:" prices)\n` +
-      `- Right-axis labels with ⊕ symbol or countdown timer (HH:MM format)\n` +
-      `- Volume bars, indicators, MA lines\n\n` +
+        ? `- TOP (highest price)    → tp1   (often label "LMT" or "TP" or rectangle with cart icon)\n- MIDDLE                 → entry (often blue/teal label "STP LMT" or position icon with "Brut")\n- BOTTOM (lowest price)  → sl    (often label "STP" or "SL")`
+        : `- TOP (highest price)    → sl    (often label "STP" or "SL")\n- MIDDLE                 → entry (often blue/teal label "STP LMT" or position icon with "Brut")\n- BOTTOM (lowest price)  → tp1   (often label "LMT" or "TP")`}\n\n` +
 
       `RULES:\n` +
-      `- A complete trade ALWAYS has 3 levels. Look HARDER if you only see 2.\n` +
+      `- A complete trade has 3 levels WITH order labels. If you see 4+ lines, the extras are indicators (ignore them).\n` +
       `- European format may use "," or " " (28 944,25 = 28944.25)\n` +
       `- Never invent numbers. Copy EXACTLY from the chart.\n` +
       `- Constraint: ${isLong ? 'sl < entry < tp1' : 'tp1 < entry < sl'}\n` +
-      `- Use null ONLY if a value is truly unreadable (avoid null — try harder first)\n\n` +
+      `- Read the EXACT price from the right axis (the price label aligned with the order line).\n\n` +
 
       `Respond with ONLY this JSON on one line:\n` +
       `{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER}`;
