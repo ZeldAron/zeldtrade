@@ -5,6 +5,20 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.227',
+      date: '2026-05-19',
+      time: '12:00',
+      tags: ['fix', 'ux', 'ai'],
+      title: 'IA reconnaît plus de plateformes + audit mobile + fix lot size',
+      titleEn: 'AI recognises more platforms + mobile audit + lot size fix',
+      items: [
+        { type: 'ai', text: 'IA (avancée + classique) reconnaît désormais TradingView, NinjaTrader, Sierra Chart, **MT4/MT5, cTrader, ThinkorSwim, Quantower, ATAS** et plateformes similaires. Avant : retournait souvent rien sur les plateformes hors top 3.', textEn: 'AI (advanced + standard) now recognises TradingView, NinjaTrader, Sierra Chart, **MT4/MT5, cTrader, ThinkorSwim, Quantower, ATAS** and similar platforms.' },
+        { type: 'ai', text: 'IA donne une valeur approximative depuis l\'axe quand un label est partiellement lisible, au lieu de retourner null. Beaucoup moins de "rien trouvé".', textEn: 'AI now returns an approximate axis value when a label is partly readable, instead of null.' },
+        { type: 'fix', text: 'Lot size : le nombre de lots ne se remettait pas correctement à la valeur du trade quand on rouvrait un trade existant sur certains navigateurs FR. Fix : forçage locale anglaise sur les inputs numériques.', textEn: 'Lot size: number didn\'t persist correctly when reopening an existing trade on some FR browsers. Fix: enforce English locale on numeric inputs.' },
+        { type: 'ux', text: 'Audit mobile complet : login responsive sur écrans < 360px (plus de débordement), contact-panel responsive, tous les boutons critiques en touch target ≥ 44px (norme WCAG AAA / Apple HIG), zone de drop image plus généreuse au doigt.', textEn: 'Full mobile audit: responsive login on small screens, responsive contact-panel, all critical buttons ≥ 44px touch target, more generous image drop zone.' },
+      ],
+    },
+    {
       version: '0.9.204',
       date: '2026-05-17',
       time: '23:30',
