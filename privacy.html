@@ -166,9 +166,14 @@
 
     <div class="info-block">
       <span class="tag">Analyse IA des charts (optionnel)</span>
-      <p><strong>Groq, Inc.</strong> — États-Unis</p>
+      <p><strong>Groq, Inc.</strong> — États-Unis (modèle utilisé pour tous les plans, par défaut)</p>
       <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://groq.com/privacy-policy" target="_blank" rel="noopener">groq.com/privacy-policy</a></p>
       <p style="margin-top:4px;font-size:13px;color:#6b7280">Données envoyées : capture d'écran du chart (encodée base64), texte du prompt. Selon la politique Groq, les requêtes API ne sont pas conservées pour entraîner leurs modèles. Cette analyse est <strong>volontaire</strong> de votre part (vous cliquez explicitement sur "Analyser") — base légale : consentement (art. 6.1.a RGPD).</p>
+      <p style="margin-top:10px;padding-top:10px;border-top:1px solid #1F2937">
+        <strong>Anthropic PBC</strong> — États-Unis (modèle Claude Sonnet 4.6, utilisé en <em>fallback automatique</em> pour les plans Funded et Elite quand l'analyse Groq retourne un résultat insuffisant)
+      </p>
+      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener">anthropic.com/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b7280">Données envoyées : mêmes données que Groq (capture d'écran encodée base64 + prompt). Selon la politique Anthropic, les requêtes API ne sont pas utilisées pour entraîner leurs modèles. Le déclenchement du fallback Claude est <strong>automatique côté serveur</strong> uniquement si la première analyse Groq échoue (moins de 3 niveaux détectés, ou ratio risk/reward aberrant). Le plan <strong>Trader</strong> n'utilise jamais Claude — uniquement Groq. Base légale : consentement (art. 6.1.a RGPD), implicite via le clic "Analyser" et explicite via les CGU.</p>
     </div>
 
     <div class="info-block">
@@ -221,7 +226,7 @@
     </div>
 
     <p style="margin-top:14px;font-size:13px;color:#6b7280">
-      <strong>Transferts hors UE</strong> : pour les sous-traitants Google (Firebase, Cloud Storage, Cloud Functions, Fonts), le transfert est couvert par le <em>Data Privacy Framework EU-US</em> (décision d'adéquation de la Commission Européenne du 10 juillet 2023). Pour Cloudflare (Turnstile), idem (Cloudflare est également certifié DPF). Pour les autres (Groq, hCaptcha, Discord, GitHub), des Clauses Contractuelles Types (CCT) standard de la Commission s'appliquent. Stripe (Irlande) reste dans l'UE.
+      <strong>Transferts hors UE</strong> : pour les sous-traitants Google (Firebase, Cloud Storage, Cloud Functions, Fonts), le transfert est couvert par le <em>Data Privacy Framework EU-US</em> (décision d'adéquation de la Commission Européenne du 10 juillet 2023). Pour Cloudflare (Turnstile), idem (Cloudflare est également certifié DPF). Pour les autres (Groq, Anthropic, hCaptcha, Discord, GitHub), des Clauses Contractuelles Types (CCT) standard de la Commission s'appliquent. Stripe (Irlande) reste dans l'UE.
     </p>
 
     <!-- 4. Stockage local -->

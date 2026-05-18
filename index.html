@@ -3133,15 +3133,15 @@
       <div class="pillar">
         <div class="pillar-num">01</div>
         <div class="pillar-icon">🤖</div>
-        <h3 class="pillar-title">IA Groq Vision qui lit tes charts</h3>
+        <h3 class="pillar-title">IA Vision qui lit tes charts</h3>
         <p class="pillar-desc">
           <strong>Ctrl+V</strong> ton screenshot TradingView → l'IA détecte entry, SL et TP en <strong>2 secondes</strong>.
-          4 modèles en cascade (Llama Vision, etc.) pour ne jamais rater. Validation magic bytes serveur, App Check anti-spoofing.
+          Modèles Llama 4 Vision (Groq) en cascade pour Trader, et <strong>fallback Claude Sonnet</strong> automatique sur les charts complexes pour Funded et Elite.
         </p>
         <ul class="pillar-bullets">
-          <li>20 analyses / jour (Funded) · 100 / jour (Elite)</li>
-          <li>Validation serveur stricte (PNG/JPEG/WebP)</li>
-          <li>Fallback parse texte si l'IA fail</li>
+          <li>Trader : 1 analyse / jour (Groq)</li>
+          <li>Funded : 20 / jour (Groq + Claude fallback)</li>
+          <li>Elite : 100 / jour (Groq + Claude fallback)</li>
         </ul>
       </div>
       <div class="pillar pillar-featured">
@@ -3247,12 +3247,12 @@
     </div>
   </section>
 
-  <!-- ─── Vs Concurrence (v0.9.204) ────────────────────────────────────── -->
+  <!-- ─── Vs Concurrence (v0.9.225 — ajout Edgyx) ───────────────────────── -->
   <section class="section" id="vs">
     <div class="section-eyebrow">Comparaison</div>
-    <h2 class="section-title">Pourquoi pas <span class="title-accent">Tradervue, Zella ou Excel</span> ?</h2>
+    <h2 class="section-title">Pourquoi pas <span class="title-accent">Edgyx, Tradervue ou Excel</span> ?</h2>
     <p class="section-sub">
-      Les outils US sont bien faits mais ignorent les contraintes prop firms FR. Excel demande 30 min de paramétrage par compte.
+      Les outils généralistes (Edgyx, Tradervue, TradeZella) sont bien faits mais ignorent les contraintes spécifiques des prop firms. Excel demande 30 min de paramétrage par compte.
     </p>
     <div class="vs-wrap">
       <table class="vs-table">
@@ -3260,27 +3260,30 @@
           <tr>
             <th class="vs-feat">Critère</th>
             <th class="vs-us"><strong>ZeldTrade</strong><br><span class="vs-sub">14,99 € / mois</span></th>
+            <th>Edgyx<br><span class="vs-sub">Généraliste FR</span></th>
             <th>Tradervue<br><span class="vs-sub">$29 / mois</span></th>
             <th>TradeZella<br><span class="vs-sub">$39 / mois</span></th>
             <th>Excel<br><span class="vs-sub">Gratuit</span></th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>Règles prop firms intégrées</td><td class="vs-yes">✓ 5 firms · 20+ presets</td><td class="vs-no">✗</td><td class="vs-mid">⚠ Partiel</td><td class="vs-no">✗ Manuel</td></tr>
-          <tr><td>Trailing drawdown EOD précis</td><td class="vs-yes">✓ Calculé au tick</td><td class="vs-no">✗</td><td class="vs-no">✗</td><td class="vs-no">✗</td></tr>
-          <tr><td>IA Vision sur screenshot</td><td class="vs-yes">✓ Groq incluse</td><td class="vs-no">✗</td><td class="vs-mid">⚠ Add-on payant</td><td class="vs-no">✗</td></tr>
-          <tr><td>Multi-comptes + groupes</td><td class="vs-yes">✓ 1 trade → N comptes</td><td class="vs-mid">⚠ Manuel</td><td class="vs-mid">⚠ Manuel</td><td class="vs-no">✗ 1 onglet/compte</td></tr>
-          <tr><td>Comptes Crypto</td><td class="vs-yes">✓ Binance + Coinbase</td><td class="vs-no">✗</td><td class="vs-mid">⚠ Limité</td><td class="vs-no">✗ Manuel</td></tr>
-          <tr><td>Interface française</td><td class="vs-yes">✓ FR natif</td><td class="vs-no">✗ EN only</td><td class="vs-no">✗ EN only</td><td class="vs-yes">✓ Manuel</td></tr>
-          <tr><td>Calculateur fiscal FR (micro-BNC)</td><td class="vs-yes">✓ Intégré</td><td class="vs-no">✗</td><td class="vs-no">✗</td><td class="vs-no">✗</td></tr>
-          <tr><td>RGPD natif (export, suppression 1-clic)</td><td class="vs-yes">✓</td><td class="vs-mid">⚠ Partiel</td><td class="vs-mid">⚠ Partiel</td><td class="vs-yes">✓</td></tr>
-          <tr><td>Hébergement UE</td><td class="vs-yes">✓ Firebase EU</td><td class="vs-no">✗ US</td><td class="vs-no">✗ US</td><td class="vs-yes">✓ Local</td></tr>
+          <tr><td>Spécialisation prop firms (Apex, FTMO, Topstep, Lucid, FP)</td><td class="vs-yes">✓ 20+ presets précis</td><td class="vs-mid">⚠ Generic prop rules</td><td class="vs-no">✗</td><td class="vs-mid">⚠ Partiel</td><td class="vs-no">✗ Manuel</td></tr>
+          <tr><td>Trailing drawdown EOD calculé au tick</td><td class="vs-yes">✓</td><td class="vs-no">✗</td><td class="vs-no">✗</td><td class="vs-no">✗</td><td class="vs-no">✗</td></tr>
+          <tr><td>IA Vision sur screenshot TradingView</td><td class="vs-yes">✓ Groq + Claude (Funded+)</td><td class="vs-no">✗ (IA psychologie)</td><td class="vs-no">✗</td><td class="vs-mid">⚠ Add-on payant</td><td class="vs-no">✗</td></tr>
+          <tr><td>Groupes multi-comptes (1 trade → N comptes)</td><td class="vs-yes">✓</td><td class="vs-mid">⚠ Manuel</td><td class="vs-mid">⚠ Manuel</td><td class="vs-mid">⚠ Manuel</td><td class="vs-no">✗</td></tr>
+          <tr><td>Comptes Crypto (Binance + Coinbase)</td><td class="vs-yes">✓ Fees % notional</td><td class="vs-mid">⚠ Basique</td><td class="vs-no">✗</td><td class="vs-mid">⚠ Limité</td><td class="vs-no">✗</td></tr>
+          <tr><td>Interface française</td><td class="vs-yes">✓ FR natif</td><td class="vs-yes">✓ FR natif</td><td class="vs-no">✗ EN only</td><td class="vs-no">✗ EN only</td><td class="vs-yes">✓ Manuel</td></tr>
+          <tr><td>Calculateur fiscal FR (micro-BNC)</td><td class="vs-yes">✓ Intégré</td><td class="vs-no">✗</td><td class="vs-no">✗</td><td class="vs-no">✗</td><td class="vs-no">✗</td></tr>
+          <tr><td>RGPD natif (export, suppression 1-clic)</td><td class="vs-yes">✓</td><td class="vs-mid">⚠ Partiel</td><td class="vs-mid">⚠ Partiel</td><td class="vs-mid">⚠ Partiel</td><td class="vs-yes">✓</td></tr>
+          <tr><td>Hébergement UE</td><td class="vs-yes">✓ Firebase EU</td><td class="vs-yes">✓ FR</td><td class="vs-no">✗ US</td><td class="vs-no">✗ US</td><td class="vs-yes">✓ Local</td></tr>
+          <tr><td>Auto-import MT4 / MT5</td><td class="vs-no">✗ <small>(roadmap)</small></td><td class="vs-yes">✓</td><td class="vs-yes">✓</td><td class="vs-yes">✓</td><td class="vs-no">✗</td></tr>
+          <tr><td>Mobile app native</td><td class="vs-no">✗ <small>(roadmap)</small></td><td class="vs-yes">✓</td><td class="vs-mid">⚠ Web only</td><td class="vs-yes">✓</td><td class="vs-no">✗</td></tr>
         </tbody>
       </table>
     </div>
     <p class="vs-hint">← Glisse horizontalement pour voir tout le tableau →</p>
     <p class="vs-conclusion">
-      <strong>50 % moins cher que Tradervue, 62 % moins cher que Zella</strong> — et avec les seules règles prop firms FR vraiment intégrées.
+      <strong>ZeldTrade est le seul à calculer ton trailing drawdown EOD prop firm au tick près</strong> — et à intégrer l'IA Vision sur tes screenshots TradingView pour pré-remplir entry/SL/TP automatiquement.
     </p>
   </section>
 
@@ -3299,13 +3302,14 @@
         </div>
         <ul class="roadmap-list">
           <li>Journal multi-comptes + groupes</li>
-          <li>IA Groq Vision (4 modèles cascade)</li>
+          <li>IA Vision Groq (Llama 4) + fallback Claude Sonnet</li>
           <li>Trailing drawdown EOD précis 5 firms</li>
           <li>Comptes Crypto (Binance + Coinbase)</li>
           <li>Comptes Fonds propres</li>
           <li>Export PDF / CSV / JSON RGPD</li>
           <li>Calculateur fiscal micro-BNC</li>
           <li>Bilingue FR / EN</li>
+          <li>Désinscription newsletter 1-clic (RFC 8058)</li>
         </ul>
       </div>
       <div class="roadmap-col roadmap-doing">
@@ -3317,7 +3321,6 @@
           <li>Stripe Checkout (Funded / Elite)</li>
           <li>Audit complet expérience mobile</li>
           <li>Onboarding Pro multi-select préférences</li>
-          <li>Wizard crypto : labels qty vs contracts</li>
           <li>Témoignages Founding Members</li>
         </ul>
       </div>
@@ -3327,13 +3330,12 @@
           <h3>Planifié</h3>
         </div>
         <ul class="roadmap-list">
-          <li>Import API broker (IB, Trading 212…)</li>
-          <li>Dashboard coach (multi-élèves)</li>
-          <li>Accès API public (Elite)</li>
-          <li>Stats consolidées multi-comptes</li>
+          <li>Auto-import MT4 / MT5 / cTrader</li>
+          <li>Mobile app (iOS / Android)</li>
+          <li>Dashboard coach (multi-élèves) — Elite</li>
+          <li>Accès API public — Elite</li>
           <li>Backup automatique quotidien</li>
           <li>Export Excel avec formules natives</li>
-          <li>Mobile app (iOS / Android)</li>
         </ul>
       </div>
     </div>
@@ -3610,7 +3612,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.224</span>
+      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.225</span>
     </div>
   </footer>
 
