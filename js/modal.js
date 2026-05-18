@@ -206,7 +206,11 @@ const Modal = (() => {
     const isLong = direction !== 'short';
     const prompt =
       `You are analyzing a TradingView screenshot. Direction: ${isLong ? 'LONG' : 'SHORT'}.\n` +
-      `Extract 3 price levels: entry, sl (stop loss), tp1 (take profit).\n\n` +
+      `Extract 3 price levels: entry, sl (stop loss), tp1 (take profit).\n` +
+      `CRITICAL: A complete trade ALWAYS has 3 levels. If you only see 2, look HARDER for the 3rd —\n` +
+      `it might be a thin horizontal line, a price label on the right axis, or a small rectangle.\n` +
+      `Common pattern on TradingView: an Order Entry line (often BLUE/teal STP/LMT label), a Take Profit\n` +
+      `line (label TP or LMT, ${isLong ? 'ABOVE' : 'BELOW'} entry), a Stop Loss line (label SL or STP, ${isLong ? 'BELOW' : 'ABOVE'} entry).\n\n` +
 
       `Try patterns in this PRIORITY order. Use the FIRST pattern that matches.\n\n` +
 
@@ -270,6 +274,10 @@ const Modal = (() => {
 
     const callable = _fbFunctions.httpsCallable('analyzeChart');
     let lastError = null;
+    // v0.9.216 — Garde le meilleur résultat partiel (1 ou 2 valeurs) pour fallback
+    // si AUCUN modèle Groq n'arrive à détecter les 3 niveaux complets.
+    let bestPartial = null;
+    const _partialScore = r => (r ? (r.entry ? 1 : 0) + (r.sl ? 1 : 0) + (r.tp1 ? 1 : 0) : 0);
 
     for (const model of GROQ_MODELS) {
       let data;
@@ -332,12 +340,25 @@ const Modal = (() => {
         const triplet = [result.entry, result.sl, result.tp1];
         const reordered = _sortLevelsByDirection(triplet, isLong);
         if (reordered) {
+          // 3 valeurs détectées → tri direction-aware et retour immédiat
           result.entry = reordered.entry;
           result.sl    = reordered.sl;
           result.tp1   = reordered.tp1;
+          return result;
         }
-        if (result.entry || result.sl || result.tp1) return result;
+        // v0.9.216 — Si seulement 1-2 valeurs détectées, on garde comme fallback
+        // et on essaye le modèle suivant (peut-être qu'un autre modèle Groq lit les 3).
+        if (_partialScore(result) > _partialScore(bestPartial)) {
+          bestPartial = result;
+        }
       } catch { continue; }
+    }
+
+    // v0.9.216 — Aucun modèle n'a retourné 3 valeurs : on renvoie le meilleur partiel
+    // (au moins 1 valeur). L'user verra "Niveaux détectés (compléter en étape 3)"
+    // et pourra saisir le niveau manquant à la main + Réanalyser.
+    if (bestPartial && _partialScore(bestPartial) >= 1) {
+      return bestPartial;
     }
 
     if (lastError) {
