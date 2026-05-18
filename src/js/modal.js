@@ -1155,12 +1155,20 @@ const Modal = (() => {
 
     // Step 2 — v0.9.179 (H2 fix) : confirmer si analyse IA déjà effectuée
     // ou image chargée (sinon retour silencieux qui détruit l'image)
+    // v0.9.221 (bug fix) : si l'user confirme, on RESET réellement tout (image,
+    // analyse, pills affichées, hint texte). Avant, parsedTrade restait en mémoire
+    // et ré-apparaissait après changement de direction LONG ↔ SHORT.
     $('wBtnBack1').addEventListener('click', () => {
-      const hasWork = !!parsedTrade || !!imageB64;
+      const hasWork = !!parsedTrade || !!capturedImage;
       if (hasWork) {
         if (!confirm('Revenir à l\'étape précédente va effacer ton screenshot et l\'analyse IA. Continuer ?')) {
           return;
         }
+        clearImage();
+        const hint = $('wTextHint');
+        if (hint) hint.value = '';
+        if (_shotPreviewUrl) { try { URL.revokeObjectURL(_shotPreviewUrl); } catch {} _shotPreviewUrl = null; }
+        shotBlob = null;
       }
       goToStep(1);
     });
