@@ -550,7 +550,7 @@ const i18n = (() => {
       // Funded (14.99 €/mois) — bénéfices
       'off.funded.f1':  'Tout le plan Trader inclus',
       'off.funded.f2':  '10 comptes (prop / crypto / personnel) — pilote tout ton portefeuille',
-      'off.funded.f3':  'IA détecte entry/SL/TP depuis ton screenshot TradingView (20×/jour)',
+      'off.funded.f3':  'IA Vision (Groq + Claude fallback) — 20 analyses / jour',
       'off.funded.f4':  '1 trade saisi → répliqué sur tes 10 comptes en 1 sauvegarde',
       'off.funded.f5':  'Archive PDF 1 page/trade — coaching ou candidature funded',
       'off.funded.f6':  'Trailing drawdown EOD précis (Apex/Topstep/Lucid/FP) — jamais surpris par un breach',
@@ -558,7 +558,7 @@ const i18n = (() => {
       // Elite (29.99 €/mois) — bénéfices
       'off.elite.f1':   'Tout le plan Funded inclus',
       'off.elite.f2':   '100 comptes — pour multi-funded ou portefeuille coach',
-      'off.elite.f3':   '5× plus d\'analyses IA (100/jour) — valide chaque trade',
+      'off.elite.f3':   'IA Vision (Groq + Claude fallback) — 100 analyses / jour',
       'off.elite.f4':   'Accès anticipé aux features beta — teste avant tout le monde',
       'off.elite.f5':   'Support 24h via canal direct',
       'off.elite.f6':   'Votes décisifs sur la roadmap — ta voix compte 5× plus',
@@ -1218,7 +1218,7 @@ const i18n = (() => {
       // Funded (€14.99/mo) — benefits
       'off.funded.f1':  'Everything in Trader',
       'off.funded.f2':  '10 accounts (prop / crypto / personal) — pilot your full book',
-      'off.funded.f3':  'AI detects entry/SL/TP from your TradingView screenshot (20×/day)',
+      'off.funded.f3':  'AI Vision (Groq + Claude fallback) — 20 analyses / day',
       'off.funded.f4':  '1 trade entered → replicated on your 10 accounts in 1 save',
       'off.funded.f5':  'PDF archive 1 page/trade — coaching or funded application',
       'off.funded.f6':  'Precise EOD trailing drawdown (Apex/Topstep/Lucid/FP) — never surprised by a breach',
@@ -1226,7 +1226,7 @@ const i18n = (() => {
       // Elite (€29.99/mo) — benefits
       'off.elite.f1':   'Everything in Funded',
       'off.elite.f2':   '100 accounts — for multi-funded or coach portfolio',
-      'off.elite.f3':   '5× more AI analyses (100/day) — validate every trade',
+      'off.elite.f3':   'AI Vision (Groq + Claude fallback) — 100 analyses / day',
       'off.elite.f4':   'Early access to beta features — test before everyone',
       'off.elite.f5':   '24h support via direct channel',
       'off.elite.f6':   'Decisive roadmap votes — your voice counts 5× more',
