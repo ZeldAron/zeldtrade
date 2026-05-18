@@ -36,10 +36,19 @@ function initApp() {
     if (main && typeof main.scrollTo === 'function') {
       try { main.scrollTo({ top: 0, behavior: 'instant' }); } catch { main.scrollTop = 0; }
     }
-    if (page === 'dashboard') UI.renderDashboard();
-    if (page === 'analytics') UI.renderAnalytics();
-    if (page === 'goals')     UI.renderGoals();
-    if (page === 'calendar')  UI.renderCalendar();
+    // v0.9.231 (VIS-02 fix) : skeleton loader léger sur les pages au render lourd.
+    // Injecte un placeholder shimmer dans le container puis schedule le render
+    // réel au prochain frame (= 1 paint pour le skeleton avant le bloque ~300ms).
+    const _SKELETON = '<div class="page-skeleton"><div class="skl-bar skl-bar-tall"></div><div class="skl-row"><div class="skl-bar"></div><div class="skl-bar"></div><div class="skl-bar"></div></div><div class="skl-bar skl-bar-block"></div></div>';
+    function _renderWithSkeleton(containerId, renderFn) {
+      const c = $(containerId);
+      if (c) c.innerHTML = _SKELETON;
+      requestAnimationFrame(() => renderFn());
+    }
+    if (page === 'dashboard') _renderWithSkeleton('dashContent',     UI.renderDashboard);
+    if (page === 'analytics') _renderWithSkeleton('analyticsContent', UI.renderAnalytics);
+    if (page === 'goals')     _renderWithSkeleton('goalsContent',    UI.renderGoals);
+    if (page === 'calendar')  _renderWithSkeleton('calContent',      UI.renderCalendar);
     if (page === 'outils')    UI.renderOutils();
     if (page === 'offers')    UI.renderOffers();
   }
