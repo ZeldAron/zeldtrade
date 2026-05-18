@@ -5,6 +5,21 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.228',
+      date: '2026-05-19',
+      time: '18:00',
+      tags: ['security', 'perf', 'a11y'],
+      title: 'Sweep qualité : sécu (SRI, timeouts), perf (defer), a11y, audit RGPD',
+      titleEn: 'Quality sweep: security (SRI, timeouts), perf (defer), a11y, RGPD audit',
+      items: [
+        { type: 'security', text: 'Sécurité : ajout `AbortController` timeout 5s sur les vérifications hCaptcha + Cloudflare Turnstile côté serveur (évite blocage CF si fournisseur lent).', textEn: 'Security: added 5s `AbortController` timeout on server-side hCaptcha + Cloudflare Turnstile checks.' },
+        { type: 'security', text: 'Sécurité : SubResource Integrity (SRI) ajouté sur les 2 derniers scripts Firebase de la landing (déjà présent sur app + Chart.js).', textEn: 'Security: SubResource Integrity (SRI) added on the 2 last Firebase scripts of the landing.' },
+        { type: 'perf', text: 'Perf : Chart.js (60 KB) et jsPDF (250 KB) chargés en `defer` — gain First Paint, ne bloque plus le parsing HTML.', textEn: 'Perf: Chart.js (60 KB) and jsPDF (250 KB) loaded with `defer` — faster First Paint.' },
+        { type: 'security', text: 'RGPD : auto-purge des logs d\'audit après 1 an (TTL Firestore activé sur le champ `expireAt`).', textEn: 'RGPD: audit logs auto-purge after 1 year (Firestore TTL enabled on `expireAt`).' },
+        { type: 'a11y', text: 'Accessibilité : ajout aria-label sur le bouton "supprimer image" du wizard.', textEn: 'Accessibility: aria-label added on the wizard image-clear button.' },
+      ],
+    },
+    {
       version: '0.9.227',
       date: '2026-05-19',
       time: '12:00',
