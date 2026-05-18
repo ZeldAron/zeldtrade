@@ -5,6 +5,22 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.231',
+      date: '2026-05-19',
+      time: '22:00',
+      tags: ['fix', 'ux', 'a11y'],
+      title: 'Audit fonctionnel + visuel : 7 fixes (lot crypto, skeleton, focus trap, empty states)',
+      titleEn: 'Functional + visual audit: 7 fixes (crypto lot, skeleton, focus trap, empty states)',
+      items: [
+        { type: 'fix', text: 'Bug "lot 0.2 reset à 1" en édition de trade crypto : la cause était l\'arrondi automatique sur les instruments non-CFD. Désormais, les crypto et CFD acceptent les lots fractionnaires (0.01), les futures classiques restent en contrats entiers.', textEn: 'Bug "0.2 lot reset to 1" when editing crypto trade: caused by auto-rounding on non-CFD instruments. Crypto and CFD now accept fractional lots (0.01), classic futures stay in whole contracts.' },
+        { type: 'ux', text: 'Skeleton loader sur Dashboard, Analytics, Objectifs et Calendrier : plus de "page blanche" pendant le calcul. Animation shimmer subtile pendant ~16ms.', textEn: 'Skeleton loader on Dashboard, Analytics, Goals and Calendar: no more "white flash" during calculation. Subtle shimmer animation.' },
+        { type: 'ux', text: 'Page Objectifs : empty state explicite quand tu as des comptes mais aucun trade (au lieu d\'afficher des cartes vides à 0%). Bouton CTA pour ajouter ton premier trade.', textEn: 'Goals page: explicit empty state when you have accounts but no trades (instead of showing empty 0% cards). CTA button to add your first trade.' },
+        { type: 'a11y', text: 'Modale Nouveau Trade : focus piégé dans la modale (Tab cycle uniquement à l\'intérieur). Plus de risque de naviguer "derrière" au clavier. + `role="dialog"` + `aria-modal="true"`.', textEn: 'New Trade modal: focus trapped inside the modal (Tab cycles only within). No more risk of navigating "behind" with keyboard. + `role="dialog"` + `aria-modal="true"`.' },
+        { type: 'ux', text: 'Tablette / Safari iOS : 3 champs (recherche, lots compacts, code Pro) zoomaient au focus car font-size < 16px. Corrigé.', textEn: 'Tablet / Safari iOS: 3 inputs (search, compact lots, Pro code) zoomed on focus because font-size < 16px. Fixed.' },
+        { type: 'ux', text: 'Tableau "trades récents" du Dashboard : scroll horizontal explicite sur très petits écrans, plus de débordement.', textEn: 'Dashboard "recent trades" table: explicit horizontal scroll on very small screens, no more overflow.' },
+      ],
+    },
+    {
       version: '0.9.230',
       date: '2026-05-19',
       time: '20:00',

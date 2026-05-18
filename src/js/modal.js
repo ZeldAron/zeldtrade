@@ -754,7 +754,11 @@ const Modal = (() => {
 
   function updateLotsInput(instr) {
     const inp = $('wContracts');
-    if (Calc.isCFD(instr)) {
+    // v0.9.231 (FNC-01 fix) : CFD ET crypto autorisent les lots fractionnaires
+    // (0.01 step). Les futures classiques (NQ, ES, GC, CL, etc.) restent en
+    // contrats entiers. Avant ce fix, ouvrir un trade crypto lot 0.2 en
+    // édition arrondissait à 1 (Math.round(0.2) puis Math.max(1, …)).
+    if (Calc.isCFD(instr) || Calc.isCrypto(instr)) {
       inp.step = '0.01';
       inp.min  = '0.01';
     } else {
@@ -1615,6 +1619,28 @@ const Modal = (() => {
     });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') close();
+    });
+
+    // v0.9.231 (VIS-04 fix) : focus trap dans la modale wizard. Tab cycle
+    // uniquement parmi les éléments focusables visibles de la modale.
+    // Évite que le focus sorte vers la page derrière (a11y clavier).
+    $('modalOverlay').addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      const overlay = $('modalOverlay');
+      if (!overlay || overlay.style.display === 'none') return;
+      const sel = 'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      const visible = Array.from(overlay.querySelectorAll(sel))
+        .filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
+      if (visible.length < 2) return;
+      const first = visible[0];
+      const last  = visible[visible.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        last.focus();
+        e.preventDefault();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        first.focus();
+        e.preventDefault();
+      }
     });
   }
 

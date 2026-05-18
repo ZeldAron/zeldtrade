@@ -402,6 +402,8 @@ const i18n = (() => {
       // Goals
       'goals.no.accounts':      'Aucun compte configuré.',
       'goals.no.accounts.hint': 'Crée tes comptes dans Réglages → Mes Comptes.',
+      'goals.no.trades':        'Aucun trade enregistré pour le moment',
+      'goals.no.trades.hint':   'Ajoute ton premier trade pour voir ta progression sur les objectifs prop firm (profit target, drawdown, days traded).',
       'goals.eval.accounts':    'Comptes en Évaluation',
       'goals.funded.accounts':  'Comptes Funded (PA)',
       'goals.profit.target':    'Objectif de profit',
@@ -1070,6 +1072,8 @@ const i18n = (() => {
       // Goals
       'goals.no.accounts':      'No accounts configured.',
       'goals.no.accounts.hint': 'Create accounts in Settings → My Accounts.',
+      'goals.no.trades':        'No trades recorded yet',
+      'goals.no.trades.hint':   'Add your first trade to see your progress on prop firm goals (profit target, drawdown, days traded).',
       'goals.eval.accounts':    'Evaluation Accounts',
       'goals.funded.accounts':  'Funded Accounts (PA)',
       'goals.profit.target':    'Profit target',

@@ -2425,6 +2425,10 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .recent-trade-table {
   width: 100%;
   border-collapse: collapse;
+  /* v0.9.231 : évite débordement horizontal sur très petits écrans */
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .recent-trade-table th {
   font-size: 10px;
@@ -3864,6 +3868,10 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 
   /* ── Inputs : 16px minimum pour éviter zoom iOS ── */
   .form-input { font-size: 16px !important; padding: 11px 12px !important; }
+  /* v0.9.231 (VIS-01 fix) : 3 inputs orphelins qui restaient en 12-13px → zoom iOS */
+  .search-wrap input { font-size: 16px !important; }
+  .ac-input { font-size: 16px !important; padding: 6px 9px !important; }
+  .pro-code-input { font-size: 16px !important; }
   /* ── Form grid global ── */
   .form-grid-3 { grid-template-columns: 1fr 1fr !important; }
 
@@ -4477,6 +4485,33 @@ img { -webkit-user-drag: none; }
   .page-title { font-size: 15px !important; }
   /* Cal day cells encore plus compactes */
   .cal-day { min-height: 40px; font-size: 10px; }
+}
+
+/* ─── v0.9.231 (VIS-02) — Skeleton loader pour pages au rendu lourd ─── */
+.page-skeleton { padding: 24px; max-width: 1200px; margin: 0 auto; }
+.page-skeleton .skl-bar {
+  height: 16px;
+  background: linear-gradient(90deg, var(--bg2) 0%, var(--bg3) 50%, var(--bg2) 100%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  animation: skl-shimmer 1.2s linear infinite;
+}
+.page-skeleton .skl-bar-tall { height: 28px; width: 45%; margin-bottom: 24px; }
+.page-skeleton .skl-bar-block { height: 240px; margin-top: 16px; border-radius: 12px; }
+.page-skeleton .skl-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.page-skeleton .skl-row .skl-bar { height: 64px; margin-bottom: 0; border-radius: 10px; }
+@keyframes skl-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+@media (max-width: 480px) {
+  .page-skeleton { padding: 12px; }
+  .page-skeleton .skl-row { grid-template-columns: 1fr 1fr; }
+  .page-skeleton .skl-bar-block { height: 160px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-skeleton .skl-bar { animation: none; background: var(--bg3); }
 }
 
 /* ─── Landscape mobile (orientation paysage sur mobile) ─── */
