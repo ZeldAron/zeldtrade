@@ -621,6 +621,24 @@ const Modal = (() => {
       retryBtn.style.display  = 'inline-flex';
 
     } catch (e) {
+      // v0.9.224 — Re-auth admin requise (session > 60 min) : message clair + bouton logout
+      if (e && typeof e.message === 'string' && e.message.includes('admin-reauth-required')) {
+        statusEl.innerHTML =
+          `<span style="color:var(--amber)">⚠ Re-connexion admin requise (session &gt;60 min).</span>` +
+          ` <a href="#" id="adminReauthBtn" style="color:var(--accent-l);text-decoration:underline">Se déconnecter pour se reconnecter →</a>`;
+        const lk = document.getElementById('adminReauthBtn');
+        if (lk) lk.addEventListener('click', async (ev) => {
+          ev.preventDefault();
+          try {
+            if (typeof Auth !== 'undefined' && Auth.signOut) await Auth.signOut();
+            else if (typeof firebase !== 'undefined' && firebase.auth) await firebase.auth().signOut();
+            location.reload();
+          } catch (err) { console.warn('[admin reauth] signOut failed', err); location.reload(); }
+        });
+        $('wBtnNext2').disabled = false;
+        retryBtn.style.display  = 'inline-flex';
+        return;
+      }
       statusEl.innerHTML = '';
       const _errSpan = document.createElement('span');
       _errSpan.style.color = 'var(--red)';
