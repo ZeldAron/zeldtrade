@@ -23,7 +23,15 @@
     '.pricing-card',
   ];
 
-  const els = document.querySelectorAll(TARGETS.join(','));
+  // v0.9.213 — exclure les éléments qui contiennent leurs propres animations infinies
+  // (la section #demo a des keyframes loop qui conflictent avec la transition fade-in
+  // du parent → flicker visible sur Firefox).
+  const EXCLUDE = new Set();
+  const demoSection = document.querySelector('#demo');
+  if (demoSection) EXCLUDE.add(demoSection);
+
+  const els = Array.from(document.querySelectorAll(TARGETS.join(',')))
+    .filter(el => !EXCLUDE.has(el));
   if (!els.length) return;
 
   els.forEach((el, i) => {
@@ -35,6 +43,10 @@
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
         entry.target.classList.add('lp-anim-in');
+        // v0.9.213 — clean will-change after animation completes (Firefox perf hint)
+        setTimeout(() => {
+          entry.target.style.willChange = 'auto';
+        }, 700);
         observer.unobserve(entry.target);
       }
     });
