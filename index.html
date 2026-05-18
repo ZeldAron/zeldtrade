@@ -415,7 +415,19 @@
       gap: 10px;
       justify-content: center;
       flex-wrap: wrap;
-      margin-bottom: 36px;
+      margin-bottom: 14px;
+    }
+    .hero-anchor {
+      font-size: 12px;
+      color: var(--accent-l);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-bottom: 28px;
+      padding: 6px 14px;
+      background: rgba(124, 58, 237, 0.08);
+      border: 1px solid rgba(124, 58, 237, 0.25);
+      border-radius: 999px;
+      display: inline-block;
     }
     .hero-trust {
       display: flex;
@@ -1298,6 +1310,157 @@
     .roadmap-done .roadmap-list li::before { color: #4ade80; }
     .roadmap-doing .roadmap-list li::before { color: var(--accent-l); }
     .roadmap-next .roadmap-list li::before { color: #f59e0b; }
+
+    /* ── Le calcul / Value (v0.9.214) ──────────────────────────────────── */
+    .value-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 1100px;
+      margin: 0 auto 36px;
+    }
+    @media (max-width: 900px) { .value-grid { grid-template-columns: 1fr; max-width: 520px; } }
+    .value-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 22px 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    .value-card-head {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .value-list { list-style: none; padding: 0; margin: 0; }
+    .value-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 13px;
+      color: var(--text2);
+    }
+    .value-list li + li { border-top: 1px solid rgba(255,255,255,0.04); }
+    .value-list li.value-us {
+      margin-top: 8px;
+      padding: 12px 14px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(244,114,182,0.08));
+      border: 1px solid rgba(124,58,237,0.35);
+      border-radius: 10px;
+      color: var(--accent-l);
+    }
+    .value-list li.value-us strong { color: #fff; }
+    .value-amount { font-family: ui-monospace, monospace; font-weight: 600; color: var(--muted); }
+    .value-list li.value-us .value-amount { color: var(--accent-l); }
+    .value-footnote {
+      margin-top: 12px;
+      font-size: 11.5px;
+      color: var(--muted2);
+      font-style: italic;
+      line-height: 1.4;
+    }
+    .value-card.value-card-roi {
+      background: linear-gradient(180deg, rgba(63,185,80,0.08) 0%, var(--bg2) 50%);
+      border-color: rgba(63,185,80,0.35);
+    }
+    .value-roi-big {
+      text-align: center;
+      padding: 16px 0;
+      margin: 8px 0;
+      border-radius: 10px;
+      background: rgba(63,185,80,0.06);
+    }
+    .value-roi-num {
+      font-size: 38px;
+      font-weight: 900;
+      color: #4ade80;
+      line-height: 1;
+      letter-spacing: -1.5px;
+    }
+    .value-roi-label {
+      font-size: 12.5px;
+      color: var(--text2);
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+    .value-roi-mini {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-top: 12px;
+    }
+
+    /* Bundle worth */
+    .value-bundle {
+      max-width: 820px;
+      margin: 0 auto;
+      background: var(--bg2);
+      border: 1.5px solid rgba(124,58,237,0.4);
+      border-radius: 16px;
+      padding: 26px 28px 22px;
+      box-shadow: 0 14px 40px -16px rgba(124,58,237,0.4);
+    }
+    .value-bundle-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .value-bundle-icon { font-size: 32px; line-height: 1; flex-shrink: 0; }
+    .value-bundle-head h3 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .value-bundle-head p { font-size: 12.5px; color: var(--muted); margin: 0; line-height: 1.5; }
+    .value-bundle-rows { display: flex; flex-direction: column; gap: 2px; }
+    .value-bundle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      font-size: 13px;
+      border-radius: 7px;
+    }
+    .value-bundle-row:nth-child(odd) { background: rgba(255,255,255,0.02); }
+    .value-bundle-feat { color: var(--text2); line-height: 1.4; }
+    .value-bundle-elsewhere { color: var(--muted); font-family: ui-monospace, monospace; white-space: nowrap; padding-left: 12px; }
+    .value-bundle-row.value-bundle-total {
+      margin-top: 12px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      background: transparent;
+    }
+    .value-bundle-row.value-bundle-total strong { color: var(--text); }
+    .value-bundle-row.value-bundle-us {
+      background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(244,114,182,0.10));
+      border: 1px solid rgba(124,58,237,0.4);
+      margin-top: 4px;
+    }
+    .value-bundle-row.value-bundle-us strong { color: #fff; }
+    .value-bundle-savings {
+      margin-top: 18px;
+      text-align: center;
+      padding: 14px;
+      background: rgba(63,185,80,0.10);
+      border: 1px solid rgba(63,185,80,0.35);
+      border-radius: 10px;
+      font-size: 14.5px;
+      color: #4ade80;
+      font-weight: 600;
+    }
+    .value-bundle-savings strong { color: #6ee7a8; font-size: 16px; }
+    @media (max-width: 560px) {
+      .value-bundle { padding: 22px 18px 18px; }
+      .value-bundle-head { gap: 12px; }
+      .value-bundle-icon { font-size: 26px; }
+      .value-bundle-head h3 { font-size: 15px; }
+      .value-bundle-row { padding: 10px 8px; font-size: 12px; }
+      .value-bundle-elsewhere { font-size: 11.5px; }
+    }
 
     /* ── Démo live animation (v0.9.209) ──────────────────────────────── */
     .demo-window {
@@ -2385,8 +2548,8 @@
         <a href="#demo" class="nav-link">Démo</a>
         <a href="#features" class="nav-link">Fonctionnalités</a>
         <a href="#vs" class="nav-link">Comparer</a>
+        <a href="#value" class="nav-link">ROI</a>
         <a href="#pricing" class="nav-link">Tarifs</a>
-        <a href="#faq" class="nav-link">FAQ</a>
         <a href="/app" class="btn btn-ghost btn-sm">Se connecter</a>
       </div>
       <button type="button" class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navLinks">
@@ -2414,6 +2577,9 @@
     <div class="hero-ctas">
       <a href="/app" class="btn btn-primary">Démarrer en 2 min →</a>
       <a href="#demo" class="btn btn-ghost">Voir la démo →</a>
+    </div>
+    <div class="hero-anchor">
+      ✓ 50 % moins cher que Tradervue · 62 % moins cher que TradeZella
     </div>
     <div class="hero-trust">
       <span class="hero-trust-item"><span class="hero-trust-dot"></span>🇫🇷 Made in France</span>
@@ -3173,6 +3339,96 @@
     </div>
   </section>
 
+  <!-- ─── Le calcul (v0.9.214) — ROI 0,50€/jour vs valeur ──────────────── -->
+  <section class="section" id="value">
+    <div class="section-eyebrow">Le calcul</div>
+    <h2 class="section-title">Pour <span class="title-accent">0,50 € par jour</span></h2>
+    <p class="section-sub">
+      Moins qu'un café. Si tu évites <strong>un seul breach</strong> grâce à ZeldTrade, tu rentabilises ton abonnement pour <strong>plusieurs années</strong>.
+    </p>
+
+    <div class="value-grid">
+      <!-- Comparison budget -->
+      <div class="value-card">
+        <div class="value-card-head">💰 Au quotidien</div>
+        <ul class="value-list">
+          <li><span class="value-item">Croissant boulangerie</span><span class="value-amount">1,20 €</span></li>
+          <li><span class="value-item">Café à emporter</span><span class="value-amount">2,50 €</span></li>
+          <li><span class="value-item">Bière au bar</span><span class="value-amount">6,00 €</span></li>
+          <li class="value-us"><span class="value-item"><strong>ZeldTrade Funded</strong></span><span class="value-amount"><strong>0,50 €</strong></span></li>
+        </ul>
+      </div>
+
+      <!-- Concurrence vs ZeldTrade -->
+      <div class="value-card">
+        <div class="value-card-head">📊 Vs concurrence</div>
+        <ul class="value-list">
+          <li><span class="value-item">TradeZella</span><span class="value-amount">35,80 €/mois</span></li>
+          <li><span class="value-item">Tradervue</span><span class="value-amount">26,60 €/mois</span></li>
+          <li><span class="value-item">Edgewonk</span><span class="value-amount">14,00 €/mois</span></li>
+          <li class="value-us"><span class="value-item"><strong>ZeldTrade Funded</strong></span><span class="value-amount"><strong>14,99 €/mois</strong></span></li>
+        </ul>
+        <div class="value-footnote">…et avec les seules règles prop firms FR vraiment intégrées</div>
+      </div>
+
+      <!-- ROI breach evitée -->
+      <div class="value-card value-card-roi">
+        <div class="value-card-head">🎯 ROI d'un seul breach évité</div>
+        <div class="value-roi-big">
+          <div class="value-roi-num">36 mois</div>
+          <div class="value-roi-label">d'abonnement Funded payés<br>= 1 breach Apex 50K évité (540 $)</div>
+        </div>
+        <div class="value-roi-mini">
+          Trailing drawdown calculé au tick + alerte distance to floor en temps réel = tu ne te fais plus surprendre.
+        </div>
+      </div>
+    </div>
+
+    <!-- Bundle worth -->
+    <div class="value-bundle">
+      <div class="value-bundle-head">
+        <span class="value-bundle-icon">📦</span>
+        <div>
+          <h3>Ce que tu obtiens pour 14,99 €/mois</h3>
+          <p>Si tu devais acheter chaque feature séparément ailleurs…</p>
+        </div>
+      </div>
+      <div class="value-bundle-rows">
+        <div class="value-bundle-row">
+          <span class="value-bundle-feat">🤖 IA Vision (analyse charts TradingView)</span>
+          <span class="value-bundle-elsewhere">~ 20 €/mois ailleurs</span>
+        </div>
+        <div class="value-bundle-row">
+          <span class="value-bundle-feat">🎯 Calcul trailing drawdown EOD précis 5 firms</span>
+          <span class="value-bundle-elsewhere">N'existe nulle part</span>
+        </div>
+        <div class="value-bundle-row">
+          <span class="value-bundle-feat">📊 Journal multi-comptes + groupes</span>
+          <span class="value-bundle-elsewhere">~ 15 €/mois</span>
+        </div>
+        <div class="value-bundle-row">
+          <span class="value-bundle-feat">📄 Export PDF + JSON RGPD + CSV</span>
+          <span class="value-bundle-elsewhere">~ 8 €/mois</span>
+        </div>
+        <div class="value-bundle-row">
+          <span class="value-bundle-feat">🧮 Calculateur fiscal micro-entrepreneur FR</span>
+          <span class="value-bundle-elsewhere">~ 5 €/mois</span>
+        </div>
+        <div class="value-bundle-row value-bundle-total">
+          <span class="value-bundle-feat"><strong>Total équivalent ailleurs</strong></span>
+          <span class="value-bundle-elsewhere"><strong>~ 48 €/mois</strong></span>
+        </div>
+        <div class="value-bundle-row value-bundle-us">
+          <span class="value-bundle-feat"><strong>Tu payes ZeldTrade Funded</strong></span>
+          <span class="value-bundle-elsewhere"><strong>14,99 €/mois</strong></span>
+        </div>
+        <div class="value-bundle-savings">
+          💸 Tu économises ~33 €/mois — soit <strong>396 €/an</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ─── Pricing (v0.9.198 — 3 cartes + toggle annuel + trust + Founding) ─ -->
   <section class="section" id="pricing">
     <div class="section-eyebrow">Tarifs</div>
@@ -3226,7 +3482,7 @@
           <span data-lp-price-yearly style="display:none">149 €<span class="price-suffix">/ an</span></span>
         </div>
         <div class="pricing-card-perday">
-          <span data-lp-price-monthly>soit 0,50 €/jour</span>
+          <span data-lp-price-monthly>soit 0,50 €/jour <strong style="color:#4ade80">— 50 % moins cher que Tradervue</strong></span>
           <span data-lp-price-yearly style="display:none;color:#4ade80;font-weight:600">12,42 €/mois — économie 30 €</span>
         </div>
         <ul class="pricing-features">
@@ -3354,7 +3610,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.213</span>
+      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.214</span>
     </div>
   </footer>
 
