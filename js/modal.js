@@ -355,6 +355,83 @@ const Modal = (() => {
     throw new Error(i18n.t('modal.groq.nomodel'));
   }
 
+  // ── Claude Vision via Cloud Function (fallback pour screenshots complexes) ──
+  // v0.9.222 — Gated server-side aux tiers Funded/Elite/Beta (Trader = Groq only).
+  async function analyzeWithClaude(imageB64, direction) {
+    const isLong = direction !== 'short';
+    // Même prompt que Groq (déjà optimisé v0.9.220)
+    const prompt =
+      `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart).\n` +
+      `This is a ${isLong ? 'LONG' : 'SHORT'} trade.\n\n` +
+      `STEP 1 — If the screenshot shows MULTIPLE chart panels side-by-side, FOCUS ONLY on the panel\n` +
+      `that contains visible ORDER LABELS (LMT, STP, SL, TP, OCO). Ignore other panels (volume profile,\n` +
+      `orderbook, reversal chart, footprint). Pick the 3 prices from THE SAME panel.\n\n` +
+      `STEP 2 — Only consider horizontal lines/boxes that have an ORDER LABEL next to them.\n` +
+      `Valid labels: "LMT", "STP", "STP LMT", "SL", "TP", "OCO", "Limit", "Stop", or a position icon\n` +
+      `(cart 🛒, briefcase 💼) with "Brut" or "P&L" or "USD".\n\n` +
+      `IGNORE: VPOC, VWAP, MA, EMA, SMA, Dynamic, Anchored lines; volume bars; live price ticker;\n` +
+      `right-axis labels with ⊕ symbol or HH:MM countdown; any horizontal line WITHOUT order label.\n\n` +
+      `Find EXACTLY 3 horizontal levels with order labels and assign by position:\n` +
+      `${isLong
+        ? `- TOP (highest price)    → tp1\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → sl`
+        : `- TOP (highest price)    → sl\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → tp1`}\n\n` +
+      `European format may use "," or " " (28 944,25 = 28944.25). Constraint: ${isLong ? 'sl < entry < tp1' : 'tp1 < entry < sl'}.\n` +
+      `Read EXACT prices from the right axis. Never invent. Use null if truly unreadable.\n\n` +
+      `Respond with ONLY this JSON on one line:\n{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER}`;
+
+    if (!_fbFunctions) throw new Error('Service IA indisponible — recharge la page.');
+    const turnstileToken = await _getTurnstileToken();
+    const callable = _fbFunctions.httpsCallable('analyzeChart');
+
+    let result;
+    try {
+      const resp = await callable({ provider: 'claude', model: 'claude-sonnet', prompt, imageB64, turnstileToken });
+      result = resp.data;
+    } catch (e) {
+      console.warn('[Claude via CF] error:', e.code, e.message);
+      if (e.code === 'functions/permission-denied' || e.code === 'permission-denied') {
+        // Tier insuffisant — déjà filtré côté client mais double safety
+        return null;
+      }
+      // Réseau ou autre → on retourne null, le client gardera le résultat Groq partiel
+      return null;
+    }
+
+    const text = result.choices?.[0]?.message?.content || '';
+    const jsonStr = (text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) || [])[1]
+                 || (text.match(/(\{[\s\S]*?\})/) || [])[1]
+                 || '';
+    if (!jsonStr) return null;
+
+    let parsed;
+    try { parsed = JSON.parse(jsonStr); } catch { return null; }
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
+
+    const out = {};
+    for (const key of ['entry', 'sl', 'tp1', 'tp2']) {
+      if (key in parsed) {
+        const v = parseFloat(parsed[key]);
+        if (!isNaN(v) && isFinite(v) && v > 0) out[key] = v;
+      }
+    }
+    // Tri direction-aware (même logique que Groq)
+    const triplet = [out.entry, out.sl, out.tp1];
+    const reordered = _sortLevelsByDirection(triplet, isLong);
+    if (reordered) {
+      out.entry = reordered.entry;
+      out.sl    = reordered.sl;
+      out.tp1   = reordered.tp1;
+    }
+    return out;
+  }
+
+  // Helper : check si le tier de l'user permet le fallback Claude (Funded+)
+  function _canUseClaudeFallback() {
+    if (typeof Store === 'undefined' || typeof Store.getTier !== 'function') return false;
+    const tier = Store.getTier();
+    return tier === 'funded' || tier === 'elite' || tier === 'beta';
+  }
+
   async function analyzeImage() {
     if (!capturedImage) return;
 
@@ -385,12 +462,31 @@ const Modal = (() => {
         return;
       }
 
-      const result = await analyzeWithGroq(capturedImage, null, direction);
+      let result = await analyzeWithGroq(capturedImage, null, direction);
       // Quota AI : enforced + incrementé côté serveur (Cloud Function via transaction).
       // Le client ne peut plus écrire dans aiUsage (rule Firestore bloque).
       // Refetch pour synchroniser canAnalyzeToday() côté client.
       Store.refreshAiUsage();
-      let { entry, sl, tp1 } = result;
+
+      // v0.9.222 — Fallback hybride Claude si Groq insuffisant + tier autorisé.
+      // Détecte si Groq a raté : < 3 valeurs valides détectées.
+      const _scoreResult = r => r ? ((r.entry ? 1 : 0) + (r.sl ? 1 : 0) + (r.tp1 ? 1 : 0)) : 0;
+      const groqScore = _scoreResult(result);
+      if (groqScore < 3 && _canUseClaudeFallback()) {
+        statusEl.innerHTML = `<span style="color:var(--accent-l)">🤖 Analyse approfondie via Claude…</span>`;
+        try {
+          const claudeResult = await analyzeWithClaude(capturedImage, direction);
+          // On garde Claude SI il fait mieux que Groq (score > ou égal)
+          if (claudeResult && _scoreResult(claudeResult) > groqScore) {
+            result = claudeResult;
+          }
+        } catch (e) {
+          console.warn('[Claude fallback] failed:', e && e.message);
+          // Continue silencieusement avec le résultat Groq partiel
+        }
+      }
+
+      let { entry, sl, tp1 } = result || {};
       entry = entry || null; sl = sl || null; tp1 = tp1 || null;
 
       // Complète avec le hint texte si valeurs manquantes
@@ -437,7 +533,25 @@ const Modal = (() => {
           }
         }
 
-        statusEl.innerHTML = `<span style="color:var(--green)">${i18n.t('modal.levels.detected')}</span>${missing}${warningHtml} <span style="color:var(--muted);font-size:10px">via Groq</span>`;
+        // v0.9.222 — Upsell Claude pour les Trader si Groq a raté (missing values).
+        // Funded/Elite ont déjà eu le fallback Claude automatique en amont.
+        let upsellHtml = '';
+        const _tier = (typeof Store !== 'undefined' && Store.getTier) ? Store.getTier() : 'trader';
+        if ((missing || warningHtml) && _tier === 'trader') {
+          upsellHtml = ` <a href="#" id="aiUpsellLink" style="color:var(--accent-l);font-size:11px;text-decoration:underline">Passe Funded pour analyse approfondie via Claude →</a>`;
+        }
+
+        statusEl.innerHTML = `<span style="color:var(--green)">${i18n.t('modal.levels.detected')}</span>${missing}${warningHtml}${upsellHtml} <span style="color:var(--muted);font-size:10px">via Groq</span>`;
+
+        const _upsellLink = document.getElementById('aiUpsellLink');
+        if (_upsellLink) {
+          _upsellLink.addEventListener('click', e => {
+            e.preventDefault();
+            Modal.close();
+            const offersBtn = document.querySelector('[data-page="offers"]');
+            if (offersBtn) offersBtn.click();
+          });
+        }
       }
 
       function renderEditablePills() {
