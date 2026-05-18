@@ -204,57 +204,38 @@ const Modal = (() => {
   // ── Groq Vision API (via Cloud Function — clé API jamais exposée au client) ──
   async function analyzeWithGroq(imageB64, _unusedApiKey, direction) {
     const isLong = direction !== 'short';
+    // v0.9.218 — Prompt simplifié (1500 → 500 chars). L'IA se perdait dans les
+    // 3 patterns. Approche directe : trouver les 3 prix horizontaux + assigner
+    // selon position (haut/milieu/bas), peu importe la couleur/label.
     const prompt =
-      `You are analyzing a TradingView screenshot. Direction: ${isLong ? 'LONG' : 'SHORT'}.\n` +
-      `Extract 3 price levels: entry, sl (stop loss), tp1 (take profit).\n` +
-      `CRITICAL: A complete trade ALWAYS has 3 levels. If you only see 2, look HARDER for the 3rd —\n` +
-      `it might be a thin horizontal line, a price label on the right axis, or a small rectangle.\n` +
-      `Common pattern on TradingView: an Order Entry line (often BLUE/teal STP/LMT label), a Take Profit\n` +
-      `line (label TP or LMT, ${isLong ? 'ABOVE' : 'BELOW'} entry), a Stop Loss line (label SL or STP, ${isLong ? 'BELOW' : 'ABOVE'} entry).\n\n` +
+      `You are reading a trading chart screenshot (TradingView, NinjaTrader, etc.).\n` +
+      `This is a ${isLong ? 'LONG' : 'SHORT'} trade — find EXACTLY 3 horizontal price levels on the chart.\n\n` +
 
-      `Try patterns in this PRIORITY order. Use the FIRST pattern that matches.\n\n` +
+      `These 3 levels can be:\n` +
+      `- Horizontal lines drawn on the chart\n` +
+      `- Colored boxes/rectangles\n` +
+      `- Price labels on the right axis (read the EXACT number shown)\n` +
+      `- Labels with text like "LMT", "STP", "STP LMT", "SL", "TP", "OCO"\n\n` +
 
-      `═══ PATTERN A — ORDER PANEL (highest priority) ═══\n` +
-      `A floating box/popup titled "Position longue", "Position courte", "Long Position", "Short Position",\n` +
-      `or any "Order ticket" with rows of labels and numeric inputs.\n` +
-      `  entry = number in "Prix d'entrée" / "Entry Price" row\n` +
-      `  sl    = number in "Prix" row inside "NIVEAU DU STOP" / "STOP" / "Stop Loss" section\n` +
-      `  tp1   = number in "Prix" row inside "NIVEAU DE PROFIT" / "PROFIT" / "Take Profit" section\n` +
-      `Ignore: "Ticks", "Taille du lot", "Risque", "Effet de levier", "Taille du compte".\n\n` +
+      `Assign them by position on the chart:\n` +
+      `${isLong
+        ? `- TOP (highest price)    → tp1\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → sl`
+        : `- TOP (highest price)    → sl\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → tp1`}\n\n` +
 
-      `═══ PATTERN B — NATIVE TRADINGVIEW POSITION LINES ═══\n` +
-      `Horizontal colored lines drawn natively by TradingView (NOT user-drawn rectangles).\n` +
-      `Look for small text badges on the LEFT side of the chart with format like:\n` +
-      `  • "SL  -260.00 USD" or "SL -123 €" → this is the STOP LOSS line (badge usually red/orange)\n` +
-      `  • "TP  1935.00 USD" or "TP +500 €" → this is the TAKE PROFIT line (badge usually green/blue)\n` +
-      `  • "LIMIT", "ENTRY" or just a price → entry line\n` +
-      `For each badge, follow its horizontal line all the way to the RIGHT AXIS and read the PRICE label there.\n` +
-      `  sl    = price on right axis aligned with the SL badge's horizontal line\n` +
-      `  tp1   = price on right axis aligned with the TP badge's horizontal line\n` +
-      `  entry = price on right axis aligned with the entry/limit badge's line (or null if not visible)\n` +
-      `The badges show monetary P&L (USD/EUR), NOT prices. Always get the PRICE from the right axis.\n\n` +
+      `IGNORE:\n` +
+      `- The current live price ticker (often top-left, "B:", "C:", "Ch:" prices)\n` +
+      `- Right-axis labels with ⊕ symbol or countdown timer (HH:MM format)\n` +
+      `- Volume bars, indicators, MA lines\n\n` +
 
-      `═══ PATTERN C — USER-DRAWN ZONES ═══\n` +
-      `Colored rectangles/shaded zones drawn by the user on the chart, plus colored price labels on the right axis.\n` +
-      `  • BLUE zone = entry. Read the right-axis label aligned with the blue zone.\n` +
-      `  • RED zone or red horizontal line = sl. Read the right-axis label aligned with it.\n` +
-      `  • tp1 = the colored right-axis label that is ${isLong ? 'HIGHEST (furthest up)' : 'LOWEST (furthest down)'}, far from entry.\n\n` +
-
-      `═══ UNIVERSAL RULES ═══\n` +
-      `  • NEVER use the live price ticker (top-left box like "/MGC", "/ES", "ENQM26", "B:", "C:", "Ch:").\n` +
-      `  • NEVER use ANY label on the right axis that contains the ⊕ symbol, a "+" icon, OR a countdown timer\n` +
-      `    (HH:MM format like "04:34" right next to the price — this is the current bar timer, not a level).\n` +
-      `    These are TradingView's CURRENT PRICE and CURRENT BAR indicators, NOT user-defined trade levels.\n` +
-      `  • NEVER invent numbers. Copy EXACTLY digit by digit from the chart.\n` +
-      `  • European number format may use "," or " " thousands separator (29 741,50 = 29741.50).\n` +
-      `  • Constraint: ${isLong ? 'sl < entry < tp1' : 'tp1 < entry < sl'} (if entry is null this is skipped).\n` +
-      `  • If a value is unreadable, ambiguous, or absent — return null. DO NOT GUESS.\n` +
-      `  • If NO pattern A/B/C clearly matches the screenshot, return {"entry":null,"sl":null,"tp1":null}.\n` +
-      `    It is better to return null than to invent wrong values.\n\n` +
+      `RULES:\n` +
+      `- A complete trade ALWAYS has 3 levels. Look HARDER if you only see 2.\n` +
+      `- European format may use "," or " " (28 944,25 = 28944.25)\n` +
+      `- Never invent numbers. Copy EXACTLY from the chart.\n` +
+      `- Constraint: ${isLong ? 'sl < entry < tp1' : 'tp1 < entry < sl'}\n` +
+      `- Use null ONLY if a value is truly unreadable (avoid null — try harder first)\n\n` +
 
       `Respond with ONLY this JSON on one line:\n` +
-      `{"entry":0.00,"sl":0.00,"tp1":0.00}\n` +
-      `Use null for any value you cannot read with certainty.`;
+      `{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER}`;
 
     // v0.9.217 — Retiré llama-3.2-vision-preview (deprecated par Groq, retourne 404).
     // Llama 4 Scout/Maverick sont les modèles vision officiels en GA.
@@ -330,7 +311,8 @@ const Modal = (() => {
         for (const key of ['entry', 'sl', 'tp1', 'tp2']) {
           if (key in parsed) {
             const v = parseFloat(parsed[key]);
-            if (!isNaN(v) && isFinite(v)) result[key] = v;
+            // v0.9.218 — Filtre les 0 et négatifs (l'IA peut retourner 0 au lieu de null)
+            if (!isNaN(v) && isFinite(v) && v > 0) result[key] = v;
           }
         }
         // v0.9.215 — Anti confusion couleur : si on a Entry+SL+TP1, on re-trie
