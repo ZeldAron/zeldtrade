@@ -188,6 +188,19 @@ const Modal = (() => {
     });
   }
 
+  // ── Helper : trie 3 niveaux de prix et les assigne selon la direction ────────
+  // Évite que l'IA confonde Entry/SL/TP si elle interprète mal les couleurs
+  // (les utilisateurs peuvent personnaliser leurs zones d'ordre TradingView).
+  // Logique : pour un LONG → min=SL, mid=Entry, max=TP. Inverse pour SHORT.
+  function _sortLevelsByDirection(values, isLong) {
+    const nums = values.filter(v => typeof v === 'number' && !isNaN(v) && isFinite(v));
+    if (nums.length < 3) return null;
+    const sorted = [...nums].sort((a, b) => a - b);
+    const min = sorted[0], mid = sorted[Math.floor(sorted.length / 2)], max = sorted[sorted.length - 1];
+    if (isLong) return { sl: min, entry: mid, tp1: max };
+    return { tp1: min, entry: mid, sl: max };
+  }
+
   // ── Groq Vision API (via Cloud Function — clé API jamais exposée au client) ──
   async function analyzeWithGroq(imageB64, _unusedApiKey, direction) {
     const isLong = direction !== 'short';
@@ -295,12 +308,9 @@ const Modal = (() => {
         // Fallback : extraire les nombres directement du texte
         const nums = [...text.matchAll(/\b(\d{4,6}(?:\.\d+)?)\b/g)].map(m => parseFloat(m[1]));
         if (nums.length >= 3) {
-          nums.sort((a, b) => a - b);
-          return {
-            sl:    nums[0],
-            entry: nums[Math.floor(nums.length / 2)],
-            tp1:   nums[nums.length - 1],
-          };
+          // v0.9.215 — Tri direction-aware (corrige LONG vs SHORT)
+          const reordered = _sortLevelsByDirection(nums.slice(0, 3), isLong);
+          if (reordered) return reordered;
         }
         continue;
       }
@@ -314,6 +324,17 @@ const Modal = (() => {
             const v = parseFloat(parsed[key]);
             if (!isNaN(v) && isFinite(v)) result[key] = v;
           }
+        }
+        // v0.9.215 — Anti confusion couleur : si on a Entry+SL+TP1, on re-trie
+        // et réassigne selon la direction (TP > Entry > SL pour LONG, inverse pour SHORT).
+        // Évite que l'IA inverse Entry/TP quand TradingView affiche 2 zones rouges
+        // (OCO take-profit + stop-loss avec le même style de couleur).
+        const triplet = [result.entry, result.sl, result.tp1];
+        const reordered = _sortLevelsByDirection(triplet, isLong);
+        if (reordered) {
+          result.entry = reordered.entry;
+          result.sl    = reordered.sl;
+          result.tp1   = reordered.tp1;
         }
         if (result.entry || result.sl || result.tp1) return result;
       } catch { continue; }
