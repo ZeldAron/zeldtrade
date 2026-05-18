@@ -208,7 +208,7 @@ const Modal = (() => {
     // v0.9.220 — Prompt insiste sur les LABELS d'ORDRES (LMT/STP/SL/TP/OCO)
     // + gestion des screenshots split-screen (Sierra Chart, multi-monitor setup).
     const prompt =
-      `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart).\n` +
+      `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart, MT4/MT5, cTrader, ThinkorSwim, Quantower, ATAS, or similar platforms).\n` +
       `This is a ${isLong ? 'LONG' : 'SHORT'} trade.\n\n` +
 
       `STEP 1 — If the screenshot shows MULTIPLE chart panels side-by-side (Sierra Chart split-screen,\n` +
@@ -362,7 +362,7 @@ const Modal = (() => {
     const isLong = direction !== 'short';
     // Même prompt que Groq (déjà optimisé v0.9.220)
     const prompt =
-      `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart).\n` +
+      `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart, MT4/MT5, cTrader, ThinkorSwim, Quantower, ATAS, or similar platforms).\n` +
       `This is a ${isLong ? 'LONG' : 'SHORT'} trade.\n\n` +
       `STEP 1 — If the screenshot shows MULTIPLE chart panels side-by-side, FOCUS ONLY on the panel\n` +
       `that contains visible ORDER LABELS (LMT, STP, SL, TP, OCO). Ignore other panels (volume profile,\n` +
@@ -377,7 +377,7 @@ const Modal = (() => {
         ? `- TOP (highest price)    → tp1\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → sl`
         : `- TOP (highest price)    → sl\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → tp1`}\n\n` +
       `European format may use "," or " " (28 944,25 = 28944.25). Constraint: ${isLong ? 'sl < entry < tp1' : 'tp1 < entry < sl'}.\n` +
-      `Read EXACT prices from the right axis. Never invent. Use null if truly unreadable.\n\n` +
+      `Read EXACT prices from the right axis. Prefer giving an approximate number from the visible axis over null. Return null ONLY if no horizontal line/box with a price label is visible at all.\n\n` +
       `Respond with ONLY this JSON on one line:\n{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER}`;
 
     if (!_fbFunctions) throw new Error('Service IA indisponible — recharge la page.');

@@ -1765,6 +1765,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 
 .login-card {
   width: 340px;
+  max-width: calc(100vw - 24px);
   background: rgba(20,20,24,0.92);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 16px;
@@ -3249,6 +3250,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .contact-panel {
   position: absolute; bottom: 64px; right: 0;
   width: 320px;
+  max-width: calc(100vw - 32px);
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 16px;
@@ -4439,6 +4441,24 @@ img { -webkit-user-drag: none; }
 
   /* Bouton "Nouveau trade" reste accessible (sticky bottom) */
   .btn-new-trade-wrap { padding: 8px 12px; }
+
+  /* v0.9.227 — Login card mobile : padding réduit pour gagner de l'espace */
+  .login-card { padding: 28px 22px 24px; gap: 16px; }
+  .login-title { font-size: 18px; }
+
+  /* v0.9.227 — Touch targets ≥ 44px (Apple HIG / WCAG AAA) */
+  .btn-primary, .btn-secondary, .btn-ghost, .btn-danger,
+  .topbar-btn, .nav-item, .dir-btn, .pricing-cta,
+  .modal-btn, .wiz-nav-btn, .contact-btn {
+    min-height: 44px;
+  }
+
+  /* v0.9.227 — Wizard drop zone touch target plus généreux */
+  .wizard-drop-zone {
+    min-height: 110px !important;
+    padding: 16px 12px !important;
+  }
+  .wizard-drop-zone .drop-icon { width: 32px; height: 32px; }
 }
 
 /* ─── Breakpoint 360px : iPhone SE 1ère gen, très petits Android ─── */
