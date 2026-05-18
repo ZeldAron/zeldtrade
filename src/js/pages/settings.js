@@ -1315,9 +1315,11 @@
     function updateGroqStatus() {
       const statusEl = $('groqKeyStatus');
       if (!statusEl) return;
-      const key = Store.getGroqKey();
-      statusEl.textContent = key ? (t('set.groq.ok') || '★ IA active') : (t('set.groq.admin') || 'Clé non configurée — contactez l\'admin');
-      statusEl.style.color = key ? 'var(--green)' : 'var(--muted)';
+      // v0.9.229 : la clé IA est gérée côté serveur (Firebase Secret Manager).
+      // L'IA est toujours active pour tous les users, indépendamment du tier
+      // (le quota par tier est appliqué côté Cloud Function).
+      statusEl.textContent = t('set.groq.ok') || '✓ IA active';
+      statusEl.style.color = 'var(--green)';
     }
     updateGroqStatus();
     window.addEventListener('store:groqReady', updateGroqStatus);

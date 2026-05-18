@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.229',
+      date: '2026-05-19',
+      time: '18:30',
+      tags: ['fix', 'ux'],
+      title: 'Réglages → IA : retrait du faux message "contactez l\'admin"',
+      titleEn: 'Settings → AI: removed misleading "contact admin" message',
+      items: [
+        { type: 'fix', text: 'Le panneau Intelligence Artificielle des Réglages affichait à tort "Aucune clé IA configurée — contactez l\'administrateur" alors que l\'IA est incluse dans tous les plans et gérée côté serveur. Message remplacé par : "✓ IA active — incluse dans ton plan, rien à configurer".', textEn: 'The AI panel in Settings wrongly displayed "No AI key configured — contact admin" while AI is included in all plans and managed server-side. Replaced with: "✓ AI active — included in your plan, nothing to configure".' },
+      ],
+    },
+    {
       version: '0.9.228',
       date: '2026-05-19',
       time: '18:00',
