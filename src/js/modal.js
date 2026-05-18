@@ -7,6 +7,7 @@ const Modal = (() => {
   let direction     = null;    // 'long' | 'short'
   let capturedImage = null;    // base64
   let parsedTrade   = null;    // { entry, sl, tp1, tp2, tp3, instrument }
+  let _forceClaude  = false;   // v0.9.223 — set par "Réanalyser" pour forcer Claude direct
   let capital       = 50000;
   let feePerSide    = 2.14;
   let feeTakerPct   = null;  // v0.9.190 : null = trade non-crypto, sinon % (ex: 0.05)
@@ -462,27 +463,53 @@ const Modal = (() => {
         return;
       }
 
-      let result = await analyzeWithGroq(capturedImage, null, direction);
-      // Quota AI : enforced + incrementé côté serveur (Cloud Function via transaction).
-      // Le client ne peut plus écrire dans aiUsage (rule Firestore bloque).
-      // Refetch pour synchroniser canAnalyzeToday() côté client.
-      Store.refreshAiUsage();
-
-      // v0.9.222 — Fallback hybride Claude si Groq insuffisant + tier autorisé.
-      // Détecte si Groq a raté : < 3 valeurs valides détectées.
+      // v0.9.223 — Force Claude direct si l'user clique "Réanalyser" (opt-in fallback explicite).
+      // Sinon route normale : Groq d'abord + fallback Claude auto si Groq raté.
       const _scoreResult = r => r ? ((r.entry ? 1 : 0) + (r.sl ? 1 : 0) + (r.tp1 ? 1 : 0)) : 0;
-      const groqScore = _scoreResult(result);
-      if (groqScore < 3 && _canUseClaudeFallback()) {
+      const _isAberrantTrade = (r) => {
+        if (!r || !r.entry || !r.sl || !r.tp1) return false;
+        const risk   = Math.abs(Number(r.entry) - Number(r.sl));
+        const reward = Math.abs(Number(r.tp1) - Number(r.entry));
+        if (risk < 0.5 || reward < 0.5) return true; // écart trop petit = erreur lecture digit
+        const rr = reward / risk;
+        return rr < 0.2 || rr > 15;
+      };
+
+      let result;
+      if (_forceClaude && _canUseClaudeFallback()) {
+        // Réanalyse forcée → Claude direct sans passer par Groq
         statusEl.innerHTML = `<span style="color:var(--accent-l)">🤖 Analyse approfondie via Claude…</span>`;
         try {
-          const claudeResult = await analyzeWithClaude(capturedImage, direction);
-          // On garde Claude SI il fait mieux que Groq (score > ou égal)
-          if (claudeResult && _scoreResult(claudeResult) > groqScore) {
-            result = claudeResult;
-          }
+          result = await analyzeWithClaude(capturedImage, direction);
         } catch (e) {
-          console.warn('[Claude fallback] failed:', e && e.message);
-          // Continue silencieusement avec le résultat Groq partiel
+          console.warn('[Claude direct] failed:', e && e.message);
+          result = null;
+        }
+        Store.refreshAiUsage();
+        _forceClaude = false; // reset pour la prochaine analyse
+      } else {
+        // Route normale : Groq d'abord
+        result = await analyzeWithGroq(capturedImage, null, direction);
+        Store.refreshAiUsage();
+
+        // Fallback Claude si Groq insuffisant OU résultat aberrant (R:R cassé)
+        const groqScore   = _scoreResult(result);
+        const groqAberrant = _isAberrantTrade(result);
+        const groqBad     = groqScore < 3 || groqAberrant;
+        if (groqBad && _canUseClaudeFallback()) {
+          statusEl.innerHTML = `<span style="color:var(--accent-l)">🤖 Analyse approfondie via Claude…</span>`;
+          try {
+            const claudeResult = await analyzeWithClaude(capturedImage, direction);
+            // On garde Claude SI il fait mieux (score plus haut OU non-aberrant)
+            const claudeScore = _scoreResult(claudeResult);
+            const claudeAberrant = _isAberrantTrade(claudeResult);
+            if (claudeResult && (claudeScore > groqScore || (claudeScore === groqScore && !claudeAberrant && groqAberrant))) {
+              result = claudeResult;
+            }
+          } catch (e) {
+            console.warn('[Claude fallback] failed:', e && e.message);
+            // Continue silencieusement avec le résultat Groq partiel
+          }
         }
       }
 
@@ -1286,7 +1313,12 @@ const Modal = (() => {
       }
       goToStep(1);
     });
-    $('wBtnRetry').addEventListener('click', analyzeImage);
+    // v0.9.223 — "Réanalyser" force Claude direct (skip Groq) si tier le permet.
+    // Trader → relance Groq (pas accès Claude). Funded/Elite/Beta → Claude direct.
+    $('wBtnRetry').addEventListener('click', () => {
+      if (_canUseClaudeFallback()) _forceClaude = true;
+      analyzeImage();
+    });
     $('wTextHint').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); analyzeImage(); }
     });
