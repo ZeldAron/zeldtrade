@@ -246,16 +246,16 @@ document.addEventListener('DOMContentLoaded', () => {
       btnCheck.textContent = (i18n.t && i18n.t('veg.checking')) || 'Vérification…';
       status.textContent = '';
       const v = await Auth.checkEmailVerified();
-      btnCheck.disabled = false;
-      btnCheck.textContent = original;
       if (v.verified) {
-        gate.style.display = 'none';
-        // Récupère le user actuel pour relancer le flow
-        const current = Auth.getCurrentUser ? Auth.getCurrentUser() : null;
-        const userObj = current || { id: 'self', username: '' };
-        showLoader(userObj.username || '');
-        setTimeout(() => launchApp(userObj), 800);
+        // v0.9.234 fix : reload full au lieu de relancer manuellement launchApp().
+        // L'ancien flow appelait launchApp() avec un user fake → freeze car
+        // appLaunched déjà true depuis la session précédente / state incohérent.
+        status.style.color = 'var(--green)';
+        status.textContent = (i18n.t && i18n.t('veg.success')) || '✓ Email vérifié — chargement…';
+        setTimeout(() => { window.location.reload(); }, 400);
       } else {
+        btnCheck.disabled = false;
+        btnCheck.textContent = original;
         status.style.color = 'var(--amber)';
         status.textContent = (i18n.t && i18n.t('veg.notyet')) || 'Pas encore vérifié — clique sur le lien dans ta boîte mail (vérifie les spams).';
       }
