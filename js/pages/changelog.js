@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.239',
+      date: '2026-05-20',
+      time: '00:30',
+      tags: ['feature', 'ux'],
+      title: 'Mode clair / sombre — toggle dans Réglages',
+      titleEn: 'Light / dark mode — toggle in Settings',
+      items: [
+        { type: 'feature', text: '**Nouveau : choix du thème** dans Réglages → Apparence. 3 options : **Auto** (suit ton macOS/Windows/iOS/Android), **Sombre** (le défaut), **Clair** (fond blanc épuré).', textEn: '**New: theme choice** in Settings → Appearance. 3 options: **Auto** (follows your macOS/Windows/iOS/Android), **Dark** (default), **Light** (clean white background).' },
+        { type: 'feature', text: 'Le thème est mémorisé entre les sessions et appliqué instantanément au chargement (pas de flash dark→light au démarrage).', textEn: 'Theme is remembered between sessions and applied instantly on load (no dark→light flash on startup).' },
+        { type: 'feature', text: 'Le mode Auto réagit en temps réel si tu changes le thème système (ex : macOS Sombre auto à 19h) — pas besoin de recharger l\'app.', textEn: 'Auto mode reacts in real-time if you change the system theme — no need to reload.' },
+      ],
+    },
+    {
       version: '0.9.238',
       date: '2026-05-20',
       time: '00:15',
