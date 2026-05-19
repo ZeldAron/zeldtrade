@@ -1275,6 +1275,15 @@
 
   let _settingsBound = false;
 
+  // v0.9.239 : sync visuel du toggle thème (3 boutons auto/dark/light)
+  function _refreshThemeToggle() {
+    if (typeof Theme === 'undefined') return;
+    const current = Theme.get();
+    document.querySelectorAll('#themeToggleGroup .theme-btn').forEach(btn => {
+      btn.classList.toggle('is-active', btn.dataset.themeChoice === current);
+    });
+  }
+
   UI.initSettings = function () {
     try { renderGroupsSettings(); }    catch(e) { console.error('[Settings] groups error:', e); }
     try { renderMyAccountsSettings(); } catch(e) { console.error('[Settings] accounts error:', e); }
@@ -1298,6 +1307,7 @@
 
     if (_settingsBound) {
       updateGroqStatus();
+      _refreshThemeToggle();
       return;
     }
     _settingsBound = true;
@@ -1309,6 +1319,18 @@
         document.querySelectorAll('[data-settings-pane]').forEach(p => { p.style.display = 'none'; });
         btn.classList.add('active');
         document.querySelector(`[data-settings-pane="${btn.dataset.settingsTab}"]`).style.display = '';
+      });
+    });
+
+    // v0.9.239 : toggle thème (auto / dark / light)
+    _refreshThemeToggle();
+    document.querySelectorAll('#themeToggleGroup .theme-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const choice = btn.dataset.themeChoice;
+        if (typeof Theme !== 'undefined' && Theme.set) {
+          Theme.set(choice);
+          _refreshThemeToggle();
+        }
       });
     });
 
