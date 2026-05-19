@@ -63,18 +63,19 @@
    ═══════════════════════════════════════════════════════════════════════════════ */
 [data-theme="light"] {
   /* Surfaces — gris très légèrement bleutés (slate-50 / slate-100 vibes).
+     v0.9.243 : bg2 un poil plus foncé pour mieux contraster avec bg3 blanc
      bg  = sidebar / header (un poil plus foncé que bg2 pour différencier)
-     bg2 = main content background (le plus doux, "page")
-     bg3 = cards, inputs (blanc cassé)
+     bg2 = main content background ("page", légèrement teinté)
+     bg3 = cards, inputs (blanc pur sur fond teinté)
      bg4 = chips, badges hover, états actifs */
-  --bg:        #eef2f7;       /* slate-100 légèrement bleuté (sidebar) */
-  --bg2:       #f6f8fb;       /* slate-50 (main content) */
-  --bg3:       #ffffff;       /* cards, inputs (blanc pur sur fond gris) */
-  --bg4:       #e6ebf2;       /* chips, badges, hover */
+  --bg:        #e4eaf2;       /* slate-200 sidebar */
+  --bg2:       #eef2f7;       /* slate-100 main content (différent de bg3) */
+  --bg3:       #ffffff;       /* cards, inputs */
+  --bg4:       #dde4ed;       /* chips, badges, hover */
 
-  /* Borders : très subtiles, slate-200/300 avec alpha pour fondu */
-  --border:    rgba(15, 23, 42, 0.07);   /* slate-900 7% */
-  --border2:   rgba(15, 23, 42, 0.13);
+  /* Borders : v0.9.243 → plus marquées pour relief sur fond clair */
+  --border:    rgba(15, 23, 42, 0.10);   /* slate-900 10% (était 7%) */
+  --border2:   rgba(15, 23, 42, 0.16);
 
   /* Texte : slate-900 (pas pur noir → moins agressif) */
   --text:      #0f172a;
@@ -100,12 +101,12 @@
   --pink:       #db2777;       /* rose-600 */
   --cyan:       #0891b2;
 
-  /* v0.9.242 : surfaces sidebar / pill en light mode */
-  --sidebar-bg:  linear-gradient(180deg, #e9eef5 0%, #eef2f7 100%);
-  --pill-bg:     rgba(15,23,42,0.04);
-  --pill-border: rgba(15,23,42,0.08);
-  --hover-bg:    rgba(15,23,42,0.05);
-  --active-bg:   rgba(124,58,237,0.12);
+  /* v0.9.243 : surfaces sidebar / pill en light mode (alignées sur --bg/--bg4) */
+  --sidebar-bg:  linear-gradient(180deg, #dee5ef 0%, #e8edf4 100%);
+  --pill-bg:     rgba(15,23,42,0.05);
+  --pill-border: rgba(15,23,42,0.10);
+  --hover-bg:    rgba(15,23,42,0.06);
+  --active-bg:   rgba(124,58,237,0.14);
 
   color-scheme: light;
 }
@@ -123,8 +124,8 @@
   background: rgba(15, 23, 42, 0.5);
 }
 
-/* Cards / surfaces principales : ajout d'une ombre très subtile pour
-   différencier de l'arrière-plan (Linear / Notion style) */
+/* Cards / surfaces principales : ombres v0.9.243 plus prononcées pour relief
+   visible sur fond clair (Linear / Notion / Vercel style). */
 [data-theme="light"] .metric-card,
 [data-theme="light"] .info-card,
 [data-theme="light"] .settings-section,
@@ -139,7 +140,8 @@
 [data-theme="light"] .dash-empty,
 [data-theme="light"] .page-section,
 [data-theme="light"] .ico-btn {
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.07), 0 4px 12px rgba(15, 23, 42, 0.05);
+  border: 1px solid var(--border);
 }
 
 /* Hover state sur les cards interactives — léger lift */
@@ -198,10 +200,42 @@
   box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25), 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-/* Chips de filtre, segments : bg4 hover plus marqué */
+/* v0.9.243 : Chips/segments — fond bg2 sur container (pour les distinguer
+   du card blanc parent), border marquée, hover bg4 plus prononcé. */
+[data-theme="light"] .seg-control {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
 [data-theme="light"] .filter-chip:hover,
 [data-theme="light"] .seg-btn:hover {
   background: var(--bg4);
+  color: var(--text);
+}
+[data-theme="light"] .filter-chip,
+[data-theme="light"] .seg-btn {
+  color: var(--text);     /* texte plus foncé que --muted pour lisibilité */
+}
+[data-theme="light"] .filter-chip.active,
+[data-theme="light"] .seg-btn.active {
+  background: rgba(124,58,237,0.16);
+  color: var(--accent-d);
+}
+
+/* v0.9.243 : Recherche topbar — fond bg3 contrasté avec border marquée */
+[data-theme="light"] .search-wrap {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+}
+
+/* v0.9.243 : Badges (LONG/SHORT, Gain/Perte) — borders + fonds saturés
+   pour qu'ils restent lisibles sur background clair */
+[data-theme="light"] .trade-dir-badge,
+[data-theme="light"] .trade-outcome-badge,
+[data-theme="light"] .dir-badge,
+[data-theme="light"] .badge {
+  border: 1px solid currentColor;
+  font-weight: 600;
 }
 
 /* Loader / skeleton shimmer adapté light mode (vu sombre sur clair sinon) */
