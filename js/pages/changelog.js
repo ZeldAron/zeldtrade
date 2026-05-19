@@ -5,6 +5,22 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.238',
+      date: '2026-05-20',
+      time: '00:15',
+      tags: ['ux', 'feature'],
+      title: '6 améliorations UX : toasts, validation live, raccourcis, persistance',
+      titleEn: '6 UX improvements: toasts, live validation, shortcuts, persistence',
+      items: [
+        { type: 'ux', text: 'Toasts en file d\'attente : plusieurs messages d\'erreur ou de confirmation qui arrivent en rafale sont désormais affichés successivement (2,5s chacun) au lieu de s\'écraser. Tu rates moins d\'infos.', textEn: 'Toasts queued: multiple error/confirm messages coming in rapid succession are now displayed one after another (2.5s each) instead of overwriting each other.' },
+        { type: 'ux', text: 'Validation en temps réel à l\'inscription : email, pseudo, mot de passe et confirmation bordent en vert si valides, rouge si invalides — pendant que tu tapes. Plus besoin de soumettre pour découvrir une erreur.', textEn: 'Live validation on signup: email, username, password, and confirmation get a green border when valid, red when invalid — as you type.' },
+        { type: 'feature', text: 'Nouveaux raccourcis clavier : **⌘+K** focus la recherche journal · **?** ouvre une cheatsheet des raccourcis. (⌘+N existait déjà pour Nouveau trade.)', textEn: 'New keyboard shortcuts: **⌘+K** focus journal search · **?** opens a shortcuts cheatsheet. (⌘+N already existed for New trade.)' },
+        { type: 'ux', text: 'Persistance des filtres Journal : le filtre (Win/Loss/BE/Open) et la recherche sont mémorisés entre les sessions. Tu retrouves ta vue exactement où tu l\'avais laissée.', textEn: 'Journal filter persistence: filter (Win/Loss/BE/Open) and search query are remembered between sessions.' },
+        { type: 'ux', text: 'Empty state Journal amélioré : quand tu n\'as aucun trade, un bouton « + Nouveau trade » apparaît directement. Quand tu as filtré sans résultat, un bouton « Effacer les filtres » s\'affiche.', textEn: 'Improved Journal empty state: when no trades, a "+ New trade" button appears directly. When filtered with no results, a "Clear filters" button is shown.' },
+        { type: 'ux', text: 'Transition fade-in subtile au changement de page (Journal ↔ Dashboard ↔ Analytics…). Effet discret, respecte `prefers-reduced-motion`.', textEn: 'Subtle fade-in transition when switching pages. Discreet, respects `prefers-reduced-motion`.' },
+      ],
+    },
+    {
       version: '0.9.237',
       date: '2026-05-19',
       time: '23:55',

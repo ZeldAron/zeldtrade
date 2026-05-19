@@ -41,7 +41,62 @@ document.addEventListener('DOMContentLoaded', () => {
     ['loginError','registerError','forgotError'].forEach(id => {
       const el = $(id); if (el) { el.textContent = ''; el.style.color = ''; }
     });
+    // v0.9.238 : reset visual validation cues sur les inputs du signup
+    ['regEmail','regPassword','regPasswordConfirm','regUsername'].forEach(id => {
+      const el = $(id); if (el) el.classList.remove('input-valid', 'input-invalid');
+    });
   }
+
+  // v0.9.238 — validation temps réel sur signup (visuel uniquement, le check
+  // côté serveur reste autoritaire). Borde vert si valide, rouge si invalide.
+  function _setupLiveValidation() {
+    function mark(el, valid) {
+      if (!el) return;
+      el.classList.toggle('input-valid',   valid === true);
+      el.classList.toggle('input-invalid', valid === false);
+    }
+    const emailEl = $('regEmail');
+    if (emailEl && !emailEl.dataset.liveBound) {
+      emailEl.dataset.liveBound = '1';
+      emailEl.addEventListener('input', () => {
+        const v = emailEl.value.trim();
+        if (!v) return mark(emailEl, null);
+        mark(emailEl, /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v));
+      });
+    }
+    const userEl = $('regUsername');
+    if (userEl && !userEl.dataset.liveBound) {
+      userEl.dataset.liveBound = '1';
+      userEl.addEventListener('input', () => {
+        const v = userEl.value.trim();
+        if (!v) return mark(userEl, null);
+        mark(userEl, /^[a-zA-Z0-9_-]{2,30}$/.test(v));
+      });
+    }
+    const pwdEl = $('regPassword');
+    const pwdConfEl = $('regPasswordConfirm');
+    if (pwdEl && !pwdEl.dataset.liveBound) {
+      pwdEl.dataset.liveBound = '1';
+      pwdEl.addEventListener('input', () => {
+        const v = pwdEl.value;
+        if (!v) return mark(pwdEl, null);
+        mark(pwdEl, v.length >= 10);
+        // Re-check confirm si rempli
+        if (pwdConfEl && pwdConfEl.value) {
+          mark(pwdConfEl, pwdConfEl.value === v);
+        }
+      });
+    }
+    if (pwdConfEl && !pwdConfEl.dataset.liveBound) {
+      pwdConfEl.dataset.liveBound = '1';
+      pwdConfEl.addEventListener('input', () => {
+        const v = pwdConfEl.value;
+        if (!v) return mark(pwdConfEl, null);
+        mark(pwdConfEl, pwdEl && v === pwdEl.value);
+      });
+    }
+  }
+  _setupLiveValidation();
 
   // Helper unifié : preventDefault + stopPropagation + open
   function bindOpen(id, mode, before) {

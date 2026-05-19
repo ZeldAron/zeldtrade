@@ -211,7 +211,18 @@ body {
 
 /* ─── PAGES ─── */
 .page { display: none; flex: 1; overflow: hidden; min-height: 0; }
-.page.active { display: flex; }
+/* v0.9.238 : fade-in léger au switch page (perçu plus pro) */
+.page.active {
+  display: flex;
+  animation: page-fade-in 180ms ease-out;
+}
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page.active { animation: none; }
+}
 
 /* ─── JOURNAL ─── */
 .journal-layout { display: flex; width: 100%; overflow: hidden; }
@@ -478,6 +489,11 @@ button:focus-visible {
   width: 100%;
 }
 .form-input:focus { border-color: rgba(124,58,237,0.6); box-shadow: 0 0 0 3px rgba(124,58,237,0.1); }
+/* v0.9.238 : validation temps réel signup */
+.form-input.input-valid   { border-color: rgba(34,197,94,0.55); box-shadow: 0 0 0 3px rgba(34,197,94,0.08); }
+.form-input.input-invalid { border-color: rgba(239,68,68,0.55); box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
+.form-input.input-valid:focus   { border-color: rgba(34,197,94,0.8); }
+.form-input.input-invalid:focus { border-color: rgba(239,68,68,0.8); }
 .form-input.mono { font-family: 'Geist Mono', monospace; }
 select.form-input { cursor: pointer; }
 textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }

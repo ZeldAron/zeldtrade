@@ -99,8 +99,24 @@ function initApp() {
     UI.setFilter(chip.dataset.filter);
   });
 
-  // ── SEARCH ─────────────────────────────────────────────────────────────────
-  $('searchInput').addEventListener('input', () => UI.renderList());
+  // ── SEARCH (v0.9.238 : persistance + debounce léger) ──────────────────────
+  const _SEARCH_KEY = 'zeld_journal_search_v1';
+  try {
+    const saved = localStorage.getItem(_SEARCH_KEY);
+    if (saved && saved.length <= 200) $('searchInput').value = saved;
+  } catch {}
+  let _searchTimer = null;
+  $('searchInput').addEventListener('input', () => {
+    UI.renderList();
+    clearTimeout(_searchTimer);
+    _searchTimer = setTimeout(() => {
+      try {
+        const v = $('searchInput').value || '';
+        if (v) localStorage.setItem(_SEARCH_KEY, v.slice(0, 200));
+        else   localStorage.removeItem(_SEARCH_KEY);
+      } catch {}
+    }, 400);
+  });
 
   // ── NEW TRADE BUTTON ───────────────────────────────────────────────────────
   $('btnNewTrade').addEventListener('click', () => {
@@ -116,14 +132,79 @@ function initApp() {
     });
   });
 
-  // ── KEYBOARD SHORTCUTS ─────────────────────────────────────────────────────
+  // ── KEYBOARD SHORTCUTS (v0.9.238 enrichis) ─────────────────────────────────
   document.addEventListener('keydown', e => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+    const target = e.target;
+    const tag    = (target && target.tagName) || '';
+    const inEditable = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable);
+
+    // Cmd/Ctrl+N → Nouveau trade (passe même dans les inputs : c'est une action métier)
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'n') {
       e.preventDefault();
       $('btnNewTrade').click();
+      return;
+    }
+    // Cmd/Ctrl+K → focus recherche journal (raccourci VS Code / GitHub-style)
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      const search = $('searchInput');
+      if (search) {
+        switchPage('journal');
+        setTimeout(() => { search.focus(); search.select(); }, 50);
+      }
+      return;
+    }
+    // `?` → ouvre la cheatsheet (uniquement si pas dans un input)
+    if (e.key === '?' && !inEditable && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      e.preventDefault();
+      _showShortcutsCheatsheet();
+      return;
     }
     if (e.key === 'Escape') Modal.close();
   });
+
+  // v0.9.238 : cheatsheet des raccourcis (affichée via `?`)
+  function _showShortcutsCheatsheet() {
+    let el = document.getElementById('shortcutsCheatsheet');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'shortcutsCheatsheet';
+      el.className = 'consent-modal';
+      el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-modal', 'true');
+      const isMac = /Mac|iPhone|iPad/.test(navigator.platform);
+      const mod   = isMac ? '⌘' : 'Ctrl';
+      el.innerHTML = `
+        <div class="consent-modal-box" style="max-width:380px">
+          <div style="text-align:center;font-size:32px;margin-bottom:8px">⌨️</div>
+          <h2 class="consent-title">Raccourcis clavier</h2>
+          <div style="display:flex;flex-direction:column;gap:10px;margin:18px 0">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+              <span style="color:var(--text)">Nouveau trade</span>
+              <kbd style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:monospace;font-size:12px;color:var(--muted)">${mod} + N</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+              <span style="color:var(--text)">Recherche</span>
+              <kbd style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:monospace;font-size:12px;color:var(--muted)">${mod} + K</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+              <span style="color:var(--text)">Fermer modale</span>
+              <kbd style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:monospace;font-size:12px;color:var(--muted)">Esc</kbd>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">
+              <span style="color:var(--text)">Cette aide</span>
+              <kbd style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:monospace;font-size:12px;color:var(--muted)">?</kbd>
+            </div>
+          </div>
+          <button type="button" class="btn-ghost" style="width:100%" onclick="document.getElementById('shortcutsCheatsheet').style.display='none'">Fermer</button>
+        </div>
+      `;
+      document.body.appendChild(el);
+      // Click overlay = close
+      el.addEventListener('click', ev => { if (ev.target === el) el.style.display = 'none'; });
+    }
+    el.style.display = 'flex';
+  }
 
   // ── LOGOUT ─────────────────────────────────────────────────────────────────
   $('btnLogout').addEventListener('click', () => {
