@@ -186,15 +186,36 @@ const Store = (() => {
   function fbSet(name, data) {
     userDoc(name).set(data).catch(e => {
       console.warn('[Store] Firestore write error', name, e);
-      // Remonte à l'UI : un user qui hit la limite 1 MiB ou qui perd la connexion
-      // doit savoir que ses données ne sont PAS synchronisées (sinon faux sentiment
-      // de sécurité — il croit que c'est sauvegardé alors que c'est juste localStorage).
+      // v0.9.235 : si l'erreur signale un compte supprimé/désactivé, on déclenche
+      // la modale globale "Compte supprimé" qui force le logout.
+      if (_isAccountGoneError(e) && typeof window.showAccountDeleted === 'function') {
+        try { window.showAccountDeleted(); } catch {}
+        return;
+      }
       try {
         window.dispatchEvent(new CustomEvent('store:saveFailed', {
           detail: { collection: name, error: (e && e.message) || 'unknown' }
         }));
       } catch {}
     });
+  }
+
+  // v0.9.235 : helper local pour détecter les codes Firebase signalant
+  // qu'un compte n'existe plus (deleteUser admin) ou est désactivé.
+  // NB : on N'INCLUT PAS `permission-denied` car c'est aussi le code retourné
+  // par les rules pour des refus de validation légitimes (false positives).
+  // Le vrai signal "compte supprimé" est `unauthenticated` (Firestore) ou
+  // les codes `auth/*` (Firebase Auth client lui-même).
+  function _isAccountGoneError(err) {
+    if (!err) return false;
+    const code = String(err.code || err.message || '');
+    return code === 'unauthenticated'
+        || code === 'auth/user-not-found'
+        || code === 'auth/user-disabled'
+        || code === 'auth/user-token-expired'
+        || code === 'auth/id-token-revoked'
+        || code === 'auth/invalid-user-token'
+        || /USER_NOT_FOUND|USER_DISABLED|TOKEN_EXPIRED|TOKEN_REVOKED/i.test(code);
   }
 
   function lsSet(key, val) {

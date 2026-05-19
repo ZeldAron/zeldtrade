@@ -133,6 +133,8 @@ const Auth = (() => {
   // v0.9.233 : force-refresh du token Firebase pour récupérer la valeur fraîche
   // de `emailVerified`. Le state cached côté client peut être stale (Firebase
   // ne pousse pas l'update en temps réel). Utilisé par la gate post-login.
+  // v0.9.235 : détecte aussi si le compte a été supprimé/désactivé côté admin
+  // (errors auth/user-not-found, user-disabled, etc.) → flag `accountGone`.
   async function checkEmailVerified() {
     const user = _fbAuth.currentUser;
     if (!user) return { verified: false, error: 'not-authenticated' };
@@ -141,8 +143,10 @@ const Auth = (() => {
       // Force le refresh du ID token avec les claims à jour
       await user.getIdToken(true);
     } catch (e) {
-      // Si le reload échoue (offline, token expired), on retourne l'état actuel
       console.warn('[checkEmailVerified] reload failed:', e && e.code);
+      if (isAccountGoneError(e)) {
+        return { verified: false, accountGone: true, email: user.email || '' };
+      }
     }
     return { verified: !!user.emailVerified, email: user.email || '' };
   }
@@ -156,8 +160,32 @@ const Auth = (() => {
     return { ok: true };
   }
 
+  // v0.9.235 : flag pour distinguer logout volontaire vs forcé. Si non-volontaire
+  // (= compte supprimé/désactivé côté admin, token révoqué), on déclenche une
+  // modale spécifique au lieu du flux login normal.
+  let _voluntaryLogout = false;
   function logout() {
+    _voluntaryLogout = true;
     return _fbAuth.signOut();
+  }
+  function _wasVoluntary() {
+    const was = _voluntaryLogout;
+    _voluntaryLogout = false;
+    return was;
+  }
+
+  // v0.9.235 : helper utilisé par d'autres modules pour détecter un signal de
+  // compte supprimé. Renvoie true si l'erreur Firebase indique que le compte
+  // n'existe plus / est désactivé / token révoqué côté admin.
+  function isAccountGoneError(err) {
+    if (!err) return false;
+    const code = String(err.code || err.message || '');
+    return code === 'auth/user-not-found'
+        || code === 'auth/user-disabled'
+        || code === 'auth/user-token-expired'
+        || code === 'auth/id-token-revoked'
+        || code === 'auth/invalid-user-token'
+        || /USER_NOT_FOUND|USER_DISABLED|TOKEN_EXPIRED|TOKEN_REVOKED/i.test(code);
   }
 
   async function deleteAccount(email, password) {
@@ -274,5 +302,5 @@ const Auth = (() => {
   }
 
   return { login, register, logout, getCurrentUser, onAuthReady, resetPassword, resendVerification, checkEmailVerified, touchSession, deleteAccount,
-           getConsentStatus, recordConsent, setNewsletterOptIn };
+           getConsentStatus, recordConsent, setNewsletterOptIn, isAccountGoneError, _wasVoluntary };
 })();
