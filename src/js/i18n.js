@@ -334,7 +334,8 @@ const i18n = (() => {
       'modal.account.ph':     '— Compte —',
       // UI - Journal
       'ui.no.results':    'Aucun résultat',
-      'ui.no.trades':     'Aucun trade —\ncommence !',
+      'ui.no.trades':     'Aucun trade — commence par enregistrer ton premier trade.',
+      'ui.clear.filters': 'Effacer les filtres',
       'ui.back':          '← Retour',
       'ui.select.trade':  'Sélectionne un trade',
       'ui.apex.ok':       'Conforme Apex — risque {pct}% du capital',
@@ -1024,7 +1025,8 @@ const i18n = (() => {
       'modal.account.ph':     '— Account —',
       // UI - Journal
       'ui.no.results':    'No results',
-      'ui.no.trades':     'No trades yet —\nget started!',
+      'ui.no.trades':     'No trades yet — start by recording your first trade.',
+      'ui.clear.filters': 'Clear filters',
       'ui.back':          '← Back',
       'ui.select.trade':  'Select a trade',
       'ui.apex.ok':       'Apex compliant — {pct}% risk of capital',

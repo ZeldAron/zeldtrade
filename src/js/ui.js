@@ -7,7 +7,15 @@ const UI = (() => {
 
   // Shared state
   let selectedId    = null;
+  // v0.9.238 : persistance du filtre + recherche journal dans localStorage.
+  // Évite de tout refiltrer manuellement à chaque switch de page / reload.
+  const _FILTER_KEY = 'zeld_journal_filter_v1';
+  const _SEARCH_KEY = 'zeld_journal_search_v1';
   let currentFilter = 'all';
+  try {
+    const saved = localStorage.getItem(_FILTER_KEY);
+    if (saved && ['all', 'win', 'loss', 'be', 'open'].includes(saved)) currentFilter = saved;
+  } catch {}
 
   // Shared constants (exposed for page files)
   const OB_CLASS = { win:'ob-win', loss:'ob-loss', be:'ob-be', open:'ob-open' };
@@ -71,13 +79,33 @@ const UI = (() => {
 
   // ── Toast ───────────────────────────────────────────────────────────────────
   let toastTimer = null;
-  function toast(msg, isError = false) {
+  // v0.9.238 : file d'attente toast. Avant : 2 toasts rapides → le 2e écrasait
+  // le 1er instantanément, l'user ratait le message. Maintenant : queue FIFO,
+  // chaque toast est visible 2.5s avant de céder la place. Évite la perte
+  // d'info quand plusieurs erreurs/confirmations arrivent en cascade.
+  const _toastQueue = [];
+  let _toastShowing = false;
+  function _drainToast() {
+    if (_toastShowing) return;
+    const next = _toastQueue.shift();
+    if (!next) return;
+    _toastShowing = true;
     const el = $('toast');
-    el.textContent = msg;
-    el.className   = 'toast' + (isError ? ' error' : '');
+    el.textContent = next.msg;
+    el.className   = 'toast' + (next.isError ? ' error' : '');
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+    toastTimer = setTimeout(() => {
+      el.classList.remove('show');
+      // Délai 250ms pour laisser l'animation de fade-out se jouer avant le suivant
+      setTimeout(() => { _toastShowing = false; _drainToast(); }, 250);
+    }, next.duration);
+  }
+  function toast(msg, isError = false, duration = 2500) {
+    _toastQueue.push({ msg, isError, duration });
+    // Cap soft à 5 toasts en queue (sinon spam d'erreurs réseau peut empiler 50 toasts)
+    if (_toastQueue.length > 5) _toastQueue.splice(0, _toastQueue.length - 5);
+    _drainToast();
   }
 
   // ── Sidebar stats ───────────────────────────────────────────────────────────
@@ -122,7 +150,14 @@ const UI = (() => {
       : '';
 
     if (!filtered.length) {
-      const msg = total ? i18n.t('ui.no.results') : i18n.t('ui.no.trades');
+      // v0.9.238 : empty state contextuel.
+      //   - Aucun trade du tout      → CTA "+ Premier trade"
+      //   - Aucun résultat (filtré)  → CTA "Effacer les filtres"
+      const isEmpty = total === 0;
+      const msg     = isEmpty ? i18n.t('ui.no.trades') : i18n.t('ui.no.results');
+      const ctaHtml = isEmpty
+        ? `<button type="button" class="btn-primary" style="margin-top:14px" onclick="document.getElementById('btnNewTrade')?.click()">+ ${i18n.t('btn.new.trade') || i18n.t('btn.newtrade') || 'Nouveau trade'}</button>`
+        : `<button type="button" class="btn-ghost" style="margin-top:14px" onclick="(function(){var s=document.getElementById('searchInput');if(s){s.value='';s.dispatchEvent(new Event('input'));}var c=document.querySelector('.filter-chip[data-filter=\\'all\\']');if(c)c.click();})()">${i18n.t('ui.clear.filters') || 'Effacer les filtres'}</button>`;
       list.innerHTML = `${counterHtml}
         <div class="empty-list">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
@@ -131,6 +166,7 @@ const UI = (() => {
             <line x1="9" y1="13" x2="15" y2="13"/>
           </svg>
           <p>${msg}</p>
+          ${ctaHtml}
         </div>`;
       return;
     }
@@ -546,7 +582,11 @@ const UI = (() => {
     // Shared utilities exposed for js/pages/*.js
     escHtml, localDay, localToday, statsForTrades,
     OB_CLASS, OB_LABEL, MICRO_RATES,
-    setFilter: (f) => { currentFilter = f; renderList(); },
+    setFilter: (f) => {
+      currentFilter = f;
+      try { localStorage.setItem(_FILTER_KEY, f); } catch {}
+      renderList();
+    },
     get selectedId()  { return selectedId; },
     set selectedId(v) { selectedId = v; },
     // Page render functions — assigned by js/pages/*.js after this script loads
