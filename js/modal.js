@@ -87,7 +87,6 @@ const Modal = (() => {
 
   function loadImageFile(file) {
     if (!file) return;
-    console.log('[wizard] loadImageFile start', { name: file.name, type: file.type, size: file.size });
     if (!file.type.startsWith('image/')) { UI.toast('Format non supporté — utilise une image (PNG, JPG…)', true); return; }
     if (file.size > 10 * 1024 * 1024)   { UI.toast('Image trop lourde (max 10 Mo)', true); return; }
 
@@ -95,7 +94,6 @@ const Modal = (() => {
     file.slice(0, 12).arrayBuffer().then(buf => {
       const head = new Uint8Array(buf);
       if (!isValidImageMagicBytes(head)) {
-        console.warn('[wizard] magic bytes invalid', Array.from(head).map(b => b.toString(16)).join(' '));
         UI.toast('Format non reconnu — utilise PNG, JPG, GIF, WEBP ou BMP.', true);
         return;
       }
@@ -108,7 +106,6 @@ const Modal = (() => {
           $('wDropPrompt').style.display   = 'none';
           $('wImagePreview').style.display = '';
           $('wDropZone').classList.add('has-image');
-          console.log('[wizard] image loaded, calling analyzeImage()');
           analyzeImage();
         } catch (e) {
           console.error('[wizard] onload handler crashed', e);
@@ -184,15 +181,28 @@ const Modal = (() => {
         container.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden';
         document.body.appendChild(container);
       }
+      // v0.9.237 : si un widget existe déjà, reset() + execute() au lieu de
+      // re-render (Cloudflare a déprécié `size: 'invisible'` au profit de
+      // `execution: 'execute'` qui exige un re-trigger explicite).
       if (_turnstileWidgetId !== null) {
         try { turnstile.reset(_turnstileWidgetId); } catch {}
+        try { turnstile.execute(_turnstileWidgetId); } catch (e) {
+          console.warn('[Turnstile] re-execute failed:', e && e.message);
+          return resolve('');
+        }
+        setTimeout(() => resolve(''), 8000);
+        return;
       }
       try {
+        // v0.9.237 : nouvelle API Cloudflare → `execution: 'execute'` pour widget
+        // invisible (l'ancien `size: 'invisible'` est déprécié, console error).
+        // Le widget se rend mais ne challenge l'user que sur appel `execute()`.
         _turnstileWidgetId = turnstile.render(container, {
-          sitekey: _TURNSTILE_SITE_KEY,
-          size: 'invisible',
-          callback: (token) => resolve(token || ''),
-          'error-callback': () => { console.warn('[Turnstile] error-callback'); resolve(''); },
+          sitekey:     _TURNSTILE_SITE_KEY,
+          execution:   'execute',
+          appearance:  'interaction-only',
+          callback:    (token) => resolve(token || ''),
+          'error-callback':   () => { console.warn('[Turnstile] error-callback'); resolve(''); },
           'expired-callback': () => { console.warn('[Turnstile] expired'); resolve(''); },
         });
         try { turnstile.execute(_turnstileWidgetId); } catch (e) {
@@ -1386,7 +1396,6 @@ const Modal = (() => {
     $('wImageFile').addEventListener('change', e => {
       const input = e.target;
       const file  = input.files && input.files[0];
-      console.log('[wizard] wImageFile change fired', { hasFile: !!file, filesLength: input.files && input.files.length });
       if (file) {
         loadImageFile(file);
         // v0.9.236 (B-NEW-01) : reset différé pour ne pas interférer avec la

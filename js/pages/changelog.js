@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.237',
+      date: '2026-05-19',
+      time: '23:55',
+      tags: ['fix', 'infra'],
+      title: 'Fix upload image wizard + migration API Cloudflare Turnstile',
+      titleEn: 'Fix wizard image upload + migrate Cloudflare Turnstile API',
+      items: [
+        { type: 'fix', text: 'Bug bloquant : depuis hier, la sélection d\'une image via le bouton "Cliquer ou coller" ouvrait le sélecteur de fichier mais ne déclenchait pas l\'analyse. Corrigé : le focus trap récemment ajouté interférait avec le flow, il a été retiré.', textEn: 'Blocking bug: since yesterday, selecting an image via "Click or paste" opened the file picker but did not trigger analysis. Fixed: the recently added focus trap interfered with the flow, removed.' },
+        { type: 'fix', text: 'Gestion d\'erreurs renforcée sur l\'upload : si la lecture du fichier échoue (corruption, permissions, format inconnu), un toast rouge clair s\'affiche au lieu d\'un échec silencieux.', textEn: 'Improved error handling on upload: if file reading fails (corruption, permissions, unknown format), a clear red toast is shown instead of silent failure.' },
+        { type: 'infra', text: 'Migration de l\'API anti-bot Cloudflare Turnstile vers la nouvelle interface (l\'ancien `size: invisible` a été déprécié par Cloudflare et générait des erreurs en console). Migration vers `execution: execute` + `appearance: interaction-only`.', textEn: 'Migrated Cloudflare Turnstile anti-bot API to the new interface (old `size: invisible` was deprecated by Cloudflare and generated console errors). Migrated to `execution: execute` + `appearance: interaction-only`.' },
+      ],
+    },
+    {
       version: '0.9.235',
       date: '2026-05-19',
       time: '23:45',
