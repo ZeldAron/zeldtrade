@@ -204,12 +204,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Firebase Auth state ─────────────────────────────────────────────────────
   // landingScreen retiré en v0.9.114 : si non loggé, on ouvre direct le modal login
   // (l'user arrive depuis index.html landing qui a déjà fait le pitch marketing).
+  let _wasLoggedIn = false;
   Auth.onAuthReady(async user => {
     if (user) {
+      _wasLoggedIn = true;
       // v0.9.233 : gate vérification email AVANT de lancer l'app.
       // Si non vérifié, on affiche un overlay bloquant tant que l'user n'a pas
       // cliqué sur le lien Firebase + confirmé via "J'ai vérifié".
       const v = await Auth.checkEmailVerified();
+      // v0.9.235 : si checkEmailVerified a détecté que le user n'existe plus
+      // côté Firebase (deleteUser admin), on bascule sur la modale "compte supprimé".
+      if (v.accountGone) {
+        _showAccountDeletedGate();
+        return;
+      }
       if (!v.verified) {
         _showVerifyEmailGate(v.email || '');
         return;
@@ -217,10 +225,43 @@ document.addEventListener('DOMContentLoaded', () => {
       showLoader(user.username);
       setTimeout(() => launchApp(user), 1200);
     } else {
+      // v0.9.235 : si l'user vient d'être logged-in PUIS passe à null sans
+      // logout volontaire (= admin a delete son compte / revoke token),
+      // on affiche la modale dédiée au lieu du flux login normal.
+      const voluntary = Auth._wasVoluntary ? Auth._wasVoluntary() : true;
+      if (_wasLoggedIn && !voluntary) {
+        _showAccountDeletedGate();
+        _wasLoggedIn = false;
+        return;
+      }
+      _wasLoggedIn = false;
       // Pas loggé → ouvre direct le modal login (pas de flash sur ancien content)
       openModal('login');
     }
   });
+
+  // v0.9.235 : modale "compte supprimé" — exposée globalement pour que les
+  // wrappers d'erreurs Firestore/CFs puissent la déclencher quand ils détectent
+  // un signal d'account-gone (auth/user-not-found, user-disabled, etc.).
+  function _showAccountDeletedGate() {
+    const gate = document.getElementById('accountDeletedGate');
+    if (!gate) return;
+    if (loader) loader.style.display = 'none';
+    // Masque tout overlay résiduel (verify email gate, login modal, etc.)
+    const overlays = ['verifyEmailGate', 'loginModal', 'consentModal'];
+    overlays.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    gate.style.display = 'flex';
+    const btnLogout = document.getElementById('adgBtnLogout');
+    if (btnLogout) {
+      btnLogout.onclick = async () => {
+        try { await Auth.logout(); } catch {}
+        gate.style.display = 'none';
+        window.location.reload();
+      };
+    }
+  }
+  // Expose globalement pour que store.js/ui.js puissent le déclencher
+  window.showAccountDeleted = _showAccountDeletedGate;
 
   // ── Verify email gate (v0.9.233) ────────────────────────────────────────────
   // Overlay plein-écran qui bloque l'app tant que l'email n'est pas vérifié.

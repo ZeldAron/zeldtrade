@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.235',
+      date: '2026-05-19',
+      time: '23:45',
+      tags: ['security', 'ux', 'fix'],
+      title: 'Compte supprimé : message clair + fix freeze "J\'ai vérifié"',
+      titleEn: 'Account deleted: clear message + fix "I verified" freeze',
+      items: [
+        { type: 'fix', text: 'Le bouton "J\'ai vérifié" sur l\'écran de vérification email ne freeze plus : un rechargement propre se déclenche au lieu de tenter de relancer l\'app dans un state incohérent.', textEn: 'The "I verified" button on the email verification screen no longer freezes: a clean reload is triggered instead of trying to relaunch the app in an inconsistent state.' },
+        { type: 'security', text: 'Compte supprimé par l\'admin : tu vois désormais un écran clair "🚫 Compte supprimé — contacte l\'administrateur" avec des liens directs vers Discord et email, au lieu d\'être renvoyé silencieusement à l\'écran de login.', textEn: 'Account deleted by admin: you now see a clear "🚫 Account deleted — contact the administrator" screen with direct links to Discord and email, instead of being silently sent back to the login screen.' },
+        { type: 'ux', text: 'Email de vérification : nouveau template HTML stylisé (logo, gradient violet, CTA propre) au lieu du texte plain Firebase. À configurer une fois côté Firebase Console (instructions internes).', textEn: 'Verification email: new styled HTML template (logo, purple gradient, clean CTA) instead of Firebase plain text. To be configured once in Firebase Console (internal instructions).' },
+      ],
+    },
+    {
       version: '0.9.233',
       date: '2026-05-19',
       time: '23:00',
