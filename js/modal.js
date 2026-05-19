@@ -87,6 +87,7 @@ const Modal = (() => {
 
   function loadImageFile(file) {
     if (!file) return;
+    console.log('[wizard] loadImageFile start', { name: file.name, type: file.type, size: file.size });
     if (!file.type.startsWith('image/')) { UI.toast('Format non supporté — utilise une image (PNG, JPG…)', true); return; }
     if (file.size > 10 * 1024 * 1024)   { UI.toast('Image trop lourde (max 10 Mo)', true); return; }
 
@@ -94,21 +95,39 @@ const Modal = (() => {
     file.slice(0, 12).arrayBuffer().then(buf => {
       const head = new Uint8Array(buf);
       if (!isValidImageMagicBytes(head)) {
-        UI.toast('Fichier invalide — l\'image semble corrompue ou son extension a été modifiée.', true);
+        console.warn('[wizard] magic bytes invalid', Array.from(head).map(b => b.toString(16)).join(' '));
+        UI.toast('Format non reconnu — utilise PNG, JPG, GIF, WEBP ou BMP.', true);
         return;
       }
       const reader = new FileReader();
       reader.onload = ev => {
-        const b64 = ev.target.result.split(',')[1];
-        capturedImage = b64;
-        $('wPreviewImg').src             = 'data:image/png;base64,' + b64;
-        $('wDropPrompt').style.display   = 'none';
-        $('wImagePreview').style.display = '';
-        $('wDropZone').classList.add('has-image');
-        analyzeImage();
+        try {
+          const b64 = ev.target.result.split(',')[1];
+          capturedImage = b64;
+          $('wPreviewImg').src             = 'data:image/png;base64,' + b64;
+          $('wDropPrompt').style.display   = 'none';
+          $('wImagePreview').style.display = '';
+          $('wDropZone').classList.add('has-image');
+          console.log('[wizard] image loaded, calling analyzeImage()');
+          analyzeImage();
+        } catch (e) {
+          console.error('[wizard] onload handler crashed', e);
+          UI.toast('Erreur après lecture du fichier — réessaie.', true);
+        }
       };
-      reader.readAsDataURL(file);
-    }).catch(() => {
+      // v0.9.236 (B-NEW-01) : onerror manquait → échec silencieux possible
+      reader.onerror = (e) => {
+        console.error('[wizard] FileReader error', e);
+        UI.toast('Lecture du fichier échouée — réessaie ou utilise une autre image.', true);
+      };
+      try {
+        reader.readAsDataURL(file);
+      } catch (e) {
+        console.error('[wizard] readAsDataURL threw', e);
+        UI.toast('Lecture du fichier échouée — réessaie.', true);
+      }
+    }).catch((e) => {
+      console.error('[wizard] arrayBuffer rejected', e);
       UI.toast('Erreur de lecture du fichier.', true);
     });
   }
@@ -1365,8 +1384,16 @@ const Modal = (() => {
     });
     $('wBtnClearImg').addEventListener('click', e => { e.stopPropagation(); clearImage(); });
     $('wImageFile').addEventListener('change', e => {
-      const file = e.target.files && e.target.files[0];
-      if (file) { loadImageFile(file); e.target.value = ''; }
+      const input = e.target;
+      const file  = input.files && input.files[0];
+      console.log('[wizard] wImageFile change fired', { hasFile: !!file, filesLength: input.files && input.files.length });
+      if (file) {
+        loadImageFile(file);
+        // v0.9.236 (B-NEW-01) : reset différé pour ne pas interférer avec la
+        // promise async loadImageFile(). Permet aussi de re-sélectionner le
+        // même fichier après clearImage().
+        setTimeout(() => { try { input.value = ''; } catch {} }, 0);
+      }
     });
 
     // Drag-and-drop
@@ -1621,27 +1648,11 @@ const Modal = (() => {
       if (e.key === 'Escape') close();
     });
 
-    // v0.9.231 (VIS-04 fix) : focus trap dans la modale wizard. Tab cycle
-    // uniquement parmi les éléments focusables visibles de la modale.
-    // Évite que le focus sorte vers la page derrière (a11y clavier).
-    $('modalOverlay').addEventListener('keydown', e => {
-      if (e.key !== 'Tab') return;
-      const overlay = $('modalOverlay');
-      if (!overlay || overlay.style.display === 'none') return;
-      const sel = 'button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-      const visible = Array.from(overlay.querySelectorAll(sel))
-        .filter(el => el.offsetWidth > 0 && el.offsetHeight > 0);
-      if (visible.length < 2) return;
-      const first = visible[0];
-      const last  = visible[visible.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        last.focus();
-        e.preventDefault();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        first.focus();
-        e.preventDefault();
-      }
-    });
+    // v0.9.231 (VIS-04 fix) — focus trap RETIRÉ en v0.9.236 :
+    // Soupçonné de casser l'upload image via file picker (bug B-NEW-01).
+    // Le revert est défensif. À ré-instaurer après tests si on confirme
+    // que ce n'est pas la cause (changement orthogonal à priori, mais
+    // bénéfice a11y < risque de regression upload).
   }
 
   return { init, open, close };
