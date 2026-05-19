@@ -166,16 +166,21 @@
 /* Sidebar — gérée via --sidebar-bg dans :root + [data-theme="light"]. Bordure
    reste sur le sélecteur principal `.sidebar { border-right: ... }`. */
 
-/* v0.9.242 : Contact bubble — ombre + bordure marquées en light pour le pop */
+/* v0.9.245 : Contact bubble — ombre violette douce, sans halo blanc */
 [data-theme="light"] .contact-bubble {
-  box-shadow: 0 6px 20px rgba(124,58,237,0.35), 0 2px 6px rgba(15,23,42,0.08);
-  border: 2px solid rgba(255,255,255,0.95);
+  background: var(--accent);
+  border: none;
+  box-shadow:
+    0 4px 14px rgba(124, 58, 237, 0.30),
+    0 1px 3px rgba(0, 0, 0, 0.08);
 }
 [data-theme="light"] .contact-bubble:hover {
-  box-shadow: 0 8px 28px rgba(124,58,237,0.5), 0 2px 8px rgba(15,23,42,0.1);
+  box-shadow:
+    0 6px 18px rgba(124, 58, 237, 0.42),
+    0 2px 6px rgba(0, 0, 0, 0.10);
 }
-/* Le "dot online" du contact bubble : bordure doit matcher le bg du bouton, pas la page */
-[data-theme="light"] .contact-bubble-dot { border-color: var(--accent); }
+/* Dot online : bordure blanche (matche le futur fond du bouton) pour bien le séparer */
+[data-theme="light"] .contact-bubble-dot { border-color: #ffffff; }
 
 /* v0.9.242 : Topbar — différenciation visuelle vs main content en light */
 [data-theme="light"] .topbar {
