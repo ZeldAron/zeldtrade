@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.233',
+      date: '2026-05-19',
+      time: '23:00',
+      tags: ['security', 'ux'],
+      title: 'Vérification email obligatoire pour accéder à l\'app',
+      titleEn: 'Email verification now required to access the app',
+      items: [
+        { type: 'security', text: 'L\'accès à l\'app est désormais bloqué tant que ton email n\'est pas vérifié — anti-faux-mails. Un écran dédié t\'affiche le mail envoyé, te permet de renvoyer le lien, de cliquer « J\'ai vérifié » ou de te déconnecter.', textEn: 'App access is now blocked until your email is verified — anti-fake-emails. A dedicated screen shows the email sent, lets you resend the link, click "I verified" or log out.' },
+        { type: 'security', text: 'Côté backend : email vérifié déjà obligatoire sur les opérations critiques (analyse IA, écriture trades, etc., depuis v0.9.230). La nouvelle gate front complète la sécurité en empêchant même la navigation.', textEn: 'Backend: email verification already required for critical ops (AI analysis, write trades, etc., since v0.9.230). The new front gate completes security by blocking navigation entirely.' },
+        { type: 'feature', text: 'Brevo bounce handling : les emails qui rebondissent dur (hard bounce, blocked, spam) déclenchent une désinscription automatique de la newsletter + alerte interne. Conformité RGPD améliorée.', textEn: 'Brevo bounce handling: hard bounces / blocked / spam automatically unsubscribe the recipient + trigger internal alert. Improved RGPD compliance.' },
+      ],
+    },
+    {
       version: '0.9.231',
       date: '2026-05-19',
       time: '22:00',

@@ -130,6 +130,23 @@ const Auth = (() => {
     }
   }
 
+  // v0.9.233 : force-refresh du token Firebase pour récupérer la valeur fraîche
+  // de `emailVerified`. Le state cached côté client peut être stale (Firebase
+  // ne pousse pas l'update en temps réel). Utilisé par la gate post-login.
+  async function checkEmailVerified() {
+    const user = _fbAuth.currentUser;
+    if (!user) return { verified: false, error: 'not-authenticated' };
+    try {
+      await user.reload();
+      // Force le refresh du ID token avec les claims à jour
+      await user.getIdToken(true);
+    } catch (e) {
+      // Si le reload échoue (offline, token expired), on retourne l'état actuel
+      console.warn('[checkEmailVerified] reload failed:', e && e.code);
+    }
+    return { verified: !!user.emailVerified, email: user.email || '' };
+  }
+
   async function resetPassword(email) {
     try {
       await _fbAuth.sendPasswordResetEmail(email);
@@ -256,6 +273,6 @@ const Auth = (() => {
     }
   }
 
-  return { login, register, logout, getCurrentUser, onAuthReady, resetPassword, resendVerification, touchSession, deleteAccount,
+  return { login, register, logout, getCurrentUser, onAuthReady, resetPassword, resendVerification, checkEmailVerified, touchSession, deleteAccount,
            getConsentStatus, recordConsent, setNewsletterOptIn };
 })();
