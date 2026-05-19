@@ -204,8 +204,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Firebase Auth state ─────────────────────────────────────────────────────
   // landingScreen retiré en v0.9.114 : si non loggé, on ouvre direct le modal login
   // (l'user arrive depuis index.html landing qui a déjà fait le pitch marketing).
-  Auth.onAuthReady(user => {
+  Auth.onAuthReady(async user => {
     if (user) {
+      // v0.9.233 : gate vérification email AVANT de lancer l'app.
+      // Si non vérifié, on affiche un overlay bloquant tant que l'user n'a pas
+      // cliqué sur le lien Firebase + confirmé via "J'ai vérifié".
+      const v = await Auth.checkEmailVerified();
+      if (!v.verified) {
+        _showVerifyEmailGate(v.email || '');
+        return;
+      }
       showLoader(user.username);
       setTimeout(() => launchApp(user), 1200);
     } else {
@@ -213,6 +221,75 @@ document.addEventListener('DOMContentLoaded', () => {
       openModal('login');
     }
   });
+
+  // ── Verify email gate (v0.9.233) ────────────────────────────────────────────
+  // Overlay plein-écran qui bloque l'app tant que l'email n'est pas vérifié.
+  // Atténue le risque de faux emails et aligne avec le check `email_verified`
+  // côté rules Firestore (v0.9.230) et Cloud Functions.
+  function _showVerifyEmailGate(email) {
+    const gate    = document.getElementById('verifyEmailGate');
+    const emailEl = document.getElementById('vegEmail');
+    const status  = document.getElementById('vegStatus');
+    const btnCheck  = document.getElementById('vegBtnCheck');
+    const btnResend = document.getElementById('vegBtnResend');
+    const btnLogout = document.getElementById('vegBtnLogout');
+    if (!gate) return;
+
+    if (loader) loader.style.display = 'none';
+    if (emailEl) emailEl.textContent = email || '—';
+    status.textContent = '';
+    gate.style.display = 'flex';
+
+    btnCheck.onclick = async () => {
+      btnCheck.disabled = true;
+      const original = btnCheck.textContent;
+      btnCheck.textContent = (i18n.t && i18n.t('veg.checking')) || 'Vérification…';
+      status.textContent = '';
+      const v = await Auth.checkEmailVerified();
+      btnCheck.disabled = false;
+      btnCheck.textContent = original;
+      if (v.verified) {
+        gate.style.display = 'none';
+        // Récupère le user actuel pour relancer le flow
+        const current = Auth.getCurrentUser ? Auth.getCurrentUser() : null;
+        const userObj = current || { id: 'self', username: '' };
+        showLoader(userObj.username || '');
+        setTimeout(() => launchApp(userObj), 800);
+      } else {
+        status.style.color = 'var(--amber)';
+        status.textContent = (i18n.t && i18n.t('veg.notyet')) || 'Pas encore vérifié — clique sur le lien dans ta boîte mail (vérifie les spams).';
+      }
+    };
+
+    btnResend.onclick = async () => {
+      btnResend.disabled = true;
+      const original = btnResend.textContent;
+      btnResend.textContent = (i18n.t && i18n.t('veg.sending')) || 'Envoi…';
+      status.textContent = '';
+      const r = await Auth.resendVerification();
+      btnResend.disabled = false;
+      btnResend.textContent = original;
+      if (r && r.ok) {
+        status.style.color = 'var(--green)';
+        status.textContent = (i18n.t && i18n.t('veg.resent')) || 'Email renvoyé. Vérifie ta boîte (et les spams).';
+      } else if (r && r.error === 'already-verified') {
+        // Edge case : l'email a été vérifié entre temps → on relance le check
+        btnCheck.click();
+      } else if (r && r.error === 'auth/too-many-requests') {
+        status.style.color = 'var(--red)';
+        status.textContent = (i18n.t && i18n.t('veg.toomany')) || 'Trop de tentatives — attends 1-2 min.';
+      } else {
+        status.style.color = 'var(--red)';
+        status.textContent = (i18n.t && i18n.t('veg.error')) || 'Erreur — réessaie dans quelques minutes.';
+      }
+    };
+
+    btnLogout.onclick = async () => {
+      try { await Auth.logout(); } catch {}
+      gate.style.display = 'none';
+      openModal('login');
+    };
+  }
 
   // ── Rate-limiting ───────────────────────────────────────────────────────────
   let _loginAttempts = 0;
