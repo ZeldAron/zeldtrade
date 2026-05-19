@@ -15,12 +15,19 @@ const Modal = (() => {
   let firmKey       = 'apex';
 
   // Screenshot du trade (persistant — Firebase Storage)
-  // shotBlob : Blob compressé en mémoire au paste, uploadé au save
-  // shotExistingPath : path Storage si on édite un trade qui a déjà un screenshot
-  // shotPendingDelete : true si user a cliqué Supprimer sur un screenshot existant
+  // shotBlob : Blob compressé en mémoire au paste, uploadé au save (slot 0)
+  // shotExistingPath : path Storage si on édite un trade qui a déjà un screenshot (slot 0)
+  // shotPendingDelete : true si user a cliqué Supprimer sur un screenshot existant (slot 0)
   let shotBlob          = null;
   let shotExistingPath  = null;
   let shotPendingDelete = false;
+  // v0.9.246 : slots additionnels 1 et 2 (Pro only). Même API que slot 0
+  // mais sans paste handler (le slot 0 reste le slot "Ctrl+V" primaire).
+  // Chaque entrée : { blob: Blob|null, existingPath: string|null, pendingDelete: bool, previewUrl: string|null }
+  let shotsExtra = [
+    { blob: null, existingPath: null, pendingDelete: false, previewUrl: null },
+    { blob: null, existingPath: null, pendingDelete: false, previewUrl: null },
+  ];
   // Pré-génère un ID trade pour le mode création (utile pour upload Storage avant save)
   let pendingTradeId    = null;
 
@@ -940,12 +947,176 @@ const Modal = (() => {
     $('wShotStatus').textContent        = '';
   }
 
-  // Reset complet du state screenshot
+  // Reset complet du state screenshot (tous les slots)
   function resetShotState() {
     shotBlob          = null;
     shotExistingPath  = null;
     shotPendingDelete = false;
     clearShotPreview();
+    // v0.9.246 : reset slots additionnels
+    shotsExtra.forEach((s, i) => {
+      s.blob = null;
+      s.existingPath = null;
+      s.pendingDelete = false;
+      if (s.previewUrl) { try { URL.revokeObjectURL(s.previewUrl); } catch {} }
+      s.previewUrl = null;
+    });
+    _renderExtraSlots();
+    _refreshShotsGate();
+  }
+
+  // v0.9.246 : applique le gating tier sur la section screenshots du wizard.
+  // - Trader : affiche la banner upsell, cache tout slot.
+  // - Pro    : affiche les slots (slot 0 + extras dans la limite getMaxScreenshots).
+  function _refreshShotsGate() {
+    const banner    = $('wShotsLockedBanner');
+    const container = $('wShotsContainer');
+    const countEl   = $('wShotsCount');
+    if (!banner || !container) return;
+    const max = (Store && Store.getMaxScreenshots) ? Store.getMaxScreenshots() : 0;
+    if (max <= 0) {
+      banner.style.display    = 'block';
+      container.style.display = 'none';
+      if (countEl) countEl.textContent = '';
+    } else {
+      banner.style.display    = 'none';
+      container.style.display = 'flex';
+      const filled = (shotBlob || shotExistingPath ? 1 : 0)
+                   + shotsExtra.slice(0, max - 1).filter(s => s.blob || s.existingPath).length;
+      if (countEl) countEl.textContent = `— ${filled}/${max}`;
+    }
+  }
+
+  // v0.9.246 : rend dynamiquement les slots 1 et 2 (si tier le permet).
+  function _renderExtraSlots() {
+    const wrap = $('wShotsExtra');
+    if (!wrap) return;
+    const max = (Store && Store.getMaxScreenshots) ? Store.getMaxScreenshots() : 0;
+    const extraCount = Math.max(0, Math.min(max - 1, shotsExtra.length));
+    wrap.innerHTML = '';
+    for (let i = 0; i < extraCount; i++) {
+      const slot = shotsExtra[i];
+      const idx  = i + 1; // slot index global (1, 2)
+      const hasContent = !!(slot.blob || (slot.existingPath && !slot.pendingDelete));
+      const previewSrc = slot.previewUrl || slot.existingPreviewUrl || '';
+
+      const el = document.createElement('div');
+      el.className = 'shot-slot-extra';
+      el.dataset.slot = String(idx);
+      el.style.cssText = 'border:1px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;outline:none;transition:border-color 0.15s,background 0.15s';
+      el.tabIndex = 0;
+      el.innerHTML = hasContent
+        ? `<img alt="Capture ${idx + 1}" src="${previewSrc}" style="max-width:100%;max-height:180px;border-radius:6px;display:block;margin:0 auto 8px">
+           <div style="display:flex;gap:8px;justify-content:center;font-size:12px">
+             <button type="button" class="btn-ghost shot-slot-replace" style="padding:4px 12px;font-size:12px">${i18n.t('wiz.shots.replace') || 'Remplacer'}</button>
+             <button type="button" class="btn-ghost shot-slot-delete"  style="padding:4px 12px;font-size:12px;color:var(--red)">${i18n.t('wiz.shots.delete') || 'Supprimer'}</button>
+           </div>`
+        : `<div style="color:var(--muted);font-size:13px">
+             <div style="font-size:22px;margin-bottom:6px">📎</div>
+             ${i18n.t('wiz.shots.extra.hint') || 'Ajoute une capture (ex : exit, gestion)'}<br>
+             <span style="font-size:11px">${i18n.t('wiz.shots.extra.cta') || 'Clique ou glisse une image'}</span>
+           </div>`;
+      wrap.appendChild(el);
+
+      // Bind handlers spécifiques à ce slot
+      _bindExtraSlot(el, i);
+    }
+  }
+
+  // v0.9.246 : handlers drag/drop/click pour un slot extra (1 ou 2).
+  function _bindExtraSlot(el, extraIdx) {
+    const replaceBtn = el.querySelector('.shot-slot-replace');
+    const deleteBtn  = el.querySelector('.shot-slot-delete');
+
+    // Click sur le slot (hors boutons) → ouvre file picker
+    el.addEventListener('click', (e) => {
+      if (replaceBtn && (e.target === replaceBtn || replaceBtn.contains(e.target))) return;
+      if (deleteBtn  && (e.target === deleteBtn  || deleteBtn.contains(e.target)))  return;
+      _pickExtraFile(extraIdx);
+    });
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); _pickExtraFile(extraIdx); }
+    });
+
+    // Drag & drop
+    el.addEventListener('dragover', (e) => { e.preventDefault(); el.style.borderColor = 'var(--accent)'; el.style.background = 'rgba(124,58,237,0.05)'; });
+    el.addEventListener('dragleave', () => { el.style.borderColor = ''; el.style.background = ''; });
+    el.addEventListener('drop', (e) => {
+      e.preventDefault();
+      el.style.borderColor = ''; el.style.background = '';
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file && file.type.startsWith('image/')) _handleExtraBlob(file, extraIdx);
+    });
+
+    if (replaceBtn) {
+      replaceBtn.addEventListener('click', (e) => { e.stopPropagation(); _pickExtraFile(extraIdx); });
+    }
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const s = shotsExtra[extraIdx];
+        if (s.existingPath) s.pendingDelete = true;
+        if (s.previewUrl) { try { URL.revokeObjectURL(s.previewUrl); } catch {} }
+        s.blob = null;
+        s.previewUrl = null;
+        _renderExtraSlots();
+        _refreshShotsGate();
+      });
+    }
+  }
+
+  function _pickExtraFile(extraIdx) {
+    const input = document.createElement('input');
+    input.type   = 'file';
+    input.accept = 'image/jpeg,image/png,image/webp';
+    input.style.display = 'none';
+    document.body.appendChild(input);
+    input.addEventListener('change', () => {
+      const f = input.files && input.files[0];
+      if (f) _handleExtraBlob(f, extraIdx);
+      try { document.body.removeChild(input); } catch {}
+    });
+    input.click();
+  }
+
+  async function _handleExtraBlob(rawBlob, extraIdx) {
+    const status = $('wShotStatus');
+    if (rawBlob.size > 10 * 1024 * 1024) {
+      status.style.color = 'var(--red)';
+      status.textContent = 'Fichier trop lourd (max 10 MB avant compression)';
+      return;
+    }
+    try {
+      const head = new Uint8Array(await rawBlob.slice(0, 12).arrayBuffer());
+      if (!isValidImageMagicBytes(head)) {
+        status.style.color = 'var(--red)';
+        status.textContent = 'Fichier invalide — utilise un PNG/JPG/WEBP/GIF';
+        return;
+      }
+    } catch {
+      status.style.color = 'var(--red)';
+      status.textContent = 'Image illisible';
+      return;
+    }
+    status.style.color = 'var(--muted)';
+    status.textContent = `Compression capture #${extraIdx + 2}…`;
+    try {
+      const compressed = await compressImage(rawBlob);
+      const s = shotsExtra[extraIdx];
+      if (s.previewUrl) { try { URL.revokeObjectURL(s.previewUrl); } catch {} }
+      s.blob          = compressed;
+      s.previewUrl    = URL.createObjectURL(compressed);
+      s.pendingDelete = false;
+      _renderExtraSlots();
+      _refreshShotsGate();
+      status.style.color    = 'var(--green)';
+      status.style.fontWeight = '600';
+      const kb = Math.round(compressed.size / 1024);
+      status.textContent    = `✓ Capture #${extraIdx + 2} prête (${kb} KB)`;
+    } catch (e) {
+      status.style.color = 'var(--red)';
+      status.textContent = e.message || 'Erreur lors du traitement de l\'image';
+    }
   }
 
   // Tracking de l'objectURL courant pour le révoquer avant remplacement
@@ -1005,6 +1176,33 @@ const Modal = (() => {
       status.textContent = e.message || 'Erreur lors du traitement de l\'image';
       shotBlob = null;
     }
+  }
+
+  // v0.9.246 : charge tous les screenshots (slot 0 + extras 1-2) à l'édition.
+  // Lit en priorité `trade.screenshotPaths` (array), sinon fallback sur le
+  // legacy `trade.screenshotPath` (string).
+  async function _loadExistingShots(t) {
+    const paths = Array.isArray(t.screenshotPaths) && t.screenshotPaths.length
+      ? t.screenshotPaths
+      : (t.screenshotPath ? [t.screenshotPath] : []);
+    if (paths[0]) await loadExistingShot(paths[0]);
+    // Slots extras (index 1 et 2 dans paths → shotsExtra[0] et shotsExtra[1])
+    for (let i = 1; i < paths.length && i - 1 < shotsExtra.length; i++) {
+      const slot = shotsExtra[i - 1];
+      slot.existingPath = paths[i];
+      slot.pendingDelete = false;
+      try {
+        const url = await Store.getTradeScreenshotUrl(paths[i]);
+        if (url) {
+          slot.existingPreviewUrl = url;
+          _renderExtraSlots();
+          _refreshShotsGate();
+        }
+      } catch (e) {
+        console.warn('[wizard] load extra slot ' + i + ' failed', e && e.message);
+      }
+    }
+    _refreshShotsGate();
   }
 
   // Charge l'image existante d'un trade depuis Firebase Storage (mode édition).
@@ -1114,8 +1312,8 @@ const Modal = (() => {
       populateInstrumentSelect(firmKey, t.instrument);
       updateLotsInput(t.instrument);
       fillStep3FromParsed();
-      // Charge le screenshot existant (async, non bloquant)
-      if (t.screenshotPath) loadExistingShot(t.screenshotPath);
+      // v0.9.246 : charge screenshots (slot 0 + extras 1-2)
+      _loadExistingShots(t);
       goToStep(3);
     } else {
       // Mode création : étape 1
@@ -1175,6 +1373,75 @@ const Modal = (() => {
                                     // Crypto (v0.9.190)
                                     'BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','AVAXUSDT','DOGEUSDT','LINKUSDT','DOTUSDT',
                                     'BTC-USD','ETH-USD','SOL-USD','XRP-USD','AVAX-USD']);
+
+  // v0.9.246 : upload de tous les slots screenshot (0 + extras). Trader → rien
+  // n'est uploadé, et tout legacy screenshotPath éventuel est supprimé.
+  // Retourne { screenshotPath: <slot 0 ou null>, screenshotPaths: [<paths non-null>] }.
+  async function _uploadAllSlots(tradeId) {
+    const max = (Store && Store.getMaxScreenshots) ? Store.getMaxScreenshots() : 0;
+    if (max <= 0) {
+      // Trader : aucune image conservée. Nettoie l'éventuel legacy.
+      if (shotExistingPath) Store.deleteTradeScreenshot(shotExistingPath).catch(() => null);
+      shotsExtra.forEach(s => {
+        if (s.existingPath) Store.deleteTradeScreenshot(s.existingPath).catch(() => null);
+      });
+      return { screenshotPath: null, screenshotPaths: [] };
+    }
+
+    const paths = [];
+
+    // ── Slot 0 ────────────────────────────────────────────────────────────────
+    if (shotPendingDelete && shotExistingPath) {
+      Store.deleteTradeScreenshot(shotExistingPath).catch(() => null);
+      paths[0] = null;
+    } else if (shotBlob) {
+      try {
+        const p = await Store.uploadTradeScreenshot(tradeId, shotBlob, 0);
+        if (shotExistingPath && shotExistingPath !== p) {
+          Store.deleteTradeScreenshot(shotExistingPath).catch(() => null);
+        }
+        paths[0] = p;
+      } catch (e) {
+        UI.toast('Upload capture #1 échoué : ' + (e.message || 'erreur'), true);
+        paths[0] = shotExistingPath || null;
+      }
+    } else if (shotExistingPath) {
+      paths[0] = shotExistingPath;
+    } else {
+      paths[0] = null;
+    }
+
+    // ── Slots extras (1, 2) ───────────────────────────────────────────────────
+    const extraCount = Math.min(max - 1, shotsExtra.length);
+    for (let i = 0; i < extraCount; i++) {
+      const s        = shotsExtra[i];
+      const slotIdx  = i + 1;
+      if (s.pendingDelete && s.existingPath) {
+        Store.deleteTradeScreenshot(s.existingPath).catch(() => null);
+        paths[slotIdx] = null;
+      } else if (s.blob) {
+        try {
+          const p = await Store.uploadTradeScreenshot(tradeId, s.blob, slotIdx);
+          if (s.existingPath && s.existingPath !== p) {
+            Store.deleteTradeScreenshot(s.existingPath).catch(() => null);
+          }
+          paths[slotIdx] = p;
+        } catch (e) {
+          UI.toast(`Upload capture #${slotIdx + 1} échoué : ` + (e.message || 'erreur'), true);
+          paths[slotIdx] = s.existingPath || null;
+        }
+      } else if (s.existingPath) {
+        paths[slotIdx] = s.existingPath;
+      } else {
+        paths[slotIdx] = null;
+      }
+    }
+
+    return {
+      screenshotPath:  paths[0] || null,
+      screenshotPaths: paths.filter(p => p),
+    };
+  }
 
   let _saveInFlight = false;
   async function save() {
@@ -1254,29 +1521,11 @@ const Modal = (() => {
     try {
       let saved;
       if (editingId) {
-        // Gestion screenshot mode édition
+        // v0.9.246 : upload tous les slots (max 3, Pro only). Trader → null.
         const finalData = { ...data };
-        if (shotPendingDelete && shotExistingPath) {
-          // User a explicitement supprimé → on retire screenshotPath et on delete le fichier
-          finalData.screenshotPath = null;
-          Store.deleteTradeScreenshot(shotExistingPath).catch(() => null);
-        } else if (shotBlob) {
-          // Nouveau screenshot (paste/replace) → upload puis attache le path
-          try {
-            const path = await Store.uploadTradeScreenshot(editingId, shotBlob);
-            finalData.screenshotPath = path;
-            // Si on remplace un screenshot existant à un path différent, on supprime l'ancien
-            if (shotExistingPath && shotExistingPath !== path) {
-              Store.deleteTradeScreenshot(shotExistingPath).catch(() => null);
-            }
-          } catch (e) {
-            UI.toast('Upload screenshot échoué : ' + (e.message || 'erreur'), true);
-            return;  // ne pas sauver le trade si l'upload a échoué
-          }
-        } else if (shotExistingPath) {
-          // Aucun changement : conserver le path existant
-          finalData.screenshotPath = shotExistingPath;
-        }
+        const { screenshotPath, screenshotPaths } = await _uploadAllSlots(editingId);
+        finalData.screenshotPath  = screenshotPath;
+        finalData.screenshotPaths = screenshotPaths.length ? screenshotPaths : null;
         saved = Store.updateTrade(editingId, finalData);
         UI.toast(i18n.t('modal.trade.updated'));
       } else if (data.apex && data.apex.startsWith('grp:')) {
@@ -1305,18 +1554,11 @@ const Modal = (() => {
           return;
         }
       } else {
-        // Mode création : utilise pendingTradeId pour upload AVANT addTrade
-        let screenshotPath = null;
-        if (shotBlob && pendingTradeId) {
-          try {
-            screenshotPath = await Store.uploadTradeScreenshot(pendingTradeId, shotBlob);
-          } catch (e) {
-            UI.toast('Upload screenshot échoué : ' + (e.message || 'erreur'), true);
-            return;
-          }
-        }
+        // v0.9.246 : mode création, upload tous les slots via helper unifié
+        const { screenshotPath, screenshotPaths } = await _uploadAllSlots(pendingTradeId);
         const dataWithId = { ...data, id: pendingTradeId };
-        if (screenshotPath) dataWithId.screenshotPath = screenshotPath;
+        if (screenshotPath)         dataWithId.screenshotPath  = screenshotPath;
+        if (screenshotPaths.length) dataWithId.screenshotPaths = screenshotPaths;
         saved = Store.addTrade(dataWithId);
         UI.toast(i18n.t('modal.trade.saved'));
       }

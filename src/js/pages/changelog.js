@@ -5,6 +5,20 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.246',
+      date: '2026-05-20',
+      time: '01:30',
+      tags: ['feature', 'security'],
+      title: 'Jusqu\'à 3 captures par trade (Pro) — 0 en plan gratuit',
+      titleEn: 'Up to 3 screenshots per trade (Pro) — 0 on free plan',
+      items: [
+        { type: 'feature', text: '**Nouveau** : tu peux désormais joindre jusqu\'à **3 captures par trade** (setup, gestion, exit) sur les plans **Funded** et **Elite**. Idéal pour reconstituer un trade complet en revue.', textEn: '**New**: you can now attach up to **3 screenshots per trade** (setup, management, exit) on **Funded** and **Elite** plans.' },
+        { type: 'feature', text: 'Le détail d\'un trade affiche désormais une **galerie** de toutes les captures (cliquables pour zoom plein écran).', textEn: 'Trade detail view now shows a **gallery** of all screenshots (click for full-screen zoom).' },
+        { type: 'security', text: 'Plan **Trader (gratuit)** : les captures ne sont plus conservées. L\'IA Vision continue de fonctionner (1 analyse/jour) mais l\'image n\'est pas stockée. Pour conserver les captures, passe en plan Pro.', textEn: '**Trader (free)** plan: screenshots are no longer stored. AI Vision still works (1 analysis/day) but the image is not kept. Upgrade to Pro to keep screenshots.' },
+        { type: 'feature', text: 'Rétro-compat : les trades existants gardent leur unique capture. Tu peux en ajouter 2 autres en mode édition (si tu es Pro).', textEn: 'Backward compat: existing trades keep their single screenshot. You can add 2 more in edit mode (if Pro).' },
+      ],
+    },
+    {
       version: '0.9.239',
       date: '2026-05-20',
       time: '00:30',

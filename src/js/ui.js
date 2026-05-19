@@ -273,13 +273,22 @@ const UI = (() => {
          </div>`
       : '';
 
-    // Screenshot du trade (s'il existe) — cliquable pour lightbox plein écran
-    const screenshotCard = t.screenshotPath
+    // v0.9.246 : Galerie screenshots (1 à 3 images). Lit `screenshotPaths` (array)
+    // ou fallback sur `screenshotPath` (legacy single). Chaque image cliquable
+    // pour lightbox plein écran.
+    const shotPaths = (Array.isArray(t.screenshotPaths) && t.screenshotPaths.length)
+      ? t.screenshotPaths.filter(Boolean)
+      : (t.screenshotPath ? [t.screenshotPath] : []);
+    const screenshotCard = shotPaths.length
       ? `<div class="info-card" style="margin-top:14px">
-           <h4 style="margin-bottom:10px">📸 Screenshot</h4>
-           <div class="trade-screenshot-wrap" style="position:relative;background:var(--bg-deeper,#0a0a0a);border-radius:8px;overflow:hidden;cursor:zoom-in;min-height:180px;display:flex;align-items:center;justify-content:center">
-             <img id="tradeShotImg" alt="Screenshot du trade" style="max-width:100%;max-height:400px;display:block;border-radius:8px;opacity:0;transition:opacity 0.2s">
-             <div id="tradeShotLoading" style="position:absolute;color:var(--muted);font-size:13px">Chargement…</div>
+           <h4 style="margin-bottom:10px">📸 Captures (${shotPaths.length})</h4>
+           <div class="trade-shots-gallery" style="display:grid;grid-template-columns:repeat(${shotPaths.length === 1 ? 1 : 'auto-fit,minmax(180px,1fr)'});gap:10px">
+             ${shotPaths.map((p, i) => `
+               <div class="trade-screenshot-wrap" data-shot-idx="${i}" style="position:relative;background:var(--bg-deeper,#0a0a0a);border-radius:8px;overflow:hidden;cursor:zoom-in;min-height:160px;display:flex;align-items:center;justify-content:center">
+                 <img class="tradeShotImg" data-shot-idx="${i}" alt="Capture ${i + 1}" style="max-width:100%;max-height:300px;display:block;border-radius:8px;opacity:0;transition:opacity 0.2s">
+                 <div class="tradeShotLoading" data-shot-idx="${i}" style="position:absolute;color:var(--muted);font-size:12px">Chargement…</div>
+               </div>
+             `).join('')}
            </div>
          </div>`
       : '';
@@ -358,26 +367,28 @@ const UI = (() => {
         ${screenshotCard}
       </div>`;
 
-    // Charge l'image du screenshot async dès que le panel est rendu
-    if (t.screenshotPath) {
-      const imgEl     = $('tradeShotImg');
-      const loadingEl = $('tradeShotLoading');
-      Store.getTradeScreenshotUrl(t.screenshotPath).then(url => {
-        if (url && imgEl) {
-          imgEl.src = url;
-          imgEl.onload = () => {
-            imgEl.style.opacity = '1';
-            if (loadingEl) loadingEl.style.display = 'none';
-          };
-          imgEl.onerror = () => {
-            if (loadingEl) loadingEl.textContent = 'Image introuvable';
-          };
-          // Click pour lightbox plein écran
-          const wrap = imgEl.parentElement;
-          if (wrap) wrap.addEventListener('click', () => openLightbox(url));
-        } else if (loadingEl) {
-          loadingEl.textContent = 'Screenshot indisponible';
-        }
+    // v0.9.246 : charge async chaque capture de la galerie + bind lightbox.
+    if (shotPaths.length) {
+      shotPaths.forEach((path, i) => {
+        const imgEl     = document.querySelector(`.tradeShotImg[data-shot-idx="${i}"]`);
+        const loadingEl = document.querySelector(`.tradeShotLoading[data-shot-idx="${i}"]`);
+        if (!imgEl) return;
+        Store.getTradeScreenshotUrl(path).then(url => {
+          if (url) {
+            imgEl.src = url;
+            imgEl.onload = () => {
+              imgEl.style.opacity = '1';
+              if (loadingEl) loadingEl.style.display = 'none';
+            };
+            imgEl.onerror = () => {
+              if (loadingEl) loadingEl.textContent = 'Image introuvable';
+            };
+            const wrap = imgEl.parentElement;
+            if (wrap) wrap.addEventListener('click', () => openLightbox(url));
+          } else if (loadingEl) {
+            loadingEl.textContent = 'Capture indisponible';
+          }
+        });
       });
     }
 
