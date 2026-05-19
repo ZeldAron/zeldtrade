@@ -557,15 +557,31 @@ const Store = (() => {
       const safe = String(raw.groupId).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 64);
       if (safe) out.groupId = safe;
     }
-    // screenshotPath optionnel : path Storage du screenshot attaché au trade
-    // Validation STRICTE : doit appartenir au user courant (anti cross-tenant)
-    // et format attendu users/{uid}/trades/{tradeId}/screenshot.(jpg|png|webp)
-    if (raw.screenshotPath && typeof raw.screenshotPath === 'string' && _uid && _uid !== 'default') {
-      const safe = raw.screenshotPath.replace(/[^a-zA-Z0-9/_.\-]/g, '').slice(0, 200);
+    // v0.9.247 : helper local pour valider un path Storage de screenshot.
+    // Format attendu : `users/{uid}/trades/{tradeId}/screenshot{_N}.(jpg|png|webp)`
+    // (slot 0 = screenshot.jpg legacy, slots 1-2 = screenshot_N.jpg)
+    function _safeShotPath(p) {
+      if (!p || typeof p !== 'string' || !_uid || _uid === 'default') return null;
+      const safe = p.replace(/[^a-zA-Z0-9/_.\-]/g, '').slice(0, 200);
       const expectedPrefix = `users/${_uid}/trades/`;
-      if (safe.startsWith(expectedPrefix) && /\/screenshot\.(jpe?g|png|webp)$/.test(safe)) {
-        out.screenshotPath = safe;
-      }
+      if (!safe.startsWith(expectedPrefix)) return null;
+      if (!/\/screenshot(_\d{1,2})?\.(jpe?g|png|webp)$/.test(safe)) return null;
+      return safe;
+    }
+
+    // screenshotPath optionnel : path Storage du screenshot slot 0 (legacy compat)
+    if (raw.screenshotPath) {
+      const safe = _safeShotPath(raw.screenshotPath);
+      if (safe) out.screenshotPath = safe;
+    }
+    // v0.9.247 : screenshotPaths[] (jusqu'à 3 captures, plan Pro).
+    // Chaque path validé indépendamment. Cap à 3 pour respecter la limite tier max.
+    if (Array.isArray(raw.screenshotPaths)) {
+      const cleaned = raw.screenshotPaths
+        .slice(0, 3)
+        .map(_safeShotPath)
+        .filter(Boolean);
+      if (cleaned.length) out.screenshotPaths = cleaned;
     }
     return out;
   }
@@ -620,10 +636,11 @@ const Store = (() => {
 
   function deleteTrade(id) {
     const t = trades.find(tr => tr.id === id);
-    // Supprimer aussi le screenshot Storage si présent (best-effort, async fire-and-forget)
-    if (t && t.screenshotPath) {
-      deleteTradeScreenshot(t.screenshotPath).catch(() => null);
-    }
+    // v0.9.247 : supprime TOUTES les captures Storage (slot 0 legacy + extras)
+    const toDelete = new Set();
+    if (t && t.screenshotPath) toDelete.add(t.screenshotPath);
+    if (t && Array.isArray(t.screenshotPaths)) t.screenshotPaths.forEach(p => p && toDelete.add(p));
+    toDelete.forEach(p => deleteTradeScreenshot(p).catch(() => null));
     trades = trades.filter(t => t.id !== id);
     _saveTrades();
   }
