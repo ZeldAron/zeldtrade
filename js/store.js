@@ -150,11 +150,14 @@ const Store = (() => {
   // ─── Plans & tiers (v0.9.211) ────────────────────────────────────────────────
   // 4 tiers : trader (gratuit) / funded (14,99 €) / elite (29,99 €) / beta (admin attribué, accès tout)
   const VALID_TIERS = new Set(['trader', 'funded', 'elite', 'beta']);
+  // v0.9.246 : maxScreenshots — nombre max d'images conservées par trade.
+  // Trader gratuit = 0 (l'IA Vision marche encore pour analyser mais l'image
+  // n'est PAS uploadée dans Storage au save). Pro = 3 images max.
   const TIER_LIMITS = {
-    trader: { maxAccounts: 1,        maxAiPerDay: 1        },
-    funded: { maxAccounts: 10,       maxAiPerDay: 20       },
-    elite:  { maxAccounts: 100,      maxAiPerDay: 100      },
-    beta:   { maxAccounts: Infinity, maxAiPerDay: Infinity },
+    trader: { maxAccounts: 1,        maxAiPerDay: 1,        maxScreenshots: 0   },
+    funded: { maxAccounts: 10,       maxAiPerDay: 20,       maxScreenshots: 3   },
+    elite:  { maxAccounts: 100,      maxAiPerDay: 100,      maxScreenshots: 3   },
+    beta:   { maxAccounts: Infinity, maxAiPerDay: Infinity, maxScreenshots: 3   },
   };
   // Matrice features → tiers qui y ont accès. Si non listée = accès libre.
   const TIER_FEATURES = {
@@ -627,17 +630,29 @@ const Store = (() => {
 
   // ── Screenshots de trades (Firebase Storage) ────────────────────────────────
   // Upload un Blob (image compressée en JPEG) pour un trade donné.
-  // Retourne le path Storage à stocker dans le trade.screenshotPath.
-  async function uploadTradeScreenshot(tradeId, blob) {
+  // v0.9.246 : ajout d'un slot index optionnel pour supporter N screenshots
+  // par trade. slot=0 garde le chemin legacy `screenshot.jpg` (rétro-compat),
+  // slot>=1 utilise `screenshot_{idx}.jpg`.
+  async function uploadTradeScreenshot(tradeId, blob, slot) {
     if (!_fbStorage || !_uid || _uid === 'default') throw new Error('Storage non disponible');
     if (!tradeId || !/^[a-zA-Z0-9_-]{1,64}$/.test(tradeId)) throw new Error('Invalid tradeId');
     if (!(blob instanceof Blob)) throw new Error('Invalid blob');
     if (blob.size > 2 * 1024 * 1024) throw new Error('Image trop grande (>2 MB)');
-    const path = `users/${_uid}/trades/${tradeId}/screenshot.jpg`;
+    const idx = Number.isInteger(slot) && slot >= 0 ? slot : 0;
+    if (idx >= getMaxScreenshots()) throw new Error('Limite screenshots du plan atteinte');
+    const fileName = idx === 0 ? 'screenshot.jpg' : `screenshot_${idx}.jpg`;
+    const path = `users/${_uid}/trades/${tradeId}/${fileName}`;
     const ref  = _fbStorage.ref(path);
     await ref.put(blob, { contentType: 'image/jpeg', cacheControl: 'private, max-age=31536000' });
     return path;
   }
+
+  // v0.9.246 : nombre max de screenshots par trade selon le tier de l'user.
+  // Trader = 0, Funded/Elite/Beta = 3.
+  function getMaxScreenshots() {
+    return (getLimits() && getLimits().maxScreenshots) || 0;
+  }
+  function canSaveScreenshots() { return getMaxScreenshots() > 0; }
 
   // Récupère l'URL signée (téléchargement) du screenshot d'un trade.
   async function getTradeScreenshotUrl(path) {
@@ -1045,6 +1060,7 @@ const Store = (() => {
     initForUser, clearLocalCache, purgeForeignCache,
     getTrades, getTradeById, addTrade, addTradesBatch, updateTrade, deleteTrade, importTrades, clearTrades, exportJSON, exportFullJSON,
     newTradeId: _newTradeId, uploadTradeScreenshot, getTradeScreenshotUrl, deleteTradeScreenshot,
+    getMaxScreenshots, canSaveScreenshots,
     getSettings, getGroqKey, updateSettings,
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,
