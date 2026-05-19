@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Gradient principal violet brand -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#0d0d0f"/>
+      <stop offset="55%"  stop-color="#141417"/>
+      <stop offset="100%" stop-color="#1a1325"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#a78bfa"/>
+      <stop offset="50%"  stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+    <linearGradient id="pinkGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f472b6" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="purpleGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#7c3aed" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Pattern grille subtil -->
+    <pattern id="gridPattern" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(124,58,237,0.04)" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+  <rect width="1200" height="630" fill="url(#gridPattern)"/>
+
+  <!-- Glow ambient en haut à droite -->
+  <circle cx="1050" cy="80" r="280" fill="url(#purpleGlow)"/>
+  <!-- Glow rose en bas à gauche -->
+  <circle cx="100" cy="560" r="220" fill="url(#purpleGlow)"/>
+
+  <!-- Logo Z en grand (top-left) -->
+  <g transform="translate(80, 80)">
+    <rect x="0" y="0" width="88" height="88" rx="22" fill="url(#purpleGrad)"/>
+    <text x="44" y="64" font-family="-apple-system, system-ui, sans-serif" font-size="56" font-weight="700" fill="#ffffff" text-anchor="middle" letter-spacing="-2">Z</text>
+  </g>
+
+  <!-- Brand name -->
+  <text x="190" y="125" font-family="-apple-system, system-ui, sans-serif" font-size="36" font-weight="700" fill="#ffffff" letter-spacing="-1">ZeldTrade</text>
+  <text x="190" y="155" font-family="-apple-system, system-ui, sans-serif" font-size="16" font-weight="500" fill="#a78bfa" letter-spacing="0.5">JOURNAL DE TRADING · PROP FIRMS · CRYPTO</text>
+
+  <!-- Titre principal -->
+  <text x="80" y="290" font-family="-apple-system, system-ui, sans-serif" font-size="68" font-weight="700" fill="#ffffff" letter-spacing="-2">Arrête de cramer tes</text>
+  <text x="80" y="370" font-family="-apple-system, system-ui, sans-serif" font-size="68" font-weight="700" letter-spacing="-2">
+    <tspan fill="#ffffff">comptes </tspan><tspan fill="#a78bfa">prop firm</tspan><tspan fill="#ffffff">.</tspan>
+  </text>
+
+  <!-- Sub -->
+  <text x="80" y="425" font-family="-apple-system, system-ui, sans-serif" font-size="22" font-weight="400" fill="#9ca3af" letter-spacing="0">
+    Journal complet, IA Vision pour analyser tes screenshots, et règles Apex, FTMO,
+  </text>
+  <text x="80" y="455" font-family="-apple-system, system-ui, sans-serif" font-size="22" font-weight="400" fill="#9ca3af">
+    Topstep, Lucid, Funding Pips appliquées automatiquement.
+  </text>
+
+  <!-- Features chips -->
+  <g transform="translate(80, 510)">
+    <rect x="0"   y="0" width="180" height="42" rx="21" fill="rgba(124,58,237,0.18)" stroke="rgba(124,58,237,0.35)" stroke-width="1"/>
+    <text x="90" y="28" font-family="-apple-system, system-ui, sans-serif" font-size="15" font-weight="600" fill="#ffffff" text-anchor="middle">⚡ IA Vision incluse</text>
+
+    <rect x="200" y="0" width="180" height="42" rx="21" fill="rgba(124,58,237,0.18)" stroke="rgba(124,58,237,0.35)" stroke-width="1"/>
+    <text x="290" y="28" font-family="-apple-system, system-ui, sans-serif" font-size="15" font-weight="600" fill="#ffffff" text-anchor="middle">💎 100 comptes max</text>
+
+    <rect x="400" y="0" width="180" height="42" rx="21" fill="rgba(124,58,237,0.18)" stroke="rgba(124,58,237,0.35)" stroke-width="1"/>
+    <text x="490" y="28" font-family="-apple-system, system-ui, sans-serif" font-size="15" font-weight="600" fill="#ffffff" text-anchor="middle">🇫🇷 100% RGPD</text>
+
+    <rect x="600" y="0" width="200" height="42" rx="21" fill="rgba(124,58,237,0.18)" stroke="rgba(124,58,237,0.35)" stroke-width="1"/>
+    <text x="700" y="28" font-family="-apple-system, system-ui, sans-serif" font-size="15" font-weight="600" fill="#ffffff" text-anchor="middle">✦ Gratuit à vie</text>
+  </g>
+
+  <!-- URL bottom right -->
+  <text x="1120" y="600" font-family="-apple-system, system-ui, sans-serif" font-size="20" font-weight="600" fill="#a78bfa" text-anchor="end">zeldtrade.com</text>
+
+  <!-- Decorative elements: chart-like lines top right -->
+  <g transform="translate(750, 80)" opacity="0.6">
+    <!-- mini "candlestick" decorations -->
+    <rect x="0"   y="60" width="6" height="80" fill="#30d158"/>
+    <rect x="20"  y="40" width="6" height="120" fill="#ff453a"/>
+    <rect x="40"  y="20" width="6" height="160" fill="#30d158"/>
+    <rect x="60"  y="50" width="6" height="100" fill="#30d158"/>
+    <rect x="80"  y="80" width="6" height="60" fill="#ff453a"/>
+    <rect x="100" y="30" width="6" height="140" fill="#30d158"/>
+    <rect x="120" y="10" width="6" height="180" fill="#30d158"/>
+    <rect x="140" y="40" width="6" height="120" fill="#ff453a"/>
+    <rect x="160" y="20" width="6" height="160" fill="#30d158"/>
+    <rect x="180" y="0"  width="6" height="200" fill="#30d158"/>
+
+    <!-- Trending line up -->
+    <polyline points="0,140 20,100 40,60 60,90 80,120 100,70 120,30 140,80 160,40 180,20" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
