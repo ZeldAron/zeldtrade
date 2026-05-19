@@ -43,59 +43,151 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
-   v0.9.239 — LIGHT MODE
+   v0.9.240 — LIGHT MODE (palette douce slate/blue, style Linear/Notion)
    Activé via `<html data-theme="light">` (géré dans theme.js).
-   Conserve les couleurs sémantiques trading (green/red/amber) pour cohérence,
-   inverse uniquement la surface (backgrounds + borders + text).
-   Les accents brand (violet) sont légèrement adoucis pour le contraste light.
+
+   Principes :
+   - Pas de blanc pur agressif → tons gris bleutés (slate) doux à l'œil
+   - Surfaces différenciées : sidebar (plus claire) vs main (encore plus clair) vs cards (blanc)
+   - Ombres subtiles sur les cards/inputs pour donner de la profondeur
+   - Couleurs sémantiques (green/red/amber) assombries pour contraste sur clair
+   - Accents brand (violet) inchangés (le violet #7c3aed rend bien sur clair)
    ═══════════════════════════════════════════════════════════════════════════════ */
 [data-theme="light"] {
-  --bg:        #ffffff;
-  --bg2:       #f8f8fa;
-  --bg3:       #ebebef;       /* surface cards, inputs */
-  --bg4:       #e0e0e6;       /* surface chips, badges */
+  /* Surfaces — gris très légèrement bleutés (slate-50 / slate-100 vibes).
+     bg  = sidebar / header (un poil plus foncé que bg2 pour différencier)
+     bg2 = main content background (le plus doux, "page")
+     bg3 = cards, inputs (blanc cassé)
+     bg4 = chips, badges hover, états actifs */
+  --bg:        #eef2f7;       /* slate-100 légèrement bleuté (sidebar) */
+  --bg2:       #f6f8fb;       /* slate-50 (main content) */
+  --bg3:       #ffffff;       /* cards, inputs (blanc pur sur fond gris) */
+  --bg4:       #e6ebf2;       /* chips, badges, hover */
 
-  --border:    rgba(0,0,0,0.08);
-  --border2:   rgba(0,0,0,0.14);
+  /* Borders : très subtiles, slate-200/300 avec alpha pour fondu */
+  --border:    rgba(15, 23, 42, 0.07);   /* slate-900 7% */
+  --border2:   rgba(15, 23, 42, 0.13);
 
-  --text:      #15151a;
-  --muted:     #6b6b73;
-  --muted2:    #9a9aa1;
+  /* Texte : slate-900 (pas pur noir → moins agressif) */
+  --text:      #0f172a;
+  --muted:     #64748b;       /* slate-500 */
+  --muted2:    #94a3b8;       /* slate-400 */
 
-  /* Couleurs sémantiques légèrement assombries pour contraste sur fond blanc.
-     Les "dim" deviennent plus visibles (alpha augmenté). */
-  --green:     #16a34a;
-  --green-dim: rgba(22,163,74,0.10);
-  --red:       #dc2626;
-  --red-dim:   rgba(220,38,38,0.10);
-  --amber:     #d97706;
-  --amber-dim: rgba(217,119,6,0.12);
-  --blue:      #2563eb;
-  --blue-dim:  rgba(37,99,235,0.10);
+  /* Couleurs sémantiques trading — saturées et un peu plus foncées
+     pour rester lisibles sur fond clair (vs versions iOS dark) */
+  --green:     #15803d;       /* emerald-700 */
+  --green-dim: rgba(21,128,61,0.10);
+  --red:       #b91c1c;       /* red-700 */
+  --red-dim:   rgba(185,28,28,0.10);
+  --amber:     #b45309;       /* amber-700 */
+  --amber-dim: rgba(180,83,9,0.12);
+  --blue:      #0369a1;       /* sky-700 — bleu ciel un peu plus profond */
+  --blue-dim:  rgba(3,105,161,0.10);
 
-  --accent:     #7c3aed;       /* violet identique (suffisamment foncé pour fond clair) */
-  --accent-l:   #8b5cf6;       /* light variant un peu plus saturé */
-  --accent-d:   #5b21b6;
-  --accent-dim: rgba(124,58,237,0.10);
-  --pink:       #ec4899;
+  /* Brand violet — quasi inchangé, juste accent-l ajusté pour fond clair */
+  --accent:     #7c3aed;
+  --accent-l:   #8b5cf6;
+  --accent-d:   #6d28d9;
+  --accent-dim: rgba(124,58,237,0.09);
+  --pink:       #db2777;       /* rose-600 */
   --cyan:       #0891b2;
 
   color-scheme: light;
 }
 
-/* Ajustements ponctuels pour le mode light : les éléments qui utilisaient
-   un blanc/quasi-blanc en dur (boutons, badges) restent lisibles. */
+/* ─────────────────────────────────────────────────────────────────────────────
+   Ajustements light mode : ombres + différenciation visuelle des surfaces
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Page = bg2 doux (le plus clair des slate) */
 [data-theme="light"] body { background: var(--bg2); }
-[data-theme="light"] .modal-overlay { background: rgba(0,0,0,0.45); }
-[data-theme="light"] .consent-modal { background: rgba(0,0,0,0.45); }
-[data-theme="light"] .toast { box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-/* Inputs : ombre interne légère pour différencier du bg en light */
-[data-theme="light"] .form-input {
-  background: var(--bg);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04);
+
+/* Overlays modales : voile foncé légèrement coloré (pas du noir pur) */
+[data-theme="light"] .modal-overlay,
+[data-theme="light"] .consent-modal {
+  background: rgba(15, 23, 42, 0.5);
 }
-[data-theme="light"] .form-input:focus {
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.04), 0 0 0 3px rgba(124,58,237,0.15);
+
+/* Cards / surfaces principales : ajout d'une ombre très subtile pour
+   différencier de l'arrière-plan (Linear / Notion style) */
+[data-theme="light"] .metric-card,
+[data-theme="light"] .info-card,
+[data-theme="light"] .settings-section,
+[data-theme="light"] .level-card,
+[data-theme="light"] .goal-card,
+[data-theme="light"] .trade-item,
+[data-theme="light"] .modal-card,
+[data-theme="light"] .modal,
+[data-theme="light"] .login-card,
+[data-theme="light"] .consent-modal-box,
+[data-theme="light"] .contact-panel,
+[data-theme="light"] .dash-empty,
+[data-theme="light"] .page-section,
+[data-theme="light"] .ico-btn {
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+/* Hover state sur les cards interactives — léger lift */
+[data-theme="light"] .trade-item:hover {
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Toasts : ombre marquée pour visibilité sur fond clair */
+[data-theme="light"] .toast {
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18), 0 2px 6px rgba(15, 23, 42, 0.08);
+}
+
+/* Inputs : fond blanc + ombre interne pour donner du relief */
+[data-theme="light"] .form-input,
+[data-theme="light"] .ac-input,
+[data-theme="light"] .pro-code-input {
+  background: var(--bg3);
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+[data-theme="light"] .form-input:focus,
+[data-theme="light"] .ac-input:focus,
+[data-theme="light"] .pro-code-input:focus {
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04), 0 0 0 3px rgba(124,58,237,0.15);
+}
+
+/* Sidebar — touche bleutée plus marquée pour la séparer du main content */
+[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, #e9eef5 0%, #eef2f7 100%);
+  border-right: 1px solid var(--border);
+}
+
+/* Boutons primaires — gradient inchangé, juste ombre pour profondeur */
+[data-theme="light"] .btn-primary,
+[data-theme="light"] .login-btn,
+[data-theme="light"] .new-trade-btn {
+  box-shadow: 0 2px 6px rgba(124, 58, 237, 0.25), 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+/* Chips de filtre, segments : bg4 hover plus marqué */
+[data-theme="light"] .filter-chip:hover,
+[data-theme="light"] .seg-btn:hover {
+  background: var(--bg4);
+}
+
+/* Loader / skeleton shimmer adapté light mode (vu sombre sur clair sinon) */
+[data-theme="light"] .page-skeleton .skl-bar {
+  background: linear-gradient(90deg, var(--bg4) 0%, var(--bg3) 50%, var(--bg4) 100%);
+}
+
+/* Scroll bars sur webkit — slate doux */
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+}
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.28);
+}
+
+/* Touche bleu ciel sur le hero login / loader pour donner un peu de chaleur */
+[data-theme="light"] .lp-loader,
+[data-theme="light"] .login-screen,
+[data-theme="light"] .auth-screen {
+  background: linear-gradient(160deg, #f0f5fb 0%, #f6f8fb 60%, #ffffff 100%);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
