@@ -37,6 +37,14 @@
   --r:    10px;
   --r-sm: 6px;
 
+  /* v0.9.242 : variables surfaces pour différencier au thème.
+     Permet à .sidebar / .user-pill etc. de basculer sans cascade dispute. */
+  --sidebar-bg:    linear-gradient(180deg, #141417 0%, #0d0d0f 100%);
+  --pill-bg:       rgba(255,255,255,0.04);
+  --pill-border:   rgba(255,255,255,0.08);
+  --hover-bg:      rgba(255,255,255,0.05);
+  --active-bg:     rgba(124,58,237,0.12);
+
   /* Transition fluide quand on toggle le thème (sur les surfaces principales).
      Limité aux propriétés visibles pour éviter de freezer le scroll/anim. */
   color-scheme: dark;
@@ -91,6 +99,13 @@
   --accent-dim: rgba(124,58,237,0.09);
   --pink:       #db2777;       /* rose-600 */
   --cyan:       #0891b2;
+
+  /* v0.9.242 : surfaces sidebar / pill en light mode */
+  --sidebar-bg:  linear-gradient(180deg, #e9eef5 0%, #eef2f7 100%);
+  --pill-bg:     rgba(15,23,42,0.04);
+  --pill-border: rgba(15,23,42,0.08);
+  --hover-bg:    rgba(15,23,42,0.05);
+  --active-bg:   rgba(124,58,237,0.12);
 
   color-scheme: light;
 }
@@ -151,11 +166,30 @@
   box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04), 0 0 0 3px rgba(124,58,237,0.15);
 }
 
-/* Sidebar — touche bleutée plus marquée pour la séparer du main content */
-[data-theme="light"] .sidebar {
-  background: linear-gradient(180deg, #e9eef5 0%, #eef2f7 100%);
-  border-right: 1px solid var(--border);
+/* Sidebar — gérée via --sidebar-bg dans :root + [data-theme="light"]. Bordure
+   reste sur le sélecteur principal `.sidebar { border-right: ... }`. */
+
+/* v0.9.242 : Contact bubble — ombre + bordure marquées en light pour le pop */
+[data-theme="light"] .contact-bubble {
+  box-shadow: 0 6px 20px rgba(124,58,237,0.35), 0 2px 6px rgba(15,23,42,0.08);
+  border: 2px solid rgba(255,255,255,0.95);
 }
+[data-theme="light"] .contact-bubble:hover {
+  box-shadow: 0 8px 28px rgba(124,58,237,0.5), 0 2px 8px rgba(15,23,42,0.1);
+}
+/* Le "dot online" du contact bubble : bordure doit matcher le bg du bouton, pas la page */
+[data-theme="light"] .contact-bubble-dot { border-color: var(--accent); }
+
+/* v0.9.242 : Topbar — différenciation visuelle vs main content en light */
+[data-theme="light"] .topbar {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+/* Sidebar stats values readable on light pill background */
+[data-theme="light"] .sidebar-stats { color: var(--text); }
+[data-theme="light"] .user-pill-name,
+[data-theme="light"] .user-pill-avatar { color: var(--text); }
 
 /* Boutons primaires — gradient inchangé, juste ombre pour profondeur */
 [data-theme="light"] .btn-primary,
@@ -211,7 +245,7 @@ body {
 .sidebar {
   width: 220px;
   min-width: 220px;
-  background: linear-gradient(180deg, #141417 0%, #0d0d0f 100%);
+  background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -282,8 +316,8 @@ body {
   stroke-linejoin: round;
 }
 
-.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.05); }
-.nav-item.active { color: var(--accent); background: rgba(124,58,237,0.12); font-weight: 500; }
+.nav-item:hover { color: var(--text); background: var(--hover-bg); }
+.nav-item.active { color: var(--accent); background: var(--active-bg); font-weight: 500; }
 .nav-item.active svg { color: var(--accent); }
 
 .nav-divider { height: 1px; background: var(--border); margin: 8px 0; }
@@ -423,7 +457,7 @@ body {
   gap: 10px;
   align-items: stretch;
 }
-.trade-item:hover { background: rgba(255,255,255,0.03); }
+.trade-item:hover { background: var(--hover-bg); }
 .trade-item.selected { background: rgba(124,58,237,0.08); border-left: 2px solid var(--accent); }
 
 .trade-bar { width: 3px; border-radius: 99px; flex-shrink: 0; min-height: 40px; }
@@ -2092,8 +2126,8 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   justify-content: space-between;
   padding: 8px 10px;
   margin: 0 8px 8px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: var(--pill-bg);
+  border: 1px solid var(--pill-border);
   border-radius: var(--r-sm);
   gap: 8px;
 }
@@ -3471,7 +3505,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .contact-panel-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 16px 16px 12px;
-  background: linear-gradient(135deg, #0d0d0f, #141417);
+  background: linear-gradient(135deg, var(--bg), var(--bg2));
   border-bottom: 1px solid var(--border);
 }
 .contact-panel-title { display: flex; align-items: center; gap: 10px; }
@@ -3857,7 +3891,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   border-radius: var(--r-sm);
   transition: background 0.15s;
 }
-.hamburger-btn:hover { background: rgba(255,255,255,0.07); }
+.hamburger-btn:hover { background: var(--hover-bg); }
 .hamburger-btn span {
   display: block;
   height: 1.5px;
