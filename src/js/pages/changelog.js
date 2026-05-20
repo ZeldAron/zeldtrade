@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.265',
+      date: '2026-05-21',
+      time: '04:00',
+      tags: ['feature'],
+      title: 'Refonte visuelle (étape 1) : cartes douces & aérées',
+      titleEn: 'Visual redesign (step 1): soft, airy cards',
+      items: [
+        { type: 'feature', text: 'Première étape d\'une refonte plus douce et épurée : coins plus arrondis, ombres légères sur les cartes, plus d\'espace et boutons unifiés. D\'autres étapes suivent page par page.', textEn: 'First step of a softer, cleaner redesign: rounder corners, light card shadows, more spacing and unified buttons. More steps coming page by page.' },
+      ],
+    },
+    {
       version: '0.9.263',
       date: '2026-05-21',
       time: '03:00',

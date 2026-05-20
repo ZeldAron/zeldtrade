@@ -34,8 +34,14 @@
   --pink:       #f472b6;
   --cyan:       #22d3ee;
 
-  --r:    10px;
-  --r-sm: 6px;
+  --r:    12px;
+  --r-sm: 8px;
+  --r-lg: 16px;   /* v0.9.265 — cartes/panneaux (refonte « cartes douces & aérées ») */
+
+  /* v0.9.265 — ombres douces partagées (refonte UI). Surchargées en mode clair. */
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.25);
+  --shadow-card: 0 2px 14px rgba(0,0,0,0.30);
+  --shadow-pop:  0 12px 40px rgba(0,0,0,0.45);
 
   /* v0.9.242 : variables surfaces pour différencier au thème.
      Permet à .sidebar / .user-pill etc. de basculer sans cascade dispute. */
@@ -106,6 +112,11 @@
   --pill-border: rgba(0,0,0,0.10);
   --hover-bg:    rgba(0,0,0,0.05);
   --active-bg:   rgba(124,58,237,0.14);
+
+  /* v0.9.265 — ombres douces adaptées au clair (plus légères que le dark) */
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.06);
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 6px 18px rgba(0,0,0,0.06);
+  --shadow-pop:  0 12px 40px rgba(0,0,0,0.16);
 
   color-scheme: light;
 }
@@ -648,7 +659,7 @@ body {
 
 /* ─── BUTTONS ─── */
 .btn-ghost {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: var(--r-sm);
   border: 1px solid var(--border2);
   background: transparent;
@@ -661,7 +672,7 @@ body {
 .btn-ghost:hover { color: var(--text); border-color: var(--border2); background: var(--bg3); }
 
 .btn-primary {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: var(--r-sm);
   border: none;
   background: var(--accent);
@@ -691,15 +702,16 @@ button:focus-visible {
 /* ─── METRICS ─── */
 .metrics-strip {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
 }
 .metric-card {
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 13px 15px;
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-card);
 }
 .mc-label { font-size: 10px; color: var(--muted); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.06em; }
 .mc-val { font-family: 'Geist Mono', monospace; font-size: 20px; font-weight: 600; line-height: 1; }
@@ -947,10 +959,11 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .settings-section {
   background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 18px;
-  margin-bottom: 14px;
+  border-radius: var(--r-lg);
+  padding: 22px;
+  margin-bottom: 16px;
   max-width: 600px;
+  box-shadow: var(--shadow-card);
 }
 .settings-section h3 {
   font-size: 10px;
