@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.254',
+      date: '2026-05-20',
+      time: '16:30',
+      tags: ['privacy'],
+      title: 'CGU / CGV mises à jour (abonnements + garantie 30 jours)',
+      titleEn: 'Terms updated (subscriptions + 30-day guarantee)',
+      items: [
+        { type: 'privacy', text: 'Les Conditions Générales (CGU/CGV) ont été mises à jour : offres actuelles (Trader / Funded / Elite), paiement par abonnement Stripe, renouvellement & résiliation en 1 clic, et **garantie 30 jours satisfait ou remboursé** sur la première souscription Pro.', textEn: 'Terms updated: current plans (Trader / Funded / Elite), Stripe subscription billing, renewal & 1-click cancellation, and **30-day money-back guarantee** on first Pro subscription.' },
+      ],
+    },
+    {
       version: '0.9.253',
       date: '2026-05-20',
       time: '15:30',
