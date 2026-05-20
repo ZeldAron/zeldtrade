@@ -202,8 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         UI.initSettings();
         const planBadge = document.getElementById('planBadge');
         if (planBadge) {
-          planBadge.textContent = Store.isPro() ? 'PRO' : 'BASIC';
-          planBadge.className   = 'plan-badge ' + (Store.isPro() ? 'plan-pro' : 'plan-basic');
+          const b = Store.getTierBadge();
+          planBadge.textContent = b.label;
+          planBadge.className   = 'plan-badge ' + b.cls;
         }
       } catch {}
     }, { once: true });

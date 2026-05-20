@@ -233,8 +233,9 @@ function initApp() {
     const planBadge  = $('planBadge');
     const upgradeBlock = $('sidebarUpgrade');
     if (planBadge) {
-      planBadge.textContent = pro ? 'PRO' : 'BASIC';
-      planBadge.className   = 'plan-badge ' + (pro ? 'plan-pro' : 'plan-basic');
+      const b = Store.getTierBadge();
+      planBadge.textContent = b.label;
+      planBadge.className   = 'plan-badge ' + b.cls;
     }
     if (upgradeBlock) {
       upgradeBlock.style.display = pro ? 'none' : 'block';
@@ -267,6 +268,41 @@ function initApp() {
       }, 400);
     }
   }
+
+  // ── POST-CHECKOUT (?payment=success) ───────────────────────────────────────
+  // Après un paiement Stripe, l'utilisateur revient sur /app?payment=success.
+  // Le webhook écrit les docs `plan` + `stripe` de façon ASYNCHRONE : on
+  // re-synchronise en boucle jusqu'à voir le customerId, pour que le badge de
+  // palier + la section « Gérer mon abonnement » (= résiliation) apparaissent
+  // sans rechargement manuel. Sinon l'user reste bloqué sans bouton d'annulation.
+  (function handlePostCheckout() {
+    let params;
+    try { params = new URLSearchParams(window.location.search); } catch { return; }
+    if (params.get('payment') !== 'success') return;
+    // Nettoie l'URL pour ne pas re-déclencher au refresh
+    try {
+      params.delete('payment');
+      const qs = params.toString();
+      history.replaceState(null, '', window.location.pathname + (qs ? '?' + qs : ''));
+    } catch {}
+    UI.toast(i18n.t('pay.activating'));
+    let tries = 0;
+    const MAX = 8; // ~16 s max (8 × 2 s)
+    (function poll() {
+      const info = Store.getStripeInfo ? Store.getStripeInfo() : null;
+      refreshPlanUI();
+      if (info && info.customerId) {
+        if (currentPage === 'settings') UI.initSettings();
+        UI.toast(i18n.t('pay.active'));
+        return;
+      }
+      if (tries++ >= MAX) {
+        UI.toast(i18n.t('pay.pending'), true);
+        return;
+      }
+      Store.resync().catch(() => {}).finally(() => setTimeout(poll, 2000));
+    })();
+  })();
 
   const first = Store.getTrades()[0];
   if (first) UI.selectTrade(first.id);

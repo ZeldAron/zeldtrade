@@ -77,7 +77,7 @@
           <div class="dash-empty-icon">📈</div>
           <h2 class="dash-empty-title">${t('analytics.empty.title') || 'Pas encore de stats'}</h2>
           <p class="dash-empty-text">${t('analytics.empty.text') || 'Enregistre quelques trades et reviens — tu verras ici win rate, R:R, breakdown par setup/instrument, performance par session, etc.'}</p>
-          <a class="dash-empty-cta" href="#" onclick="event.preventDefault();document.getElementById('btnNewTrade')?.click();">+ ${t('btn.new.trade') || 'Nouveau trade'}</a>
+          <a class="dash-empty-cta" href="#" onclick="event.preventDefault();document.getElementById('btnNewTrade')?.click();">+ ${t('btn.newtrade') || 'Nouveau trade'}</a>
         </div>`;
       return;
     }

@@ -19,6 +19,10 @@ const i18n = (() => {
       'sidebar.wr':     'Win rate',
       'sidebar.trades': 'Trades',
       'btn.newtrade':   'Nouveau trade',
+      // v0.9.256 — toasts post-paiement Stripe
+      'pay.activating': 'Paiement reçu — activation de ton abonnement…',
+      'pay.active':     'Abonnement actif 🎉 — merci pour ton soutien !',
+      'pay.pending':    'Paiement reçu. Si ton abonnement n\'apparaît pas, recharge la page dans quelques secondes.',
       // Topbar / page titles
       'page.journal':   'Journal',
       'page.dashboard': 'Dashboard',
@@ -739,6 +743,10 @@ const i18n = (() => {
       'sidebar.wr':     'Win rate',
       'sidebar.trades': 'Trades',
       'btn.newtrade':   'New trade',
+      // v0.9.256 — Stripe post-payment toasts
+      'pay.activating': 'Payment received — activating your subscription…',
+      'pay.active':     'Subscription active 🎉 — thanks for your support!',
+      'pay.pending':    'Payment received. If your subscription doesn\'t appear, reload the page in a few seconds.',
       // Topbar / page titles
       'page.journal':   'Journal',
       'page.dashboard': 'Dashboard',

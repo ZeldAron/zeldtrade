@@ -3132,6 +3132,22 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   color: #fff;
   box-shadow: 0 0 8px rgba(124,58,237,0.4);
 }
+/* v0.9.256 — badges par tier (sidebar) : Funded=violet, Elite=or, Bêta=cyan */
+.plan-funded {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(124,58,237,0.4);
+}
+.plan-elite {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(245,158,11,0.45);
+}
+.plan-beta {
+  background: linear-gradient(135deg, #06b6d4, #0891b2);
+  color: #fff;
+  box-shadow: 0 0 8px rgba(6,182,212,0.4);
+}
 
 /* ── Nav offers ────────────────────────────────────────────────────────────── */
 .nav-item-offers {
