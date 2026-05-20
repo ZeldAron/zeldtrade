@@ -245,6 +245,11 @@ const i18n = (() => {
       'set.about':        'À propos',
       'set.version':      'Version',
       'set.stack':        'Stack',
+      // v0.9.259 — section abonnement Stripe
+      'set.sub.title':    'Abonnement',
+      'set.sub.label':    'Gérer ton abonnement',
+      'set.sub.hint':     'Modifie ton moyen de paiement, consulte tes factures ou résilie ton abonnement.',
+      'set.sub.manage':   'Gérer mon abonnement',
       // Modal wizard
       'wiz.step1':        'Direction du trade',
       'wiz.step2':        'Screenshot',
@@ -968,6 +973,11 @@ const i18n = (() => {
       'set.about':        'About',
       'set.version':      'Version',
       'set.stack':        'Stack',
+      // v0.9.259 — Stripe subscription section
+      'set.sub.title':    'Subscription',
+      'set.sub.label':    'Manage your subscription',
+      'set.sub.hint':     'Update your payment method, view your invoices or cancel your subscription.',
+      'set.sub.manage':   'Manage my subscription',
       // Modal wizard
       'wiz.step1':        'Trade direction',
       'wiz.step2':        'Screenshot',
