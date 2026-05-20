@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.267',
+      date: '2026-05-21',
+      time: '05:00',
+      tags: ['feature'],
+      title: 'Refonte visuelle (étape 2) : finition pro de toute l\'app',
+      titleEn: 'Visual redesign (step 2): pro finish across the app',
+      items: [
+        { type: 'feature', text: 'Toute l\'interface a été affinée : barre latérale et en-tête plus soignés, trades affichés en cartes douces, espacements harmonisés, et des détails pro (barres de défilement fines, sélection de texte aux couleurs de la marque, rendu de police lissé). Plus clair, plus pro, plus beau.', textEn: 'The whole interface was refined: cleaner sidebar and header, trades shown as soft cards, harmonized spacing, and pro details (thin scrollbars, brand-colored text selection, smoothed font rendering). Cleaner, more pro, more beautiful.' },
+      ],
+    },
+    {
       version: '0.9.265',
       date: '2026-05-21',
       time: '04:00',
