@@ -805,6 +805,79 @@ const Modal = (() => {
     }
   }
 
+  // ── v0.9.250 : Sorties partielles multiples ────────────────────────────────
+  // State : array de rows { lots, price }. Rendu dynamiquement dans #wPartialsList.
+  let _partials = [];
+
+  function _renderPartialRows() {
+    const list = $('wPartialsList');
+    if (!list) return;
+    list.innerHTML = '';
+    _partials.forEach((p, i) => {
+      const row = document.createElement('div');
+      row.className = 'partial-row';
+      row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:center';
+      row.innerHTML = `
+        <input class="form-input mono partial-lots"  type="number" step="any" min="0" lang="en" inputmode="decimal" placeholder="ex: 2"    value="${p.lots != null ? p.lots : ''}">
+        <input class="form-input mono partial-price" type="number" step="any"        lang="en" inputmode="decimal" placeholder="ex: 7194" value="${p.price != null ? p.price : ''}">
+        <button type="button" class="btn-ghost partial-remove" style="padding:6px;font-size:14px;color:var(--red)" aria-label="Supprimer cette sortie">✕</button>
+      `;
+      list.appendChild(row);
+      const lotsInp  = row.querySelector('.partial-lots');
+      const priceInp = row.querySelector('.partial-price');
+      const removeBtn= row.querySelector('.partial-remove');
+      const onInput = () => {
+        _partials[i].lots  = lotsInp.value.trim()  !== '' ? parseFloat(lotsInp.value)  : null;
+        _partials[i].price = priceInp.value.trim() !== '' ? parseFloat(priceInp.value) : null;
+        _updatePartialsSummary();
+        wRecalc();
+      };
+      lotsInp.addEventListener('input', onInput);
+      priceInp.addEventListener('input', onInput);
+      removeBtn.addEventListener('click', () => {
+        _partials.splice(i, 1);
+        _renderPartialRows();
+        _updatePartialsSummary();
+        wRecalc();
+      });
+    });
+  }
+
+  function _addPartialRow(lots, price) {
+    if (_partials.length >= 10) return;
+    _partials.push({ lots: lots != null ? lots : null, price: price != null ? price : null });
+    _renderPartialRows();
+    _updatePartialsSummary();
+  }
+
+  // Lit les partials valides (lots>0 et price renseigné). Pour le save + calc.
+  function _collectPartials() {
+    if (!$('wPartialEnable').checked) return [];
+    return _partials
+      .filter(p => p && p.lots != null && p.lots > 0 && p.price != null && isFinite(p.price))
+      .map(p => ({ lots: p.lots, price: p.price }));
+  }
+
+  function _updatePartialsSummary() {
+    const el = $('wPartialsSummary');
+    if (!el) return;
+    const contracts = parseFloat($('wContracts').value) || 0;
+    const valid = _collectPartials();
+    const sold  = valid.reduce((s, p) => s + p.lots, 0);
+    const runner = +(contracts - sold).toFixed(6);
+    if (!valid.length) { el.textContent = ''; return; }
+    if (sold > contracts + 1e-9) {
+      el.style.color = 'var(--red)';
+      el.textContent = `⚠ ${sold} lots sortis > ${contracts} lots au total. Réduis les quantités.`;
+    } else if (runner > 0) {
+      el.style.color = 'var(--muted)';
+      el.textContent = `${sold} lot(s) sortis en ${valid.length} fois · runner restant : ${runner} lot(s) → sort au prix d'Exit (ou TP1 si Open).`;
+    } else {
+      el.style.color = 'var(--muted)';
+      el.textContent = `Position entièrement sortie en ${valid.length} tranche(s) (${sold} lots).`;
+    }
+  }
+
   function wRecalc() {
     const entry      = parseFloat($('wEntry').value);
     const sl         = parseFloat($('wSL').value);
@@ -825,19 +898,15 @@ const Modal = (() => {
     if (!entry || !sl || !tp1) { lc.style.display = 'none'; return; }
     lc.style.display = 'flex';
 
-    // Partial close — lu seulement si toggle activé ET 2 champs remplis
-    const partialEnabled = $('wPartialEnable').checked;
-    const rawPPct  = $('wPartialPercent').value.trim();
-    const rawPPrice = $('wPartialPrice').value.trim();
-    const partialPercent = partialEnabled && rawPPct  !== '' && !isNaN(parseFloat(rawPPct))  ? parseFloat(rawPPct)  : null;
-    const partialPrice   = partialEnabled && rawPPrice !== '' && !isNaN(parseFloat(rawPPrice)) ? parseFloat(rawPPrice) : null;
+    // v0.9.250 : sorties partielles multiples (lus depuis les rows si toggle activé)
+    const partials = _collectPartials();
 
     const c = Calc.trade({
       direction, entry, sl, tp1,
       instrument, contracts, capital,
       feePerSide, feeTakerPct, spreadCost,
       exitPrice, manualPnl,
-      partialPercent, partialPrice,
+      partials,
     });
 
     // R:R théorique si pas de sortie, R réel si sortie
@@ -1282,11 +1351,14 @@ const Modal = (() => {
     resetShotState();
     pendingTradeId = id ? null : Store.newTradeId();
 
-    // Reset partial close
+    // Reset sorties partielles (v0.9.250)
     $('wPartialEnable').checked   = false;
     $('wPartialFields').style.display = 'none';
     $('wPartialPercent').value    = '';
     $('wPartialPrice').value      = '';
+    _partials = [];
+    _renderPartialRows();
+    _updatePartialsSummary();
 
     clearImage();
     $('wOptFields').style.display  = '';
@@ -1319,12 +1391,22 @@ const Modal = (() => {
       $('wOutcome').value    = t.outcome;
       $('wExit').value       = t.exitPrice || '';
       $('wManualPnl').value  = t.manualPnl != null ? t.manualPnl : '';
-      // Partial close
-      if (t.partialPercent != null && t.partialPrice != null) {
-        $('wPartialEnable').checked        = true;
-        $('wPartialFields').style.display  = '';
-        $('wPartialPercent').value         = t.partialPercent;
-        $('wPartialPrice').value           = t.partialPrice;
+      // Sorties partielles (v0.9.250) — nouveau format `partials[]` prioritaire,
+      // sinon migration depuis le legacy partialPercent/partialPrice.
+      if (Array.isArray(t.partials) && t.partials.length) {
+        _partials = t.partials.map(p => ({ lots: p.lots, price: p.price }));
+        $('wPartialEnable').checked       = true;
+        $('wPartialFields').style.display = '';
+        _renderPartialRows();
+        _updatePartialsSummary();
+      } else if (t.partialPercent != null && t.partialPrice != null) {
+        // Legacy : convertit le % en lots (% × contracts)
+        const lots = +((t.partialPercent / 100) * (t.contracts || 0)).toFixed(4);
+        _partials = [{ lots: lots > 0 ? lots : null, price: t.partialPrice }];
+        $('wPartialEnable').checked       = true;
+        $('wPartialFields').style.display = '';
+        _renderPartialRows();
+        _updatePartialsSummary();
       }
       // Pré-remplir la date + heure depuis le trade existant
       const td = t.date ? t.date.slice(0, 10) : $('wTradeDate').value;
@@ -1540,22 +1622,11 @@ const Modal = (() => {
       manualPnl:  $('wManualPnl').value.trim() !== '' && !isNaN(parseFloat($('wManualPnl').value))
                     ? parseFloat($('wManualPnl').value)
                     : null,
-      // Partial close : seulement si checkbox cochée ET valeurs strictement valides
-      // (1 < % < 100, sinon ça n'a aucun sens — 100% = sortie complète = utiliser exitPrice)
-      partialPercent: (() => {
-        if (!$('wPartialEnable').checked) return null;
-        const p = parseFloat($('wPartialPercent').value);
-        const v = parseFloat($('wPartialPrice').value);
-        if (isNaN(p) || isNaN(v) || p <= 0 || p >= 100) return null;
-        return p;
-      })(),
-      partialPrice: (() => {
-        if (!$('wPartialEnable').checked) return null;
-        const p = parseFloat($('wPartialPercent').value);
-        const v = parseFloat($('wPartialPrice').value);
-        if (isNaN(p) || isNaN(v) || p <= 0 || p >= 100) return null;
-        return v;
-      })(),
+      // v0.9.250 : sorties partielles multiples [{ lots, price }].
+      // Legacy partialPercent/partialPrice forcés à null (on n'écrit plus l'ancien format).
+      partials:       _collectPartials().length ? _collectPartials() : null,
+      partialPercent: null,
+      partialPrice:   null,
     };
 
     try {
@@ -1754,17 +1825,24 @@ const Modal = (() => {
     $('wBtnBack2').addEventListener('click', () => goToStep(2));
     $('wBtnSave').addEventListener('click',  save);
 
-    // Toggle sortie partielle
+    // Toggle sorties partielles (v0.9.250)
     $('wPartialEnable').addEventListener('change', e => {
       $('wPartialFields').style.display = e.target.checked ? '' : 'none';
-      if (!e.target.checked) {
-        $('wPartialPercent').value = '';
-        $('wPartialPrice').value   = '';
+      if (e.target.checked) {
+        // Si on active et aucune row → en créer une vide par défaut
+        if (!_partials.length) _addPartialRow();
+      } else {
+        _partials = [];
+        _renderPartialRows();
       }
+      _updatePartialsSummary();
       wRecalc();
     });
-    $('wPartialPercent').addEventListener('input', () => wRecalc());
-    $('wPartialPrice').addEventListener('input',   () => wRecalc());
+    // Bouton "+ Ajouter une sortie"
+    const partialAddBtn = $('wPartialAdd');
+    if (partialAddBtn) {
+      partialAddBtn.addEventListener('click', () => { _addPartialRow(); });
+    }
 
     // Zone screenshot persistant (drag&drop, click pour file picker)
     // Note : le paste Ctrl+V est géré par le handler unifié plus haut (Q44).
@@ -1911,6 +1989,8 @@ const Modal = (() => {
       $(id).addEventListener('input',  wRecalcDebounced);
       $(id).addEventListener('change', wRecalc);
     });
+    // v0.9.250 : changer le nb de lots total met aussi à jour le résumé partials
+    $('wContracts').addEventListener('input', _updatePartialsSummary);
 
     $('wOutcome').addEventListener('change', () => {
       const outcome = $('wOutcome').value;
