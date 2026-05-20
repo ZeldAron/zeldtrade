@@ -292,7 +292,7 @@
           <div style="font-size:32px;margin-bottom:12px">📊</div>
           <p style="color:var(--text);font-size:15px;margin-bottom:6px"><strong>${t('goals.no.trades') || 'Aucun trade enregistré pour le moment'}</strong></p>
           <p style="font-size:13px;color:var(--muted);margin-bottom:18px;max-width:380px;margin-left:auto;margin-right:auto">${t('goals.no.trades.hint') || 'Ajoute ton premier trade pour voir ta progression sur les objectifs prop firm (profit target, drawdown, days traded).'}</p>
-          <button class="btn-primary" onclick="document.getElementById('btnNewTrade')?.click()">+ ${t('btn.newtrade') || 'Nouveau trade'}</button>
+          <button class="btn-primary" data-cta="newtrade">+ ${t('btn.newtrade') || 'Nouveau trade'}</button>
         </div>`;
       return;
     }

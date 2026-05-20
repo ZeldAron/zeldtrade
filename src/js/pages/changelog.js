@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.261',
+      date: '2026-05-21',
+      time: '02:00',
+      tags: ['feature', 'fix'],
+      title: 'Interface plus simple : accueil guidé + formulaire allégé',
+      titleEn: 'Simpler interface: guided start + lighter form',
+      items: [
+        { type: 'feature', text: 'Nouvel écran d\'accueil quand ton journal est vide : 3 étapes claires pour démarrer (configurer ton compte → enregistrer ton 1er trade → suivre tes stats).', textEn: 'New welcome screen when your journal is empty: 3 clear steps to get started (set up your account → log your first trade → track your stats).' },
+        { type: 'feature', text: 'Formulaire de trade : la capture d\'écran est maintenant clairement indiquée comme optionnelle — tu peux saisir un trade à la main en 2 clics.', textEn: 'Trade form: the screenshot is now clearly marked as optional — you can log a trade by hand in 2 clicks.' },
+        { type: 'fix', text: 'Correction de plusieurs boutons qui ne réagissaient pas (« Nouveau trade » sur les pages vides, « Effacer les filtres », fermeture de l\'aide raccourcis).', textEn: 'Fixed several unresponsive buttons ("New trade" on empty pages, "Clear filters", shortcuts-help close).' },
+      ],
+    },
+    {
       version: '0.9.259',
       date: '2026-05-21',
       time: '01:00',

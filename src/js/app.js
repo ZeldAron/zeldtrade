@@ -201,12 +201,13 @@ function initApp() {
               <kbd style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-family:monospace;font-size:12px;color:var(--muted)">?</kbd>
             </div>
           </div>
-          <button type="button" class="btn-ghost" style="width:100%" onclick="document.getElementById('shortcutsCheatsheet').style.display='none'">Fermer</button>
+          <button type="button" class="btn-ghost" style="width:100%" data-cta="close-cheatsheet">Fermer</button>
         </div>
       `;
       document.body.appendChild(el);
-      // Click overlay = close
+      // Click overlay = close (l'inline onclick était bloqué par la CSP)
       el.addEventListener('click', ev => { if (ev.target === el) el.style.display = 'none'; });
+      el.querySelector('[data-cta="close-cheatsheet"]')?.addEventListener('click', () => { el.style.display = 'none'; });
     }
     el.style.display = 'flex';
   }
@@ -273,6 +274,14 @@ function initApp() {
       }, 400);
     }
   }
+
+  // v0.9.261 — délégation globale pour les CTA "nouveau trade" rendus par les
+  // pages (analytics, objectifs, journal vide…). Évite les onclick inline (bloqués
+  // par la CSP `script-src 'self'`) tout en gardant un seul point de binding.
+  document.addEventListener('click', (e) => {
+    const cta = e.target.closest('[data-cta="newtrade"]');
+    if (cta) { e.preventDefault(); $('btnNewTrade')?.click(); }
+  });
 
   // ── POST-CHECKOUT (?payment=success) ───────────────────────────────────────
   // Après un paiement Stripe, l'utilisateur revient sur /app?payment=success.

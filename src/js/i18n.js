@@ -268,7 +268,8 @@ const i18n = (() => {
       'wiz.result':       'Résultat',
       'wiz.exit.price':   'Prix de sortie',
       'wiz.drop':         'Cliquer ou coller <kbd>⌘V</kbd>',
-      'wiz.step2.sfx':    '— capture d\'écran',
+      'wiz.step2.sfx':    '— capture (optionnel)',
+      'wiz.shot.optional':'Pas de capture ? Clique « Continuer » pour saisir à la main.',
       // Settings - IA Vision (anciennement Groq)
       'set.groq.title':   '★ IA Vision (incluse)',
       'set.groq.link':    'Aucune configuration — l\'IA est active dès l\'inscription.',
@@ -996,7 +997,8 @@ const i18n = (() => {
       'wiz.result':       'Outcome',
       'wiz.exit.price':   'Exit price',
       'wiz.drop':         'Click or paste <kbd>⌘V</kbd>',
-      'wiz.step2.sfx':    '— screenshot',
+      'wiz.step2.sfx':    '— screenshot (optional)',
+      'wiz.shot.optional':'No screenshot? Click "Continue" to enter it manually.',
       // Settings - AI Vision (formerly Groq)
       'set.groq.title':   '★ AI Vision (included)',
       'set.groq.link':    'No configuration — AI is active from signup.',
