@@ -31,7 +31,7 @@ const Admin = (() => {
     t.textContent  = msg;
     t.className    = 'admin-toast ' + (isError ? 'admin-toast-err' : 'admin-toast-ok');
     t.style.opacity = '1';
-    setTimeout(() => { t.style.opacity = '0'; }, 3000);
+    setTimeout(() => { t.style.opacity = '0'; }, 4500);
   }
 
   function formatDate(ts) {
@@ -552,7 +552,7 @@ const Admin = (() => {
     try {
       const callable = _fbFunctions.httpsCallable('deleteUserAccount');
       await callable({ uid });
-      toast(`Utilisateur ${email} supprimé.`);
+      toast(`✓ Utilisateur ${email} supprimé définitivement.`);
       closeDeleteModal();
       renderUsers();
     } catch (e) {
