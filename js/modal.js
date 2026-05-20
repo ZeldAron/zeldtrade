@@ -843,6 +843,25 @@ const Modal = (() => {
     });
   }
 
+  // v0.9.251 : gating UI des sorties partielles selon le tier.
+  // Trader → banner upsell + checkbox/section masquées. Pro → UI normale.
+  function _refreshPartialsGate() {
+    const banner = $('wPartialLockedBanner');
+    const label  = $('wPartialEnableLabel');
+    const fields = $('wPartialFields');
+    if (!banner || !label) return;
+    if (_canUsePartials()) {
+      banner.style.display = 'none';
+      label.style.display  = 'flex';
+    } else {
+      banner.style.display = 'block';
+      label.style.display  = 'none';
+      if (fields) fields.style.display = 'none';
+      const cb = $('wPartialEnable');
+      if (cb) cb.checked = false;
+    }
+  }
+
   function _addPartialRow(lots, price) {
     if (_partials.length >= 10) return;
     _partials.push({ lots: lots != null ? lots : null, price: price != null ? price : null });
@@ -850,8 +869,15 @@ const Modal = (() => {
     _updatePartialsSummary();
   }
 
+  // v0.9.251 : sorties partielles = feature Pro. Helper de gating.
+  function _canUsePartials() {
+    return !!(Store && Store.canUseFeature && Store.canUseFeature('partials'));
+  }
+
   // Lit les partials valides (lots>0 et price renseigné). Pour le save + calc.
+  // Retourne [] si l'user n'est pas Pro (gating au save même en cas de bypass UI).
   function _collectPartials() {
+    if (!_canUsePartials()) return [];
     if (!$('wPartialEnable').checked) return [];
     return _partials
       .filter(p => p && p.lots != null && p.lots > 0 && p.price != null && isFinite(p.price))
@@ -1359,6 +1385,7 @@ const Modal = (() => {
     _partials = [];
     _renderPartialRows();
     _updatePartialsSummary();
+    _refreshPartialsGate();
 
     clearImage();
     $('wOptFields').style.display  = '';
