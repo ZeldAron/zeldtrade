@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.258',
+      date: '2026-05-21',
+      time: '00:45',
+      tags: ['fix'],
+      title: 'Section « Gérer mon abonnement » : correctif définitif',
+      titleEn: '"Manage subscription" section: definitive fix',
+      items: [
+        { type: 'fix', text: 'La section et le bouton « Gérer mon abonnement » (résiliation, changement de carte, factures) s\'affichent et fonctionnent désormais correctement pour tous les abonnés Stripe.', textEn: 'The "Manage subscription" section and button (cancel, change card, invoices) now show and work correctly for all Stripe subscribers.' },
+      ],
+    },
+    {
       version: '0.9.257',
       date: '2026-05-21',
       time: '00:30',

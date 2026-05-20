@@ -1305,25 +1305,11 @@
     // v0.9.150 : refresh state du toggle newsletter (lit depuis userEmails.newsletterOptIn)
     _refreshNewsletterToggle();
 
-    if (_settingsBound) {
-      updateGroqStatus();
-      _refreshThemeToggle();
-      return;
-    }
-    _settingsBound = true;
-
-    // Tab switching
-    document.querySelectorAll('[data-settings-tab]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('[data-settings-pane]').forEach(p => { p.style.display = 'none'; });
-        btn.classList.add('active');
-        document.querySelector(`[data-settings-pane="${btn.dataset.settingsTab}"]`).style.display = '';
-      });
-    });
-
-    // v0.9.255 : section abonnement Stripe — visible si l'user a un customerId Stripe.
-    // Le bouton ouvre le portail client Stripe (gestion CB, factures, résiliation 1-clic).
+    // v0.9.257 : section abonnement Stripe — DOIT tourner à CHAQUE render (avant le
+    // garde _settingsBound), sinon la visibilité n'est calculée qu'au 1er appel (avant
+    // que le customerId Stripe arrive de Firestore) → la section reste masquée pour
+    // toujours et le bouton n'est jamais bindé. La visibilité + le bind sont idempotents
+    // (bind gardé par btn.dataset.bound).
     (function setupSubscription() {
       const section = $('subscriptionSection');
       const btn     = $('btnManageSub');
@@ -1350,6 +1336,23 @@
         }
       });
     })();
+
+    if (_settingsBound) {
+      updateGroqStatus();
+      _refreshThemeToggle();
+      return;
+    }
+    _settingsBound = true;
+
+    // Tab switching
+    document.querySelectorAll('[data-settings-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('[data-settings-pane]').forEach(p => { p.style.display = 'none'; });
+        btn.classList.add('active');
+        document.querySelector(`[data-settings-pane="${btn.dataset.settingsTab}"]`).style.display = '';
+      });
+    });
 
     // v0.9.239 : toggle thème (auto / dark / light)
     _refreshThemeToggle();
