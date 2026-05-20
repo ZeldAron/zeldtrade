@@ -156,7 +156,7 @@ const UI = (() => {
       const isEmpty = total === 0;
       const msg     = isEmpty ? i18n.t('ui.no.trades') : i18n.t('ui.no.results');
       const ctaHtml = isEmpty
-        ? `<button type="button" class="btn-primary" style="margin-top:14px" onclick="document.getElementById('btnNewTrade')?.click()">+ ${i18n.t('btn.new.trade') || i18n.t('btn.newtrade') || 'Nouveau trade'}</button>`
+        ? `<button type="button" class="btn-primary" style="margin-top:14px" onclick="document.getElementById('btnNewTrade')?.click()">+ ${i18n.t('btn.newtrade') || 'Nouveau trade'}</button>`
         : `<button type="button" class="btn-ghost" style="margin-top:14px" onclick="(function(){var s=document.getElementById('searchInput');if(s){s.value='';s.dispatchEvent(new Event('input'));}var c=document.querySelector('.filter-chip[data-filter=\\'all\\']');if(c)c.click();})()">${i18n.t('ui.clear.filters') || 'Effacer les filtres'}</button>`;
       list.innerHTML = `${counterHtml}
         <div class="empty-list">

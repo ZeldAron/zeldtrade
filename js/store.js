@@ -926,8 +926,20 @@ const Store = (() => {
   function getPlanInfo() { return { ..._plan, limits: { ...getLimits() } }; }
   function isPro()       { return _plan.plan === 'pro'; }
   function getStripeInfo() { return { ..._stripe }; }   // v0.9.255 : info abonnement (read-only)
+  // v0.9.256 : re-synchronise depuis Firestore (utilisé après un paiement Stripe,
+  // le temps que le webhook écrive le doc `stripe`/`plan`). Dispatch store:synced /
+  // store:planChanged comme le load initial. Renvoie une promise.
+  function resync() { return _loadFromFirestore(); }
   // v0.9.211 — Nouveaux helpers tier-aware
   function getTier()     { return VALID_TIERS.has(_plan.tier) ? _plan.tier : 'trader'; }
+  // v0.9.256 — Badge plan par tier (label + classe CSS couleur) pour la sidebar
+  const TIER_BADGE = {
+    trader: { label: 'BASIC',  cls: 'plan-basic'  },
+    funded: { label: 'FUNDED', cls: 'plan-funded' },
+    elite:  { label: 'ELITE',  cls: 'plan-elite'  },
+    beta:   { label: 'BÊTA',   cls: 'plan-beta'   },
+  };
+  function getTierBadge() { return TIER_BADGE[getTier()] || TIER_BADGE.trader; }
   function getLimits()   { return TIER_LIMITS[getTier()] || TIER_LIMITS.trader; }
   // canUseFeature('groups') → true/false selon le tier de l'user
   function canUseFeature(feat) {
@@ -1114,7 +1126,7 @@ const Store = (() => {
     getMyAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount,
     getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm,
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
-    getPlanInfo, isPro, getTier, getLimits, canUseFeature, getStripeInfo, TIER_LIMITS, TIER_FEATURES,
+    getPlanInfo, isPro, getTier, getTierBadge, getLimits, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,
     activatePro, canAnalyzeToday, refreshAiUsage, canAddAccount,
     getLastWizardPrefs, setLastWizardPrefs,
     getStats,

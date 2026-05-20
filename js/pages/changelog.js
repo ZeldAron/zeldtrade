@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.256',
+      date: '2026-05-20',
+      time: '18:30',
+      tags: ['fix'],
+      title: 'Badge d\'abonnement par palier + correction du bouton « Nouveau trade »',
+      titleEn: 'Per-tier subscription badge + "New trade" button fix',
+      items: [
+        { type: 'feature', text: 'Le badge dans la barre latérale affiche désormais ton palier exact : FUNDED (violet) ou ELITE (or), au lieu d\'un simple « PRO ».', textEn: 'The sidebar badge now shows your exact tier: FUNDED (purple) or ELITE (gold), instead of a generic "PRO".' },
+        { type: 'fix', text: 'Après un paiement, ton abonnement (et le bouton « Gérer mon abonnement » pour résilier) s\'affiche désormais automatiquement, sans avoir à recharger la page.', textEn: 'After payment, your subscription (and the "Manage subscription" button to cancel) now appears automatically, without reloading the page.' },
+        { type: 'fix', text: 'Le bouton affichait « btn.new.trade » au lieu de « Nouveau trade » sur les pages vides (trades, analytics, objectifs). Libellé corrigé.', textEn: 'The button showed "btn.new.trade" instead of "New trade" on empty states (trades, analytics, goals). Label fixed.' },
+      ],
+    },
+    {
       version: '0.9.255',
       date: '2026-05-20',
       time: '17:30',
