@@ -565,7 +565,9 @@ const Store = (() => {
       const safe = p.replace(/[^a-zA-Z0-9/_.\-]/g, '').slice(0, 200);
       const expectedPrefix = `users/${_uid}/trades/`;
       if (!safe.startsWith(expectedPrefix)) return null;
-      if (!/\/screenshot(_\d{1,2})?\.(jpe?g|png|webp)$/.test(safe)) return null;
+      // v0.9.249 (S-NEW-19) : slots bornés à 1-2 (slot 0 = screenshot.jpg sans
+      // suffixe). Aligné sur la regex de storage.rules — max 3 captures.
+      if (!/\/screenshot(_[12])?\.(jpe?g|png|webp)$/.test(safe)) return null;
       return safe;
     }
 

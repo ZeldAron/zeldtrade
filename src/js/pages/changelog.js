@@ -5,6 +5,18 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.249',
+      date: '2026-05-20',
+      time: '11:00',
+      tags: ['security'],
+      title: 'Sécurité : gating captures Pro renforcé côté serveur',
+      titleEn: 'Security: Pro screenshot gating enforced server-side',
+      items: [
+        { type: 'security', text: 'Le quota de captures par plan (0 pour Trader, 3 pour Pro) est désormais appliqué côté serveur (règles Firebase Storage), pas seulement dans l\'interface. Impossible de contourner la limite via les outils développeur.', textEn: 'Screenshot quota per plan (0 for Trader, 3 for Pro) is now enforced server-side (Firebase Storage rules), not just in the UI. The limit can no longer be bypassed via developer tools.' },
+        { type: 'security', text: 'Cap dur à 3 fichiers de capture par trade au niveau du stockage (anti-abus).', textEn: 'Hard cap of 3 screenshot files per trade at the storage level (anti-abuse).' },
+      ],
+    },
+    {
       version: '0.9.246',
       date: '2026-05-20',
       time: '01:30',
