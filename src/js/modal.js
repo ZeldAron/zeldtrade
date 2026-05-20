@@ -965,6 +965,46 @@ const Modal = (() => {
     _refreshShotsGate();
   }
 
+  // v0.9.248 : un slot est "vide" s'il n'a ni blob en attente ni path existant
+  // actif (un existingPath flaggé pendingDelete compte comme vide).
+  function _isSlot0Empty() {
+    if (shotBlob) return false;
+    if (shotExistingPath && !shotPendingDelete) return false;
+    return true;
+  }
+  function _isExtraEmpty(i) {
+    const s = shotsExtra[i];
+    if (!s) return true;
+    if (s.blob) return false;
+    if (s.existingPath && !s.pendingDelete) return false;
+    return true;
+  }
+
+  // v0.9.248 : route un blob vers le premier slot libre (0 → 1 → 2), dans la
+  // limite du tier. Utilisé par le paste Ctrl+V répété pour empiler les captures.
+  function _pasteIntoNextFreeSlot(rawBlob) {
+    const max = (Store && Store.getMaxScreenshots) ? Store.getMaxScreenshots() : 0;
+    if (max <= 0) {
+      // Trader : pas de capture conservée. handleShotFromBlob garde le comportement
+      // legacy (preview only, non sauvée au commit côté _uploadAllSlots).
+      handleShotFromBlob(rawBlob);
+      return;
+    }
+    // Slot 0
+    if (_isSlot0Empty()) { handleShotFromBlob(rawBlob); return; }
+    // Slots extras (1, 2) dans la limite du tier
+    const extraCount = Math.min(max - 1, shotsExtra.length);
+    for (let i = 0; i < extraCount; i++) {
+      if (_isExtraEmpty(i)) { _handleExtraBlob(rawBlob, i); return; }
+    }
+    // Tous pleins → on remplace le DERNIER slot dispo (comportement "le plus récent gagne")
+    const status = $('wShotStatus');
+    if (status) {
+      status.style.color = 'var(--amber)';
+      status.textContent = `Limite de ${max} captures atteinte — supprime-en une pour en ajouter.`;
+    }
+  }
+
   // v0.9.246 : applique le gating tier sur la section screenshots du wizard.
   // - Trader : affiche la banner upsell, cache tout slot.
   // - Pro    : affiche les slots (slot 0 + extras dans la limite getMaxScreenshots).
@@ -1703,7 +1743,10 @@ const Modal = (() => {
           if (hasText) return;
         }
         e.preventDefault();
-        handleShotFromBlob(imgFile);
+        // v0.9.248 : route le paste vers le PREMIER slot vide (0 → 1 → 2)
+        // au lieu d'écraser systématiquement le slot 0. Permet de coller
+        // plusieurs captures à la suite avec Ctrl+V répétés.
+        _pasteIntoNextFreeSlot(imgFile);
       }
     });
 
