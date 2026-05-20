@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.262',
+      date: '2026-05-21',
+      time: '02:20',
+      tags: ['feature'],
+      title: 'Navigation simplifiée',
+      titleEn: 'Simplified navigation',
+      items: [
+        { type: 'feature', text: 'Les pages d\'analyse (Dashboard, Analytics, Objectifs, Calendrier) sont regroupées sous un libellé « Analyse », et le Guide rejoint Réglages/Offres en bas du menu — pour une barre latérale plus claire.', textEn: 'Analysis pages (Dashboard, Analytics, Goals, Calendar) are grouped under an "Analysis" label, and the Guide moves down with Settings/Offers — for a cleaner sidebar.' },
+      ],
+    },
+    {
       version: '0.9.261',
       date: '2026-05-21',
       time: '02:00',
