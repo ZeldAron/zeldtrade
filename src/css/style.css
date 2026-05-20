@@ -342,14 +342,14 @@ body {
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 9px;
-  padding: 8px 10px;
+  gap: 10px;
+  padding: 9px 12px;
   border-radius: var(--r-sm);
   cursor: pointer;
   color: var(--muted);
   font-size: 13px;
   transition: all 0.15s;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   user-select: none;
   border: none;
   background: transparent;
@@ -402,8 +402,9 @@ body {
   background: var(--accent);
   color: #fff;
   border: none;
-  border-radius: var(--r-sm);
-  padding: 9px 0;
+  border-radius: var(--r);
+  padding: 10px 0;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.35);
   font-family: 'Geist', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -423,8 +424,8 @@ body {
 .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 
 .topbar {
-  height: 52px;
-  min-height: 52px;
+  height: 56px;
+  min-height: 56px;
   display: flex;
   align-items: center;
   padding: 0 24px;
@@ -433,7 +434,7 @@ body {
   flex-shrink: 0;
 }
 
-.topbar-title { font-size: 14px; font-weight: 500; flex: 1; }
+.topbar-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; flex: 1; }
 
 .search-wrap {
   display: flex;
@@ -456,6 +457,24 @@ body {
   width: 100%;
 }
 .search-wrap input::placeholder { color: var(--muted); }
+
+/* ═══ v0.9.267 — DÉTAILS « PRO » (scrollbars fines, sélection accent, lissage typo) ═══ */
+* { scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border2);
+  border-radius: 99px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--muted2); background-clip: padding-box; }
+::selection { background: rgba(124,58,237,0.30); color: var(--text); }
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 
 /* ─── PAGES ─── */
 .page { display: none; flex: 1; overflow: hidden; min-height: 0; }
@@ -2249,11 +2268,11 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 10px;
+  padding: 9px 11px;
   margin: 0 8px 8px;
   background: var(--pill-bg);
   border: 1px solid var(--pill-border);
-  border-radius: var(--r-sm);
+  border-radius: var(--r);
   gap: 8px;
 }
 
