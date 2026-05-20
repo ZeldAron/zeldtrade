@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.263',
+      date: '2026-05-21',
+      time: '03:00',
+      tags: ['fix'],
+      title: 'Confirmation après suppression de compte',
+      titleEn: 'Confirmation after account deletion',
+      items: [
+        { type: 'fix', text: 'Après avoir supprimé ton compte, une bannière confirme que ton compte et tes données ont bien été supprimés (avant, tu étais renvoyé à l\'accueil sans aucun message).', textEn: 'After deleting your account, a banner confirms your account and data were deleted (before, you were silently sent back to the homepage).' },
+      ],
+    },
+    {
       version: '0.9.262',
       date: '2026-05-21',
       time: '02:20',
