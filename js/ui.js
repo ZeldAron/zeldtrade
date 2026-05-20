@@ -155,9 +155,11 @@ const UI = (() => {
       //   - Aucun résultat (filtré)  → CTA "Effacer les filtres"
       const isEmpty = total === 0;
       const msg     = isEmpty ? i18n.t('ui.no.trades') : i18n.t('ui.no.results');
+      // v0.9.261 — CTA bindés par addEventListener (l'inline onclick était bloqué
+      // par la CSP `script-src 'self'`, et le sélecteur `.filter-chip` était faux).
       const ctaHtml = isEmpty
-        ? `<button type="button" class="btn-primary" style="margin-top:14px" onclick="document.getElementById('btnNewTrade')?.click()">+ ${i18n.t('btn.newtrade') || 'Nouveau trade'}</button>`
-        : `<button type="button" class="btn-ghost" style="margin-top:14px" onclick="(function(){var s=document.getElementById('searchInput');if(s){s.value='';s.dispatchEvent(new Event('input'));}var c=document.querySelector('.filter-chip[data-filter=\\'all\\']');if(c)c.click();})()">${i18n.t('ui.clear.filters') || 'Effacer les filtres'}</button>`;
+        ? `<button type="button" class="btn-primary" style="margin-top:14px" data-empty-cta="newtrade">+ ${i18n.t('btn.newtrade') || 'Nouveau trade'}</button>`
+        : `<button type="button" class="btn-ghost" style="margin-top:14px" data-empty-cta="clear">${i18n.t('ui.clear.filters') || 'Effacer les filtres'}</button>`;
       list.innerHTML = `${counterHtml}
         <div class="empty-list">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
@@ -168,6 +170,11 @@ const UI = (() => {
           <p>${msg}</p>
           ${ctaHtml}
         </div>`;
+      list.querySelector('[data-empty-cta="newtrade"]')?.addEventListener('click', () => $('btnNewTrade')?.click());
+      list.querySelector('[data-empty-cta="clear"]')?.addEventListener('click', () => {
+        const s = $('searchInput'); if (s) { s.value = ''; s.dispatchEvent(new Event('input')); }
+        document.querySelector('.chip[data-filter="all"]')?.click();
+      });
       return;
     }
 
@@ -224,6 +231,49 @@ const UI = (() => {
     const t     = selectedId ? Store.getTradeById(selectedId) : null;
 
     if (!t) {
+      // v0.9.261 — accueil guidé quand le compte est vide (0 trade).
+      // Sinon (des trades existent mais aucun sélectionné) → simple invite.
+      if (Store.getTrades().length === 0) {
+        const en = i18n.getLang() === 'en';
+        panel.innerHTML = `
+          <div class="onboarding-card">
+            <div class="onb-hi">👋</div>
+            <h2 class="onb-title">${en ? 'Welcome to ZeldTrade' : 'Bienvenue sur ZeldTrade'}</h2>
+            <p class="onb-sub">${en ? 'Your prop-firm trading journal — 3 steps to get started:' : 'Ton journal de trading prop firm — 3 étapes pour démarrer :'}</p>
+            <div class="onb-steps">
+              <div class="onb-step">
+                <div class="onb-num">1</div>
+                <div class="onb-step-body">
+                  <div class="onb-step-title">${en ? 'Set up your account' : 'Configure ton compte'}</div>
+                  <div class="onb-step-desc">${en ? 'Add your prop firm or personal account (size, rules).' : 'Ajoute ta prop firm ou ton compte perso (taille, règles).'}</div>
+                  <button class="btn-ghost onb-btn" data-onb="accounts">${en ? 'Configure my accounts' : 'Configurer mes comptes'}</button>
+                </div>
+              </div>
+              <div class="onb-step">
+                <div class="onb-num">2</div>
+                <div class="onb-step-body">
+                  <div class="onb-step-title">${en ? 'Log your first trade' : 'Enregistre ton premier trade'}</div>
+                  <div class="onb-step-desc">${en ? 'Paste a screenshot (AI reads your chart) or type it by hand.' : 'Colle une capture (l\'IA lit ton graphe) ou saisis à la main.'}</div>
+                  <button class="btn-primary onb-btn" data-onb="newtrade">+ ${i18n.t('btn.newtrade') || 'Nouveau trade'}</button>
+                </div>
+              </div>
+              <div class="onb-step">
+                <div class="onb-num">3</div>
+                <div class="onb-step-body">
+                  <div class="onb-step-title">${en ? 'Track your stats automatically' : 'Suis tes stats automatiquement'}</div>
+                  <div class="onb-step-desc">${en ? 'Win rate, R:R, drawdown, calendar… all computed for you.' : 'Win rate, R:R, drawdown, calendrier… tout se calcule tout seul.'}</div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        panel.querySelector('[data-onb="accounts"]')?.addEventListener('click', () => {
+          document.querySelector('[data-page="settings"]')?.click();
+        });
+        panel.querySelector('[data-onb="newtrade"]')?.addEventListener('click', () => {
+          $('btnNewTrade')?.click();
+        });
+        return;
+      }
       panel.innerHTML = `
         <div class="detail-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">

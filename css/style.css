@@ -574,6 +574,54 @@ body {
 .detail-empty svg { width: 48px; height: 48px; opacity: 0.2; }
 .detail-empty p { font-size: 13px; }
 
+/* v0.9.261 — accueil guidé (compte vide) dans le panneau détail */
+.onboarding-card {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.onb-hi { font-size: 40px; line-height: 1; margin-bottom: 12px; }
+.onb-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.onb-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+.onb-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+}
+.onb-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.onb-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.onb-step-body { flex: 1; min-width: 0; }
+.onb-step-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.onb-step-desc { font-size: 12px; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+.onb-step-desc:last-child { margin-bottom: 0; }
+.onb-btn { font-size: 13px; padding: 7px 14px; }
+
 .detail-content { padding: 28px 28px 60px; }
 
 .detail-header {
@@ -1153,6 +1201,14 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .wiz-text-supplement .form-input {
   font-size: 12px;
   font-family: 'Geist Mono', monospace;
+}
+/* v0.9.261 — indice « capture optionnelle » sous le champ texte de l'étape 2 */
+.wiz-skip-hint {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin: -2px 0 8px;
+  opacity: 0.85;
 }
 
 .wiz-opt-toggle {
