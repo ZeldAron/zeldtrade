@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.259',
+      date: '2026-05-21',
+      time: '01:00',
+      tags: ['fix'],
+      title: 'Libellés de la section abonnement',
+      titleEn: 'Subscription section labels',
+      items: [
+        { type: 'fix', text: 'Les textes de la section « Abonnement » dans les Réglages s\'affichent correctement (au lieu des codes internes).', textEn: 'The "Subscription" section labels in Settings now display correctly (instead of internal codes).' },
+      ],
+    },
+    {
       version: '0.9.258',
       date: '2026-05-21',
       time: '00:45',
