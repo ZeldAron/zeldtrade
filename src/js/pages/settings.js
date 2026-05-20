@@ -90,7 +90,7 @@
             </div>
 
             <!-- v0.9.190 : champs crypto spécifiques (visible uniquement si accountType === 'crypto') -->
-            <div class="maCryptoOnly" style="display:none;background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:12px 14px;margin-bottom:14px">
+            <div class="maCryptoOnly" style="display:none;background:rgba(16, 185, 129,0.05);border:1px solid rgba(16, 185, 129,0.2);border-radius:8px;padding:12px 14px;margin-bottom:14px">
               <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-l);margin-bottom:10px;font-weight:600">🪙 Paramètres crypto</div>
               <div class="form-grid" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
                 <div class="form-field">
@@ -152,13 +152,13 @@
                     ${t('set.acc.type')}
                     <span class="plan-badge plan-pro">PRO</span>
                   </label>
-                  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1.5px solid rgba(124,58,237,0.2);border-radius:8px;cursor:pointer" id="btnUnlockPreset">
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1.5px solid rgba(16, 185, 129,0.2);border-radius:8px;cursor:pointer" id="btnUnlockPreset">
                     <span style="font-size:15px">🔒</span>
                     <span style="font-size:12px;color:var(--muted);flex:1">${i18n.getLang()==='en'
                       ? 'Apex, Topstep, FTMO, Lucid presets — Pro only. Fill manually below.'
                       : 'Presets Apex, Topstep, FTMO, Lucid — Pro uniquement. Remplissez manuellement ci-dessous.'
                     }</span>
-                    <span style="font-size:10px;font-weight:700;color:#a78bfa;white-space:nowrap">Passer PRO →</span>
+                    <span style="font-size:10px;font-weight:700;color:#34d399;white-space:nowrap">Passer PRO →</span>
                   </div>
                   <input type="hidden" id="maTypeId" value="">
                 </div>`
@@ -663,7 +663,7 @@
         </div>
 
         <!-- Roadmap -->
-        <div style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:14px 16px;margin-top:14px">
+        <div style="background:rgba(16, 185, 129,0.05);border:1px solid rgba(16, 185, 129,0.2);border-radius:8px;padding:14px 16px;margin-top:14px">
           <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">🚀 ROADMAP</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.55">
             Import automatique des trades depuis l'API broker (NinjaTrader, Tradovate, IB API). Suivi multi-courtiers depuis un seul écran. Calculateur fiscal intégré avec génération du formulaire 2074.
@@ -765,7 +765,7 @@
         </div>
         <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:18px">Plateformes crypto supportées et leurs frais types. Ces valeurs sont indicatives — ajuste les fees maker/taker dans tes comptes selon ton niveau VIP / Coinbase One / discounts BNB.</p>
         ${Object.entries(PLATFORMS).map(([k, p]) => renderPlatformCard(k, p)).join('')}
-        <div style="background:rgba(124,58,237,0.05);border:1px solid rgba(124,58,237,0.2);border-radius:8px;padding:14px 16px;margin-top:6px">
+        <div style="background:rgba(16, 185, 129,0.05);border:1px solid rgba(16, 185, 129,0.2);border-radius:8px;padding:14px 16px;margin-top:6px">
           <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">🚀 ROADMAP</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.55">
             Plateformes prévues : Bybit, Hyperliquid, OKX. Mode marge croisée pour Binance. Suivi des positions multi-paires depuis l'API exchange (autoimport).
@@ -1097,7 +1097,7 @@
         errEl.parentNode.insertBefore(progressEl, errEl);
       }
       progressEl.style.display = '';
-      progressEl.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(167,139,250,0.3);border-top-color:#a78bfa;border-radius:50%;animation:spin 0.8s linear infinite"></span><span id="expPdfProgressText">Préparation…</span></div><div style="margin-top:8px;background:rgba(255,255,255,0.05);height:4px;border-radius:2px;overflow:hidden"><div id="expPdfProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#7c3aed,#a78bfa);transition:width 0.3s"></div></div>';
+      progressEl.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(52, 211, 153,0.3);border-top-color:#34d399;border-radius:50%;animation:spin 0.8s linear infinite"></span><span id="expPdfProgressText">Préparation…</span></div><div style="margin-top:8px;background:rgba(255,255,255,0.05);height:4px;border-radius:2px;overflow:hidden"><div id="expPdfProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#10b981,#34d399);transition:width 0.3s"></div></div>';
       // Inject CSS pour spinner (idempotent)
       if (!document.getElementById('expPdfProgressStyle')) {
         const style = document.createElement('style');

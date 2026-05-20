@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.269',
+      date: '2026-05-21',
+      time: '06:00',
+      tags: ['feature'],
+      title: 'Nouvelle identité visuelle : Émeraude Premium 🟢',
+      titleEn: 'New visual identity: Emerald Premium 🟢',
+      items: [
+        { type: 'feature', text: 'ZeldTrade passe au vert émeraude sur fond charbon — une identité plus premium et « fintech ». Boutons, accents, logo, focus : tout est recoloré, en mode clair comme sombre. C\'est la première vague d\'une refonte complète (Dashboard et mises en page suivent).', textEn: 'ZeldTrade goes emerald green on charcoal — a more premium, "fintech" identity. Buttons, accents, logo, focus: everything recolored, in both light and dark mode. First wave of a full redesign (Dashboard and layouts coming next).' },
+      ],
+    },
+    {
       version: '0.9.267',
       date: '2026-05-21',
       time: '05:00',

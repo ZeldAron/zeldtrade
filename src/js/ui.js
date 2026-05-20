@@ -613,7 +613,7 @@ const UI = (() => {
 
       const btnConfirm = document.createElement('button');
       btnConfirm.type = 'button';
-      btnConfirm.style.cssText = 'padding:9px 18px;border-radius:6px;border:none;background:' + (danger ? 'var(--red,#f85149)' : 'var(--purple,#7c3aed)') + ';color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
+      btnConfirm.style.cssText = 'padding:9px 18px;border-radius:6px;border:none;background:' + (danger ? 'var(--red,#f85149)' : 'var(--purple,#10b981)') + ';color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit';
       btnConfirm.textContent = confirmText;
       btnConfirm.addEventListener('click', () => _resolveConfirm(true));
       actions.appendChild(btnConfirm);
