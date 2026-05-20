@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.251',
+      date: '2026-05-20',
+      time: '13:30',
+      tags: ['feature'],
+      title: 'Sorties partielles réservées au plan Pro',
+      titleEn: 'Partial exits restricted to Pro plan',
+      items: [
+        { type: 'feature', text: 'Les sorties partielles (scale-out) sont désormais une fonctionnalité **Pro** (Funded / Elite). Le plan Trader gratuit voit un encart d\'information à la place.', textEn: 'Partial exits (scale-out) are now a **Pro** feature (Funded / Elite). The free Trader plan sees an info banner instead.' },
+      ],
+    },
+    {
       version: '0.9.250',
       date: '2026-05-20',
       time: '13:00',

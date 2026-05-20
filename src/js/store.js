@@ -167,6 +167,7 @@ const Store = (() => {
     prioritySupport:  ['funded', 'elite', 'beta'],
     betaFeatures:     ['elite', 'beta'],
     decisiveVote:     ['elite', 'beta'],
+    partials:         ['funded', 'elite', 'beta'],   // v0.9.251 : sorties partielles = Pro only
   };
   let _globalGroqKey = '';
 
