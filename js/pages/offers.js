@@ -100,7 +100,7 @@ UI.renderOffers = function () {
         ? `<div class="offer-cta offer-cta-current">${t('off.cta.act')}</div>`
         : isElite
           ? `<div class="offer-cta offer-cta-current" style="background:rgba(255,255,255,0.04)">Inclus dans Elite</div>`
-          : `<a href="/payment" target="_blank" rel="noopener noreferrer" class="offer-cta offer-cta-link offer-cta-pro">${t('off.cta.funded.btn')}</a>`}
+          : `<button type="button" class="offer-cta offer-cta-link offer-cta-pro" data-checkout-tier="funded">${t('off.cta.funded.btn')}</button>`}
     </div>`;
 
   // ── Card : ELITE (29.99 €/mois) ───────────────────────────────────────────
@@ -128,7 +128,7 @@ UI.renderOffers = function () {
       </ul>
       ${isElite || isBeta
         ? `<div class="offer-cta offer-cta-current">${t('off.cta.act')}</div>`
-        : `<a href="/payment" target="_blank" rel="noopener noreferrer" class="offer-cta offer-cta-link offer-cta-elite">${t('off.cta.elite.btn')}</a>`}
+        : `<button type="button" class="offer-cta offer-cta-link offer-cta-elite" data-checkout-tier="elite">${t('off.cta.elite.btn')}</button>`}
     </div>`;
 
   // ── Trust banner ───────────────────────────────────────────────────────────
@@ -238,11 +238,13 @@ UI.renderOffers = function () {
   `;
 
   // ── Billing toggle logic ──────────────────────────────────────────────────
+  let _billingCycle = 'monthly';   // v0.9.255 : suivi pour le checkout
   if (!pro) {
     const toggleBtns = el.querySelectorAll('.billing-toggle-btn');
     toggleBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         const billing = btn.getAttribute('data-billing');
+        _billingCycle = billing === 'yearly' ? 'yearly' : 'monthly';
         toggleBtns.forEach(b => {
           const isActive = b.getAttribute('data-billing') === billing;
           b.classList.toggle('active', isActive);
@@ -254,6 +256,41 @@ UI.renderOffers = function () {
         el.querySelectorAll('[data-price-yearly]').forEach(p => {
           p.style.display = billing === 'yearly' ? '' : 'none';
         });
+      });
+    });
+
+    // ── v0.9.255 : Checkout Stripe self-service ──────────────────────────────
+    el.querySelectorAll('[data-checkout-tier]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const tier = btn.getAttribute('data-checkout-tier');   // 'funded' | 'elite'
+        const plan = `${tier}_${_billingCycle}`;                // ex 'funded_monthly'
+        if (typeof _fbFunctions === 'undefined' || !_fbFunctions) {
+          UI.toast(t('off.checkout.err') || 'Service de paiement indisponible — recharge la page.', true);
+          return;
+        }
+        const original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan });
+          if (res && res.data && res.data.url) {
+            window.location.href = res.data.url;   // redirection vers Stripe Checkout
+            return;                                 // pas de reset (on quitte la page)
+          }
+          UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
+        } catch (e) {
+          const code = (e && (e.code || e.message)) || '';
+          if (/unauthenticated/.test(code)) {
+            UI.toast(t('off.checkout.login') || 'Connecte-toi pour souscrire.', true);
+          } else if (/failed-precondition/.test(code)) {
+            UI.toast(t('off.checkout.verify') || 'Vérifie ton email avant de souscrire.', true);
+          } else {
+            UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
+          }
+        } finally {
+          btn.disabled = false;
+          btn.textContent = original;
+        }
       });
     });
   }
