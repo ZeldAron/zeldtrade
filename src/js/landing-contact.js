@@ -15,6 +15,32 @@
   });
   const fn = firebase.app().functions('europe-west1');
 
+  // v0.9.252 : compteur d'inscrits dynamique dans le hero.
+  // Appelle getPublicStats (callable anonyme) → anime un count-up de 0 → N.
+  (function loadUserCount() {
+    const box = document.getElementById('heroUserCount');
+    const num = document.getElementById('heroUserCountNum');
+    if (!box || !num) return;
+    fn.httpsCallable('getPublicStats')()
+      .then((res) => {
+        const target = Math.max(0, parseInt(res && res.data && res.data.userCount, 10) || 0);
+        if (target <= 0) return;            // rien à montrer si 0
+        box.style.display = 'inline-flex';
+        // Count-up animé (~900ms, ease-out)
+        const duration = 900;
+        const start = performance.now();
+        function tick(now) {
+          const t = Math.min(1, (now - start) / duration);
+          const eased = 1 - Math.pow(1 - t, 3);
+          num.textContent = Math.round(eased * target).toLocaleString('fr-FR');
+          if (t < 1) requestAnimationFrame(tick);
+          else num.textContent = target.toLocaleString('fr-FR');
+        }
+        requestAnimationFrame(tick);
+      })
+      .catch(() => { /* fail-soft : on n'affiche simplement pas le compteur */ });
+  })();
+
   const form    = document.getElementById('lcForm');
   const success = document.getElementById('lcSuccess');
   const nameEl  = document.getElementById('lcName');

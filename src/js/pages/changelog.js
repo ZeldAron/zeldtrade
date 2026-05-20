@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.252',
+      date: '2026-05-20',
+      time: '14:30',
+      tags: ['feature'],
+      title: 'Compteur d\'inscrits en direct sur la landing',
+      titleEn: 'Live signup counter on the landing page',
+      items: [
+        { type: 'feature', text: 'La page d\'accueil affiche désormais le **nombre réel de traders inscrits** (compteur animé), mis à jour automatiquement à chaque nouvelle inscription. Preuve sociale en temps réel.', textEn: 'The landing page now shows the **real number of registered traders** (animated counter), auto-updated on each new signup. Live social proof.' },
+      ],
+    },
+    {
       version: '0.9.251',
       date: '2026-05-20',
       time: '13:30',
