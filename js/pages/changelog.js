@@ -5,6 +5,18 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.253',
+      date: '2026-05-20',
+      time: '15:30',
+      tags: ['privacy', 'security'],
+      title: 'Bannière cookies RGPD sur la landing',
+      titleEn: 'RGPD cookie banner on the landing page',
+      items: [
+        { type: 'privacy', text: 'Bannière cookies ajoutée sur la page d\'accueil (conformité RGPD) : informe que ZeldTrade utilise uniquement des cookies essentiels (connexion, sécurité anti-bot, stockage local) et **aucun tracking publicitaire**. Un seul acquittement pour le site + l\'app.', textEn: 'Cookie banner added on the landing page (RGPD compliance): informs that ZeldTrade uses only essential cookies (login, anti-bot security, local storage) and **no advertising tracking**.' },
+        { type: 'privacy', text: 'Compteur d\'inscrits affiné : ne compte que les vrais bêta testeurs externes (comptes admin/internes/test exclus).', textEn: 'Signup counter refined: counts only real external beta testers (admin/internal/test accounts excluded).' },
+      ],
+    },
+    {
       version: '0.9.252',
       date: '2026-05-20',
       time: '14:30',

@@ -41,6 +41,21 @@
       .catch(() => { /* fail-soft : on n'affiche simplement pas le compteur */ });
   })();
 
+  // v0.9.253 : bannière cookies RGPD. Affichée tant que pas acquittée.
+  // Clé partagée `zt_cookie_ok` avec l'app → un seul acquittement pour les 2.
+  (function cookieBanner() {
+    const banner = document.getElementById('cookieBanner');
+    const accept = document.getElementById('cookieAcceptBtn');
+    if (!banner || !accept) return;
+    try {
+      if (!localStorage.getItem('zt_cookie_ok')) banner.style.display = 'flex';
+    } catch { banner.style.display = 'flex'; }
+    accept.addEventListener('click', () => {
+      try { localStorage.setItem('zt_cookie_ok', '1'); } catch {}
+      banner.style.display = 'none';
+    });
+  })();
+
   const form    = document.getElementById('lcForm');
   const success = document.getElementById('lcSuccess');
   const nameEl  = document.getElementById('lcName');
