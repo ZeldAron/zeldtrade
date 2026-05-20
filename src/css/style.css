@@ -323,7 +323,7 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-.logo-mark svg { width: 16px; height: 16px; display: block; }
+.logo-mark svg { width: 16px; height: 16px; display: block; stroke: #fff; }
 
 .logo-text {
   font-family: 'Geist Mono', monospace;
