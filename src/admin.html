@@ -252,6 +252,40 @@
     .admin-search input:focus { outline: none; border-color: var(--purple); }
     .admin-search input::placeholder { color: var(--muted); }
 
+    /* v0.9.260 — stat chips colorés par palier */
+    .stat-chip-funded { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.05); }
+    .stat-chip-funded .stat-val { color: #a78bfa; }
+    .stat-chip-elite  { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.05); }
+    .stat-chip-elite .stat-val  { color: #fbbf24; }
+    .stat-chip-beta   { border-color: rgba(6,182,212,0.4); background: rgba(6,182,212,0.05); }
+    .stat-chip-beta .stat-val   { color: #22d3ee; }
+
+    /* v0.9.260 — barre de filtres multi-critères */
+    .admin-filters {
+      display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; align-items: center;
+    }
+    .admin-flt-search {
+      flex: 1 1 220px; min-width: 180px;
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 9px 12px; font-size: 13px; color: var(--text); box-sizing: border-box;
+      transition: border-color 0.15s;
+    }
+    .admin-flt-search:focus { outline: none; border-color: var(--purple); }
+    .admin-flt-search::placeholder { color: var(--muted); }
+    .admin-flt {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 9px 10px; font-size: 12px; color: var(--text); cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .admin-flt:focus { outline: none; border-color: var(--purple); }
+    .admin-flt-reset {
+      background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+      color: #f87171; border-radius: 8px; padding: 9px 12px; font-size: 12px;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .admin-flt-reset:hover { background: rgba(239,68,68,0.2); }
+    .admin-flt-count { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+
     /* ── User cells (compact) ───────────────────────────────────────────────── */
     .cell-user-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
     .cell-user-email { font-size: 12px; color: var(--muted); }
@@ -331,6 +365,10 @@
 
     .plan-tag-pro   { background: rgba(124,58,237,0.2); color: var(--purple-l); }
     .plan-tag-basic { background: rgba(139,148,158,0.15); color: var(--muted); }
+    /* v0.9.260 — tags par palier */
+    .plan-tag-funded { background: rgba(124,58,237,0.2); color: #a78bfa; }
+    .plan-tag-elite  { background: rgba(245,158,11,0.18); color: #fbbf24; }
+    .plan-tag-beta   { background: rgba(6,182,212,0.18); color: #22d3ee; }
 
     .btn-gen {
       background: rgba(124,58,237,0.2);
@@ -703,7 +741,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="js/firebase.js"></script>
-  <script src="js/admin.js?v=0.9.174"></script>
+  <script src="js/admin.js?v=0.9.260"></script>
 
 </body>
 </html>

@@ -97,6 +97,31 @@ const Admin = (() => {
   let _cachedUsers     = [];
   let _cachedPlans     = [];
   let _userSearchQuery = '';
+  // v0.9.260 — filtres multi-critères + palier réel par user
+  let _filterPlan   = 'all';      // all | basic | funded | elite | beta
+  let _filterNews   = 'all';      // all | yes | no
+  let _filterSource = 'all';      // all | stripe | code
+  let _sortBy       = 'lastSeen'; // lastSeen | username | activated
+
+  // Palier réel d'un user d'après son doc plan (aligné sur Store : pro legacy sans tier → beta)
+  function _userTier(plan) {
+    if (!plan || plan.plan !== 'pro') return 'basic';
+    const t = plan.tier;
+    return (t === 'funded' || t === 'elite' || t === 'beta') ? t : 'beta';
+  }
+  // Origine de l'abonnement pro : stripe (payant) / code (bêta testeur) / autre (manuel)
+  function _userSource(plan) {
+    if (!plan || plan.plan !== 'pro') return null;
+    if (plan.source === 'stripe') return 'stripe';
+    if (plan.codeHash) return 'code';
+    return 'autre';
+  }
+  const _TIER_META = {
+    basic:  { label: 'BASIC',    cls: 'plan-tag-basic'  },
+    funded: { label: '✦ FUNDED', cls: 'plan-tag-funded' },
+    elite:  { label: '✦ ELITE',  cls: 'plan-tag-elite'  },
+    beta:   { label: 'BÊTA',     cls: 'plan-tag-beta'   },
+  };
 
   async function renderUsers() {
     const wrap = $('tabUsers');
@@ -121,22 +146,33 @@ const Admin = (() => {
 
     // Stats globales
     const total = users.length;
-    let proCount = 0, newsletterCount = 0;
+    const tierCounts = { basic: 0, funded: 0, elite: 0, beta: 0 };
+    let newsletterCount = 0;
     for (let i = 0; i < users.length; i++) {
-      if (plans[i]?.plan === 'pro')        proCount++;
-      if (users[i].newsletterOptIn)        newsletterCount++;
+      tierCounts[_userTier(plans[i])]++;
+      if (users[i].newsletterOptIn) newsletterCount++;
     }
-    const basicCount = total - proCount;
 
     // Filtre live (pseudo OU email)
     const q = (_userSearchQuery || '').toLowerCase().trim();
-    const filtered = users.map((u, i) => ({ u, plan: plans[i] }))
-      .filter(({ u }) => !q
-        || (u.username || '').toLowerCase().includes(q)
-        || (u.email    || '').toLowerCase().includes(q));
+    const filtered = users.map((u, i) => ({ u, plan: plans[i], tier: _userTier(plans[i]), source: _userSource(plans[i]) }))
+      .filter(({ u, tier, source }) => {
+        if (q && !(u.username || '').toLowerCase().includes(q) && !(u.email || '').toLowerCase().includes(q)) return false;
+        if (_filterPlan   !== 'all' && tier !== _filterPlan)            return false;
+        if (_filterNews   === 'yes' && !u.newsletterOptIn)              return false;
+        if (_filterNews   === 'no'  &&  u.newsletterOptIn)              return false;
+        if (_filterSource !== 'all' && source !== _filterSource)        return false;
+        return true;
+      });
+    // Tri
+    filtered.sort((a, b) => {
+      if (_sortBy === 'username')  return (a.u.username || '').localeCompare(b.u.username || '');
+      if (_sortBy === 'activated') return (b.plan?.activatedAt || 0) - (a.plan?.activatedAt || 0);
+      return (b.u.lastSeen || 0) - (a.u.lastSeen || 0); // lastSeen (par défaut)
+    });
 
     // Lignes
-    const rows = filtered.map(({ u, plan }) => {
+    const rows = filtered.map(({ u, plan, tier }) => {
       const isPro       = plan?.plan === 'pro';
       const isSelf      = u.uid === currentAdminUid;
       const activated   = isPro ? formatDateShort(plan.activatedAt) : null;
@@ -153,7 +189,7 @@ const Admin = (() => {
           <div class="cell-user-name">${esc(u.username)}${newsletter}</div>
           <div class="cell-user-email">${esc(u.email)}</div>
         </td>
-        <td><span class="plan-tag ${isPro ? 'plan-tag-pro' : 'plan-tag-basic'}">${isPro ? '✦ PRO' : 'BASIC'}</span></td>
+        <td><span class="plan-tag ${_TIER_META[tier].cls}">${_TIER_META[tier].label}</span></td>
         <td>
           <div class="cell-dates-act">${activated ? 'Activé ' + activated : '—'}</div>
           <div class="cell-dates-seen">Vu ${lastSeenRel}</div>
@@ -171,18 +207,46 @@ const Admin = (() => {
       ? '<tr><td colspan="4" class="admin-empty-row">Aucun résultat pour ce filtre.</td></tr>'
       : '';
 
+    const _sel = (cur, val) => cur === val ? ' selected' : '';
+    const _isFiltered = _filterPlan !== 'all' || _filterNews !== 'all' || _filterSource !== 'all' || !!q;
     wrap.innerHTML = `
       <div class="admin-stats">
-        <div class="stat-chip"><span class="stat-val">${total}</span><span class="stat-lbl">Utilisateurs</span></div>
-        <div class="stat-chip stat-chip-pro"><span class="stat-val">${proCount}</span><span class="stat-lbl">Pro</span></div>
-        <div class="stat-chip"><span class="stat-val">${basicCount}</span><span class="stat-lbl">Basic</span></div>
+        <div class="stat-chip"><span class="stat-val">${total}</span><span class="stat-lbl">Total</span></div>
+        <div class="stat-chip stat-chip-funded"><span class="stat-val">${tierCounts.funded}</span><span class="stat-lbl">Funded</span></div>
+        <div class="stat-chip stat-chip-elite"><span class="stat-val">${tierCounts.elite}</span><span class="stat-lbl">Elite</span></div>
+        <div class="stat-chip stat-chip-beta"><span class="stat-val">${tierCounts.beta}</span><span class="stat-lbl">Bêta</span></div>
+        <div class="stat-chip"><span class="stat-val">${tierCounts.basic}</span><span class="stat-lbl">Basic</span></div>
         <div class="stat-chip"><span class="stat-val">${newsletterCount}</span><span class="stat-lbl">Newsletter</span></div>
       </div>
-      <div class="admin-search">
-        <input type="text" id="userSearch" placeholder="Rechercher par pseudo ou email…" value="${esc(q)}" autocomplete="off" spellcheck="false" />
+      <div class="admin-filters">
+        <input type="text" id="userSearch" class="admin-flt-search" placeholder="Rechercher pseudo / email…" value="${esc(q)}" autocomplete="off" spellcheck="false" />
+        <select id="fltPlan" class="admin-flt">
+          <option value="all"${_sel(_filterPlan,'all')}>Tous les paliers</option>
+          <option value="basic"${_sel(_filterPlan,'basic')}>Basic</option>
+          <option value="funded"${_sel(_filterPlan,'funded')}>Funded</option>
+          <option value="elite"${_sel(_filterPlan,'elite')}>Elite</option>
+          <option value="beta"${_sel(_filterPlan,'beta')}>Bêta</option>
+        </select>
+        <select id="fltNews" class="admin-flt">
+          <option value="all"${_sel(_filterNews,'all')}>Newsletter : tous</option>
+          <option value="yes"${_sel(_filterNews,'yes')}>Inscrits 📬</option>
+          <option value="no"${_sel(_filterNews,'no')}>Non inscrits</option>
+        </select>
+        <select id="fltSource" class="admin-flt">
+          <option value="all"${_sel(_filterSource,'all')}>Source : toutes</option>
+          <option value="stripe"${_sel(_filterSource,'stripe')}>Stripe (payant)</option>
+          <option value="code"${_sel(_filterSource,'code')}>Code Bêta</option>
+        </select>
+        <select id="fltSort" class="admin-flt">
+          <option value="lastSeen"${_sel(_sortBy,'lastSeen')}>Tri : activité récente</option>
+          <option value="username"${_sel(_sortBy,'username')}>Tri : pseudo (A-Z)</option>
+          <option value="activated"${_sel(_sortBy,'activated')}>Tri : date d'activation</option>
+        </select>
+        ${_isFiltered ? '<button id="fltReset" class="admin-flt-reset" title="Réinitialiser les filtres">✕ Réinitialiser</button>' : ''}
       </div>
+      <div class="admin-flt-count">${filtered.length} résultat${filtered.length > 1 ? 's' : ''}${_isFiltered ? ' (filtré)' : ''}</div>
       <table class="admin-table">
-        <thead><tr><th>Utilisateur</th><th>Plan</th><th>Activité</th><th class="th-actions">Actions</th></tr></thead>
+        <thead><tr><th>Utilisateur</th><th>Palier</th><th>Activité</th><th class="th-actions">Actions</th></tr></thead>
         <tbody>${rows || emptyRow}</tbody>
       </table>`;
 
@@ -198,6 +262,18 @@ const Admin = (() => {
         s.focus();
         s.setSelectionRange(s.value.length, s.value.length);
       }, 0);
+    });
+
+    // Bind filtres (palier / newsletter / source / tri)
+    const _fltMap = { fltPlan: v => _filterPlan = v, fltNews: v => _filterNews = v, fltSource: v => _filterSource = v, fltSort: v => _sortBy = v };
+    Object.keys(_fltMap).forEach(id => {
+      const el = $(id);
+      if (el) el.addEventListener('change', (e) => { _fltMap[id](e.target.value); _renderUsersTable(); });
+    });
+    const resetEl = $('fltReset');
+    if (resetEl) resetEl.addEventListener('click', () => {
+      _userSearchQuery = ''; _filterPlan = 'all'; _filterNews = 'all'; _filterSource = 'all'; _sortBy = 'lastSeen';
+      _renderUsersTable();
     });
 
     // Bind actions (event delegation par data-action)
