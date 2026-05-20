@@ -146,6 +146,7 @@ const Store = (() => {
   let groups        = [];
   let _plan         = { plan: 'basic', tier: 'trader' };
   let _aiUsage      = { date: '', count: 0 };
+  let _stripe       = { customerId: null, subscriptionStatus: null, tier: null, currentPeriodEnd: null, cancelAtPeriodEnd: false };
 
   // ─── Plans & tiers (v0.9.211) ────────────────────────────────────────────────
   // 4 tiers : trader (gratuit) / funded (14,99 €) / elite (29,99 €) / beta (admin attribué, accès tout)
@@ -351,7 +352,7 @@ const Store = (() => {
     try {
       // Note : config/groq supprimé — la clé Groq vit désormais dans Google
       // Secret Manager côté Cloud Function. Plus aucune lecture client.
-      const [tSnap, sSnap, maSnap, spfSnap, gSnap, planSnap, aiSnap] = await _withTimeout(Promise.all([
+      const [tSnap, sSnap, maSnap, spfSnap, gSnap, planSnap, aiSnap, stripeSnap] = await _withTimeout(Promise.all([
         userDoc('trades').get(),
         userDoc('settings').get(),
         userDoc('myAccounts').get(),
@@ -359,8 +360,20 @@ const Store = (() => {
         userDoc('groups').get(),
         userDoc('plan').get(),
         userDoc('aiUsage').get(),
+        userDoc('stripe').get(),   // v0.9.255 : info abonnement Stripe (read-only)
       ]), 10000);
       let changed = false;
+      // v0.9.255 : info abonnement Stripe (customerId, status). Read-only côté client.
+      if (stripeSnap.exists) {
+        const sd = stripeSnap.data() || {};
+        _stripe = {
+          customerId:         typeof sd.customerId === 'string' ? sd.customerId : null,
+          subscriptionStatus: typeof sd.subscriptionStatus === 'string' ? sd.subscriptionStatus : null,
+          tier:               typeof sd.tier === 'string' ? sd.tier : null,
+          currentPeriodEnd:   (typeof sd.currentPeriodEnd === 'number') ? sd.currentPeriodEnd : null,
+          cancelAtPeriodEnd:  sd.cancelAtPeriodEnd === true,
+        };
+      }
       if (tSnap.exists) {
         const remoteTrades = Array.isArray(tSnap.data().items) ? tSnap.data().items : [];
         // Anti-corruption : si la version remote est anormalement réduite par rapport
@@ -912,6 +925,7 @@ const Store = (() => {
 
   function getPlanInfo() { return { ..._plan, limits: { ...getLimits() } }; }
   function isPro()       { return _plan.plan === 'pro'; }
+  function getStripeInfo() { return { ..._stripe }; }   // v0.9.255 : info abonnement (read-only)
   // v0.9.211 — Nouveaux helpers tier-aware
   function getTier()     { return VALID_TIERS.has(_plan.tier) ? _plan.tier : 'trader'; }
   function getLimits()   { return TIER_LIMITS[getTier()] || TIER_LIMITS.trader; }
@@ -1100,7 +1114,7 @@ const Store = (() => {
     getMyAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount,
     getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm,
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
-    getPlanInfo, isPro, getTier, getLimits, canUseFeature, TIER_LIMITS, TIER_FEATURES,
+    getPlanInfo, isPro, getTier, getLimits, canUseFeature, getStripeInfo, TIER_LIMITS, TIER_FEATURES,
     activatePro, canAnalyzeToday, refreshAiUsage, canAddAccount,
     getLastWizardPrefs, setLastWizardPrefs,
     getStats,

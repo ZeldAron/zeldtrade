@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.255',
+      date: '2026-05-20',
+      time: '17:30',
+      tags: ['feature', 'security'],
+      title: 'Paiements Stripe en self-service (Funded / Elite)',
+      titleEn: 'Self-service Stripe payments (Funded / Elite)',
+      items: [
+        { type: 'feature', text: 'Abonnement direct depuis la page Offres : clique « S\'abonner » sur Funded ou Elite (mensuel ou annuel) → paiement sécurisé Stripe. Activation immédiate après paiement.', textEn: 'Subscribe directly from the Offers page: click "Subscribe" on Funded or Elite (monthly or yearly) → secure Stripe payment. Instant activation.' },
+        { type: 'feature', text: 'Nouvel espace « Gérer mon abonnement » dans Réglages : change ta carte, consulte tes factures, résilie en 1 clic (portail client Stripe).', textEn: 'New "Manage subscription" section in Settings: change your card, view invoices, cancel in 1 click (Stripe customer portal).' },
+        { type: 'security', text: 'Paiements 100% sécurisés : aucune donnée bancaire ne transite par ZeldTrade (PCI-DSS délégué à Stripe). Le prix est verrouillé côté serveur (impossible de manipuler le montant), email vérifié requis, codes promo Stripe supportés.', textEn: 'Fully secure payments: no card data passes through ZeldTrade (PCI-DSS handled by Stripe). Price locked server-side, verified email required, Stripe promo codes supported.' },
+      ],
+    },
+    {
       version: '0.9.254',
       date: '2026-05-20',
       time: '16:30',

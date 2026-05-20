@@ -1322,6 +1322,35 @@
       });
     });
 
+    // v0.9.255 : section abonnement Stripe — visible si l'user a un customerId Stripe.
+    // Le bouton ouvre le portail client Stripe (gestion CB, factures, résiliation 1-clic).
+    (function setupSubscription() {
+      const section = $('subscriptionSection');
+      const btn     = $('btnManageSub');
+      if (!section || !btn) return;
+      const stripeInfo = Store.getStripeInfo ? Store.getStripeInfo() : null;
+      const hasStripe  = stripeInfo && stripeInfo.customerId;
+      section.style.display = hasStripe ? '' : 'none';
+      if (!hasStripe || btn.dataset.bound) return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', async () => {
+        if (typeof _fbFunctions === 'undefined' || !_fbFunctions) {
+          UI.toast('Service indisponible — recharge la page.', true); return;
+        }
+        const orig = btn.textContent;
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({});
+          if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+          UI.toast('Impossible d\'ouvrir le portail abonnement.', true);
+        } catch (e) {
+          UI.toast('Impossible d\'ouvrir le portail abonnement.', true);
+        } finally {
+          btn.disabled = false; btn.textContent = orig;
+        }
+      });
+    })();
+
     // v0.9.239 : toggle thème (auto / dark / light)
     _refreshThemeToggle();
     document.querySelectorAll('#themeToggleGroup .theme-btn').forEach(btn => {
