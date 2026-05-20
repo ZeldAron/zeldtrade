@@ -45,7 +45,8 @@
     .tag { display: inline-block; font-size: 11px; font-weight: 500; background: rgba(99,102,241,0.12); color: #818cf8; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
     .tag-green { background: rgba(34,197,94,0.1); color: #4ade80; }
     .tag-amber { background: rgba(245,158,11,0.1); color: #fbbf24; }
-    .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 640px) { .plan-grid { grid-template-columns: 1fr; } }
     .plan-card { background: #131929; border: 1px solid #1e2535; border-radius: 10px; padding: 18px 20px; }
     .plan-card h4 { font-size: 13px; font-weight: 600; color: #f0f2f7; margin-bottom: 4px; }
     .plan-card .price { font-size: 18px; font-weight: 600; color: #6366f1; margin-bottom: 8px; }
@@ -63,7 +64,7 @@
     <a href="/" class="back-link">← Retour à ZeldTrade</a>
 
     <h1 class="page-title">Conditions Générales d'Utilisation & de Vente</h1>
-    <p class="page-subtitle">Dernière mise à jour : 16 mai 2026 (v0.9.162)</p>
+    <p class="page-subtitle">Dernière mise à jour : 20 mai 2026 (v0.9.254)</p>
 
     <p>Les présentes Conditions Générales d'Utilisation (CGU) et Conditions Générales de Vente (CGV) régissent l'accès et l'utilisation de ZeldTrade, service en ligne de journal de trading. En créant un compte, vous acceptez l'intégralité de ces conditions.</p>
 
@@ -78,7 +79,7 @@
       <li>Enregistrer et suivre ses trades (PnL, win rate, drawdown, etc.)</li>
       <li>Gérer plusieurs comptes de trading et leurs règles d'évaluation</li>
       <li>Analyser ses performances via des dashboards et statistiques</li>
-      <li>Analyser automatiquement des captures d'écran via intelligence artificielle (fonctionnalité Pro)</li>
+      <li>Analyser automatiquement des captures d'écran via intelligence artificielle (nombre d'analyses quotidiennes selon le plan ; conservation des captures réservée aux plans Pro)</li>
     </ul>
     <p>Le service est fourni par Aaron Platon, micro-entrepreneur, SIRET 100 510 643 00016, 19 rue de l'Église, 35130 Arbrissel.</p>
 
@@ -164,45 +165,71 @@
     <div class="plan-grid">
       <div class="plan-card">
         <span class="tag tag-green">Gratuit</span>
-        <h4>Basic</h4>
+        <h4>Trader</h4>
         <div class="price">0 €</div>
         <ul>
-          <li>Journal de trading illimité</li>
-          <li>Dashboard performances</li>
-          <li>1 compte prop firm</li>
-          <li>Règles prop firms intégrées</li>
+          <li>Journal de trading complet</li>
+          <li>Dashboard &amp; calendrier</li>
+          <li>1 compte de trading</li>
+          <li>1 analyse IA / jour</li>
+          <li>Calculateurs &amp; objectifs</li>
         </ul>
       </div>
       <div class="plan-card">
         <span class="tag">Pro</span>
-        <h4>Pro</h4>
-        <div class="price">Code d'accès</div>
+        <h4>Funded</h4>
+        <div class="price">14,99 € / mois</div>
         <ul>
-          <li>Tout Basic, sans limites</li>
-          <li>Comptes illimités</li>
-          <li>Analytics complètes</li>
-          <li>IA Vision (screenshots)</li>
-          <li>Groupes de comptes</li>
+          <li>Tout Trader, étendu</li>
+          <li>10 comptes de trading</li>
+          <li>20 analyses IA / jour + IA avancée</li>
+          <li>Jusqu'à 3 captures par trade</li>
+          <li>Sorties partielles, groupes, export PDF/CSV</li>
+        </ul>
+      </div>
+      <div class="plan-card">
+        <span class="tag">Pro</span>
+        <h4>Elite</h4>
+        <div class="price">29,99 € / mois</div>
+        <ul>
+          <li>Tout Funded, étendu</li>
+          <li>100 comptes de trading</li>
+          <li>100 analyses IA / jour</li>
           <li>Support prioritaire</li>
+          <li>Accès anticipé aux nouveautés</li>
         </ul>
       </div>
     </div>
-    <p>Les tarifs sont indiqués en euros (€), toutes taxes comprises. Aaron Platon, micro-entrepreneur sous le régime de la franchise en base de TVA (article 293 B du CGI), n'applique pas de TVA sur ses ventes.</p>
+    <p>Les abonnements <strong>Funded</strong> et <strong>Elite</strong> sont disponibles en facturation <strong>mensuelle</strong> ou <strong>annuelle</strong> (avec réduction équivalente à environ 2 mois offerts). Les tarifs annuels exacts sont affichés sur la page Offres au moment de la souscription.</p>
+    <p>Les tarifs sont indiqués en euros (€), toutes taxes comprises. Aaron Platon, micro-entrepreneur sous le régime de la franchise en base de TVA (article 293 B du CGI), n'applique pas de TVA sur ses ventes (mention « TVA non applicable, art. 293 B du CGI »).</p>
 
     <!-- 10. Commande -->
     <h2>10. Processus de commande</h2>
-    <p>L'accès au plan Pro s'effectue via la saisie d'un code d'activation dans la section "Offres" de l'application. La commande est définitivement validée à la réception du code et son activation réussie.</p>
-    <p>Une facture sera transmise par email à l'adresse associée au compte dans les 48 heures suivant la commande.</p>
+    <p>La souscription à un plan Pro (Funded ou Elite) s'effectue depuis la section « Offres » de l'application, via notre prestataire de paiement sécurisé <strong>Stripe</strong>. Aucune donnée bancaire n'est stockée par ZeldTrade : les paiements sont traités exclusivement par Stripe (conforme PCI-DSS).</p>
+    <p>La commande est définitivement validée après confirmation du paiement par Stripe. L'accès aux fonctionnalités Pro est activé immédiatement.</p>
+    <p>Une facture est transmise par email à l'adresse associée au compte dans les 48 heures suivant la souscription.</p>
+
+    <!-- 10 bis. Abonnement récurrent -->
+    <h2>10 bis. Abonnement, renouvellement et résiliation</h2>
+    <p>Les plans Funded et Elite sont des <strong>abonnements à renouvellement automatique</strong> :</p>
+    <ul>
+      <li>Le renouvellement s'effectue automatiquement à chaque échéance (mensuelle ou annuelle selon la formule choisie) au tarif en vigueur, jusqu'à résiliation.</li>
+      <li>Vous pouvez <strong>résilier à tout moment en 1 clic</strong> depuis l'application (ou l'espace client Stripe). La résiliation prend effet à la fin de la période déjà payée — aucun prélèvement supplémentaire ne sera effectué ensuite.</li>
+      <li>À la résiliation, vous conservez l'accès Pro jusqu'à la fin de la période en cours, puis votre compte repasse automatiquement au plan gratuit Trader (vos données sont conservées).</li>
+      <li>En cas d'échec de paiement (carte expirée, etc.), l'accès Pro peut être suspendu après plusieurs tentatives ; le compte repasse alors au plan Trader.</li>
+    </ul>
 
     <!-- 11. Droit de rétractation -->
     <h2>11. Droit de rétractation</h2>
-    <p>Conformément à l'article L.221-28 du Code de la consommation, le droit de rétractation de 14 jours ne s'applique pas aux contenus numériques dont l'exécution a commencé avec l'accord préalable exprès du consommateur.</p>
-    <p>En activant votre code Pro et en accédant immédiatement aux fonctionnalités, vous reconnaissez expressément renoncer à votre droit de rétractation.</p>
+    <p>Conformément à l'article L.221-28 du Code de la consommation, le droit de rétractation de 14 jours ne s'applique pas aux contenus numériques fournis sur un support immatériel dont l'exécution a commencé avec l'accord préalable exprès du consommateur et renoncement exprès à son droit de rétractation.</p>
+    <p>En souscrivant à un plan Pro et en accédant immédiatement aux fonctionnalités, vous reconnaissez expressément demander l'exécution immédiate du service et renoncer à votre droit de rétractation. <strong>Toutefois, la garantie « satisfait ou remboursé » ci-dessous (article 12) s'applique et vous protège au-delà du droit de rétractation légal.</strong></p>
 
     <!-- 12. Remboursements -->
-    <h2>12. Remboursements</h2>
-    <p>En dehors du droit de rétractation (inapplicable, voir article 11), aucun remboursement n'est accordé pour les codes Pro déjà activés.</p>
-    <p>Toutefois, en cas de bug majeur rendant le service inutilisable pendant plus de 7 jours consécutifs, un remboursement au prorata pourra être étudié sur demande envoyée à <a href="mailto:zeldtradepro@gmail.com">zeldtradepro@gmail.com</a>.</p>
+    <h2>12. Garantie satisfait ou remboursé &amp; remboursements</h2>
+    <p style="border-left:3px solid #22c55e;padding-left:14px;color:#86efac"><strong>Garantie 30 jours satisfait ou remboursé.</strong> Pour toute première souscription à un plan Pro (Funded ou Elite), vous disposez de <strong>30 jours</strong> pour demander un remboursement intégral si le service ne vous convient pas, sans justification, par simple email à <a href="mailto:zeldtradepro@gmail.com" style="color:#86efac">zeldtradepro@gmail.com</a>.</p>
+    <p>Cette garantie s'applique <strong>une seule fois par utilisateur</strong> (première souscription). Les renouvellements ultérieurs ne sont pas couverts par la garantie 30 jours, mais vous pouvez résilier à tout moment pour éviter le prochain prélèvement (cf. article 10 bis).</p>
+    <p>Par ailleurs, en cas de bug majeur rendant le service inutilisable pendant plus de 7 jours consécutifs, un remboursement au prorata pourra être étudié sur demande.</p>
+    <p>Les remboursements sont effectués via Stripe sur le moyen de paiement d'origine, sous 14 jours maximum.</p>
 
     <!-- 13. Facturation -->
     <h2>13. Facturation</h2>
