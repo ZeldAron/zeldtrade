@@ -1753,8 +1753,9 @@
         _delAttempts = 0;
         delOverlay.style.display = 'none';
         // Firebase signOut se déclenche automatiquement après delete()
-        // on redirige vers la landing publique (index.html)
-        window.location.href = '/';
+        // v0.9.263 : redirige avec ?deleted=1 → bannière de confirmation sur la landing
+        // (avant, l'user était renvoyé à l'accueil sans aucun message).
+        window.location.href = '/?deleted=1';
       } else {
         _delAttempts++;
         if (_delAttempts >= 3) {
