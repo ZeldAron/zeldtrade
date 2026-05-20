@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.257',
+      date: '2026-05-21',
+      time: '00:30',
+      tags: ['fix'],
+      title: 'Section « Gérer mon abonnement » affichée de façon fiable',
+      titleEn: '"Manage subscription" section now shows reliably',
+      items: [
+        { type: 'fix', text: 'La section « Gérer mon abonnement » (pour résilier, changer de carte ou voir tes factures) s\'affiche désormais dès l\'ouverture des Réglages, même si tes infos d\'abonnement ont fini de charger après l\'arrivée sur la page.', textEn: 'The "Manage subscription" section (to cancel, change card or view invoices) now shows as soon as you open Settings, even if your subscription info finished loading after the page appeared.' },
+      ],
+    },
+    {
       version: '0.9.256',
       date: '2026-05-20',
       time: '18:30',
