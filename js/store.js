@@ -540,11 +540,24 @@ const Store = (() => {
       // manualPnl ne s'applique QU'aux trades fermés (forcé à null si open) + borné par ctx
       manualPnl:  (raw.manualPnl != null && (raw.outcome && raw.outcome !== 'open'))
                     ? _safeNum(raw.manualPnl, -ctx, ctx, null) : null,
-      // Partial close (scale-out) : sortir X% de la position à partialPrice,
-      // laisser le reste tourner jusqu'à exitPrice/SL/TP/BE.
-      // Bornes : 1-99% (0=pas de partial, 100=sortie complète=exitPrice classique)
+      // Partial close (scale-out) — LEGACY : sortir X% de la position à partialPrice.
+      // Conservé pour rétro-compat des anciens trades (lecture).
       partialPercent: raw.partialPercent != null ? _safeNum(raw.partialPercent, 1, 99, null) : null,
       partialPrice:   raw.partialPrice   != null ? _safeNum(raw.partialPrice,  -1e7, 1e7, null) : null,
+      // v0.9.250 : Sorties partielles multiples [{ price, lots }] (jusqu'à 10).
+      // Chaque tranche validée : price > 0, lots > 0. Le runner restant
+      // (contracts - Σlots) sort à exitPrice/outcome.
+      partials: (() => {
+        if (!Array.isArray(raw.partials)) return null;
+        const out = raw.partials.slice(0, 10).map(p => {
+          if (!p) return null;
+          const price = _safeNum(p.price, -1e7, 1e7, null);
+          const lots  = _safeNum(p.lots,  0,    999,  null);
+          if (price == null || lots == null || lots <= 0) return null;
+          return { price, lots };
+        }).filter(Boolean);
+        return out.length ? out : null;
+      })(),
       // Snapshot du compte au moment du trade — préservé pour cohérence historique
       capital:    raw.capital    != null ? _safeNum(raw.capital,     0,    1e9, null) : null,
       feePerSide: raw.feePerSide != null ? _safeNum(raw.feePerSide,  0,    100, null) : null,

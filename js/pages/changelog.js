@@ -5,6 +5,20 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.250',
+      date: '2026-05-20',
+      time: '13:00',
+      tags: ['feature'],
+      title: 'Sorties partielles multiples (scale-out) — retire tes lots au fur et à mesure',
+      titleEn: 'Multiple partial exits (scale-out) — scale out your lots progressively',
+      items: [
+        { type: 'feature', text: '**Nouveau** : tu peux désormais enregistrer **plusieurs sorties partielles** sur un trade. Ex : 5 lots → 2 lots à TP1, 2 lots à TP2, 1 lot runner. Active "Sorties partielles" à l\'étape 3 et ajoute autant de tranches que nécessaire (jusqu\'à 10).', textEn: '**New**: you can now record **multiple partial exits** on a trade. E.g. 5 lots → 2 lots at TP1, 2 lots at TP2, 1 runner. Enable "Partial exits" at step 3.' },
+        { type: 'feature', text: 'Le P&L est calculé tranche par tranche : chaque sortie compte ses propres lots × points, et le runner restant sort au prix d\'exit. Le résumé t\'indique les lots sortis et le runner restant en direct.', textEn: 'P&L is computed per tranche: each exit counts its own lots × points, and the remaining runner exits at the exit price. Live summary shows lots out and remaining runner.' },
+        { type: 'feature', text: 'Le détail du trade affiche un **tableau des sorties** avec le P&L de chaque tranche (sorties + runner).', textEn: 'Trade detail shows an **exits table** with P&L per tranche (exits + runner).' },
+        { type: 'feature', text: 'Rétro-compat : les anciens trades avec une sortie partielle en % sont automatiquement convertis en lots à l\'édition.', textEn: 'Backward compat: old trades with a single %-based partial exit are auto-converted to lots on edit.' },
+      ],
+    },
+    {
       version: '0.9.249',
       date: '2026-05-20',
       time: '11:00',

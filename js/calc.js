@@ -108,12 +108,21 @@ const Calc = (() => {
     // globales : un trade open ne doit pas compter dans le P&L réalisé)
     const hasManualPnl = t.manualPnl != null && t.manualPnl !== '' && !isNaN(Number(t.manualPnl)) && t.outcome !== 'open';
 
-    // Partial close (scale-out) : sortie partielle d'une fraction de la position
-    // à partialPrice, le reste continue jusqu'à exitPrice/outcome.
-    const hasPartial = t.partialPercent != null
+    // v0.9.250 : Sorties partielles multiples (scale-out). Deux formats supportés :
+    //   1. NOUVEAU : t.partials = [{ price, lots }]  → N sorties, lots retirés
+    //      au fur et à mesure, le runner restant sort à resolvedExit.
+    //   2. LEGACY  : t.partialPercent + t.partialPrice → 1 sortie en %.
+    //      Conservé pour les anciens trades (rétro-compat lecture).
+    const cleanPartials = _normalizePartials(t.partials, t.contracts);
+    const hasPartials = cleanPartials.length > 0;
+    const hasLegacyPartial = !hasPartials
+                    && t.partialPercent != null
                     && t.partialPrice   != null
                     && t.partialPercent > 0
                     && t.partialPercent < 100;
+
+    // Détail par tranche (pour l'affichage : P&L de chaque sortie partielle)
+    let partialBreakdown = null;
 
     if (hasManualPnl) {
       // L'utilisateur a saisi un P&L net : il prime sur tout calcul
@@ -127,7 +136,27 @@ const Calc = (() => {
         : t.outcome === 'be'   ? t.entry
         : t.tp1;   // open : P&L potentiel si TP atteint
       if (resolvedExit != null && resolvedExit !== undefined) {
-        if (hasPartial) {
+        if (hasPartials) {
+          // Somme du P&L de chaque tranche partielle + runner restant.
+          let gross    = 0;
+          let lotsSold = 0;
+          partialBreakdown = [];
+          for (const p of cleanPartials) {
+            const pts  = isLong ? p.price - t.entry : t.entry - p.price;
+            const tPnl = pts * pv * p.lots;
+            gross    += tPnl;
+            lotsSold += p.lots;
+            partialBreakdown.push({ price: p.price, lots: p.lots, pnl: tPnl });
+          }
+          const runnerLots = Math.max(0, +(t.contracts - lotsSold).toFixed(6));
+          if (runnerLots > 0) {
+            const pts  = isLong ? resolvedExit - t.entry : t.entry - resolvedExit;
+            const rPnl = pts * pv * runnerLots;
+            gross += rPnl;
+            partialBreakdown.push({ price: resolvedExit, lots: runnerLots, pnl: rPnl, runner: true });
+          }
+          pnl = gross;
+        } else if (hasLegacyPartial) {
           // P&L pondéré : partial% × (partialPrice - entry) + (1-partial%) × (resolvedExit - entry)
           const pFrac     = t.partialPercent / 100;
           const partialPts = isLong ? t.partialPrice - t.entry : t.entry - t.partialPrice;
@@ -148,12 +177,39 @@ const Calc = (() => {
       riskTicks, rewardTicks,
       pv, feePerSide, commFees, spreadFees, totalFees,
       pnl, netPnl, estimated,
-      hasPartial,
+      hasPartial: hasPartials || hasLegacyPartial,
+      hasPartials,
+      partials: hasPartials ? cleanPartials : null,
+      partialBreakdown,
       partialPercent: t.partialPercent || null,
       partialPrice:   t.partialPrice   || null,
       apexOk:   riskPct <= 2.0,
       apexWarn: riskPct > 1.5 && riskPct <= 2.0,
     };
+  }
+
+  // v0.9.250 : normalise + valide un array de sorties partielles.
+  // Filtre les entrées invalides (price/lots non numériques ou ≤ 0),
+  // cap le nombre total de lots à `contracts` (le runner ne peut pas être négatif).
+  function _normalizePartials(partials, contracts) {
+    if (!Array.isArray(partials) || !partials.length) return [];
+    const maxLots = (typeof contracts === 'number' && contracts > 0) ? contracts : Infinity;
+    const out = [];
+    let cumulative = 0;
+    for (const p of partials) {
+      if (!p) continue;
+      const price = Number(p.price);
+      let   lots  = Number(p.lots);
+      if (!isFinite(price) || price <= 0) continue;
+      if (!isFinite(lots)  || lots  <= 0) continue;
+      // Ne pas dépasser le total de lots dispo (clamp la dernière tranche)
+      if (cumulative + lots > maxLots) lots = +(maxLots - cumulative).toFixed(6);
+      if (lots <= 0) break;
+      out.push({ price, lots });
+      cumulative += lots;
+      if (cumulative >= maxLots) break;
+    }
+    return out;
   }
 
   // Live preview depuis le formulaire
@@ -290,5 +346,6 @@ const Calc = (() => {
     trade, fromForm, trailingFloor,
     rrColor, rrLabel, riskColor, pnlColor, formatPnL,
     pointValue, isCFD, isCrypto, ACCOUNT_RULES,
+    normalizePartials: _normalizePartials,
   };
 })();

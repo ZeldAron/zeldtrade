@@ -259,9 +259,27 @@ const UI = (() => {
     // Si manualPnl override → le partial est ignoré dans le calcul, mais on l'affiche
     // quand même comme info contextuelle (avec mention "ignoré").
     const hasManualOverride = t.manualPnl != null && t.manualPnl !== '' && !isNaN(Number(t.manualPnl)) && t.outcome !== 'open';
-    const partialRow = c.hasPartial
-      ? `<div class="info-row"><span class="info-key">Partial close</span><span class="info-val" style="color:var(--purple-l)">${c.partialPercent}% à ${c.partialPrice.toFixed(2)}${hasManualOverride ? ' <span style="color:var(--muted);font-size:11px">(ignoré — P&L manuel)</span>' : ''}</span></div>`
-      : '';
+    const ignoredTag = hasManualOverride ? ' <span style="color:var(--muted);font-size:11px">(ignoré — P&L manuel)</span>' : '';
+    let partialRow = '';
+    if (c.hasPartials && Array.isArray(c.partialBreakdown) && c.partialBreakdown.length) {
+      // v0.9.250 : tableau des sorties partielles + P&L par tranche
+      const rows = c.partialBreakdown.map((b, i) => {
+        const label = b.runner ? (i18n.t('ui.partials.runner') || 'Runner') : `${i18n.t('ui.partials.exit') || 'Sortie'} ${i + 1}`;
+        const pnlColor = b.pnl >= 0 ? 'var(--green)' : 'var(--red)';
+        return `<div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;font-size:12px;padding:3px 0">
+                  <span style="color:var(--muted)">${label}</span>
+                  <span class="mono">${(+b.lots).toFixed(b.lots % 1 === 0 ? 0 : 2)} @ ${(+b.price).toFixed(2)}</span>
+                  <span class="mono" style="color:${pnlColor};min-width:64px;text-align:right">${b.pnl >= 0 ? '+' : ''}$${b.pnl.toFixed(2)}</span>
+                </div>`;
+      }).join('');
+      partialRow = `<div class="info-row" style="flex-direction:column;align-items:stretch;gap:2px">
+          <span class="info-key" style="margin-bottom:4px">${i18n.t('ui.partials.title') || 'Sorties partielles'}${ignoredTag}</span>
+          ${rows}
+        </div>`;
+    } else if (c.hasPartial && c.partialPercent != null && c.partialPrice != null) {
+      // Legacy single partial
+      partialRow = `<div class="info-row"><span class="info-key">Partial close</span><span class="info-val" style="color:var(--accent-l)">${c.partialPercent}% à ${c.partialPrice.toFixed(2)}${ignoredTag}</span></div>`;
+    }
 
     const infoCard = (t.setup || t.notes || t.apex || c.hasPartial)
       ? `<div class="info-card">
