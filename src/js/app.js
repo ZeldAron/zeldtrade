@@ -51,6 +51,11 @@ function initApp() {
     if (page === 'calendar')  _renderWithSkeleton('calContent',      UI.renderCalendar);
     if (page === 'outils')    UI.renderOutils();
     if (page === 'offers')    UI.renderOffers();
+    // v0.9.257 : recalcule la page Réglages à chaque ouverture (sinon la section
+    // « Gérer mon abonnement » restait masquée si le doc Stripe a été chargé APRÈS
+    // le 1er rendu — la visibilité n'était jamais réévaluée). initSettings est
+    // idempotent (bindings gardés par dataset.bound).
+    if (page === 'settings')  UI.initSettings();
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
