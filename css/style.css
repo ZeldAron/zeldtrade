@@ -362,6 +362,16 @@ body {
 .nav-item.active svg { color: var(--accent); }
 
 .nav-divider { height: 1px; background: var(--border); margin: 8px 0; }
+/* v0.9.262 — libellé de groupe dans la nav (ex. « Analyse ») */
+.nav-group-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.6;
+  padding: 10px 12px 4px;
+}
 
 .sidebar-stats {
   padding: 14px 16px;
