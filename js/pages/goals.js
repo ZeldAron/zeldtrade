@@ -91,7 +91,7 @@
       return `<div class="goal-card" style="position:relative">
         <div class="goal-card-header">
           <div class="goal-card-name">${UI.escHtml(acc.name)}</div>
-          <span class="status-badge" style="background:rgba(124,58,237,0.15);color:var(--accent-l)">${acc.accountType === 'crypto' ? 'CRYPTO' : 'PERSONNEL'}</span>
+          <span class="status-badge" style="background:rgba(16, 185, 129,0.15);color:var(--accent-l)">${acc.accountType === 'crypto' ? 'CRYPTO' : 'PERSONNEL'}</span>
         </div>
         <div class="goal-card-balance">
           <div class="gcb-label">Solde actuel</div>
