@@ -312,6 +312,82 @@ const Admin = (() => {
     }
   }
 
+  // ── Rendu onglet Activité (v0.9.277) — analytics produit ──────────────────────
+  const _ACT_LABELS = {
+    trade_created: 'Trade créé', account_created: 'Compte créé',
+    checkout_started: 'Checkout lancé', ai_analysis: 'Analyse IA', page_view: 'Page vue',
+  };
+  const _PAGE_LABELS = {
+    journal: 'Journal', dashboard: 'Dashboard', analytics: 'Analytics', goals: 'Objectifs',
+    calendar: 'Calendrier', outils: 'Outils', offers: 'Offres', settings: 'Réglages', tutorial: 'Guide',
+  };
+
+  async function renderActivity() {
+    const wrap = $('tabActivity');
+    wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
+    let users = [], events = [];
+    try {
+      const [u, ev] = await Promise.all([
+        loadUsers(),
+        _fbDb.collection('analyticsEvents').orderBy('ts', 'desc').limit(1500).get(),
+      ]);
+      users  = u;
+      events = ev.docs.map(d => d.data());
+    } catch (e) {
+      wrap.innerHTML = '<p class="admin-empty">Erreur de chargement. (Si c\'est la 1ʳᵉ fois, l\'index Firestore se crée — réessaie dans 1 min.)</p>';
+      return;
+    }
+    const emailByUid = {};
+    users.forEach(u => { emailByUid[u.uid] = u.email || u.username || u.uid; });
+    const now = Date.now(), DAY = 86400000;
+    const activeIn = ms => users.filter(u => u.lastSeen && (now - u.lastSeen) <= ms).length;
+
+    const byType = {}, byPage = {}, sids = new Set();
+    events.forEach(e => {
+      byType[e.type] = (byType[e.type] || 0) + 1;
+      if (e.sid) sids.add(e.sid);
+      if (e.type === 'page_view' && e.page) byPage[e.page] = (byPage[e.page] || 0) + 1;
+    });
+
+    const chips = `
+      <div class="admin-stats">
+        <div class="stat-chip"><span class="stat-val">${activeIn(DAY)}</span><span class="stat-lbl">Actifs 24h</span></div>
+        <div class="stat-chip"><span class="stat-val">${activeIn(7 * DAY)}</span><span class="stat-lbl">Actifs 7j</span></div>
+        <div class="stat-chip"><span class="stat-val">${activeIn(30 * DAY)}</span><span class="stat-lbl">Actifs 30j</span></div>
+        <div class="stat-chip stat-chip-pro"><span class="stat-val">${sids.size}</span><span class="stat-lbl">Sessions</span></div>
+        <div class="stat-chip"><span class="stat-val">${events.length}</span><span class="stat-lbl">Événements</span></div>
+      </div>`;
+
+    const pages = Object.entries(byPage).sort((a, b) => b[1] - a[1]);
+    const maxPage = pages.length ? pages[0][1] : 1;
+    const pagesHtml = pages.length ? pages.map(([p, n]) => `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
+        <span style="width:95px;font-size:12px;color:var(--text)">${esc(_PAGE_LABELS[p] || p)}</span>
+        <div style="flex:1;background:var(--bg);border-radius:5px;overflow:hidden;height:18px"><div style="height:100%;width:${Math.round(n / maxPage * 100)}%;background:var(--purple);border-radius:5px"></div></div>
+        <span style="width:42px;text-align:right;font-size:12px;color:var(--muted)">${n}</span>
+      </div>`).join('') : '<p class="admin-empty">Aucune vue de page encore enregistrée.</p>';
+
+    const actions = ['trade_created', 'account_created', 'ai_analysis', 'checkout_started'];
+    const actionsHtml = actions.map(a => `
+      <div class="stat-chip" style="flex:1"><span class="stat-val">${byType[a] || 0}</span><span class="stat-lbl">${_ACT_LABELS[a]}</span></div>`).join('');
+
+    const recent = events.slice(0, 30);
+    const recentRows = recent.map(e => {
+      const ms    = (e.ts && e.ts.toMillis) ? e.ts.toMillis() : null;
+      const label = e.type === 'page_view' ? (_PAGE_LABELS[e.page] || e.page || '?') : (_ACT_LABELS[e.type] || e.type);
+      const kind  = e.type === 'page_view' ? 'Page' : 'Action';
+      return `<tr><td>${esc(emailByUid[e.uid] || e.uid || '?')}</td><td>${kind}</td><td>${esc(label)}</td><td style="color:var(--muted)">${ms ? formatRelative(ms) : '—'}</td></tr>`;
+    }).join('');
+
+    wrap.innerHTML = chips +
+      `<h3 style="font-size:13px;margin:20px 0 10px;color:var(--text)">Pages visitées</h3>${pagesHtml}` +
+      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Actions clés</h3><div class="admin-stats">${actionsHtml}</div>` +
+      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Flux récent</h3>` +
+      (recent.length
+        ? `<table class="admin-table"><thead><tr><th>Utilisateur</th><th>Type</th><th>Détail</th><th>Quand</th></tr></thead><tbody>${recentRows}</tbody></table>`
+        : '<p class="admin-empty">Aucun événement encore. L\'activité apparaîtra dès que les utilisateurs navigueront (après déploiement).</p>');
+  }
+
   // ── Rendu onglet Codes (v0.9.179 : unifié avec design Users — stats + search + actions icônes) ──
   let _cachedCodes      = [];
   let _codeSearchQuery  = '';
@@ -784,13 +860,14 @@ const Admin = (() => {
 
   // ── Onglets ───────────────────────────────────────────────────────────────────
   function switchTab(name) {
-    ['users', 'codes', 'config'].forEach(t => {
+    ['users', 'activity', 'codes', 'config'].forEach(t => {
       $('tab-' + t).classList.toggle('tab-active', t === name);
       $('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === name ? '' : 'none';
     });
-    if (name === 'users')  renderUsers();
-    if (name === 'codes')  renderCodes();
-    if (name === 'config') renderConfig();
+    if (name === 'users')    renderUsers();
+    if (name === 'activity') renderActivity();
+    if (name === 'codes')    renderCodes();
+    if (name === 'config')   renderConfig();
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -868,6 +945,7 @@ const Admin = (() => {
     $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
     $('btnLogout').addEventListener('click', () => _fbAuth.signOut());
     $('tab-users').addEventListener('click', () => switchTab('users'));
+    $('tab-activity').addEventListener('click', () => switchTab('activity'));
     $('tab-codes').addEventListener('click', () => switchTab('codes'));
     $('tab-config').addEventListener('click', () => switchTab('config'));
     $('btnDoGen').addEventListener('click', doGenerate);

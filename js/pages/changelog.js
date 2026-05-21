@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.277',
+      date: '2026-05-21',
+      time: '11:00',
+      tags: ['privacy'],
+      title: 'Transparence : mesure d\'usage interne',
+      titleEn: 'Transparency: internal usage measurement',
+      items: [
+        { type: 'privacy', text: 'Pour améliorer ZeldTrade, on mesure désormais l\'usage interne de l\'app (pages visitées, actions clés) — associé à ton compte, sans cookie ni traceur publicitaire, et conservé 13 mois max. C\'est ajouté à la Politique de confidentialité (intérêt légitime, RGPD).', textEn: 'To improve ZeldTrade, we now measure internal app usage (pages visited, key actions) — tied to your account, with no cookie or ad tracker, kept 13 months max. Added to the Privacy Policy (legitimate interest, GDPR).' },
+      ],
+    },
+    {
       version: '0.9.276',
       date: '2026-05-21',
       time: '10:00',

@@ -45,6 +45,7 @@ function initApp() {
     _applySubtitle(page);
     $('searchWrap').style.display = page === 'journal' ? 'flex' : 'none';
     currentPage = page;
+    if (window.Analytics) Analytics.page(page);
     // U34 : scroll-to-top automatique au changement de page (sinon Analytics
     // après scroll bas de Settings démarrait scrollé vers le bas selon le browser)
     try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
@@ -269,6 +270,7 @@ function initApp() {
   $('btnSidebarUpgrade')?.addEventListener('click', () => switchPage('offers'));
   $('btnTopbarHelp')?.addEventListener('click', () => switchPage('tutorial'));
   _applySubtitle(currentPage);
+  if (window.Analytics) Analytics.page(currentPage);
   window.addEventListener('store:planChanged', () => {
     refreshPlanUI();
     if (currentPage === 'dashboard') UI.renderDashboard();
