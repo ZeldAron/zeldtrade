@@ -434,7 +434,10 @@ body {
   flex-shrink: 0;
 }
 
-.topbar-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; flex: 1; }
+/* v0.9.271 — en-tête riche : titre + sous-titre contextuel */
+.topbar-heading { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 1px; }
+.topbar-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; }
+.topbar-subtitle { font-size: 11.5px; color: var(--muted); font-weight: 400; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* v0.9.270 — bouton aide (?) dans l'en-tête (Guide sorti de la nav) */
 .topbar-help-btn {

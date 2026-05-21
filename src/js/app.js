@@ -17,6 +17,23 @@ function initApp() {
     tutorial:  'page.tutorial',
   };
 
+  // v0.9.271 — sous-titres contextuels d'en-tête [FR, EN] (en-têtes de page riches)
+  const PAGE_SUBTITLES = {
+    journal:   ['Tes trades, un par un',            'Your trades, one by one'],
+    dashboard: ['Ta performance en un coup d’œil', 'Your performance at a glance'],
+    analytics: ['Statistiques détaillées',          'Detailed statistics'],
+    goals:     ['Objectifs prop firm & progression', 'Prop-firm goals & progress'],
+    calendar:  ['Tes résultats jour par jour',       'Your results day by day'],
+    outils:    ['Calculateurs & utilitaires',       'Calculators & utilities'],
+    offers:    ['Choisis ton abonnement',           'Choose your plan'],
+    settings:  ['Comptes, règles & préférences',     'Accounts, rules & preferences'],
+    tutorial:  ['Prise en main de ZeldTrade',       'Getting started with ZeldTrade'],
+  };
+  function _applySubtitle(page) {
+    const el = $('topbarSubtitle');
+    if (el) el.textContent = (PAGE_SUBTITLES[page] || ['', ''])[i18n.getLang() === 'en' ? 1 : 0];
+  }
+
   let currentPage = 'journal';
 
   function switchPage(page) {
@@ -25,6 +42,7 @@ function initApp() {
     document.getElementById('page-' + page)?.classList.add('active');
     document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
     $('topbarTitle').textContent = i18n.t(PAGE_KEYS[page] || page);
+    _applySubtitle(page);
     $('searchWrap').style.display = page === 'journal' ? 'flex' : 'none';
     currentPage = page;
     // U34 : scroll-to-top automatique au changement de page (sinon Analytics
@@ -250,6 +268,7 @@ function initApp() {
   refreshPlanUI();
   $('btnSidebarUpgrade')?.addEventListener('click', () => switchPage('offers'));
   $('btnTopbarHelp')?.addEventListener('click', () => switchPage('tutorial'));
+  _applySubtitle(currentPage);
   window.addEventListener('store:planChanged', () => {
     refreshPlanUI();
     if (currentPage === 'dashboard') UI.renderDashboard();
