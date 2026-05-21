@@ -198,6 +198,9 @@
       overflow-x: hidden;
       position: relative;
     }
+    html { overflow-x: hidden; max-width: 100vw; }
+    /* v0.9.283 — filet responsive : images/médias jamais plus larges que l'écran */
+    img, video, iframe, canvas { max-width: 100%; height: auto; }
 
     /* Grid pattern de fond */
     body::before {
@@ -3690,7 +3693,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.282</span>
+      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.283</span>
     </div>
   </footer>
 
