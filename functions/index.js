@@ -10,10 +10,13 @@ const { defineSecret }                   = require('firebase-functions/params');
 const admin                              = require('firebase-admin');
 const Stripe                             = require('stripe');
 const crypto                             = require('crypto');
+const emails                             = require('./emails');  // v0.9.284 templates + envoi Brevo
 
 admin.initializeApp();
 
 const GROQ_API_KEY      = defineSecret('GROQ_API_KEY');
+// v0.9.222 — Fallback Claude Vision pour les screenshots complexes (gated Funded/Elite/Beta)
+const CLAUDE_API_KEY    = defineSecret('CLAUDE_API_KEY');
 // Discord webhooks (v0.9.123) — remplacent Web3Forms (qui exigeait un plan payant
 // pour les appels server-side). Chaque webhook poste dans un canal du serveur
 // ZeldTrade HQ. WEB3FORMS_KEY a été retiré du code en v0.9.126 (cleanup) —
@@ -30,12 +33,35 @@ const DISCORD_ERRORS_WEBHOOK  = defineSecret('DISCORD_ERRORS_WEBHOOK');
 const HCAPTCHA_SECRET       = defineSecret('HCAPTCHA_SECRET');
 const TURNSTILE_SECRET      = defineSecret('TURNSTILE_SECRET');  // v0.9.158 anti-bot analyzeChart
 const UNSUBSCRIBE_HMAC_KEY  = defineSecret('UNSUBSCRIBE_HMAC_KEY');  // v0.9.173 newsletter unsubscribe
+const BREVO_WEBHOOK_TOKEN   = defineSecret('BREVO_WEBHOOK_TOKEN');   // v0.9.232 brevoWebhook auth (events bounce/spam/blocked)
+// v0.9.284 — mot de passe SMTP Brevo (`xsmtpsib-…`) pour l'envoi des emails d'auth
+// custom (vérification + reset mdp). Firebase a verrouillé la perso des templates
+// d'auth → on génère le lien via Admin SDK et on envoie notre HTML stylé via Brevo.
+const BREVO_SMTP_PASS       = defineSecret('BREVO_SMTP_PASS');
 // Stripe — clés en Secret Manager (test ET prod selon ce qui est setté)
 const STRIPE_SECRET_KEY     = defineSecret('STRIPE_SECRET_KEY');
 const STRIPE_WEBHOOK_SECRET = defineSecret('STRIPE_WEBHOOK_SECRET');
-const STRIPE_PRICE_MONTHLY  = defineSecret('STRIPE_PRICE_MONTHLY');
-const STRIPE_PRICE_YEARLY   = defineSecret('STRIPE_PRICE_YEARLY');
-const STRIPE_PRICE_LIFETIME = defineSecret('STRIPE_PRICE_LIFETIME');
+// v0.9.255 : modèle self-service Funded/Elite × mensuel/annuel (4 prix).
+// Chaque secret contient un Price ID Stripe (price_…). À configurer côté
+// Stripe Dashboard puis `firebase functions:secrets:set`.
+const STRIPE_PRICE_FUNDED_MONTHLY = defineSecret('STRIPE_PRICE_FUNDED_MONTHLY');
+const STRIPE_PRICE_FUNDED_YEARLY  = defineSecret('STRIPE_PRICE_FUNDED_YEARLY');
+const STRIPE_PRICE_ELITE_MONTHLY  = defineSecret('STRIPE_PRICE_ELITE_MONTHLY');
+const STRIPE_PRICE_ELITE_YEARLY   = defineSecret('STRIPE_PRICE_ELITE_YEARLY');
+
+// v0.9.253 : emails exclus du compteur public d'inscrits (landing).
+// = compte admin + comptes internes/test qui ne sont PAS des bêta testeurs réels.
+// Le compteur publicStats reflète uniquement les vrais utilisateurs externes.
+const EXCLUDED_FROM_COUNT = new Set([
+  'zeldtradepro@gmail.com',     // compte admin
+  'marion.mousset14@gmail.com', // interne
+  'queremaxime04@gmail.com',    // interne
+  'yikoj12951@getasail.com',    // compte test (email jetable)
+  'xogixot421@itquoted.com',    // compte test (email jetable)
+]);
+function _isCountedEmail(email) {
+  return !!email && !EXCLUDED_FROM_COUNT.has(String(email).trim().toLowerCase());
+}
 
 const ALLOWED_ORIGINS = [
   // Domaine principal (à partir de v0.9.145, migration Firebase Hosting + custom domain)
@@ -73,7 +99,7 @@ const ALLOWED_MODELS = new Set([
  */
 exports.analyzeChart = onCall(
   {
-    secrets:        [GROQ_API_KEY, DISCORD_ERRORS_WEBHOOK, TURNSTILE_SECRET],
+    secrets:        [GROQ_API_KEY, CLAUDE_API_KEY, DISCORD_ERRORS_WEBHOOK, TURNSTILE_SECRET],
     // v0.9.158 : App Check Firebase ABANDONNÉ (bug Safari ITP), remplacé par
     // Cloudflare Turnstile (token vérifié server-side avant chaque analyse).
     //
@@ -101,7 +127,68 @@ exports.analyzeChart = onCall(
         'Vérifie ton email avant d\'utiliser l\'IA (consulte ta boîte mail — clique sur le lien de vérification Firebase).');
     }
     const uid = request.auth.uid;
-    const { model, prompt, imageB64, turnstileToken } = request.data || {};
+    const { model, prompt, imageB64, turnstileToken, provider } = request.data || {};
+
+    // v0.9.222 — Route Claude (fallback hybride pour screenshots complexes)
+    // Gated server-side : refuse si user n'est pas Funded/Elite/Beta.
+    if (provider === 'claude') {
+      // Quick auth+verify check déjà fait au-dessus. Validation params en plus :
+      if (typeof prompt !== 'string' || prompt.length > 5000) {
+        throw new HttpsError('invalid-argument', 'Invalid prompt');
+      }
+      if (typeof imageB64 !== 'string' || imageB64.length < 100 || imageB64.length > 8 * 1024 * 1024) {
+        throw new HttpsError('invalid-argument', 'Invalid image');
+      }
+      // Vérifie le tier de l'user (anti-bypass : un Trader ne peut pas appeler Claude
+      // directement pour faire péter le budget Anthropic).
+      const planSnap = await admin.firestore().doc(`users/${uid}/data/plan`).get();
+      const planData = planSnap.exists ? planSnap.data() : {};
+      const tier     = (typeof planData.tier === 'string' && planData.tier) || (planData.plan === 'pro' ? 'beta' : 'trader');
+      if (!['funded', 'elite', 'beta'].includes(tier)) {
+        throw new HttpsError('permission-denied',
+          'Analyse approfondie réservée aux plans Funded et Elite. Upgrade ton plan pour en profiter.');
+      }
+      // Appel Anthropic API (Claude Sonnet 4.6 — modèle vision optimal)
+      const claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key':         CLAUDE_API_KEY.value(),
+          'anthropic-version': '2023-06-01',
+          'content-type':      'application/json',
+        },
+        body: JSON.stringify({
+          model:      'claude-sonnet-4-6',
+          max_tokens: 256,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: imageB64 } },
+              { type: 'text',  text: prompt },
+            ],
+          }],
+        }),
+      }).catch(e => {
+        console.error('[Claude] network error', e && e.message);
+        throw new HttpsError('unavailable', 'Service Claude indisponible — réessaie dans un instant');
+      });
+      if (!claudeResp.ok) {
+        let errBody = '';
+        try { errBody = (await claudeResp.text()).slice(0, 200); } catch {}
+        console.error('[Claude] error', claudeResp.status, errBody);
+        if (claudeResp.status === 401) throw new HttpsError('failed-precondition', 'Claude key invalid (admin)');
+        if (claudeResp.status === 429) throw new HttpsError('resource-exhausted', 'Claude rate limit');
+        if (claudeResp.status === 404 || claudeResp.status === 503) {
+          throw new HttpsError('unavailable', `Claude unavailable (${claudeResp.status})`);
+        }
+        throw new HttpsError('internal', `Claude error ${claudeResp.status}`);
+      }
+      const claudeData = await claudeResp.json();
+      const text = (claudeData.content && claudeData.content[0] && claudeData.content[0].text) || '';
+      // Format compat client : on retourne le même shape que Groq pour ne pas refactor le parser
+      await _writeAuditLog('analyzeChart.claude', request.auth.token.email || uid, { uid, tier, model: 'claude-sonnet-4-6' });
+      return { choices: [{ message: { content: text } }] };
+    }
+
 
     // v0.9.160 — Anti-bot HYBRIDE (defense in depth) :
     //   1. Si turnstileToken présent + valide → laisse passer (cas nominal, ~70% users)
@@ -141,20 +228,52 @@ exports.analyzeChart = onCall(
       }
       // Sanitize IP pour usage comme doc ID Firestore (regex perm. ipv4/ipv6 chars)
       const ipId = ip.replace(/[^A-Za-z0-9.:_-]/g, '_').slice(0, 64) || 'unknown';
-      const RATE_LIMIT_MS = 5 * 60 * 1000;  // 5 minutes
+      // v0.9.216 — Système burst : 3 analyses possibles d'affilée, puis cooldown 3 min.
+      // Plus user-friendly qu'un strict 1/5min, et reste un anti-bot efficace.
+      const BURST_MAX      = 3;
+      const BURST_WINDOW   = 3 * 60 * 1000;  // 3 min : reset auto si inactif depuis 3 min
+      const COOLDOWN_MS    = 3 * 60 * 1000;  // 3 min : pénalité après burst épuisé
       try {
         const rlRef = admin.firestore().collection('ipRateLimit').doc(ipId);
         const snap  = await rlRef.get();
-        const last  = (snap.exists && snap.data()?.lastCall) || 0;
+        const data  = (snap.exists && snap.data()) || {};
         const now   = Date.now();
-        if (now - last < RATE_LIMIT_MS) {
-          const waitSec = Math.ceil((RATE_LIMIT_MS - (now - last)) / 1000);
+        const cooldownUntil = typeof data.cooldownUntil === 'number' ? data.cooldownUntil : 0;
+        let count           = typeof data.count === 'number' ? data.count : 0;
+        const windowStart   = typeof data.windowStart === 'number' ? data.windowStart : 0;
+
+        // Hard block : cooldown actif
+        if (cooldownUntil > now) {
+          const waitSec = Math.ceil((cooldownUntil - now) / 1000);
           throw new HttpsError('resource-exhausted',
-            `Trop d'analyses depuis ton IP. Attends ${waitSec}s avant la prochaine.`);
+            `Limite atteinte (3 analyses / 3 min). Attends ${waitSec}s avant la prochaine.`);
         }
+
+        // Reset window si fenêtre expirée (inactivité ≥ 3 min)
+        if (now - windowStart > BURST_WINDOW) {
+          count = 0;
+        }
+
+        count++;
+
+        if (count > BURST_MAX) {
+          // Burst dépassé : déclenche cooldown 3 min et bloque
+          const cdUntil = now + COOLDOWN_MS;
+          await rlRef.set({
+            count: 0,
+            windowStart: 0,
+            cooldownUntil: cdUntil,
+            expireAt: admin.firestore.Timestamp.fromMillis(cdUntil + 60 * 60 * 1000),
+          }, { merge: true });
+          throw new HttpsError('resource-exhausted',
+            `Limite atteinte (3 analyses / 3 min). Attends ${Math.ceil(COOLDOWN_MS / 1000)}s.`);
+        }
+
+        // Autorise l'analyse, incrémente le compteur burst
         await rlRef.set({
-          lastCall: now,
-          // TTL Firestore : ce doc expire automatiquement après 1h
+          count,
+          windowStart: count === 1 ? now : windowStart,
+          cooldownUntil: 0,
           expireAt: admin.firestore.Timestamp.fromMillis(now + 60 * 60 * 1000),
         }, { merge: true });
       } catch (e) {
@@ -188,25 +307,44 @@ exports.analyzeChart = onCall(
     const usageRef    = db.doc(`users/${uid}/data/aiUsage`);
     const today       = new Date().toISOString().split('T')[0];
 
-    await db.runTransaction(async (tx) => {
-      const usage = await tx.get(usageRef);
-      const data  = usage.exists ? usage.data() : { date: '', count: 0 };
-
-      if (data.date === today && data.count >= cap) {
-        throw new HttpsError('resource-exhausted',
-          isPro
-            ? `Limite Pro de ${PRO_CAP} analyses/jour atteinte. Réessaie demain.`
-            : 'Limite quotidienne atteinte (1 analyse/jour sur Basic). Passe Pro pour des analyses illimitées.');
+    // v0.9.224 — Admin (zeldtradepro@gmail.com) : quota illimité MAIS re-auth requis
+    // toutes les 60 min (anti-abus si token volé). L'auth_time du token Firebase
+    // est mis à jour à chaque login/refresh password — si > 60 min, on bloque.
+    const isAdminAcct = request.auth.token.email === ADMIN_EMAIL && request.auth.token.email_verified;
+    let skipQuota = false;
+    if (isAdminAcct) {
+      const authTimeMs = (request.auth.token.auth_time || 0) * 1000;
+      if (authTimeMs > 0 && (Date.now() - authTimeMs) > 60 * 60 * 1000) {
+        // Marker `admin-reauth-required:` consommé côté client pour proposer re-login
+        throw new HttpsError('failed-precondition',
+          'admin-reauth-required:Session admin expirée (>60 min). Déconnecte-toi et reconnecte-toi pour continuer (sécurité).');
       }
+      skipQuota = true;
+    }
 
-      tx.set(usageRef, {
-        date:  today,
-        count: data.date === today ? data.count + 1 : 1,
+    if (!skipQuota) {
+      await db.runTransaction(async (tx) => {
+        const usage = await tx.get(usageRef);
+        const data  = usage.exists ? usage.data() : { date: '', count: 0 };
+
+        if (data.date === today && data.count >= cap) {
+          throw new HttpsError('resource-exhausted',
+            isPro
+              ? `Limite Pro de ${PRO_CAP} analyses/jour atteinte. Réessaie demain.`
+              : 'Limite quotidienne atteinte (1 analyse/jour sur Basic). Passe Pro pour des analyses illimitées.');
+        }
+
+        tx.set(usageRef, {
+          date:  today,
+          count: data.date === today ? data.count + 1 : 1,
+        });
       });
-    });
+    }
 
     // Helper de rollback en cas d'échec Groq (pas de quota perdu pour rien)
+    // v0.9.224 : no-op si admin (skipQuota) — rien à rollback car rien incrementé.
     const rollbackQuota = async () => {
+      if (skipQuota) return;
       try {
         await db.runTransaction(async (tx) => {
           const u = await tx.get(usageRef);
@@ -282,6 +420,12 @@ exports.analyzeChart = onCall(
       await rollbackQuota();
       if (errStatus === 401) throw new HttpsError('failed-precondition', 'Groq key invalid (admin)');
       if (errStatus === 429) throw new HttpsError('resource-exhausted', 'Groq rate limit — réessaie dans quelques secondes');
+      // v0.9.217 — 404 (modèle inexistant/deprecated) et 503 (service down) →
+      // 'unavailable' au lieu de 'internal', pour que le client passe au modèle suivant
+      // au lieu de throw direct. Symptôme côté user : "Erreur serveur : Groq error 404".
+      if (errStatus === 404 || errStatus === 503 || errStatus === 502) {
+        throw new HttpsError('unavailable', `Groq model unavailable (${errStatus})`);
+      }
       throw new HttpsError('internal', `Groq error ${errStatus}`);
     }
 
@@ -337,11 +481,14 @@ async function _verifyHcaptcha(token) {
     return false;
   }
   if (!token || typeof token !== 'string' || token.length < 10) return false;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   try {
     const res = await fetch('https://api.hcaptcha.com/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ secret, response: token }),
+      signal: controller.signal,
     });
     const data = await res.json();
     if (!data.success) {
@@ -351,6 +498,8 @@ async function _verifyHcaptcha(token) {
   } catch (e) {
     console.error('[hCaptcha] verify error:', e && e.message);
     return false;  // si l'appel échoue avec secret défini, on refuse (strict)
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -369,11 +518,14 @@ async function _verifyTurnstile(token) {
     return false;
   }
   if (!token || typeof token !== 'string' || token.length < 10) return false;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
   try {
     const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ secret, response: token }),
+      signal: controller.signal,
     });
     const data = await res.json();
     if (!data.success) {
@@ -383,6 +535,8 @@ async function _verifyTurnstile(token) {
   } catch (e) {
     console.error('[Turnstile] verify error:', e && e.message);
     return false;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -636,7 +790,7 @@ exports.sendContactMessage = onCall(
  */
 exports.notifyNewSignup = onCall(
   {
-    secrets:        [DISCORD_SIGNUP_WEBHOOK, HCAPTCHA_SECRET, DISCORD_ERRORS_WEBHOOK],
+    secrets:        [DISCORD_SIGNUP_WEBHOOK, DISCORD_ERRORS_WEBHOOK],
     // cors retiré : voir analyzeChart pour explication
     maxInstances:    5,
     timeoutSeconds:  10,
@@ -681,16 +835,27 @@ exports.notifyNewSignup = onCall(
     // Si l'user n'a pas de displayName, on prend la partie locale de l'email
     // (avant `@`) plutôt que l'email complet — évite de leaker l'adresse.
     const rawEmail   = String(request.auth.token.email || '');
+
+    // v0.9.252/253 : incrémente le compteur public d'inscrits (affiché sur la landing).
+    // Posé APRÈS le flag idempotence → garanti 1× par utilisateur, pas de double-count.
+    // v0.9.253 : on N'INCRÉMENTE PAS pour les comptes exclus (admin/internes/test).
+    if (_isCountedEmail(rawEmail)) {
+      db.doc('publicStats/global')
+        .set({ userCount: admin.firestore.FieldValue.increment(1), updatedAt: Date.now() }, { merge: true })
+        .catch((err) => console.warn('[notifyNewSignup] publicStats increment failed', err && err.message));
+    }
     const localPart  = rawEmail.split('@')[0] || 'Anonyme';
     const rawName    = request.auth.token.name || localPart;
     const name       = _sanitizeText(rawName, 100);
-    const captchaToken = String(request.data?.captchaToken || '').slice(0, 4096);
-
-    if (!captchaToken) throw new HttpsError('invalid-argument', 'Captcha manquant');
-
-    // Validation hCaptcha côté serveur (si HCAPTCHA_SECRET configuré, sinon skip)
-    const captchaOk = await _verifyHcaptcha(captchaToken);
-    if (!captchaOk) throw new HttpsError('failed-precondition', 'Captcha invalide');
+    // v0.9.232 : check hCaptcha retiré ici. Le hCaptcha widget reste sur le
+    // register form (bloque les bots AVANT Firebase Auth). Une fois Firebase
+    // Auth a créé le compte, cette CF est appelée par un user déjà
+    // authentifié (`request.auth` check ligne 778) ; on a aussi :
+    //   - check `creationMs < 5 min` (compte vraiment neuf)
+    //   - flag idempotence atomique `signupNotified` (anti double-call)
+    // → le hCaptcha redondant ici était fail-closed sur secret placeholder
+    //   et bloquait toutes les notifications #new-users.
+    // Si on veut re-durcir : configurer HCAPTCHA_SECRET + restaurer le check.
 
     // Embed Discord (canal #new-users, PUBLIC — pas d'email pour privacy)
     const embed = {
@@ -709,6 +874,179 @@ exports.notifyNewSignup = onCall(
     return { ok: true };
   }
 ));
+
+// ──────────────────────────────────────────────────────────────────────────────
+// EMAILS D'AUTH CUSTOM (v0.9.284) — vérification + reset mot de passe.
+// Firebase a verrouillé la perso des templates d'auth (anti-phishing) → on génère
+// le lien d'action via l'Admin SDK et on envoie NOTRE HTML stylé via Brevo SMTP
+// (domaine authentifié DKIM/SPF/DMARC). Voir functions/emails.js.
+// ──────────────────────────────────────────────────────────────────────────────
+
+// Rate-limit générique basé Firestore (fenêtre glissante 1h). Atomique via
+// transaction. `key` = identifiant unique (uid, hash email, IP). Renvoie
+// { allowed: bool }. Fail-soft : si Firestore plante, on autorise (ne bloque pas
+// un user légitime à cause d'une panne ; le risque d'abus reste borné par les
+// autres limites). Admin SDK → bypass des security rules, collection privée.
+async function _emailRateLimit(key, maxPerWindow, windowMs = 3600_000) {
+  const ref = admin.firestore().doc(`emailSendLimits/${key}`);
+  try {
+    return await admin.firestore().runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const now  = Date.now();
+      const d    = snap.exists ? snap.data() : null;
+      if (!d || (now - (d.windowStart || 0)) > windowMs) {
+        tx.set(ref, { windowStart: now, count: 1 });
+        return { allowed: true };
+      }
+      if ((d.count || 0) >= maxPerWindow) return { allowed: false };
+      tx.update(ref, { count: admin.firestore.FieldValue.increment(1) });
+      return { allowed: true };
+    });
+  } catch (e) {
+    console.warn('[emailRateLimit] tx failed, fail-open', key, e && e.message);
+    return { allowed: true };
+  }
+}
+
+function _clientIp(request) {
+  try {
+    const xff = request.rawRequest && request.rawRequest.headers
+      && request.rawRequest.headers['x-forwarded-for'];
+    if (xff) return String(xff).split(',')[0].trim();
+    return (request.rawRequest && request.rawRequest.ip) || 'unknown';
+  } catch { return 'unknown'; }
+}
+
+// sendVerificationEmail — callable AUTHENTIFIÉ. Génère le lien de vérif via
+// l'Admin SDK et envoie l'email stylé. Rate-limit 5/h/uid. Idempotent côté UX
+// (renvoyer plusieurs fois = nouveaux liens valides, l'ancien reste valide).
+exports.sendVerificationEmail = onCall(
+  {
+    secrets:        [BREVO_SMTP_PASS, DISCORD_ERRORS_WEBHOOK],
+    region:         'europe-west1',
+    maxInstances:    5,
+    timeoutSeconds:  20,
+    memory:         '256MiB',
+  },
+  _wrapCF('sendVerificationEmail', async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Authentication required');
+    const uid = request.auth.uid;
+
+    let u;
+    try { u = await admin.auth().getUser(uid); }
+    catch { throw new HttpsError('not-found', 'Utilisateur introuvable'); }
+
+    if (!u.email) throw new HttpsError('failed-precondition', 'Aucun email sur ce compte');
+    if (u.emailVerified) return { ok: true, alreadyVerified: true };
+
+    const rl = await _emailRateLimit(`verif_${uid}`, 5);
+    if (!rl.allowed) {
+      throw new HttpsError('resource-exhausted', 'Trop de demandes — réessaie dans une heure.');
+    }
+
+    const displayName = (u.displayName && u.displayName.trim())
+      || (u.email.split('@')[0]) || 'trader';
+    const link = await admin.auth().generateEmailVerificationLink(u.email, {
+      url: `${PUBLIC_SITE_URL}/app.html`,
+    });
+
+    const { subject, html } = emails.verificationEmail({ displayName, email: u.email, link });
+    await emails.sendEmail({
+      pass: BREVO_SMTP_PASS.value(), to: u.email, toName: displayName, subject, html,
+    });
+    return { ok: true };
+  })
+);
+
+// sendPasswordResetEmail — callable ANONYME (déclenché depuis la page de login).
+// Anti-énumération : retourne TOUJOURS { ok: true } sans révéler si l'email existe.
+// Anti-bombing : rate-limit 3/h/email + 10/h/IP. Si dépassé → skip silencieux.
+exports.sendPasswordResetEmail = onCall(
+  {
+    secrets:        [BREVO_SMTP_PASS, DISCORD_ERRORS_WEBHOOK],
+    region:         'europe-west1',
+    maxInstances:    5,
+    timeoutSeconds:  20,
+    memory:         '256MiB',
+  },
+  _wrapCF('sendPasswordResetEmail', async (request) => {
+    const email = String((request.data && request.data.email) || '')
+      .replace(/\s/g, '').slice(0, 254).toLowerCase();
+    // Format invalide → on ne révèle rien, on ne fait rien.
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return { ok: true };
+
+    // Rate-limits (silencieux pour ne pas révéler l'existence du compte / bloquer un abus).
+    const ip = _clientIp(request);
+    const byEmail = await _emailRateLimit(`reset_${crypto.createHash('sha256').update(email).digest('hex')}`, 3);
+    const byIp    = await _emailRateLimit(`resetip_${crypto.createHash('sha256').update(ip).digest('hex')}`, 10);
+    if (!byEmail.allowed || !byIp.allowed) return { ok: true };
+
+    let link;
+    try {
+      link = await admin.auth().generatePasswordResetLink(email, { url: `${PUBLIC_SITE_URL}/` });
+    } catch (e) {
+      // auth/user-not-found et autres → anti-énumération, on retourne ok sans envoyer.
+      return { ok: true };
+    }
+
+    const { subject, html } = emails.resetEmail({ email, link });
+    await emails.sendEmail({ pass: BREVO_SMTP_PASS.value(), to: email, subject, html });
+    return { ok: true };
+  })
+);
+
+// ──────────────────────────────────────────────────────────────────────────────
+// getPublicStats (v0.9.252) — compteur public d'inscrits pour la landing.
+// Callable ANONYME (pas d'auth requise) : ne retourne qu'un agrégat (userCount),
+// aucune donnée personnelle. Lit le doc unique `publicStats/global` maintenu
+// par notifyNewSignup (FieldValue.increment). Fail-soft → retourne 0 si erreur.
+// ──────────────────────────────────────────────────────────────────────────────
+exports.getPublicStats = onCall(
+  {
+    region:         'europe-west1',
+    maxInstances:    10,
+    memory:         '128MiB',
+    timeoutSeconds:  10,
+  },
+  async () => {
+    try {
+      const snap = await admin.firestore().doc('publicStats/global').get();
+      const userCount = snap.exists ? Math.max(0, Number(snap.data().userCount) || 0) : 0;
+      return { userCount };
+    } catch (e) {
+      console.warn('[getPublicStats] error', e && e.message);
+      return { userCount: 0 };
+    }
+  }
+);
+
+// recordVisit (v0.9.278) — compteur de visites cookieless (landing + app connectée).
+// Callable ANONYME : incrémente publicStats/global.visitsTotal + un doc par jour
+// (publicStats/visits-YYYY-MM-DD). Aucune donnée personnelle. Le client dédup par
+// session (sessionStorage) → 1 visite comptée par session. Fail-soft.
+exports.recordVisit = onCall(
+  {
+    region:         'europe-west1',
+    maxInstances:    10,
+    memory:         '128MiB',
+    timeoutSeconds:  10,
+  },
+  async () => {
+    try {
+      const db  = admin.firestore();
+      const inc = admin.firestore.FieldValue.increment(1);
+      const day = new Date().toISOString().slice(0, 10);
+      await Promise.all([
+        db.doc('publicStats/global').set({ visitsTotal: inc, visitsUpdatedAt: Date.now() }, { merge: true }),
+        db.doc(`publicStats/visits-${day}`).set({ count: inc, day }, { merge: true }),
+      ]);
+      return { ok: true };
+    } catch (e) {
+      console.warn('[recordVisit] error', e && e.message);
+      return { ok: false };
+    }
+  }
+);
 
 // Helper : log d'audit immuable (collection auditLogs)
 // S13 — TTL 1 an : champ `expireAt` lu par la TTL policy Firestore (à activer en console
@@ -903,8 +1241,18 @@ exports.deleteUserAccount = onCall(
       .catch(e => { console.error('[deleteUserAccount] users/{uid} delete', e && e.message); errors.push('users'); });
 
     // 4. userEmails/{uid}
+    const _emailSnap   = await db.doc(`userEmails/${targetUid}`).get().catch(() => null);
+    const _emailExisted = _emailSnap && _emailSnap.exists;
+    const _emailValue   = _emailExisted ? (_emailSnap.data().email || '') : '';
     await db.doc(`userEmails/${targetUid}`).delete()
       .catch(e => { console.error('[deleteUserAccount] userEmails delete', e && e.message); errors.push('userEmails'); });
+    // v0.9.253 : décrémente le compteur public d'inscrits, SAUF si compte exclu
+    // (admin/interne — ils n'ont jamais été comptés) ou doc déjà fantôme.
+    if (_emailExisted && _isCountedEmail(_emailValue)) {
+      db.doc('publicStats/global')
+        .set({ userCount: admin.firestore.FieldValue.increment(-1), updatedAt: Date.now() }, { merge: true })
+        .catch(() => null);
+    }
 
     // 5. proCodeHashes attribués à cet uid
     try {
@@ -1104,74 +1452,135 @@ exports.revokeProCode = onCall(
 // STRIPE — Checkout sessions + webhook
 // ════════════════════════════════════════════════════════════════════════════
 
-const TIER_TO_PRICE_SECRET = {
-  monthly:  STRIPE_PRICE_MONTHLY,
-  yearly:   STRIPE_PRICE_YEARLY,
-  lifetime: STRIPE_PRICE_LIFETIME,
+// v0.9.255 : mapping plan demandé → { secret price, tier final data-model }.
+// Le client n'envoie QUE cette clé (jamais un montant). Le prix réel vit côté
+// Stripe (Price ID dans le secret) → impossible de manipuler le montant.
+const PLAN_TO_PRICE = {
+  funded_monthly: { secret: STRIPE_PRICE_FUNDED_MONTHLY, tier: 'funded', cycle: 'monthly' },
+  funded_yearly:  { secret: STRIPE_PRICE_FUNDED_YEARLY,  tier: 'funded', cycle: 'yearly'  },
+  elite_monthly:  { secret: STRIPE_PRICE_ELITE_MONTHLY,  tier: 'elite',  cycle: 'monthly' },
+  elite_yearly:   { secret: STRIPE_PRICE_ELITE_YEARLY,   tier: 'elite',  cycle: 'yearly'  },
 };
 
 const PUBLIC_SITE_URL = "https://zeldtrade.com";
+const STRIPE_PRICE_SECRETS = [
+  STRIPE_PRICE_FUNDED_MONTHLY, STRIPE_PRICE_FUNDED_YEARLY,
+  STRIPE_PRICE_ELITE_MONTHLY, STRIPE_PRICE_ELITE_YEARLY,
+];
 
 /**
- * Génère un lien de checkout Stripe personnalisé pour un user donné.
- * ADMIN UNIQUEMENT — utilisé depuis la console admin pour envoyer des liens
- * aux bêta-testeurs (mode stealth : prix jamais publics sur le site).
+ * createCheckoutSession (v0.9.255) — SELF-SERVICE sécurisé.
+ * L'utilisateur AUTHENTIFIÉ choisit un plan (funded/elite × mensuel/annuel) et
+ * obtient une URL Stripe Checkout. Sécurité :
+ *   - request.auth obligatoire (user connecté)
+ *   - email_verified obligatoire (anti faux comptes)
+ *   - uid + email pris du TOKEN (jamais de l'input → anti-forge metadata)
+ *   - le client n'envoie que `plan` (clé whitelist) → prix mappé serveur,
+ *     jamais de montant côté client (impossible de payer moins)
+ *   - allow_promotion_codes: true → coupons/codes promo Stripe (ex LAUNCH40, 100% partenaires)
+ *   - réutilise le customer Stripe existant si déjà connu (évite les doublons)
  *
- * data = { tier: "monthly"|"yearly"|"lifetime", targetUid, targetEmail }
- * retour : { url: "https://checkout.stripe.com/..." }
+ * data = { plan: "funded_monthly"|"funded_yearly"|"elite_monthly"|"elite_yearly" }
+ * retour = { url }
  */
 exports.createCheckoutSession = onCall(
   {
-    secrets: [STRIPE_SECRET_KEY, STRIPE_PRICE_MONTHLY, STRIPE_PRICE_YEARLY, STRIPE_PRICE_LIFETIME, DISCORD_ERRORS_WEBHOOK],
+    secrets: [STRIPE_SECRET_KEY, ...STRIPE_PRICE_SECRETS, DISCORD_ERRORS_WEBHOOK],
     maxInstances:    5,
     timeoutSeconds:  15,
     memory:          "256MiB",
     region:          "europe-west1",
   },
   _wrapCF('createCheckoutSession', async (request) => {
-    _assertAdmin(request);
-
-    const tier        = String(request.data?.tier || "").trim();
-    const targetUid   = String(request.data?.targetUid || "").trim();
-    const targetEmail = String(request.data?.targetEmail || "").trim().toLowerCase();
-
-    if (!TIER_TO_PRICE_SECRET[tier]) {
-      throw new HttpsError("invalid-argument", "Invalid tier (monthly/yearly/lifetime)");
+    // 1. Auth obligatoire
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Connecte-toi pour souscrire.');
+    const uid   = request.auth.uid;
+    const email = String(request.auth.token.email || '').trim().toLowerCase();
+    // 2. Email vérifié obligatoire (cohérent avec le reste du gating)
+    if (request.auth.token.email_verified !== true) {
+      throw new HttpsError('failed-precondition', 'Vérifie ton email avant de souscrire.');
     }
-    if (!/^[A-Za-z0-9]{1,128}$/.test(targetUid)) {
-      throw new HttpsError("invalid-argument", "Invalid uid");
-    }
-    if (!targetEmail || targetEmail.length > 254) {
-      throw new HttpsError("invalid-argument", "Invalid email");
+    if (!email || email.length > 254) {
+      throw new HttpsError('failed-precondition', 'Email du compte invalide.');
     }
 
-    const priceId = TIER_TO_PRICE_SECRET[tier].value();
-    if (!priceId || !priceId.startsWith("price_")) {
-      throw new HttpsError("failed-precondition", "Stripe price not configured for tier " + tier);
+    // 3. Le client n'envoie QUE la clé plan (whitelist). Prix mappé serveur.
+    const plan = String(request.data?.plan || '').trim();
+    const conf = PLAN_TO_PRICE[plan];
+    if (!conf) {
+      throw new HttpsError('invalid-argument', 'Plan invalide.');
+    }
+    const priceId = conf.secret.value();
+    if (!priceId || !priceId.startsWith('price_')) {
+      throw new HttpsError('failed-precondition', `Prix Stripe non configuré pour ${plan}.`);
     }
 
-    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: "2024-06-20" });
+    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: '2024-06-20' });
+
+    // 4. Réutilise le customer Stripe existant si on le connaît (anti-doublon)
+    let existingCustomerId = null;
+    try {
+      const stripeDoc = await admin.firestore().doc(`users/${uid}/data/stripe`).get();
+      if (stripeDoc.exists && stripeDoc.data().customerId) {
+        existingCustomerId = stripeDoc.data().customerId;
+      }
+    } catch { /* non bloquant */ }
 
     const session = await stripe.checkout.sessions.create({
-      mode: tier === "lifetime" ? "payment" : "subscription",
-      payment_method_types: ["card"],
+      mode: 'subscription',
+      payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
-      customer_email: targetEmail,
-      client_reference_id: targetUid,
-      metadata: { uid: targetUid, tier },
-      // subscription_data n est valide qu en mode subscription
-      ...(tier !== "lifetime" ? { subscription_data: { metadata: { uid: targetUid, tier } } } : {}),
-      allow_promotion_codes: true,
-      locale: "fr",
-      success_url: PUBLIC_SITE_URL + "?payment=success",
-      cancel_url:  PUBLIC_SITE_URL + "?payment=cancel",
+      ...(existingCustomerId
+        ? { customer: existingCustomerId }
+        : { customer_email: email }),
+      client_reference_id: uid,
+      // metadata sur la session ET la subscription (le webhook lit subscription.metadata)
+      metadata: { uid, tier: conf.tier, cycle: conf.cycle },
+      subscription_data: { metadata: { uid, tier: conf.tier, cycle: conf.cycle } },
+      allow_promotion_codes: true,   // coupons Stripe (LAUNCH40, 100% partenaires…)
+      locale: 'fr',
+      success_url: PUBLIC_SITE_URL + '/app?payment=success',
+      cancel_url:  PUBLIC_SITE_URL + '/app?payment=cancel',
     });
 
-    await _writeAuditLog("createCheckoutSession", request.auth.token.email, {
-      tier, targetUid, targetEmail, sessionId: session.id,
+    await _writeAuditLog('createCheckoutSession', email, {
+      uid, plan, tier: conf.tier, cycle: conf.cycle, sessionId: session.id,
     });
 
-    return { url: session.url, sessionId: session.id };
+    return { url: session.url };
+  }
+));
+
+/**
+ * createBillingPortalSession (v0.9.255) — espace client Stripe.
+ * Permet à l'utilisateur de gérer/résilier son abonnement, changer de carte,
+ * voir ses factures. Sécurité : auth + customer pris du doc Firestore du user
+ * (jamais d'un input → on ne peut pas ouvrir le portail d'un autre customer).
+ */
+exports.createBillingPortalSession = onCall(
+  {
+    secrets: [STRIPE_SECRET_KEY, DISCORD_ERRORS_WEBHOOK],
+    maxInstances:    5,
+    timeoutSeconds:  15,
+    memory:          '256MiB',
+    region:          'europe-west1',
+  },
+  _wrapCF('createBillingPortalSession', async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Connecte-toi.');
+    const uid = request.auth.uid;
+
+    const stripeDoc = await admin.firestore().doc(`users/${uid}/data/stripe`).get();
+    const customerId = stripeDoc.exists ? stripeDoc.data().customerId : null;
+    if (!customerId || !/^cus_[A-Za-z0-9]{1,64}$/.test(customerId)) {
+      throw new HttpsError('failed-precondition', 'Aucun abonnement Stripe associé à ce compte.');
+    }
+
+    const stripe = new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: '2024-06-20' });
+    const portal = await stripe.billingPortal.sessions.create({
+      customer:   customerId,
+      return_url: PUBLIC_SITE_URL + '/app',
+    });
+    return { url: portal.url };
   }
 ));
 
@@ -1198,6 +1607,12 @@ exports.stripeWebhook = onRequest(
     if (req.method !== "POST") {
       return res.status(405).send("Method not allowed");
     }
+    // S-NEW-05 (v0.9.230) : Content-Type strict — Stripe envoie toujours application/json.
+    // Defense-in-depth contre un payload mal-formé d'origine non-Stripe.
+    const ct = req.headers["content-type"] || "";
+    if (!ct.toLowerCase().includes("application/json")) {
+      return res.status(415).send("Unsupported Media Type");
+    }
     const sig = req.headers["stripe-signature"];
     if (!sig) {
       return res.status(400).send("Missing stripe-signature");
@@ -1205,7 +1620,10 @@ exports.stripeWebhook = onRequest(
     const stripe = new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: "2024-06-20" });
     let event;
     try {
-      event = stripe.webhooks.constructEvent(req.rawBody, sig, STRIPE_WEBHOOK_SECRET.value());
+      // S-NEW-04 (v0.9.230) : tolerance explicite 300s (défaut SDK = 300s aussi mais
+      // visible ici). Stripe inclut un timestamp UNIX dans la signature ; constructEvent
+      // refuse les payloads dont t > now + 300s ou t < now - 300s. Anti-replay basique.
+      event = stripe.webhooks.constructEvent(req.rawBody, sig, STRIPE_WEBHOOK_SECRET.value(), 300);
     } catch (e) {
       console.error("[stripeWebhook] invalid signature", e && e.message);
       return res.status(400).send("Invalid signature");
@@ -1243,23 +1661,54 @@ exports.stripeWebhook = onRequest(
       // → prévient l'injection de UID/tier/customer arbitraires si la signature
       //   webhook est valide mais les métadonnées sont malicieuses.
       const _validUid    = (x) => typeof x === 'string' && /^[A-Za-z0-9]{1,128}$/.test(x);
-      const _validTier   = (x) => ['monthly', 'yearly', 'lifetime'].includes(x);
+      // v0.9.255 : tiers payants du data-model (funded/elite). Legacy monthly/yearly
+      // accepté en lecture pour ne pas casser d'éventuels anciens abonnements test.
+      const _validTier   = (x) => ['funded', 'elite', 'monthly', 'yearly', 'lifetime'].includes(x);
       const _validCusId  = (x) => x == null || (typeof x === 'string' && /^cus_[A-Za-z0-9]{1,64}$/.test(x));
       const _validSubId  = (x) => x == null || (typeof x === 'string' && /^sub_[A-Za-z0-9]{1,64}$/.test(x));
+
+      // S-NEW-14 (v0.9.230) : cross-check du customer ↔ doc stored. Une fois
+      // qu'un user a un Stripe customerId associé à son uid, on refuse tout
+      // event qui prétend changer son plan via un customerId différent. Protège
+      // contre une forge de metadata.uid quand la signature webhook est par
+      // ailleurs valide (ex : compromission Stripe Dashboard / clé webhook).
+      // Retourne `true` si OK pour continuer, `false` si on doit skip.
+      async function _checkCustomerMatch(uid, incomingCustomerId) {
+        if (!incomingCustomerId) return true; // certains events n'ont pas customer
+        try {
+          const snap = await db.doc(`users/${uid}/data/stripe`).get();
+          if (!snap.exists) return true; // 1er event pour cet uid, rien à comparer
+          const stored = snap.data().customerId;
+          if (!stored) return true; // pas encore de customerId stocké, on accepte
+          if (stored === incomingCustomerId) return true;
+          console.warn('[stripeWebhook] customer mismatch — uid=', uid,
+                       ' stored=', stored, ' incoming=', incomingCustomerId);
+          await _writeAuditLog('stripeCustomerMismatch', 'stripe-webhook', {
+            uid, storedCustomerId: stored, incomingCustomerId, eventType: event.type,
+          });
+          return false;
+        } catch (e) {
+          console.warn('[stripeWebhook] _checkCustomerMatch failed', e && e.message);
+          return true; // fail-open prudent : ne pas bloquer un user légit sur erreur Firestore
+        }
+      }
 
       switch (event.type) {
         case "checkout.session.completed": {
           const s   = event.data.object;
           const uid = s.client_reference_id || s.metadata?.uid;
-          let tier  = s.metadata?.tier || "monthly";
+          let tier  = s.metadata?.tier || "funded";
           // Hardening v0.9.140 : valider strictement uid + tier avant écriture Firestore
           if (!_validUid(uid)) {
             console.warn("[stripeWebhook] invalid uid in session", s.id);
             break;
           }
-          if (!_validTier(tier)) tier = "monthly";
+          // v0.9.255 : mappe les legacy monthly/yearly/lifetime → funded par défaut
+          if (!_validTier(tier)) tier = "funded";
+          if (['monthly', 'yearly', 'lifetime'].includes(tier)) tier = "funded";
           const cus = _validCusId(s.customer)     ? (s.customer     || null) : null;
           const sub = _validSubId(s.subscription) ? (s.subscription || null) : null;
+          if (!(await _checkCustomerMatch(uid, cus))) break;
           // Active Pro + stocke les infos Stripe dans un doc séparé
           await db.doc(`users/${uid}/data/plan`).set({
             plan: "pro",
@@ -1283,6 +1732,8 @@ exports.stripeWebhook = onRequest(
             console.warn("[stripeWebhook] invalid uid in subscription.updated", sub.id);
             break;
           }
+          const cus = _validCusId(sub.customer) ? (sub.customer || null) : null;
+          if (!(await _checkCustomerMatch(uid, cus))) break;
           const isActive = sub.status === "active" || sub.status === "trialing";
           await db.doc(`users/${uid}/data/stripe`).set({
             subscriptionStatus: sub.status,
@@ -1306,6 +1757,8 @@ exports.stripeWebhook = onRequest(
             console.warn("[stripeWebhook] invalid uid in subscription.deleted", sub.id);
             break;
           }
+          const cus = _validCusId(sub.customer) ? (sub.customer || null) : null;
+          if (!(await _checkCustomerMatch(uid, cus))) break;
           await db.doc(`users/${uid}/data/plan`).set({
             plan: "basic",
             source: "stripe",
@@ -1319,8 +1772,44 @@ exports.stripeWebhook = onRequest(
           break;
         }
         case "invoice.payment_failed": {
+          // S-NEW-15 (v0.9.230) : trace explicite + audit log. Pas de downgrade
+          // automatique ici : Stripe émettra `customer.subscription.updated` avec
+          // status=past_due puis cancelled si retries échouent, ce qui downgrade
+          // déjà via le case ci-dessus. On veut juste pouvoir alerter et tracer.
           const inv = event.data.object;
-          console.warn("[stripeWebhook] payment_failed", inv.id, "customer=", inv.customer);
+          const cus = _validCusId(inv.customer) ? (inv.customer || null) : null;
+          console.warn("[stripeWebhook] payment_failed", inv.id, "customer=", cus);
+          // Best-effort : retrouver l'uid via le doc stripe stocké (lookup par customerId)
+          let uid = null;
+          if (cus) {
+            try {
+              const q = await db.collectionGroup('data')
+                                .where('customerId', '==', cus)
+                                .limit(1)
+                                .get();
+              if (!q.empty) {
+                const path = q.docs[0].ref.path; // users/{uid}/data/stripe
+                const m = path.match(/^users\/([^/]+)\/data\/stripe$/);
+                if (m) uid = m[1];
+              }
+            } catch (e) {
+              console.warn("[stripeWebhook] payment_failed uid lookup failed", e && e.message);
+            }
+          }
+          if (uid) {
+            await db.doc(`users/${uid}/data/stripe`).set({
+              lastPaymentFailedAt:    Date.now(),
+              lastPaymentFailedInvoice: inv.id,
+              lastPaymentFailedAmount:  typeof inv.amount_due === 'number' ? inv.amount_due : null,
+            }, { merge: true });
+          }
+          await _writeAuditLog("stripePaymentFailed", "stripe-webhook", {
+            uid,
+            invoiceId:  inv.id,
+            customerId: cus,
+            amountDue:  inv.amount_due,
+            attempt:    inv.attempt_count,
+          });
           break;
         }
       }
@@ -1734,3 +2223,138 @@ p{margin:0 0 24px;font-size:14.5px;color:#c9d1d9;line-height:1.55}
 <div class="footer">ZeldTrade — <a href="https://zeldtrade.com">zeldtrade.com</a></div>
 </div></body></html>`;
 }
+
+// ──────────────────────────────────────────────────────────────────────────────
+// brevoWebhook (v0.9.232) — réceptionne les events transactionnels Brevo et :
+//   1. Auto-désinscrit les destinataires qui hard-bounce / sont blocked / marquent spam.
+//   2. Poste un embed dans Discord #dev-logs (webhook erreurs) pour traçabilité ops.
+//   3. Stocke l'event dans Firestore `emailEvents/{id}` (TTL 90j via `expireAt`).
+//
+// Auth : header `Authorization: Bearer <BREVO_WEBHOOK_TOKEN>` (à configurer côté
+// Brevo Dashboard → Webhooks). Sans token valide → 401, audit log.
+//
+// Brevo event types : delivered, hard_bounce, soft_bounce, blocked, spam,
+// unsubscribed, opened, clicked, request, click, complaint, deferred, etc.
+// On ne traite que les CRITIQUES (bounces/spam/blocked) — le reste est ignoré.
+//
+// Docs Brevo : https://developers.brevo.com/docs/transactional-webhooks
+// ──────────────────────────────────────────────────────────────────────────────
+exports.brevoWebhook = onRequest(
+  {
+    secrets:        [BREVO_WEBHOOK_TOKEN, DISCORD_ERRORS_WEBHOOK],
+    maxInstances:    5,
+    timeoutSeconds:  20,
+    memory:         '256MiB',
+    region:         'europe-west1',
+  },
+  async (req, res) => {
+    try {
+      if (req.method !== 'POST') {
+        res.status(405).send('Method not allowed');
+        return;
+      }
+      // Auth via Authorization: Bearer <token>
+      const auth     = String(req.headers.authorization || '');
+      const expected = `Bearer ${BREVO_WEBHOOK_TOKEN.value()}`;
+      const aBuf     = Buffer.from(auth);
+      const eBuf     = Buffer.from(expected);
+      if (aBuf.length !== eBuf.length || !crypto.timingSafeEqual(aBuf, eBuf)) {
+        console.warn('[brevoWebhook] unauthorized — bad token');
+        res.status(401).send('Unauthorized');
+        return;
+      }
+      // Brevo envoie soit un objet unique, soit un tableau d'events
+      const raw    = req.body || {};
+      const events = Array.isArray(raw) ? raw : (Array.isArray(raw.events) ? raw.events : [raw]);
+      if (!events.length) {
+        res.status(200).send('No events');
+        return;
+      }
+
+      // Events critiques qui doivent désinscrire + alerter
+      const HARD_OFFLINE = new Set(['hard_bounce', 'blocked', 'spam', 'complaint']);
+      // Events qu'on logge sans désinscrire (info)
+      const SOFT_LOG    = new Set(['soft_bounce', 'deferred', 'unsubscribed']);
+
+      const db = admin.firestore();
+      let processed = 0;
+      const summaries = [];
+
+      for (const ev of events) {
+        const evType = String(ev.event || '').toLowerCase();
+        const email  = String(ev.email || '').toLowerCase().slice(0, 254);
+        if (!evType || !email) continue;
+
+        const isHard = HARD_OFFLINE.has(evType);
+        const isSoft = SOFT_LOG.has(evType);
+        if (!isHard && !isSoft) continue; // ignore delivered/opened/clicked
+
+        // Stockage Firestore idempotent (TTL 90j)
+        const evId = String(ev['message-id'] || ev.messageId || `${email}_${evType}_${Date.now()}`)
+                       .replace(/[^A-Za-z0-9_@.-]/g, '_').slice(0, 200);
+        try {
+          await db.doc(`emailEvents/${evId}`).create({
+            event:    evType,
+            email,
+            at:       admin.firestore.FieldValue.serverTimestamp(),
+            reason:   String(ev.reason || ev.tag || '').slice(0, 200),
+            expireAt: admin.firestore.Timestamp.fromMillis(Date.now() + 90 * 24 * 3600 * 1000),
+          });
+        } catch (e) {
+          // ALREADY_EXISTS = doublon Brevo retry → on saute proprement
+          if (e.code !== 6 && !/already exists/i.test(e.message || '')) {
+            console.warn('[brevoWebhook] firestore write failed', e && e.message);
+          }
+          continue;
+        }
+
+        // Sur event hard : retrouver l'uid via userEmails.email et désinscrire
+        let uidAffected = null;
+        if (isHard) {
+          try {
+            const q = await db.collection('userEmails').where('email', '==', email).limit(1).get();
+            if (!q.empty) {
+              uidAffected = q.docs[0].id;
+              await db.doc(`userEmails/${uidAffected}`).set({ newsletterOptIn: false }, { merge: true });
+              await _writeAuditLog('newsletterAutoUnsubscribe', 'brevo-webhook', {
+                uid: uidAffected, email, reason: evType,
+              });
+            }
+          } catch (e) {
+            console.warn('[brevoWebhook] unsubscribe lookup failed', e && e.message);
+          }
+        }
+
+        summaries.push({ evType, email, uid: uidAffected, isHard });
+        processed++;
+      }
+
+      // Post Discord #dev-logs si on a au moins 1 event traité
+      if (summaries.length) {
+        try {
+          const lines = summaries.map(s => {
+            const flag = s.isHard ? '🛑' : '⚠️';
+            const uid  = s.uid ? ` → uid \`${s.uid.slice(0, 8)}…\` désinscrit` : '';
+            return `${flag} **${s.evType}** · \`${s.email}\`${uid}`;
+          }).join('\n');
+          const hardCount = summaries.filter(s => s.isHard).length;
+          await _postDiscordWebhook(DISCORD_ERRORS_WEBHOOK.value(), {
+            title: `📧 Brevo events (${summaries.length})`,
+            description: lines.slice(0, 3800),
+            color: hardCount > 0 ? DISCORD_COLOR_RED : 0xfbbf24,
+            footer: { text: `${hardCount} hard${hardCount > 1 ? 's' : ''} · ${summaries.length - hardCount} soft${summaries.length - hardCount > 1 ? 's' : ''}` },
+            timestamp: new Date().toISOString(),
+          });
+        } catch (e) {
+          console.warn('[brevoWebhook] discord post failed', e && e.message);
+        }
+      }
+
+      res.status(200).json({ ok: true, processed });
+    } catch (e) {
+      console.error('[brevoWebhook] error', e && e.message);
+      try { await _reportError({ source: 'brevoWebhook', error: e }); } catch {}
+      res.status(500).send('Server error');
+    }
+  }
+);
