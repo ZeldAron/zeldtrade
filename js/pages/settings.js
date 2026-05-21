@@ -1232,12 +1232,14 @@
       btn.disabled = true;
       btn.textContent = t('set.email.verify.sending') || 'Envoi…';
       try {
-        await user.sendEmailVerification();
+        // v0.9.284 : passe par le pipeline custom (CF → email stylé via Brevo).
+        const r = await Auth.resendVerification();
+        if (r && r.error) { const er = new Error(r.error); er.code = r.error; throw er; }
         UI.toast(t('set.email.verify.sent') ||
           'Email envoyé ! Vérifie ta boîte mail (et les spams).');
       } catch (err) {
         const code = err && err.code;
-        if (code === 'auth/too-many-requests') {
+        if (code === 'auth/too-many-requests' || code === 'resource-exhausted' || code === 'functions/resource-exhausted') {
           UI.toast(t('set.email.verify.toomany') ||
             'Trop de tentatives. Attends quelques minutes avant de réessayer.', true);
         } else {

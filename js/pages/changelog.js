@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.284',
+      date: '2026-05-21',
+      time: '12:00',
+      tags: ['ui'],
+      title: 'De vrais emails ZeldTrade (vérification & mot de passe)',
+      titleEn: 'Real ZeldTrade emails (verification & password)',
+      items: [
+        { type: 'ui', text: 'Les emails de vérification d\'inscription et de réinitialisation de mot de passe sont désormais aux couleurs de ZeldTrade : design sombre, accent violet, en français, sans emoji — envoyés depuis noreply@zeldtrade.com pour atterrir directement en boîte de réception.', textEn: 'Account verification and password-reset emails now match the ZeldTrade brand: dark theme, violet accent, in French, no emoji — sent from noreply@zeldtrade.com for reliable inbox delivery.' },
+      ],
+    },
+    {
       version: '0.9.277',
       date: '2026-05-21',
       time: '11:00',

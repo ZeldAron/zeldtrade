@@ -14,6 +14,22 @@ const Auth = (() => {
       : null;
   }
 
+  // v0.9.284 : envoi de l'email de vérification via le pipeline custom (Cloud
+  // Function `sendVerificationEmail` → HTML stylé via Brevo). Fallback sur la
+  // méthode native Firebase si la CF échoue (cold-start, réseau) — un email
+  // « moche » par défaut reste préférable à aucun email sur le chemin critique.
+  async function _sendVerificationEmail(user) {
+    if (typeof _fbFunctions !== 'undefined' && _fbFunctions) {
+      try {
+        await _fbFunctions.httpsCallable('sendVerificationEmail')();
+        return;
+      } catch (e) {
+        console.warn('[Auth] sendVerificationEmail CF failed, fallback natif:', e && e.code);
+      }
+    }
+    await user.sendEmailVerification();
+  }
+
   function _storeUserEmail(user) {
     if (!user) return;
     // v0.9.150 : merge:true pour ne PAS écraser termsAccepted / newsletterOptIn
@@ -87,11 +103,11 @@ const Auth = (() => {
       let emailSent = false;
       let emailError = null;
       try {
-        await cred.user.sendEmailVerification();
+        await _sendVerificationEmail(cred.user);
         emailSent = true;
       } catch (e) {
         emailError = (e && e.code) || 'unknown';
-        console.warn('[register] sendEmailVerification failed:', emailError, e && e.message);
+        console.warn('[register] sendVerificationEmail failed:', emailError, e && e.message);
       }
 
       // Notif admin via Cloud Function (Discord webhook → #new-users public)
@@ -123,7 +139,7 @@ const Auth = (() => {
     if (!user) return { error: 'not-authenticated' };
     if (user.emailVerified) return { error: 'already-verified' };
     try {
-      await user.sendEmailVerification();
+      await _sendVerificationEmail(user);
       return { ok: true };
     } catch (e) {
       return { error: (e && e.code) || 'unknown' };
@@ -151,11 +167,19 @@ const Auth = (() => {
     return { verified: !!user.emailVerified, email: user.email || '' };
   }
 
+  // v0.9.284 : reset mot de passe via le pipeline custom (CF `sendPasswordResetEmail`
+  // → HTML stylé via Brevo). Fallback natif si la CF échoue. La CF ne révèle
+  // jamais si l'email existe (anti-énumération) et rate-limite côté serveur.
   async function resetPassword(email) {
     try {
-      await _fbAuth.sendPasswordResetEmail(email);
-    } catch {
-      // Ne pas révéler si l'email existe ou non
+      if (typeof _fbFunctions !== 'undefined' && _fbFunctions) {
+        await _fbFunctions.httpsCallable('sendPasswordResetEmail')({ email });
+      } else {
+        await _fbAuth.sendPasswordResetEmail(email);
+      }
+    } catch (e) {
+      // Fallback natif si la CF a planté ; on n'expose jamais l'erreur à l'UI.
+      try { await _fbAuth.sendPasswordResetEmail(email); } catch {}
     }
     return { ok: true };
   }
