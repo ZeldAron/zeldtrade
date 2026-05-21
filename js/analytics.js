@@ -45,6 +45,18 @@ const Analytics = (() => {
     track('page_view', { page: key });
   }
 
-  return { track, page };
+  // v0.9.278 — ping « visite » (compteur cookieless), 1 fois par session.
+  // Compté côté serveur (CF recordVisit → publicStats). Inclut la landing.
+  function pingVisit() {
+    try {
+      if (sessionStorage.getItem('zeld_visit_ping')) return;
+      sessionStorage.setItem('zeld_visit_ping', '1');
+      if (typeof _fbFunctions !== 'undefined' && _fbFunctions) {
+        _fbFunctions.httpsCallable('recordVisit')().catch(() => {});
+      }
+    } catch (e) { /* silencieux */ }
+  }
+
+  return { track, page, pingVisit };
 })();
 window.Analytics = Analytics;

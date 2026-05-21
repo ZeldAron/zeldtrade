@@ -15,6 +15,15 @@
   });
   const fn = firebase.app().functions('europe-west1');
 
+  // v0.9.278 : compteur de visites cookieless — 1 ping par session (landing).
+  (function pingVisit() {
+    try {
+      if (sessionStorage.getItem('zeld_visit_ping')) return;
+      sessionStorage.setItem('zeld_visit_ping', '1');
+      fn.httpsCallable('recordVisit')().catch(() => {});
+    } catch (e) { /* silencieux */ }
+  })();
+
   // v0.9.252 : compteur d'inscrits dynamique dans le hero.
   // Appelle getPublicStats (callable anonyme) → anime un count-up de 0 → N.
   (function loadUserCount() {

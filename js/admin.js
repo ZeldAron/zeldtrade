@@ -325,14 +325,19 @@ const Admin = (() => {
   async function renderActivity() {
     const wrap = $('tabActivity');
     wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
-    let users = [], events = [];
+    let users = [], events = [], visitsTotal = 0, visitsToday = 0;
+    const _today = new Date().toISOString().slice(0, 10);
     try {
-      const [u, ev] = await Promise.all([
+      const [u, ev, gSnap, dSnap] = await Promise.all([
         loadUsers(),
         _fbDb.collection('analyticsEvents').orderBy('ts', 'desc').limit(1500).get(),
+        _fbDb.doc('publicStats/global').get().catch(() => null),
+        _fbDb.doc('publicStats/visits-' + _today).get().catch(() => null),
       ]);
       users  = u;
       events = ev.docs.map(d => d.data());
+      if (gSnap && gSnap.exists) visitsTotal = Math.max(0, Number(gSnap.data().visitsTotal) || 0);
+      if (dSnap && dSnap.exists) visitsToday = Math.max(0, Number(dSnap.data().count) || 0);
     } catch (e) {
       wrap.innerHTML = '<p class="admin-empty">Erreur de chargement. (Si c\'est la 1ʳᵉ fois, l\'index Firestore se crée — réessaie dans 1 min.)</p>';
       return;
@@ -379,7 +384,19 @@ const Admin = (() => {
       return `<tr><td>${esc(emailByUid[e.uid] || e.uid || '?')}</td><td>${kind}</td><td>${esc(label)}</td><td style="color:var(--muted)">${ms ? formatRelative(ms) : '—'}</td></tr>`;
     }).join('');
 
-    wrap.innerHTML = chips +
+    const visitorsBlock = `
+      <div style="display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap">
+        <div style="flex:1;min-width:170px;background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(124,58,237,0.05));border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:18px 22px">
+          <div style="font-size:34px;font-weight:800;color:var(--purple-l);line-height:1">${visitsToday}</div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px">Visiteurs aujourd'hui</div>
+        </div>
+        <div style="flex:1;min-width:170px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px">
+          <div style="font-size:34px;font-weight:800;color:var(--text);line-height:1">${visitsTotal}</div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px">Visiteurs au total</div>
+        </div>
+      </div>`;
+
+    wrap.innerHTML = visitorsBlock + chips +
       `<h3 style="font-size:13px;margin:20px 0 10px;color:var(--text)">Pages visitées</h3>${pagesHtml}` +
       `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Actions clés</h3><div class="admin-stats">${actionsHtml}</div>` +
       `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Flux récent</h3>` +
