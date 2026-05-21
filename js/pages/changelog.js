@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.271',
+      date: '2026-05-21',
+      time: '07:30',
+      tags: ['feature'],
+      title: 'En-têtes de page : titre + sous-titre contextuel',
+      titleEn: 'Page headers: title + contextual subtitle',
+      items: [
+        { type: 'feature', text: 'Chaque page affiche désormais un sous-titre explicatif sous son titre dans l\'en-tête (ex. « Journal — Tes trades, un par un »). Plus clair pour savoir où on est et ce qu\'on y fait.', textEn: 'Each page now shows an explanatory subtitle under its header title (e.g. "Journal — Your trades, one by one"). Clearer about where you are and what to do.' },
+      ],
+    },
+    {
       version: '0.9.270',
       date: '2026-05-21',
       time: '07:00',
