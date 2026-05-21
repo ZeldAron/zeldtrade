@@ -221,7 +221,7 @@
     const pfStr = stats.pf === Infinity ? '∞' : stats.pf.toFixed(2);
     const pfCol = stats.pf >= 1.5 ? 'var(--green)' : stats.pf >= 1 ? 'var(--amber)' : 'var(--red)';
     const streakVal = stats.streak > 0
-      ? `${stats.streakType === 'win' ? '🔥' : '❄️'} ${stats.streak}`
+      ? `<span style="display:inline-flex;align-items:center;gap:5px;vertical-align:-2px">${Icons.svg(stats.streakType === 'win' ? 'flame' : 'snow', 15)} ${stats.streak}</span>`
       : '–';
     const streakLbl = stats.streakType === 'win'
       ? t('dash.streak.wins')
@@ -287,7 +287,7 @@
     // Évite l'affichage de KPI à zéro et de graphes vides, guide vers la 1ère action
     if (!all.length) {
       el.innerHTML = `<div class="dash-empty">
-        <div class="dash-empty-icon">📊</div>
+        <div class="dash-empty-icon">${Icons.svg('lineChart',44)}</div>
         <h2 class="dash-empty-title">${t('dash.empty.title') || 'Bienvenue sur ZeldTrade'}</h2>
         <p class="dash-empty-text">${t('dash.empty.text') || 'Ajoute ton premier trade pour voir tes stats, ta courbe d\'équité, et tes performances par compte.'}</p>
         <div class="dash-empty-steps">

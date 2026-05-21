@@ -199,7 +199,7 @@ function initApp() {
       const mod   = isMac ? '⌘' : 'Ctrl';
       el.innerHTML = `
         <div class="consent-modal-box" style="max-width:380px">
-          <div style="text-align:center;font-size:32px;margin-bottom:8px">⌨️</div>
+          <div style="text-align:center;font-size:32px;margin-bottom:8px"></div>
           <h2 class="consent-title">Raccourcis clavier</h2>
           <div style="display:flex;flex-direction:column;gap:10px;margin:18px 0">
             <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px">

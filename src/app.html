@@ -46,17 +46,17 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=0.9.275">
+  <link rel="stylesheet" href="css/style.css?v=0.9.276">
   <!-- v0.9.255 : theme manager en TÊTE du head — applique data-theme="light"
        AVANT le parsing du body pour éviter le FOUC (flash dark → light). -->
-  <script src="js/theme.js?v=0.9.275"></script>
+  <script src="js/theme.js?v=0.9.276"></script>
 </head>
 <body>
 
   <!-- ══ BANNIÈRE COOKIES ══════════════════════════════════════════════════════ -->
   <div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#131929;border-top:1px solid #1e2535;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
     <p style="margin:0;font-size:13px;color:#9ca3af;max-width:600px">
-      🍪 ZeldTrade utilise uniquement des cookies <strong style="color:#e6edf3">essentiels</strong> : session (Firebase Auth), sécurité anti-bot (Turnstile / hCaptcha) et stockage local de tes données. <strong style="color:#e6edf3">Aucun tracking publicitaire.</strong>
+      ZeldTrade utilise uniquement des cookies <strong style="color:#e6edf3">essentiels</strong> : session (Firebase Auth), sécurité anti-bot (Turnstile / hCaptcha) et stockage local de tes données. <strong style="color:#e6edf3">Aucun tracking publicitaire.</strong>
       <a href="/privacy" style="color:#6366f1;text-decoration:none">En savoir plus</a>
     </p>
     <button id="cookieAcceptBtn" style="background:#6366f1;color:#fff;border:none;border-radius:7px;padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0">J'ai compris</button>
@@ -213,7 +213,7 @@
   <!-- ══ VERIFY EMAIL GATE — bloque l'accès à l'app tant que l'email n'est pas vérifié (v0.9.255) ══ -->
   <div id="verifyEmailGate" class="consent-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="vegTitle">
     <div class="consent-modal-box">
-      <div style="text-align:center;font-size:42px;margin-bottom:10px">📬</div>
+      <div style="text-align:center;margin-bottom:10px;color:var(--accent-l)"><svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></div>
       <h2 id="vegTitle" class="consent-title" data-i18n="veg.title">Vérifie ton email pour continuer</h2>
       <p class="consent-intro" data-i18n="veg.intro">Nous avons envoyé un lien de vérification à</p>
       <p style="text-align:center;font-weight:600;color:var(--accent-l);margin:4px 0 16px;word-break:break-all" id="vegEmail">—</p>
@@ -230,7 +230,7 @@
   <!-- ══ ACCOUNT DELETED GATE — compte supprimé/désactivé par admin (v0.9.255) ══ -->
   <div id="accountDeletedGate" class="consent-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="adgTitle">
     <div class="consent-modal-box">
-      <div style="text-align:center;font-size:42px;margin-bottom:10px">🚫</div>
+      <div style="text-align:center;margin-bottom:10px;color:var(--red)"><svg viewBox="0 0 24 24" width="42" height="42" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg></div>
       <h2 id="adgTitle" class="consent-title" data-i18n="adg.title">Compte supprimé</h2>
       <p class="consent-intro" data-i18n="adg.intro">Ton compte ZeldTrade a été supprimé ou désactivé. Tu n'as plus accès à l'application.</p>
       <p class="consent-intro" style="font-size:13px;color:var(--muted);margin-top:14px" data-i18n="adg.hint">Si tu penses qu'il s'agit d'une erreur, contacte l'administrateur via Discord ou par email.</p>
@@ -440,7 +440,7 @@
               <div class="tuto-step-row"><span class="tuto-arrow">→</span><span data-i18n="tuto.s1.c" data-i18n-html="1">Choisis un preset <b>Apex</b>, <b>Topstep</b>, <b>FTMO</b> ou <b>Lucid</b> et la taille du compte</span></div>
               <div class="tuto-step-row"><span class="tuto-arrow">→</span><span data-i18n="tuto.s1.d" data-i18n-html="1">Donne-lui un nom (ex : <em>Apex 50K — Eval</em>) et enregistre</span></div>
             </div>
-            <div class="tuto-tip" data-i18n="tuto.s1.tip">💡 Tu peux créer plusieurs comptes pour gérer plusieurs challenges en parallèle.</div>
+            <div class="tuto-tip" data-i18n="tuto.s1.tip">Tu peux créer plusieurs comptes pour gérer plusieurs challenges en parallèle.</div>
           </div>
         </div>
 
@@ -456,7 +456,7 @@
               <div class="tuto-step-row"><span class="tuto-arrow">→</span><span data-i18n="tuto.s2.c" data-i18n-html="1"><b>Étape 2</b> : dépose ou colle (<kbd>⌘V</kbd>) un screenshot TradingView — l'IA détecte Entry / SL / TP automatiquement</span></div>
               <div class="tuto-step-row"><span class="tuto-arrow">→</span><span data-i18n="tuto.s2.d" data-i18n-html="1"><b>Étape 3</b> : vérifie les niveaux, choisis l'instrument, le compte, le résultat et enregistre</span></div>
             </div>
-            <div class="tuto-tip" data-i18n="tuto.s2.tip">💡 Sans screenshot, tu peux passer l'étape 2 et tout saisir manuellement à l'étape 3.</div>
+            <div class="tuto-tip" data-i18n="tuto.s2.tip">Sans screenshot, tu peux passer l'étape 2 et tout saisir manuellement à l'étape 3.</div>
           </div>
         </div>
 
@@ -475,7 +475,7 @@
               <div class="tuto-zone-pill tuto-zone-red" data-i18n="tuto.s3.zone.red">Zone rouge = Stop Loss</div>
               <div class="tuto-zone-pill tuto-zone-green" data-i18n="tuto.s3.zone.green">Label le plus haut = TP1</div>
             </div>
-            <div class="tuto-tip" data-i18n="tuto.s3.tip">💡 Si l'IA se trompe, les valeurs sont éditables directement sur l'écran — clique sur le chiffre pour le corriger.</div>
+            <div class="tuto-tip" data-i18n="tuto.s3.tip">Si l'IA se trompe, les valeurs sont éditables directement sur l'écran — clique sur le chiffre pour le corriger.</div>
           </div>
         </div>
 
@@ -718,7 +718,7 @@
 
           <div class="settings-section">
             <h3 data-i18n="set.about">À propos</h3>
-            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px">0.9.275</span></div>
+            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px">0.9.276</span></div>
             <div class="settings-row"><label data-i18n="set.stack">Stack</label><span style="color:var(--muted);font-size:12px">HTML · CSS · JS vanilla</span></div>
           </div>
         </div>
@@ -901,7 +901,7 @@
           <div class="form-field" style="margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:10px 12px;background:rgba(124, 58, 237,0.04)">
             <!-- Banner Pro upsell pour Trader (gratuit) -->
             <div id="wPartialLockedBanner" style="display:none;text-align:center;padding:6px 4px">
-              <div style="font-size:22px;margin-bottom:4px">🔒</div>
+              <div style="margin-bottom:4px;color:var(--accent-l)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
               <p style="margin:0 0 4px;font-size:13px;color:var(--text)"><strong data-i18n="wiz.partials.locked.title">Sorties partielles — plan Pro</strong></p>
               <p style="margin:0 0 10px;font-size:12px;color:var(--muted);line-height:1.5" data-i18n="wiz.partials.locked.hint">Enregistre des prises de profit partielles (retirer des lots à différents prix) en passant Funded ou Elite.</p>
               <a href="#offers" class="btn-primary" style="display:inline-block;padding:6px 14px;font-size:12px;text-decoration:none" data-i18n="wiz.shots.locked.cta">Voir les plans →</a>
@@ -947,7 +947,7 @@
 
             <!-- Banner Pro upsell visible pour Trader (max=0) -->
             <div id="wShotsLockedBanner" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
-              <div style="font-size:24px;margin-bottom:6px">🔒</div>
+              <div style="margin-bottom:6px;color:var(--accent-l)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
               <p style="margin:0 0 6px;font-size:13px;color:var(--text)" data-i18n="wiz.shots.locked.title"><strong>Captures réservées au plan Pro</strong></p>
               <p style="margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.5" data-i18n="wiz.shots.locked.hint">Conserve jusqu'à <strong>3 captures par trade</strong> (preuve setup, gestion, exit) en passant Funded ou Elite.</p>
               <a href="#offers" class="btn-primary" style="display:inline-block;padding:7px 16px;font-size:12.5px;text-decoration:none" data-i18n="wiz.shots.locked.cta">Voir les plans →</a>
@@ -958,7 +958,7 @@
             <div id="wShotsContainer" style="display:none;flex-direction:column;gap:10px">
               <div id="wShotZone" tabindex="0" style="border:1px dashed var(--border);border-radius:8px;padding:14px;text-align:center;cursor:pointer;outline:none;transition:border-color 0.15s,background 0.15s">
                 <div id="wShotPlaceholder" style="color:var(--muted);font-size:13px">
-                  <div style="font-size:24px;margin-bottom:6px">📸</div>
+                  <div style="margin-bottom:6px;color:var(--accent-l)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.2"/></svg></div>
                   <span data-i18n="wiz.shots.slot1.hint">Clique ici puis <strong>Ctrl+V</strong> pour coller un screenshot</span><br>
                   <span style="font-size:11px">ou <a href="#" id="wShotFileLink" style="color:var(--accent-l);text-decoration:underline">choisir un fichier</a> (max 2 MB, JPG/PNG/WebP)</span>
                 </div>
@@ -998,29 +998,30 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js" integrity="sha384-oFrOL1TiREYNET0lsYF3LjQuyi2gL7vhjH1X8vFr+umcmzAdPELopeSgbcrv4uRm" crossorigin="anonymous"></script>
-  <script src="js/firebase.js?v=0.9.275"></script>
+  <script src="js/firebase.js?v=0.9.276"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" defer></script>
-  <script src="js/i18n.js?v=0.9.275"></script>
+  <script src="js/i18n.js?v=0.9.276"></script>
+  <script src="js/icons.js?v=0.9.276"></script>
   <script src="js/lib/jspdf.umd.min.js?v=3.0.1" defer></script>
-  <script src="js/auth.js?v=0.9.275"></script>
-  <script src="js/store.js?v=0.9.275"></script>
-  <script src="js/calc.js?v=0.9.275"></script>
-  <script src="js/modal.js?v=0.9.275"></script>
-  <script src="js/ui.js?v=0.9.275"></script>
-  <script src="js/pages/dashboard.js?v=0.9.275"></script>
-  <script src="js/pages/analytics.js?v=0.9.275"></script>
-  <script src="js/pages/export-pdf.js?v=0.9.275"></script>
-  <script src="js/pages/settings.js?v=0.9.275"></script>
-  <script src="js/pages/goals.js?v=0.9.275"></script>
-  <script src="js/pages/calendar.js?v=0.9.275"></script>
-  <script src="js/pages/micro.js?v=0.9.275"></script>
-  <script src="js/pages/outils.js?v=0.9.275"></script>
-  <script src="js/pages/offers.js?v=0.9.275"></script>
-  <script src="js/contact.js?v=0.9.275"></script>
-  <script src="js/app.js?v=0.9.275"></script>
+  <script src="js/auth.js?v=0.9.276"></script>
+  <script src="js/store.js?v=0.9.276"></script>
+  <script src="js/calc.js?v=0.9.276"></script>
+  <script src="js/modal.js?v=0.9.276"></script>
+  <script src="js/ui.js?v=0.9.276"></script>
+  <script src="js/pages/dashboard.js?v=0.9.276"></script>
+  <script src="js/pages/analytics.js?v=0.9.276"></script>
+  <script src="js/pages/export-pdf.js?v=0.9.276"></script>
+  <script src="js/pages/settings.js?v=0.9.276"></script>
+  <script src="js/pages/goals.js?v=0.9.276"></script>
+  <script src="js/pages/calendar.js?v=0.9.276"></script>
+  <script src="js/pages/micro.js?v=0.9.276"></script>
+  <script src="js/pages/outils.js?v=0.9.276"></script>
+  <script src="js/pages/offers.js?v=0.9.276"></script>
+  <script src="js/contact.js?v=0.9.276"></script>
+  <script src="js/app.js?v=0.9.276"></script>
 
-  <script src="js/app-bootstrap.js?v=0.9.275"></script>
+  <script src="js/app-bootstrap.js?v=0.9.276"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent
@@ -1060,7 +1061,7 @@
         </button>
       </div>
       <div class="contact-body">
-        <div class="contact-intro" data-i18n="contact.intro">Bonjour 👋 Une question ? Un bug ? On vous répond rapidement.</div>
+        <div class="contact-intro" data-i18n="contact.intro">Bonjour ! Une question ? Un bug ? On vous répond rapidement.</div>
         <div class="contact-form" id="contactForm">
           <!-- v0.9.172 : refonte ultra-simple. Pseudo récupéré du compte côté serveur,
                pas d'email demandé, pas de captcha (throttle 60s/uid suffit). -->

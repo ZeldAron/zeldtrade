@@ -21,10 +21,10 @@ UI.renderOffers = function () {
     : null;
 
   // ── Status banner ──────────────────────────────────────────────────────────
-  const tierLabel = isBeta ? 'Bêta Testeur ✨' : isElite ? 'Elite' : isFunded ? 'Funded' : 'Trader';
+  const tierLabel = isBeta ? 'Bêta Testeur' : isElite ? 'Elite' : isFunded ? 'Funded' : 'Trader';
   const statusBanner = pro
     ? `<div class="pro-active-banner">
-        <div class="pro-active-icon">${isBeta ? '✨' : '✦'}</div>
+        <div class="pro-active-icon">${isBeta ? Icons.svg('sparkle',24) : '✦'}</div>
         <div>
           <div class="pro-active-title">Plan ${tierLabel} actif</div>
           <div class="pro-active-sub">${activatedDate ? tv('off.pro.active.sub', { date: activatedDate }) : 'Accès complet à toutes les fonctionnalités'}</div>
@@ -75,7 +75,7 @@ UI.renderOffers = function () {
   // ── Card : FUNDED (14.99 €/mois — featured) ──────────────────────────────
   const cardFunded = `
     <div class="offer-card offer-pro ${isFunded ? 'offer-current' : ''}">
-      <div class="offer-badge-pro">${isBeta ? 'BÊTA ✨' : t('off.popular')}</div>
+      <div class="offer-badge-pro">${isBeta ? 'BÊTA' : t('off.popular')}</div>
       <div class="offer-badge-current" style="opacity:${isFunded ? 1 : 0};color:#a78bfa">${t('off.current')}</div>
       <div class="offer-name" style="color:#a78bfa">Funded</div>
       <div class="offer-tag">${t('off.funded.tag')}</div>

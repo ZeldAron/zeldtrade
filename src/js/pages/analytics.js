@@ -55,7 +55,7 @@
           </div>
         </div>
         <div class="feature-lock-overlay">
-          <div class="feature-lock-icon">🔒</div>
+          <div class="feature-lock-icon">${Icons.svg('lock',30)}</div>
           <div class="feature-lock-title">${isEn ? 'Pro feature' : 'Fonctionnalité Pro'}</div>
           <div class="feature-lock-sub">${subtitle}</div>
           <button class="feature-lock-cta" id="lockCta_${Math.random().toString(36).slice(2,7)}">${isEn ? 'Upgrade to Pro →' : 'Passer PRO →'}</button>
@@ -74,7 +74,7 @@
       el.innerHTML = `
         <div class="page-title">${t('page.analytics')}</div>
         <div class="dash-empty">
-          <div class="dash-empty-icon">📈</div>
+          <div class="dash-empty-icon">${Icons.svg('lineChart',44)}</div>
           <h2 class="dash-empty-title">${t('analytics.empty.title') || 'Pas encore de stats'}</h2>
           <p class="dash-empty-text">${t('analytics.empty.text') || 'Enregistre quelques trades et reviens — tu verras ici win rate, R:R, breakdown par setup/instrument, performance par session, etc.'}</p>
           <a class="dash-empty-cta" href="#" data-cta="newtrade">+ ${t('btn.newtrade') || 'Nouveau trade'}</a>

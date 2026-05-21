@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.276',
+      date: '2026-05-21',
+      time: '10:00',
+      tags: ['ui'],
+      title: 'Interface plus pro : icônes épurées',
+      titleEn: 'More pro interface: cleaner icons',
+      items: [
+        { type: 'ui', text: 'Les emojis de l\'interface sont remplacés par des icônes vectorielles fines et cohérentes (accueil, captures, récompenses, statuts…). Rendu plus sobre et professionnel.', textEn: 'Interface emojis replaced with thin, consistent vector icons (onboarding, captures, achievements, statuses…). A cleaner, more professional look.' },
+      ],
+    },
+    {
       version: '0.9.275',
       date: '2026-05-21',
       time: '09:00',

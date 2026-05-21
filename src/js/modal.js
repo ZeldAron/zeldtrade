@@ -514,7 +514,7 @@ const Modal = (() => {
       let result;
       if (_forceClaude && _canUseClaudeFallback()) {
         // Réanalyse forcée → Claude direct sans passer par Groq
-        statusEl.innerHTML = `<span style="color:var(--accent-l)">🤖 Analyse approfondie via Claude…</span>`;
+        statusEl.innerHTML = `<span style="color:var(--accent-l);display:inline-flex;align-items:center;gap:6px">${Icons.svg('cpu',13)} Analyse approfondie via Claude…</span>`;
         try {
           result = await analyzeWithClaude(capturedImage, direction);
         } catch (e) {
@@ -533,7 +533,7 @@ const Modal = (() => {
         const groqAberrant = _isAberrantTrade(result);
         const groqBad     = groqScore < 3 || groqAberrant;
         if (groqBad && _canUseClaudeFallback()) {
-          statusEl.innerHTML = `<span style="color:var(--accent-l)">🤖 Analyse approfondie via Claude…</span>`;
+          statusEl.innerHTML = `<span style="color:var(--accent-l);display:inline-flex;align-items:center;gap:6px">${Icons.svg('cpu',13)} Analyse approfondie via Claude…</span>`;
           try {
             const claudeResult = await analyzeWithClaude(capturedImage, direction);
             // On garde Claude SI il fait mieux (score plus haut OU non-aberrant)
@@ -1147,7 +1147,7 @@ const Modal = (() => {
              <button type="button" class="btn-ghost shot-slot-delete"  style="padding:4px 12px;font-size:12px;color:var(--red)">${i18n.t('wiz.shots.delete') || 'Supprimer'}</button>
            </div>`
         : `<div style="color:var(--muted);font-size:13px">
-             <div style="font-size:22px;margin-bottom:6px">📎</div>
+             <div style="margin-bottom:6px;color:var(--muted)">${Icons.svg('paperclip',22)}</div>
              ${i18n.t('wiz.shots.extra.hint') || 'Ajoute une capture (ex : exit, gestion)'}<br>
              <span style="font-size:11px">${i18n.t('wiz.shots.extra.cta') || 'Clique ou glisse une image'}</span>
            </div>`;
