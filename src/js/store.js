@@ -639,6 +639,7 @@ const Store = (() => {
     if (!t.date) t.date = new Date().toISOString();
     trades.unshift(t);
     _saveTrades();
+    if (window.Analytics) Analytics.track('trade_created');
     return t;
   }
 
@@ -857,6 +858,7 @@ const Store = (() => {
     const a = { ...sanitized, id: 'acc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6) };
     myAccounts.push(a);
     _saveMyAccounts();
+    if (window.Analytics) Analytics.track('account_created', { label: a.accountType || 'prop' });
     return a;
   }
   function updateMyAccount(id, data) {

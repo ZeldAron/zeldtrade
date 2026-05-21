@@ -296,6 +296,7 @@ const Modal = (() => {
     // rate-limit IP strict (1 analyse / 5 min / IP) comme fallback.
     const turnstileToken = await _getTurnstileToken();
 
+    if (window.Analytics) Analytics.track('ai_analysis');
     const callable = _fbFunctions.httpsCallable('analyzeChart');
     let lastError = null;
     // v0.9.216 — Garde le meilleur résultat partiel (1 ou 2 valeurs) pour fallback

@@ -271,6 +271,7 @@ UI.renderOffers = function () {
         const original = btn.textContent;
         btn.disabled = true;
         btn.textContent = '…';
+        if (window.Analytics) Analytics.track('checkout_started', { label: plan });
         try {
           const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan });
           if (res && res.data && res.data.url) {
