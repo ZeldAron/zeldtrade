@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.285',
+      date: '2026-05-21',
+      time: '14:00',
+      tags: ['fix'],
+      title: 'Correctif : captures de trade bloquées pour certains comptes',
+      titleEn: 'Fix: trade screenshots blocked for some accounts',
+      items: [
+        { type: 'fix', text: 'Certains comptes (email pourtant vérifié, mais token de session pas encore à jour) recevaient une erreur de permission en ajoutant une capture à un trade. Le token est désormais rafraîchi automatiquement juste avant l\'envoi — les captures repassent.', textEn: 'Some accounts (email verified, but session token not yet refreshed) got a permission error when adding a screenshot to a trade. The token is now refreshed automatically right before upload — screenshots work again.' },
+      ],
+    },
+    {
       version: '0.9.284',
       date: '2026-05-21',
       time: '12:00',
