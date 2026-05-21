@@ -10,7 +10,15 @@ const Store = (() => {
   }
 
   // ── Données statiques (presets, référence) ───────────────────────────────────
-  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1' };
+  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1', tradingTypes: null };
+
+  // v0.9.275 (F1/F2) — profil de trading utilisateur (multi-choix). null = pas encore répondu.
+  const VALID_TRADING_TYPES = ['fundsOwn', 'propFirm', 'crypto'];
+  function _sanitizeTradingTypes(v) {
+    if (!Array.isArray(v)) return null;
+    const out = [...new Set(v.filter(x => VALID_TRADING_TYPES.includes(x)))];
+    return out.length ? out : null;
+  }
 
   const DEFAULT_ACCOUNT_TYPES = [
     // ─── Apex Trader Funding 2026 (refonte v0.9.186, simplifié v0.9.187 — EOD uniquement) ───
@@ -398,6 +406,7 @@ const Store = (() => {
           capital:    (typeof raw.capital    === 'number' && isFinite(raw.capital))    ? Math.max(0, Math.min(1e9, raw.capital))    : DEFAULT_SETTINGS.capital,
           contracts:  (typeof raw.contracts  === 'number' && isFinite(raw.contracts))  ? Math.max(0.01, Math.min(999, raw.contracts))  : DEFAULT_SETTINGS.contracts,
           instrument: (typeof raw.instrument === 'string' && raw.instrument.length > 0) ? String(raw.instrument).replace(/[^A-Za-z0-9/. _-]/g, '').slice(0, 20) || DEFAULT_SETTINGS.instrument : DEFAULT_SETTINGS.instrument,
+          tradingTypes: _sanitizeTradingTypes(raw.tradingTypes),
         };
         changed = true;
       }
@@ -762,8 +771,9 @@ const Store = (() => {
 
   // ── Settings ─────────────────────────────────────────────────────────────────
   function getSettings()        { return { ...settings }; }
+  function getTradingTypes()    { return Array.isArray(settings.tradingTypes) ? [...settings.tradingTypes] : null; }
   function getGroqKey()         { return _globalGroqKey; }
-  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument']);
+  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes']);
   function updateSettings(data) {
     const safe = Object.create(null);
     for (const [k, v] of Object.entries(data)) {
@@ -771,6 +781,7 @@ const Store = (() => {
       if (k === 'capital')         safe.capital    = _safeNum(v, 0, 1e9, 50000);
       else if (k === 'contracts')  safe.contracts  = _safeNum(v, 0.01, 999, 1);
       else if (k === 'instrument') safe.instrument = String(v).replace(/[^A-Za-z0-9/. _-]/g,'').slice(0,20) || 'MES1';
+      else if (k === 'tradingTypes') { const tt = _sanitizeTradingTypes(v); if (tt) safe.tradingTypes = tt; }
     }
     settings = { ...settings, ...safe };
     lsSet(lk().settings, settings);
@@ -1120,7 +1131,7 @@ const Store = (() => {
     getTrades, getTradeById, addTrade, addTradesBatch, updateTrade, deleteTrade, importTrades, clearTrades, exportJSON, exportFullJSON,
     newTradeId: _newTradeId, uploadTradeScreenshot, getTradeScreenshotUrl, deleteTradeScreenshot,
     getMaxScreenshots, canSaveScreenshots,
-    getSettings, getGroqKey, updateSettings,
+    getSettings, getTradingTypes, getGroqKey, updateSettings,
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,
     getMyAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount,

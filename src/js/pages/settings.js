@@ -246,7 +246,12 @@
         $('maMaxDrawdown').value = ''; $('maDailyLoss').value = '';
         $('maMaxContracts').value = ''; $('maFeePerSide').value = '2.14';
         $('maPnlOffset').value = '';
-        if ($('maAccountType')) $('maAccountType').value = 'prop';
+        if ($('maAccountType')) {
+          // v0.9.275 (F1/F2) : type par défaut selon le profil de trading
+          const _tt = (Store.getTradingTypes && Store.getTradingTypes()) || [];
+          $('maAccountType').value = (!_tt.length || _tt.includes('propFirm')) ? 'prop'
+                                   : _tt.includes('fundsOwn') ? 'personal' : 'crypto';
+        }
         _applyAccountTypeVisibility();
         $('maForm').style.display = 'block';
         $('maName').focus();
@@ -1291,6 +1296,36 @@
     try { renderPersonalSettings(); }   catch(e) { console.error('[Settings] personal error:', e); }
     try { renderCryptoSettings(); }     catch(e) { console.error('[Settings] crypto error:', e); }
     try { renderSpreadsSettings(); }    catch(e) { console.error('[Settings] spreads error:', e); }
+
+    // v0.9.275 (F1/F2) : adapte « Règles & marchés » au profil de trading.
+    // Profil non renseigné (null) → on montre tout (défaut).
+    try {
+      const tt = (Store.getTradingTypes && Store.getTradingTypes()) || [];
+      const showProp   = !tt.length || tt.includes('propFirm');
+      const showCrypto = !tt.length || tt.includes('crypto');
+      const showFunds  = !tt.length || tt.includes('fundsOwn');
+      const _setVis = (id, show) => { const e = $(id); if (e) e.style.display = show ? '' : 'none'; };
+      _setVis('settingsPropFirms', showProp);
+      _setVis('settingsCrypto',    showCrypto);
+      _setVis('settingsPersonal',  showFunds);
+    } catch(e) { console.error('[Settings] tradingTypes adapt error:', e); }
+
+    // v0.9.275 (F1/F2) : éditeur « Mon profil de trading » (modifiable à tout moment)
+    (function setupProfileEditor() {
+      const saveBtn = $('btnSaveProfile');
+      if (!saveBtn) return;
+      const current = (Store.getTradingTypes && Store.getTradingTypes()) || [];
+      document.querySelectorAll('.set-tp-choice').forEach(c => { c.checked = current.includes(c.value); });
+      if (saveBtn.dataset.bound) return;
+      saveBtn.dataset.bound = '1';
+      saveBtn.addEventListener('click', () => {
+        const checked = [...document.querySelectorAll('.set-tp-choice:checked')].map(c => c.value);
+        if (!checked.length) { UI.toast(i18n.getLang() === 'en' ? 'Pick at least one option.' : 'Choisis au moins une option.', true); return; }
+        Store.updateSettings({ tradingTypes: checked });
+        UI.toast(i18n.getLang() === 'en' ? 'Profile saved ✓' : 'Profil enregistré ✓');
+        UI.initSettings(); // ré-applique l'adaptation immédiatement
+      });
+    })();
 
     // v0.9.133 : refresh visibilité du bouton Export PDF à CHAQUE render (pas
     // seulement au premier bind) — sinon si Store.isPro() retourne false au

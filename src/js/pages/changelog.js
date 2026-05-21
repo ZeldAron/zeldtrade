@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.275',
+      date: '2026-05-21',
+      time: '09:00',
+      tags: ['feature'],
+      title: 'Profil de trading : l\'app s\'adapte à ta pratique',
+      titleEn: 'Trading profile: the app adapts to how you trade',
+      items: [
+        { type: 'feature', text: 'À ta prochaine connexion, une question rapide : tu trades sur quoi ? (Fonds propres · Prop firm · Crypto, plusieurs choix possibles). L\'app masque ensuite ce qui ne te concerne pas — par ex. les règles prop firm si tu trades sur fonds propres. Modifiable à tout moment dans Réglages → Général.', textEn: 'On your next login, a quick question: what do you trade? (Own funds · Prop firm · Crypto, multiple choices allowed). The app then hides what doesn\'t concern you — e.g. prop-firm rules if you trade your own funds. Editable anytime in Settings → General.' },
+      ],
+    },
+    {
       version: '0.9.273',
       date: '2026-05-21',
       time: '08:00',
