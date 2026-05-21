@@ -180,9 +180,10 @@ const Admin = (() => {
       const newsletter  = u.newsletterOptIn
         ? '<span class="badge-news" title="Inscrit à la newsletter"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></span>' : '';
 
+      const _trash = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v5M14 11v5"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>';
       const deleteBtn = isSelf
-        ? '<button class="ico-btn" disabled title="Vous ne pouvez pas vous supprimer vous-même"></button>'
-        : `<button class="ico-btn ico-btn-red" data-action="delete" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Supprimer le compte"></button>`;
+        ? `<button class="ico-btn" disabled title="Vous ne pouvez pas vous supprimer vous-même">${_trash}</button>`
+        : `<button class="ico-btn ico-btn-red" data-action="delete" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Supprimer le compte">${_trash}</button>`;
 
       return `<tr>
         <td>
@@ -195,9 +196,9 @@ const Admin = (() => {
           <div class="cell-dates-seen">Vu ${lastSeenRel}</div>
         </td>
         <td class="cell-actions">
-          <button class="ico-btn ico-btn-violet" data-action="gen"    data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Générer un code Bêta Testeur (accès complet)">🎟️</button>
-          <button class="ico-btn ico-btn-violet" data-action="stripe" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Créer un lien de paiement Stripe">💳</button>
-          <button class="ico-btn ico-btn-blue"   data-action="verify" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Forcer email_verified=true"></button>
+          <button class="ico-btn ico-btn-violet" data-action="gen"    data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Générer un code Bêta Testeur (accès complet)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H6a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><line x1="10" y1="6" x2="10" y2="16" stroke-dasharray="1.5 2"/></svg></button>
+          <button class="ico-btn ico-btn-violet" data-action="stripe" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Créer un lien de paiement Stripe"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
+          <button class="ico-btn ico-btn-blue"   data-action="verify" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Forcer email_verified=true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><polyline points="4 7 12 13 20 7"/></svg></button>
           ${deleteBtn}
         </td>
       </tr>`;
@@ -766,11 +767,11 @@ const Admin = (() => {
         lastDryRunOrphans = d.orphans || [];
         let txt = d.message + '\n\n';
         if (lastDryRunOrphans.length === 0) {
-          txt += '✅ Aucun orphelin détecté. Tout est propre.';
+          txt += '✓ Aucun orphelin détecté. Tout est propre.';
           btnConfirm.disabled = true;
           btnConfirm.style.opacity = '0.5';
         } else {
-          txt += '❌ ORPHELINS À SUPPRIMER :\n';
+          txt += '✗ ORPHELINS À SUPPRIMER :\n';
           lastDryRunOrphans.forEach(o => {
             txt += `  • UID: ${o.uid}\n    Email: ${o.email}\n`;
           });
@@ -779,7 +780,7 @@ const Admin = (() => {
         }
         resultBox.textContent = txt;
       } catch (e) {
-        resultBox.textContent = '❌ Erreur : ' + ((e && e.message) || 'inconnue');
+        resultBox.textContent = '✗ Erreur : ' + ((e && e.message) || 'inconnue');
       } finally {
         btnAnalyze.disabled = false;
         btnAnalyze.textContent = 'Analyser (dry-run)';
@@ -797,20 +798,20 @@ const Admin = (() => {
         const d = res.data;
         let txt = d.message + '\n\n';
         if (d.deleted && d.deleted.length) {
-          txt += '✅ SUPPRIMÉS :\n';
+          txt += '✓ SUPPRIMÉS :\n';
           d.deleted.forEach(x => {
             txt += `  • ${x.email} (UID: ${x.uid}) — ${x.codesRevoked} code(s) révoqué(s)\n`;
           });
         }
         if (d.errors && d.errors.length) {
-          txt += '\n❌ ERREURS :\n';
+          txt += '\n✗ ERREURS :\n';
           d.errors.forEach(e => { txt += `  • ${e.email}: ${e.error}\n`; });
         }
         resultBox.textContent = txt;
         lastDryRunOrphans = null;
         toast('Cleanup terminé');
       } catch (e) {
-        resultBox.textContent = '❌ Erreur : ' + ((e && e.message) || 'inconnue');
+        resultBox.textContent = '✗ Erreur : ' + ((e && e.message) || 'inconnue');
       } finally {
         btnConfirm.disabled = true;
         btnConfirm.style.opacity = '0.5';
@@ -860,14 +861,14 @@ const Admin = (() => {
         const res = await callable({ all: true });
         const d = res.data;
         let txt = (d.message || 'OK') + '\n\n';
-        txt += `✅ Vérifiés : ${d.verified}\n`;
+        txt += `✓ Vérifiés : ${d.verified}\n`;
         txt += `⏭ Déjà vérifiés (skip) : ${d.skipped}\n`;
-        if (d.errors) txt += `❌ Erreurs : ${d.errors}\n`;
+        if (d.errors) txt += `✗ Erreurs : ${d.errors}\n`;
         if (d.truncated) txt += '\n⚠ Tronqué à 1000 users — relance si tu as plus de monde.';
         resultV.textContent = txt;
         toast('Vérification email bulk terminée.');
       } catch (e) {
-        resultV.textContent = '❌ Erreur : ' + ((e && e.message) || 'inconnue');
+        resultV.textContent = '✗ Erreur : ' + ((e && e.message) || 'inconnue');
       } finally {
         btnVerify.disabled = false;
         btnVerify.textContent = 'Marquer tous les emails comme vérifiés';

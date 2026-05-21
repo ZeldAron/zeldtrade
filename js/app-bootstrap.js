@@ -529,7 +529,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetEmail = result.email || email;
     const msg = result.emailSent
       ? 'Un email de vérification vient d\'être envoyé à ' + targetEmail + '.\n\n'
-        + '⚠️ IMPORTANT : vérifie ta boîte de réception ET tes SPAMS. '
+        + '⚠ IMPORTANT : vérifie ta boîte de réception ET tes SPAMS. '
         + 'Gmail / free.fr / Hotmail filtrent souvent les emails Firebase.\n\n'
         + 'Sans cette vérification, l\'analyse IA des graphes ne fonctionnera pas. '
         + 'Si tu ne le trouves pas, tu peux le renvoyer depuis Réglages → Vérification email.'
@@ -537,7 +537,7 @@ document.addEventListener('DOMContentLoaded', () => {
         + (result.emailError || 'inconnu') + ').\n\n'
         + 'Va dans Réglages → Vérification email après connexion pour le renvoyer.';
     await UI.confirmModal({
-      title: 'Compte créé ✅',
+      title: 'Compte créé ✓',
       message: msg,
       confirmText: 'OK, j\'ai compris',
       cancelText: false,  // modale info pure — pas de bouton "Annuler"
