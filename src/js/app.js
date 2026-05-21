@@ -22,8 +22,8 @@ function initApp() {
   function switchPage(page) {
     document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('page-' + page).classList.add('active');
-    document.querySelector(`[data-page="${page}"]`).classList.add('active');
+    document.getElementById('page-' + page)?.classList.add('active');
+    document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
     $('topbarTitle').textContent = i18n.t(PAGE_KEYS[page] || page);
     $('searchWrap').style.display = page === 'journal' ? 'flex' : 'none';
     currentPage = page;
@@ -249,6 +249,7 @@ function initApp() {
   }
   refreshPlanUI();
   $('btnSidebarUpgrade')?.addEventListener('click', () => switchPage('offers'));
+  $('btnTopbarHelp')?.addEventListener('click', () => switchPage('tutorial'));
   window.addEventListener('store:planChanged', () => {
     refreshPlanUI();
     if (currentPage === 'dashboard') UI.renderDashboard();
