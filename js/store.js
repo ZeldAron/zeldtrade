@@ -685,6 +685,28 @@ const Store = (() => {
   }
 
   // ── Screenshots de trades (Firebase Storage) ────────────────────────────────
+  // v0.9.285 : la règle Storage exige `request.auth.token.email_verified == true`
+  // (ajoutée le 20/05 avec le gating Pro). Or le claim `email_verified` du token
+  // peut être PÉRIMÉ : un user vérifié côté Firebase Auth (ex. marqué par l'admin,
+  // ou ayant cliqué le lien de vérif depuis sa boîte mail dans un autre onglet)
+  // garde un token cachant `email_verified: false` tant qu'il n'est pas rafraîchi.
+  // Résultat : upload refusé (storage/unauthorized) alors que le compte EST vérifié.
+  // → On force un refresh du token juste avant l'upload. Throttle 30s pour ne pas
+  //   multiplier les appels réseau quand on uploade plusieurs slots d'un coup.
+  let _lastTokenRefresh = 0;
+  async function _refreshTokenForUpload() {
+    try {
+      const u = (typeof firebase !== 'undefined') && firebase.auth && firebase.auth().currentUser;
+      if (!u) return;
+      if (Date.now() - _lastTokenRefresh < 30_000) return;
+      await u.getIdToken(true);
+      _lastTokenRefresh = Date.now();
+    } catch (e) {
+      // Non bloquant : si le refresh échoue, le put() échouera proprement ensuite.
+      console.warn('[Store] refresh token avant upload échoué', e && e.message);
+    }
+  }
+
   // Upload un Blob (image compressée en JPEG) pour un trade donné.
   // v0.9.246 : ajout d'un slot index optionnel pour supporter N screenshots
   // par trade. slot=0 garde le chemin legacy `screenshot.jpg` (rétro-compat),
@@ -696,6 +718,8 @@ const Store = (() => {
     if (blob.size > 2 * 1024 * 1024) throw new Error('Image trop grande (>2 MB)');
     const idx = Number.isInteger(slot) && slot >= 0 ? slot : 0;
     if (idx >= getMaxScreenshots()) throw new Error('Limite screenshots du plan atteinte');
+    // v0.9.285 : garantit un token frais (claim email_verified à jour) avant l'upload.
+    await _refreshTokenForUpload();
     const fileName = idx === 0 ? 'screenshot.jpg' : `screenshot_${idx}.jpg`;
     const path = `users/${_uid}/trades/${tradeId}/${fileName}`;
     const ref  = _fbStorage.ref(path);
