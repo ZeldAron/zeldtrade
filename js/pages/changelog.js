@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.273',
+      date: '2026-05-21',
+      time: '08:00',
+      tags: ['feature'],
+      title: 'Mini-courbe P&L sur la carte du Dashboard',
+      titleEn: 'P&L sparkline on the Dashboard card',
+      items: [
+        { type: 'feature', text: 'La carte « P&L net » du Dashboard affiche désormais une mini-courbe de ton P&L cumulé — la tendance d\'un coup d\'œil, sans avoir à regarder le grand graphe.', textEn: 'The Dashboard "Net P&L" card now shows a sparkline of your cumulative P&L — the trend at a glance, without looking at the full chart.' },
+      ],
+    },
+    {
       version: '0.9.271',
       date: '2026-05-21',
       time: '07:30',

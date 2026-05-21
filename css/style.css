@@ -917,16 +917,19 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   margin-bottom: 16px;
 }
 .kpi-card {
-  background: var(--bg3);
+  background: var(--bg2);
   border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 16px 18px;
-  transition: border-color 0.15s;
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-shadow: var(--shadow-card);
 }
 .kpi-card:hover { border-color: var(--border2); }
 .kpi-val   { font-family: 'Geist Mono', monospace; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
 .kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
 .kpi-sub   { font-size: 11px; color: var(--muted2); font-family: 'Geist Mono', monospace; }
+/* v0.9.273 — sparkline (mini-courbe P&L) en pied de carte KPI */
+.kpi-spark { display: block; width: 100%; height: 28px; margin-top: 12px; opacity: 0.75; }
 
 .chart-card {
   background: var(--bg2);

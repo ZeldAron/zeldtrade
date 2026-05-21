@@ -239,11 +239,34 @@
     </div>`;
   }
 
-  function kpiCard(label, value, sub, color) {
+  // v0.9.273 — sparkline SVG inline (léger, pas de Chart.js par carte)
+  function _cumPnlSeries(trades) {
+    const sorted = trades.slice().sort((a, b) => (a.date || '') < (b.date || '') ? -1 : 1);
+    let cum = 0;
+    const series = [0];
+    sorted.forEach(tr => { cum += (Calc.trade(tr).netPnl || 0); series.push(cum); });
+    return series;
+  }
+  function _sparkline(values, color) {
+    if (!values || values.length < 3) return '';
+    const w = 100, h = 30;
+    const min = Math.min(...values), max = Math.max(...values);
+    const range = (max - min) || 1;
+    const pts = values.map((v, i) => {
+      const x = (i / (values.length - 1)) * w;
+      const y = h - 2 - ((v - min) / range) * (h - 4);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    return `<svg class="kpi-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points="${pts}" style="fill:none;stroke:${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+  function kpiCard(label, value, sub, color, spark) {
     return `<div class="kpi-card">
       <div class="kpi-val" style="color:${color}">${value}</div>
       <div class="kpi-label">${label}</div>
       <div class="kpi-sub">${sub}</div>
+      ${spark || ''}
     </div>`;
   }
 
@@ -368,7 +391,7 @@
       }
       body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.pnl.cumul')}</span></div>
         <div class="kpi-grid">
-          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' trades', s.totalPnL>=0?'var(--green)':'var(--red)')}
+          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' trades', s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
           ${kpiCard(t('dash.win.rate'), s.winRate!==null ? s.winRate.toFixed(0)+'%' : '—', s.wins+'W · '+s.losses+'L', (s.winRate||0)>=50?'var(--green)':'var(--red)')}
           ${kpiCard(t('dash.avg.rr'), s.avgRR.toFixed(2)+'R', t('dash.group'), s.avgRR>=1.5?'var(--green)':'var(--amber)')}
           ${kpiCard(t('dash.open'), s.open.toString(), t('dash.in.progress'), 'var(--blue)')}
@@ -388,7 +411,7 @@
       }
       body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.pnl.cumul')}</span></div>
         <div class="kpi-grid">
-          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' trades', s.totalPnL>=0?'var(--green)':'var(--red)')}
+          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' trades', s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
           ${kpiCard(t('dash.win.rate'), s.winRate!==null ? s.winRate.toFixed(0)+'%' : '—', s.wins+'W · '+s.losses+'L', (s.winRate||0)>=50?'var(--green)':'var(--red)')}
           ${kpiCard(t('dash.avg.rr'), s.avgRR.toFixed(2)+'R', t('dash.all.trades'), s.avgRR>=1.5?'var(--green)':'var(--amber)')}
           ${kpiCard(t('dash.open'), s.open.toString(), t('dash.in.progress'), 'var(--blue)')}
