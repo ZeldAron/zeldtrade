@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ['regEmail','regPassword','regPasswordConfirm','regUsername'].forEach(id => {
       const el = $(id); if (el) el.classList.remove('input-valid', 'input-invalid');
     });
+    // v0.9.287 : masque la barre de force du mot de passe
+    const pwdStrengthBox = $('pwdStrength'); if (pwdStrengthBox) pwdStrengthBox.style.display = 'none';
   }
 
   // v0.9.238 — validation temps réel sur signup (visuel uniquement, le check
@@ -78,13 +80,61 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const pwdEl = $('regPassword');
     const pwdConfEl = $('regPasswordConfirm');
+
+    // v0.9.287 (#audit) : politique = 8 caractères min + minuscule + MAJUSCULE +
+    // chiffre. La barre de force récompense la longueur et les caractères spéciaux.
+    function _pwdChecks(v) {
+      return {
+        len:     v.length >= 8,
+        lower:   /[a-z]/.test(v),
+        upper:   /[A-Z]/.test(v),
+        digit:   /\d/.test(v),
+        special: /[^a-zA-Z0-9]/.test(v),
+      };
+    }
+    function _pwdValid(c) { return c.len && c.lower && c.upper && c.digit; }
+    function _renderPwdMeter(v) {
+      const box = $('pwdStrength'), label = $('pwdStrengthLabel'),
+            reqs = $('pwdStrengthReqs'), fill = $('pwdStrengthFill');
+      const c = _pwdChecks(v);
+      const valid = _pwdValid(c);
+      if (!box || !label || !reqs || !fill) return valid;
+      if (!v) { box.style.display = 'none'; return false; }
+      box.style.display = '';
+      let score = 0;
+      if (c.len) score++;
+      if (v.length >= 12) score++;
+      if (c.lower && c.upper) score++;
+      if (c.digit) score++;
+      if (c.special) score++;            // bonus caractères spéciaux (@ & ! …)
+      if (v.length >= 16) score++;
+      let level = 1;
+      if (valid && score >= 5) level = 3;
+      else if (valid && score >= 4) level = 2;
+      box.setAttribute('data-level', String(level));
+      fill.className = 'lvl' + level;
+      const labels = { 1: 'Faible', 2: 'Fort', 3: 'Très fort' };
+      const colors = { 1: '#ef4444', 2: '#f59e0b', 3: '#22c55e' };
+      label.textContent = labels[level];
+      label.style.color = colors[level];
+      const miss = [];
+      if (!c.len)   miss.push('8 caractères');
+      if (!c.upper) miss.push('1 majuscule');
+      if (!c.lower) miss.push('1 minuscule');
+      if (!c.digit) miss.push('1 chiffre');
+      if (miss.length)        reqs.innerHTML = '<span class="pwd-req-miss">Manque : ' + miss.join(', ') + '</span>';
+      else if (!c.special)    reqs.innerHTML = '<span class="pwd-req-ok">✓ Valide</span> · un caractère spécial (@ ! &) le renforce';
+      else                    reqs.innerHTML = '<span class="pwd-req-ok">✓ Mot de passe solide</span>';
+      return valid;
+    }
+    _setupLiveValidation._renderPwdMeter = _renderPwdMeter;
+
     if (pwdEl && !pwdEl.dataset.liveBound) {
       pwdEl.dataset.liveBound = '1';
       pwdEl.addEventListener('input', () => {
         const v = pwdEl.value;
-        if (!v) return mark(pwdEl, null);
-        mark(pwdEl, v.length >= 10);
-        // Re-check confirm si rempli
+        if (!v) { mark(pwdEl, null); _renderPwdMeter(''); return; }
+        mark(pwdEl, _renderPwdMeter(v));
         if (pwdConfEl && pwdConfEl.value) {
           mark(pwdConfEl, pwdConfEl.value === v);
         }
@@ -481,9 +531,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!/^[a-zA-Z0-9_-]+$/.test(username))          { $('registerError').textContent = i18n.t('auth.err.username.chars')  || 'Le pseudo ne peut contenir que lettres, chiffres, _ et -.'; return; }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { $('registerError').textContent = i18n.t('auth.err.email') || 'Email invalide.'; return; }
     if (password !== passwordConfirm)  { $('registerError').textContent = i18n.t('auth.err.mismatch'); return; }
-    if (password.length < 10 || password.length > 128) { $('registerError').textContent = 'Le mot de passe doit faire entre 10 et 128 caractères.'; return; }
-    if (!/\d/.test(password))  { $('registerError').textContent = 'Le mot de passe doit contenir au moins un chiffre.'; return; }
-    if (!/[a-zA-Z]/.test(password)) { $('registerError').textContent = 'Le mot de passe doit contenir au moins une lettre.'; return; }
+    // v0.9.287 (#audit) : 8 caractères min + minuscule + MAJUSCULE + chiffre.
+    if (password.length < 8 || password.length > 128) { $('registerError').textContent = 'Le mot de passe doit faire entre 8 et 128 caractères.'; return; }
+    if (!/[a-z]/.test(password)) { $('registerError').textContent = 'Le mot de passe doit contenir au moins une minuscule.'; return; }
+    if (!/[A-Z]/.test(password)) { $('registerError').textContent = 'Le mot de passe doit contenir au moins une majuscule.'; return; }
+    if (!/\d/.test(password))    { $('registerError').textContent = 'Le mot de passe doit contenir au moins un chiffre.'; return; }
     // Rejet des mots de passe trop communs (top breachs)
     const COMMON_PASSWORDS = new Set([
       'password1','password12','password123','12345678910','azerty12345','qwerty12345',

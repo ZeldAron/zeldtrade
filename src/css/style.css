@@ -867,6 +867,35 @@ button:focus-visible {
 .form-input.input-valid:focus   { border-color: rgba(34,197,94,0.8); }
 .form-input.input-invalid:focus { border-color: rgba(239,68,68,0.8); }
 .form-input.mono { font-family: 'Geist Mono', monospace; }
+
+/* v0.9.287 — barre de force du mot de passe (#audit) */
+.pwd-strength { margin: -2px 0 10px; }
+.pwd-strength-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.pwd-strength-bar span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  transition: width 0.25s ease, background-color 0.25s ease;
+}
+.pwd-strength[data-level="1"] #pwdStrengthFill, .pwd-strength span.lvl1 { width: 33%;  background: #ef4444; }
+.pwd-strength[data-level="2"] #pwdStrengthFill, .pwd-strength span.lvl2 { width: 66%;  background: #f59e0b; }
+.pwd-strength[data-level="3"] #pwdStrengthFill, .pwd-strength span.lvl3 { width: 100%; background: #22c55e; }
+.pwd-strength-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 5px;
+}
+.pwd-strength-label { font-size: 11px; font-weight: 600; }
+.pwd-strength-reqs { font-size: 10.5px; color: var(--muted); text-align: right; line-height: 1.4; }
+.pwd-req-ok   { color: #22c55e; }
+.pwd-req-miss { color: var(--muted); }
 select.form-input { cursor: pointer; }
 textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 
