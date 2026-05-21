@@ -442,6 +442,7 @@
       letter-spacing: -0.035em;
       margin-bottom: 26px;
       color: var(--text);
+      overflow-wrap: anywhere;   /* v0.9.286 : jamais de clipping mobile (#audit) */
     }
     .hero-title span { display: block; }
     .hero-title .accent {
@@ -959,8 +960,8 @@
       padding: 18px 0;
       position: relative;
       overflow: hidden;
-      mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
-      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+      mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 14%, #000 86%, transparent 100%);
     }
     .firms-label {
       text-align: center;
@@ -2556,11 +2557,13 @@
       .pricing-card-price { font-size: 28px; }
       .firm-badge { padding: 10px 16px; min-width: 150px; }
       .firms-track { gap: 18px; }
+      /* v0.9.286 : le hero ne doit jamais déborder sur smartphone (#audit) */
+      .hero-title { font-size: clamp(32px, 9vw, 44px); line-height: 1.04; }
     }
     @media (max-width: 380px) {
       .stats-grid { grid-template-columns: 1fr; }
       .stat-cell { padding: 14px 10px; }
-      .hero-title { font-size: clamp(40px, 13vw, 60px); line-height: 1.0; }
+      .hero-title { font-size: clamp(26px, 7.5vw, 34px); line-height: 1.05; }
       .hero-sub { font-size: 13px; }
       .section-title { font-size: clamp(26px, 7vw, 34px); }
       .section { padding: 36px 14px; }
@@ -3577,7 +3580,7 @@
           <li>Support prioritaire (canal direct)</li>
           <li>Tout le plan Trader inclus</li>
         </ul>
-        <a href="/app" class="pricing-cta primary">Tester Funded 14 jours →</a>
+        <a href="/app" class="pricing-cta primary">Rejoindre la bêta gratuitement →</a>
       </div>
 
       <!-- Elite (29.99 €/mois) -->
@@ -3601,7 +3604,7 @@
           <li>Votes décisifs sur la roadmap — ta voix compte 5× plus</li>
           <li>Tout le plan Funded inclus</li>
         </ul>
-        <a href="/app" class="pricing-cta ghost-elite">Booster avec Elite →</a>
+        <a href="/app" class="pricing-cta ghost-elite">Rejoindre la bêta gratuitement →</a>
       </div>
     </div>
 
@@ -3693,7 +3696,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.285</span>
+      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.286</span>
     </div>
   </footer>
 
