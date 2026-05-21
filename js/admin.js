@@ -178,11 +178,11 @@ const Admin = (() => {
       const activated   = isPro ? formatDateShort(plan.activatedAt) : null;
       const lastSeenRel = formatRelative(u.lastSeen);
       const newsletter  = u.newsletterOptIn
-        ? '<span class="badge-news" title="Inscrit à la newsletter">📬</span>' : '';
+        ? '<span class="badge-news" title="Inscrit à la newsletter"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg></span>' : '';
 
       const deleteBtn = isSelf
-        ? '<button class="ico-btn" disabled title="Vous ne pouvez pas vous supprimer vous-même">🗑️</button>'
-        : `<button class="ico-btn ico-btn-red" data-action="delete" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Supprimer le compte">🗑️</button>`;
+        ? '<button class="ico-btn" disabled title="Vous ne pouvez pas vous supprimer vous-même"></button>'
+        : `<button class="ico-btn ico-btn-red" data-action="delete" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Supprimer le compte"></button>`;
 
       return `<tr>
         <td>
@@ -197,7 +197,7 @@ const Admin = (() => {
         <td class="cell-actions">
           <button class="ico-btn ico-btn-violet" data-action="gen"    data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Générer un code Bêta Testeur (accès complet)">🎟️</button>
           <button class="ico-btn ico-btn-violet" data-action="stripe" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Créer un lien de paiement Stripe">💳</button>
-          <button class="ico-btn ico-btn-blue"   data-action="verify" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Forcer email_verified=true">✉️</button>
+          <button class="ico-btn ico-btn-blue"   data-action="verify" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Forcer email_verified=true"></button>
           ${deleteBtn}
         </td>
       </tr>`;
@@ -229,7 +229,7 @@ const Admin = (() => {
         </select>
         <select id="fltNews" class="admin-flt">
           <option value="all"${_sel(_filterNews,'all')}>Newsletter : tous</option>
-          <option value="yes"${_sel(_filterNews,'yes')}>Inscrits 📬</option>
+          <option value="yes"${_sel(_filterNews,'yes')}>Inscrits </option>
           <option value="no"${_sel(_filterNews,'no')}>Non inscrits</option>
         </select>
         <select id="fltSource" class="admin-flt">
@@ -360,7 +360,7 @@ const Admin = (() => {
           <div class="cell-dates-seen">${formatRelative(c.createdAt)}</div>
         </td>
         <td class="cell-actions">
-          <button class="ico-btn ico-btn-red" data-action="revoke" data-id="${esc(c.id)}" data-uid="${esc(c.uid)}" data-email="${esc(c.email || '?')}" data-active="${c.isActive}" title="Révoquer ce code">🚫</button>
+          <button class="ico-btn ico-btn-red" data-action="revoke" data-id="${esc(c.id)}" data-uid="${esc(c.uid)}" data-email="${esc(c.email || '?')}" data-active="${c.isActive}" title="Révoquer ce code"></button>
         </td>
       </tr>`;
     }).join('');
@@ -636,13 +636,13 @@ const Admin = (() => {
     const btnAnalyze = document.createElement('button');
     btnAnalyze.className = 'btn-secondary';
     btnAnalyze.id = 'btnCleanupAnalyze';
-    btnAnalyze.textContent = '🔍 Analyser (dry-run)';
+    btnAnalyze.textContent = 'Analyser (dry-run)';
     btnRow.appendChild(btnAnalyze);
 
     const btnConfirm = document.createElement('button');
     btnConfirm.className = 'btn-danger';
     btnConfirm.id = 'btnCleanupConfirm';
-    btnConfirm.textContent = '🗑 Supprimer les orphelins';
+    btnConfirm.textContent = 'Supprimer les orphelins';
     btnConfirm.disabled = true;  // activé seulement après dry-run
     btnConfirm.style.opacity = '0.5';
     btnConfirm.title = 'Lance d\'abord l\'analyse';
@@ -689,7 +689,7 @@ const Admin = (() => {
         resultBox.textContent = '❌ Erreur : ' + ((e && e.message) || 'inconnue');
       } finally {
         btnAnalyze.disabled = false;
-        btnAnalyze.textContent = '🔍 Analyser (dry-run)';
+        btnAnalyze.textContent = 'Analyser (dry-run)';
       }
     });
 
@@ -721,7 +721,7 @@ const Admin = (() => {
       } finally {
         btnConfirm.disabled = true;
         btnConfirm.style.opacity = '0.5';
-        btnConfirm.textContent = '🗑 Supprimer les orphelins';
+        btnConfirm.textContent = 'Supprimer les orphelins';
       }
     });
 
@@ -745,7 +745,7 @@ const Admin = (() => {
     const btnVerify = document.createElement('button');
     btnVerify.className = 'btn-secondary';
     btnVerify.id = 'btnVerifyAll';
-    btnVerify.textContent = '✉️ Marquer tous les emails comme vérifiés';
+    btnVerify.textContent = 'Marquer tous les emails comme vérifiés';
     sectionVerify.appendChild(btnVerify);
 
     const resultV = document.createElement('div');
@@ -777,7 +777,7 @@ const Admin = (() => {
         resultV.textContent = '❌ Erreur : ' + ((e && e.message) || 'inconnue');
       } finally {
         btnVerify.disabled = false;
-        btnVerify.textContent = '✉️ Marquer tous les emails comme vérifiés';
+        btnVerify.textContent = 'Marquer tous les emails comme vérifiés';
       }
     });
   }

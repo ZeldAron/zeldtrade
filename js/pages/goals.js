@@ -237,18 +237,18 @@
     });
 
     const badges = [
-      { icon:'🎯', label:t('ach.first.label'),       desc:t('ach.first.desc'),       done: trades.length >= 1 },
-      { icon:'📊', label:t('ach.5.label'),            desc:t('ach.5.desc'),            done: trades.length >= 5 },
-      { icon:'📈', label:t('ach.10.label'),           desc:t('ach.10.desc'),           done: trades.length >= 10 },
-      { icon:'💰', label:t('ach.profitable.label'),   desc:t('ach.profitable.desc'),   done: s.totalPnL > 0 },
-      { icon:'⚡', label:t('ach.rr1.label'),          desc:t('ach.rr1.desc'),          done: s.avgRR >= 1.5 },
-      { icon:'🚀', label:t('ach.rr2.label'),          desc:t('ach.rr2.desc'),          done: s.avgRR >= 2.0 },
-      { icon:'🎖', label:t('ach.wr60.label'),         desc:t('ach.wr60.desc'),         done: closed.length >= 10 && (s.winRate || 0) >= 60 },
-      { icon:'🏅', label:t('ach.wr70.label'),         desc:t('ach.wr70.desc'),         done: closed.length >= 10 && (s.winRate || 0) >= 70 },
-      { icon:'🔥', label:t('ach.streak3.label'),      desc:t('ach.streak3.desc'),      done: maxConsec >= 3 },
-      { icon:'💥', label:t('ach.streak5.label'),      desc:t('ach.streak5.desc'),      done: maxConsec >= 5 },
-      { icon:'🛡', label:t('ach.disciplined.label'),  desc:t('ach.disciplined.desc'),  done: trades.length >= 5 && trades.every(tr => tr.setup && tr.setup.trim()) },
-      { icon:'📅', label:t('ach.week.label'),         desc:t('ach.week.desc'),         done: (() => { const days = new Set(trades.map(tr => UI.localDay(tr.date))); return days.size >= 5; })() },
+      { icon:Icons.svg('target',26),     label:t('ach.first.label'),       desc:t('ach.first.desc'),       done: trades.length >= 1 },
+      { icon:Icons.svg('barChart',26),   label:t('ach.5.label'),            desc:t('ach.5.desc'),            done: trades.length >= 5 },
+      { icon:Icons.svg('trendingUp',26), label:t('ach.10.label'),           desc:t('ach.10.desc'),           done: trades.length >= 10 },
+      { icon:Icons.svg('dollar',26),     label:t('ach.profitable.label'),   desc:t('ach.profitable.desc'),   done: s.totalPnL > 0 },
+      { icon:Icons.svg('zap',26),        label:t('ach.rr1.label'),          desc:t('ach.rr1.desc'),          done: s.avgRR >= 1.5 },
+      { icon:Icons.svg('rocket',26),     label:t('ach.rr2.label'),          desc:t('ach.rr2.desc'),          done: s.avgRR >= 2.0 },
+      { icon:Icons.svg('medal',26),      label:t('ach.wr60.label'),         desc:t('ach.wr60.desc'),         done: closed.length >= 10 && (s.winRate || 0) >= 60 },
+      { icon:Icons.svg('star',26),       label:t('ach.wr70.label'),         desc:t('ach.wr70.desc'),         done: closed.length >= 10 && (s.winRate || 0) >= 70 },
+      { icon:Icons.svg('flame',26),      label:t('ach.streak3.label'),      desc:t('ach.streak3.desc'),      done: maxConsec >= 3 },
+      { icon:Icons.svg('flame',26),      label:t('ach.streak5.label'),      desc:t('ach.streak5.desc'),      done: maxConsec >= 5 },
+      { icon:Icons.svg('shield',26),     label:t('ach.disciplined.label'),  desc:t('ach.disciplined.desc'),  done: trades.length >= 5 && trades.every(tr => tr.setup && tr.setup.trim()) },
+      { icon:Icons.svg('calendar',26),   label:t('ach.week.label'),         desc:t('ach.week.desc'),         done: (() => { const days = new Set(trades.map(tr => UI.localDay(tr.date))); return days.size >= 5; })() },
     ];
 
     const done = badges.filter(b => b.done).length;
@@ -277,7 +277,7 @@
     if (!accs.length) {
       el.innerHTML = `<div class="page-title">${t('page.goals')}</div>
         <div class="goal-card" style="text-align:center;padding:48px 24px">
-          <div style="font-size:32px;margin-bottom:12px">🎯</div>
+          <div style="margin-bottom:12px;color:var(--muted2)">${Icons.svg('target',40)}</div>
           <p style="color:var(--muted);margin-bottom:4px">${t('goals.no.accounts')}</p>
           <p style="font-size:12px;color:var(--muted2)">${t('goals.no.accounts.hint')}</p>
         </div>`;
@@ -289,7 +289,7 @@
     if (!trades.length) {
       el.innerHTML = `<div class="page-title">${t('page.goals')}</div>
         <div class="goal-card" style="text-align:center;padding:48px 24px">
-          <div style="font-size:32px;margin-bottom:12px">📊</div>
+          <div style="margin-bottom:12px;color:var(--muted2)">${Icons.svg('barChart',40)}</div>
           <p style="color:var(--text);font-size:15px;margin-bottom:6px"><strong>${t('goals.no.trades') || 'Aucun trade enregistré pour le moment'}</strong></p>
           <p style="font-size:13px;color:var(--muted);margin-bottom:18px;max-width:380px;margin-left:auto;margin-right:auto">${t('goals.no.trades.hint') || 'Ajoute ton premier trade pour voir ta progression sur les objectifs prop firm (profit target, drawdown, days traded).'}</p>
           <button class="btn-primary" data-cta="newtrade">+ ${t('btn.newtrade') || 'Nouveau trade'}</button>

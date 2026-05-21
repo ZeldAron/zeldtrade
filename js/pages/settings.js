@@ -83,15 +83,15 @@
             <div class="form-field" style="margin-bottom:12px">
               <label class="form-label">Type de compte</label>
               <select class="form-input" id="maAccountType">
-                <option value="prop">🏛️ Prop firm (Apex, Topstep, FTMO, Lucid, Funding Pips)</option>
-                <option value="personal">💰 Personnel (fonds propres, pas de règles prop firm)</option>
-                <option value="crypto">🪙 Crypto (Binance / Coinbase)</option>
+                <option value="prop">Prop firm — Apex, Topstep, FTMO, Lucid, Funding Pips</option>
+                <option value="personal">Fonds propres — mon capital, sans règles prop firm</option>
+                <option value="crypto">Crypto — Binance / Coinbase</option>
               </select>
             </div>
 
             <!-- v0.9.190 : champs crypto spécifiques (visible uniquement si accountType === 'crypto') -->
             <div class="maCryptoOnly" style="display:none;background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:12px 14px;margin-bottom:14px">
-              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-l);margin-bottom:10px;font-weight:600">🪙 Paramètres crypto</div>
+              <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-l);margin-bottom:10px;font-weight:600">Paramètres crypto</div>
               <div class="form-grid" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
                 <div class="form-field">
                   <label class="form-label">Plateforme</label>
@@ -122,7 +122,7 @@
                   <input class="form-input mono" type="number" step="0.001" id="maFeeTakerPct" placeholder="0.05">
                 </div>
               </div>
-              <p style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">💡 Defaults : Binance Futures 0.02/0.05%, Coinbase 0.40/0.60%. Saisis tes vraies fees selon ton niveau VIP / abonnement.</p>
+              <p style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.4">Defaults : Binance Futures 0.02/0.05%, Coinbase 0.40/0.60%. Saisis tes vraies fees selon ton niveau VIP / abonnement.</p>
             </div>
 
             <div class="form-grid form-grid-2" style="margin-bottom:10px">
@@ -153,7 +153,7 @@
                     <span class="plan-badge plan-pro">PRO</span>
                   </label>
                   <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1.5px solid rgba(124, 58, 237,0.2);border-radius:8px;cursor:pointer" id="btnUnlockPreset">
-                    <span style="font-size:15px">🔒</span>
+                    <span style="display:inline-flex;color:var(--accent-l)">${Icons.svg('lock',15)}</span>
                     <span style="font-size:12px;color:var(--muted);flex:1">${i18n.getLang()==='en'
                       ? 'Apex, Topstep, FTMO, Lucid presets — Pro only. Fill manually below.'
                       : 'Presets Apex, Topstep, FTMO, Lucid — Pro uniquement. Remplissez manuellement ci-dessous.'
@@ -222,7 +222,7 @@
           banner.className = 'upgrade-inline';
           banner.style.marginTop = '12px';
           banner.innerHTML = `
-            <div class="upgrade-inline-icon">🔒</div>
+            <div class="upgrade-inline-icon">${Icons.svg('lock',20)}</div>
             <div class="upgrade-inline-body">
               <div class="upgrade-inline-title">${isEn
                 ? `Account limit reached (${limit} on ${tierLabel})`
@@ -535,7 +535,7 @@
         <div class="settings-section settings-section--wide">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
             <h3 style="margin:0">${t('set.pf.title')}</h3>
-            <span style="font-size:10px;background:var(--border);color:var(--muted);padding:2px 8px;border-radius:99px;letter-spacing:0.06em">🔒 ${t('set.apex.locked')}</span>
+            <span style="font-size:10px;background:var(--border);color:var(--muted);padding:2px 8px;border-radius:99px;letter-spacing:0.06em">${t('set.apex.locked')}</span>
           </div>
           <div style="display:flex;gap:6px;margin:14px 0;flex-wrap:wrap">${tabs}</div>
           ${renderCards(activeKey)}
@@ -622,7 +622,7 @@
       <div class="settings-section settings-section--wide">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <h3 style="margin:0">Trading en fonds propres</h3>
-          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">💰 Mode libre</span>
+          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Mode libre</span>
         </div>
         <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:18px">Trader avec ton propre capital, sans règles prop firm imposées. Tu gardes 100% des gains, mais tu risques aussi 100% du capital — c'est ton choix de risk management qui prime.</p>
 
@@ -657,19 +657,19 @@
 
         <!-- Mention fiscale -->
         <div style="background:rgba(255,159,10,0.08);border:1px solid rgba(255,159,10,0.25);border-radius:8px;padding:14px 16px;margin-top:6px">
-          <div style="font-size:11px;color:var(--amber);font-weight:700;letter-spacing:0.4px;margin-bottom:8px">📊 FISCALITÉ FRANCE (à titre informatif)</div>
+          <div style="font-size:11px;color:var(--amber);font-weight:700;letter-spacing:0.4px;margin-bottom:8px">FISCALITÉ FRANCE (à titre informatif)</div>
           <div style="font-size:12px;color:var(--text2);line-height:1.6">
             En fonds propres en France, les <strong>plus-values mobilières</strong> sont imposées au PFU (Prélèvement Forfaitaire Unique) de <strong>30%</strong> (12.8% IR + 17.2% prélèvements sociaux) ou au barème progressif IR sur option globale.
             <br><br>
             Pour les <strong>futures et CFD</strong>, c'est le <strong>BIC non professionnel</strong> par défaut (régime micro-BIC ou réel). Sur option PFU 30% possible si le trading est non-habituel.
             <br><br>
-            <em style="color:var(--muted);font-size:11px">⚠️ Ces infos sont indicatives. Consulte un expert-comptable pour ta situation personnelle. Le statut "trader pro" demande des conditions strictes (régularité, volume, principal moyen de subsistance).</em>
+            <em style="color:var(--muted);font-size:11px">Ces infos sont indicatives. Consulte un expert-comptable pour ta situation personnelle. Le statut "trader pro" demande des conditions strictes (régularité, volume, principal moyen de subsistance).</em>
           </div>
         </div>
 
         <!-- Roadmap -->
         <div style="background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:14px 16px;margin-top:14px">
-          <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">🚀 ROADMAP</div>
+          <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">ROADMAP</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.55">
             Import automatique des trades depuis l'API broker (NinjaTrader, Tradovate, IB API). Suivi multi-courtiers depuis un seul écran. Calculateur fiscal intégré avec génération du formulaire 2074.
           </div>
@@ -766,12 +766,12 @@
       <div class="settings-section settings-section--wide">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <h3 style="margin:0">Référentiel Crypto</h3>
-          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">🔒 Paramètres officiels — verrouillés</span>
+          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Paramètres officiels — verrouillés</span>
         </div>
         <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:18px">Plateformes crypto supportées et leurs frais types. Ces valeurs sont indicatives — ajuste les fees maker/taker dans tes comptes selon ton niveau VIP / Coinbase One / discounts BNB.</p>
         ${Object.entries(PLATFORMS).map(([k, p]) => renderPlatformCard(k, p)).join('')}
         <div style="background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:14px 16px;margin-top:6px">
-          <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">🚀 ROADMAP</div>
+          <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">ROADMAP</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.55">
             Plateformes prévues : Bybit, Hyperliquid, OKX. Mode marge croisée pour Binance. Suivi des positions multi-paires depuis l'API exchange (autoimport).
           </div>
@@ -1263,7 +1263,7 @@
         await user.reload();
         _refreshEmailVerifyStatus();
         if (user.emailVerified) {
-          UI.toast(t('set.email.verify.confirmed') || 'Email vérifié ! 🎉');
+          UI.toast(t('set.email.verify.confirmed') || 'Email vérifié !');
         } else {
           UI.toast(t('set.email.verify.notyet') ||
             'Pas encore vérifié — clique sur le lien dans ton email.', true);

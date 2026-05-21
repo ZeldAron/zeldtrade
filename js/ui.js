@@ -237,7 +237,7 @@ const UI = (() => {
         const en = i18n.getLang() === 'en';
         panel.innerHTML = `
           <div class="onboarding-card">
-            <div class="onb-hi">👋</div>
+            <div class="onb-hi" style="color:var(--accent)">${Icons.svg('wave',40)}</div>
             <h2 class="onb-title">${en ? 'Welcome to ZeldTrade' : 'Bienvenue sur ZeldTrade'}</h2>
             <p class="onb-sub">${en ? 'Your prop-firm trading journal — 3 steps to get started:' : 'Ton journal de trading prop firm — 3 étapes pour démarrer :'}</p>
             <div class="onb-steps">
@@ -349,7 +349,7 @@ const UI = (() => {
       : (t.screenshotPath ? [t.screenshotPath] : []);
     const screenshotCard = shotPaths.length
       ? `<div class="info-card" style="margin-top:14px">
-           <h4 style="margin-bottom:10px">📸 Captures (${shotPaths.length})</h4>
+           <h4 style="margin-bottom:10px;display:flex;align-items:center;gap:7px">${Icons.svg('camera',16)} Captures (${shotPaths.length})</h4>
            <div class="trade-shots-gallery" style="display:grid;grid-template-columns:repeat(${shotPaths.length === 1 ? 1 : 'auto-fit,minmax(180px,1fr)'});gap:10px">
              ${shotPaths.map((p, i) => `
                <div class="trade-screenshot-wrap" data-shot-idx="${i}" style="position:relative;background:var(--bg-deeper,#0a0a0a);border-radius:8px;overflow:hidden;cursor:zoom-in;min-height:160px;display:flex;align-items:center;justify-content:center">
