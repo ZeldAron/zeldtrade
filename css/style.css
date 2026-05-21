@@ -436,6 +436,25 @@ body {
 
 .topbar-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; flex: 1; }
 
+/* v0.9.270 — bouton aide (?) dans l'en-tête (Guide sorti de la nav) */
+.topbar-help-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+.topbar-help-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--active-bg); }
+
 .search-wrap {
   display: flex;
   align-items: center;
@@ -3840,11 +3859,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 
 /* Sidebar upgrade CTA — visible only for Basic users */
 .sidebar-upgrade {
-  margin: 0 10px 10px;
-  padding: 12px;
-  background: linear-gradient(135deg, rgba(16, 185, 129,0.13), rgba(109,40,217,0.07));
-  border: 1px solid rgba(16, 185, 129,0.28);
-  border-radius: var(--r);
+  margin: 0 12px 10px;
 }
 .sidebar-upgrade-text {
   font-size: 10.5px;
@@ -3945,7 +3960,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   align-items: center;
   gap: 14px;
   padding: 14px 18px;
-  background: linear-gradient(135deg, rgba(16, 185, 129,0.1), rgba(109,40,217,0.06));
+  background: linear-gradient(135deg, rgba(16, 185, 129,0.1), rgba(16, 185, 129,0.06));
   border: 1px solid rgba(16, 185, 129,0.22);
   border-radius: var(--r);
   margin-bottom: 20px;
@@ -3976,7 +3991,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   align-items: center;
   gap: 16px;
   padding: 16px 20px;
-  background: linear-gradient(135deg, rgba(16, 185, 129,0.14), rgba(109,40,217,0.08));
+  background: linear-gradient(135deg, rgba(16, 185, 129,0.14), rgba(16, 185, 129,0.08));
   border: 1px solid rgba(16, 185, 129,0.3);
   border-radius: 12px;
   margin-bottom: 28px;

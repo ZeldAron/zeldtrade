@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.270',
+      date: '2026-05-21',
+      time: '07:00',
+      tags: ['feature'],
+      title: 'Interface épurée : navigation et réglages simplifiés',
+      titleEn: 'Cleaner interface: simplified nav & settings',
+      items: [
+        { type: 'feature', text: 'Réglages : les 6 onglets sont regroupés en 3 plus clairs (Mes comptes · Règles & marchés · Général). Le « Guide » quitte le menu pour un bouton « ? » discret dans l\'en-tête. Et l\'encart d\'upgrade est réduit à un simple bouton. Moins de bruit, plus de clarté.', textEn: 'Settings: the 6 tabs are grouped into 3 clearer ones (My accounts · Rules & markets · General). The "Guide" leaves the menu for a discreet "?" button in the header. And the upgrade box is now a simple button. Less noise, more clarity.' },
+      ],
+    },
+    {
       version: '0.9.269',
       date: '2026-05-21',
       time: '06:00',
