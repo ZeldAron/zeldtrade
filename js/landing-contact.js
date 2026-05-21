@@ -33,7 +33,11 @@
     fn.httpsCallable('getPublicStats')()
       .then((res) => {
         const target = Math.max(0, parseInt(res && res.data && res.data.userCount, 10) || 0);
-        if (target <= 0) return;            // rien à montrer si 0
+        // v0.9.287 (#audit) : on n'affiche le compteur qu'à partir de 10 inscrits.
+        // En dessous, un petit chiffre est un signal social faible + prête à
+        // confusion avec « 5 dernières places Founding ». On garde alors le seul
+        // badge « Bêta ouverte ».
+        if (target < 10) return;
         box.style.display = 'inline-flex';
         // Count-up animé (~900ms, ease-out)
         const duration = 900;

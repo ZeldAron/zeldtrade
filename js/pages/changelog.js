@@ -5,6 +5,18 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.287',
+      date: '2026-05-21',
+      time: '16:00',
+      tags: ['feature', 'ui'],
+      title: 'Mot de passe : nouvelle politique + barre de force',
+      titleEn: 'Password: new policy + strength meter',
+      items: [
+        { type: 'feature', text: 'Création de compte : le mot de passe demande maintenant 8 caractères minimum avec au moins une minuscule, une majuscule et un chiffre. Une barre de force s\'affiche en temps réel et se renforce quand tu ajoutes des caractères spéciaux (@ ! & …).', textEn: 'Sign-up: passwords now require at least 8 characters with one lowercase, one uppercase and one digit. A live strength meter shows and grows stronger as you add special characters (@ ! & …).' },
+        { type: 'ui', text: 'Finitions issues d\'un audit UX : titre d\'accueil lisible sur petits mobiles, libellés clarifiés, contraste amélioré, et mentions légales harmonisées.', textEn: 'UX audit polish: homepage title readable on small phones, clearer labels, improved contrast, and harmonized legal notice.' },
+      ],
+    },
+    {
       version: '0.9.286',
       date: '2026-05-21',
       time: '15:00',
