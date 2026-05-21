@@ -206,8 +206,40 @@ document.addEventListener('DOMContentLoaded', () => {
           planBadge.textContent = b.label;
           planBadge.className   = 'plan-badge ' + b.cls;
         }
+        // v0.9.275 (F1/F2) : profil de trading non renseigné → modale 1er login
+        if (Store.getTradingTypes && !Store.getTradingTypes()) _showTradingProfileModal();
       } catch {}
     }, { once: true });
+  }
+
+  // v0.9.275 (F1/F2) — modale « profil de trading » (1er login, nouveaux + existants).
+  // Stocke tradingTypes dans le doc settings → adapte l'UI (masque prop firm / crypto).
+  function _showTradingProfileModal() {
+    const modal = document.getElementById('tradingProfileModal');
+    const form  = document.getElementById('tradingProfileForm');
+    const err   = document.getElementById('tpmError');
+    if (!modal || !form) return;
+    // Ne pas empiler avec une autre modale bloquante (vérif email / consent RGPD) :
+    // elle se ré-affichera au prochain chargement une fois celle-ci résolue.
+    const isUp = el => el && el.style.display && el.style.display !== 'none';
+    if (isUp(document.getElementById('verifyEmailGate')) || isUp(document.getElementById('consentModal'))) return;
+    modal.style.display = 'flex';
+    if (form.dataset.bound) return;
+    form.dataset.bound = '1';
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const checked = [...modal.querySelectorAll('.tp-choice:checked')].map(c => c.value);
+      if (!checked.length) {
+        if (err) err.textContent = i18n.getLang() === 'en' ? 'Pick at least one option.' : 'Choisis au moins une option.';
+        return;
+      }
+      const btn = document.getElementById('btnTradingProfileSubmit');
+      if (btn) btn.disabled = true;
+      try { Store.updateSettings({ tradingTypes: checked }); } catch {}
+      modal.style.display = 'none';
+      try { UI.initSettings(); } catch {}
+      try { window.dispatchEvent(new CustomEvent('store:profileChanged')); } catch {}
+    });
   }
 
   // v0.9.150 — Affiche la consent modal et attend que l'user soumette le form.

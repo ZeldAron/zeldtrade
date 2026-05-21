@@ -46,10 +46,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=0.9.273">
+  <link rel="stylesheet" href="css/style.css?v=0.9.275">
   <!-- v0.9.255 : theme manager en TÊTE du head — applique data-theme="light"
        AVANT le parsing du body pour éviter le FOUC (flash dark → light). -->
-  <script src="js/theme.js?v=0.9.273"></script>
+  <script src="js/theme.js?v=0.9.275"></script>
 </head>
 <body>
 
@@ -180,6 +180,32 @@
         </div>
         <div class="login-error" id="consentError"></div>
         <button type="submit" class="login-btn" id="btnConsentSubmit" data-i18n="consent.submit">Continuer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══ PROFIL DE TRADING (F1/F2 v0.9.275) — modale 1er login (nouveaux + existants) ══ -->
+  <div id="tradingProfileModal" class="consent-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="tpmTitle">
+    <div class="consent-modal-box">
+      <h2 id="tpmTitle" class="consent-title" data-i18n="tpm.title">Tu trades sur quoi ?</h2>
+      <p class="consent-intro" data-i18n="tpm.intro">Pour adapter ZeldTrade à ta façon de trader. Tu peux cocher plusieurs réponses et le modifier à tout moment dans les Réglages.</p>
+      <form id="tradingProfileForm" autocomplete="off">
+        <div class="consent-checks consent-checks-modal">
+          <label class="consent-check">
+            <input type="checkbox" class="tp-choice" value="propFirm">
+            <span class="consent-label" data-i18n="tpm.propfirm" data-i18n-html="true"><strong>Prop firm</strong> — Apex, Topstep, FTMO… (règles : drawdown, daily loss)</span>
+          </label>
+          <label class="consent-check">
+            <input type="checkbox" class="tp-choice" value="fundsOwn">
+            <span class="consent-label" data-i18n="tpm.fundsown" data-i18n-html="true"><strong>Fonds propres</strong> — mon propre capital, sans règles externes</span>
+          </label>
+          <label class="consent-check">
+            <input type="checkbox" class="tp-choice" value="crypto">
+            <span class="consent-label" data-i18n="tpm.crypto" data-i18n-html="true"><strong>Crypto</strong> — Binance, Coinbase… (BTC, ETH…)</span>
+          </label>
+        </div>
+        <div class="login-error" id="tpmError"></div>
+        <button type="submit" class="login-btn" id="btnTradingProfileSubmit" data-i18n="tpm.submit">Continuer</button>
       </form>
     </div>
   </div>
@@ -562,6 +588,18 @@
             </div>
           </div>
 
+          <!-- v0.9.275 (F1/F2) : profil de trading éditable -->
+          <div class="settings-section">
+            <h3 data-i18n="set.profile.title">Mon profil de trading</h3>
+            <p style="font-size:12px;color:var(--muted);margin:-6px 0 14px;line-height:1.5" data-i18n="set.profile.hint">Adapte l'app à ta pratique. Coche ce que tu fais — l'interface masque ce qui ne te concerne pas.</p>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <label class="consent-check"><input type="checkbox" class="set-tp-choice" value="propFirm"><span class="consent-label" data-i18n="tpm.propfirm" data-i18n-html="true"><strong>Prop firm</strong> — Apex, Topstep, FTMO…</span></label>
+              <label class="consent-check"><input type="checkbox" class="set-tp-choice" value="fundsOwn"><span class="consent-label" data-i18n="tpm.fundsown" data-i18n-html="true"><strong>Fonds propres</strong> — mon propre capital</span></label>
+              <label class="consent-check"><input type="checkbox" class="set-tp-choice" value="crypto"><span class="consent-label" data-i18n="tpm.crypto" data-i18n-html="true"><strong>Crypto</strong> — Binance, Coinbase…</span></label>
+            </div>
+            <button class="btn-primary" id="btnSaveProfile" style="margin-top:14px" data-i18n="set.profile.save">Enregistrer mon profil</button>
+          </div>
+
           <div class="settings-section">
             <h3 data-i18n="set.lang">Langue</h3>
             <div class="settings-row">
@@ -680,7 +718,7 @@
 
           <div class="settings-section">
             <h3 data-i18n="set.about">À propos</h3>
-            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px">0.9.273</span></div>
+            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px">0.9.275</span></div>
             <div class="settings-row"><label data-i18n="set.stack">Stack</label><span style="color:var(--muted);font-size:12px">HTML · CSS · JS vanilla</span></div>
           </div>
         </div>
@@ -960,29 +998,29 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js" integrity="sha384-oFrOL1TiREYNET0lsYF3LjQuyi2gL7vhjH1X8vFr+umcmzAdPELopeSgbcrv4uRm" crossorigin="anonymous"></script>
-  <script src="js/firebase.js?v=0.9.273"></script>
+  <script src="js/firebase.js?v=0.9.275"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" defer></script>
-  <script src="js/i18n.js?v=0.9.273"></script>
+  <script src="js/i18n.js?v=0.9.275"></script>
   <script src="js/lib/jspdf.umd.min.js?v=3.0.1" defer></script>
-  <script src="js/auth.js?v=0.9.273"></script>
-  <script src="js/store.js?v=0.9.273"></script>
-  <script src="js/calc.js?v=0.9.273"></script>
-  <script src="js/modal.js?v=0.9.273"></script>
-  <script src="js/ui.js?v=0.9.273"></script>
-  <script src="js/pages/dashboard.js?v=0.9.273"></script>
-  <script src="js/pages/analytics.js?v=0.9.273"></script>
-  <script src="js/pages/export-pdf.js?v=0.9.273"></script>
-  <script src="js/pages/settings.js?v=0.9.273"></script>
-  <script src="js/pages/goals.js?v=0.9.273"></script>
-  <script src="js/pages/calendar.js?v=0.9.273"></script>
-  <script src="js/pages/micro.js?v=0.9.273"></script>
-  <script src="js/pages/outils.js?v=0.9.273"></script>
-  <script src="js/pages/offers.js?v=0.9.273"></script>
-  <script src="js/contact.js?v=0.9.273"></script>
-  <script src="js/app.js?v=0.9.273"></script>
+  <script src="js/auth.js?v=0.9.275"></script>
+  <script src="js/store.js?v=0.9.275"></script>
+  <script src="js/calc.js?v=0.9.275"></script>
+  <script src="js/modal.js?v=0.9.275"></script>
+  <script src="js/ui.js?v=0.9.275"></script>
+  <script src="js/pages/dashboard.js?v=0.9.275"></script>
+  <script src="js/pages/analytics.js?v=0.9.275"></script>
+  <script src="js/pages/export-pdf.js?v=0.9.275"></script>
+  <script src="js/pages/settings.js?v=0.9.275"></script>
+  <script src="js/pages/goals.js?v=0.9.275"></script>
+  <script src="js/pages/calendar.js?v=0.9.275"></script>
+  <script src="js/pages/micro.js?v=0.9.275"></script>
+  <script src="js/pages/outils.js?v=0.9.275"></script>
+  <script src="js/pages/offers.js?v=0.9.275"></script>
+  <script src="js/contact.js?v=0.9.275"></script>
+  <script src="js/app.js?v=0.9.275"></script>
 
-  <script src="js/app-bootstrap.js?v=0.9.273"></script>
+  <script src="js/app-bootstrap.js?v=0.9.275"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent
