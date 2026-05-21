@@ -185,6 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     appLaunched = true;
+    if (window.Analytics && Analytics.pingVisit) Analytics.pingVisit();
     Store.initForUser(user.id);
     $('userPillName').textContent = user.username;
     $('userAvatar').textContent   = user.username[0].toUpperCase();
