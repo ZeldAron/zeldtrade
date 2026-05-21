@@ -865,32 +865,33 @@
 
     /* ── Section générique ─────────────────────────────────────────────── */
     .section {
-      max-width: 880px;
+      max-width: 1040px;
       margin: 0 auto;
-      padding: 60px 24px;
+      padding: 84px 24px;
     }
     .section-eyebrow {
-      font-size: 11px;
+      font-size: 12px;
       color: var(--accent-l);
       text-transform: uppercase;
-      letter-spacing: 2px;
+      letter-spacing: 0.16em;
       text-align: center;
-      margin-bottom: 10px;
-      font-weight: 600;
+      margin-bottom: 14px;
+      font-weight: 700;
     }
     .section-title {
-      font-size: clamp(20px, 2vw, 26px);
-      font-weight: 700;
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 800;
       text-align: center;
-      letter-spacing: -0.5px;
-      margin-bottom: 12px;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      margin-bottom: 14px;
     }
     .section-sub {
-      font-size: 13px;
+      font-size: 15px;
       color: var(--muted);
       text-align: center;
-      max-width: 560px;
-      margin: 0 auto 40px;
+      max-width: 620px;
+      margin: 0 auto 48px;
       line-height: 1.6;
     }
 
@@ -2558,7 +2559,7 @@
       .stat-cell { padding: 14px 10px; }
       .hero-title { font-size: clamp(40px, 13vw, 60px); line-height: 1.0; }
       .hero-sub { font-size: 13px; }
-      .section-title { font-size: 22px; }
+      .section-title { font-size: clamp(26px, 7vw, 34px); }
       .section { padding: 36px 14px; }
       .ba-list li, .pillar-desc, .usecase-pain, .usecase-fix { font-size: 12px; }
       .pricing-card { padding: 20px 16px; }
@@ -2608,7 +2609,8 @@
         <a href="#vs" class="nav-link">Comparer</a>
         <a href="#value" class="nav-link">ROI</a>
         <a href="#pricing" class="nav-link">Tarifs</a>
-        <a href="/app" class="btn btn-ghost btn-sm">Se connecter</a>
+        <a href="/app" class="btn btn-ghost btn-sm">Connexion</a>
+        <a href="/app" class="btn btn-primary btn-sm">Créer un compte</a>
       </div>
       <button type="button" class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navLinks">
         <span></span>
@@ -3688,7 +3690,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.281</span>
+      © 2026 ZeldTrade — <span style="color: var(--accent-l)">v0.9.282</span>
     </div>
   </footer>
 
