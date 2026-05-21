@@ -76,8 +76,8 @@ UI.renderOffers = function () {
   const cardFunded = `
     <div class="offer-card offer-pro ${isFunded ? 'offer-current' : ''}">
       <div class="offer-badge-pro">${isBeta ? 'BÊTA ✨' : t('off.popular')}</div>
-      <div class="offer-badge-current" style="opacity:${isFunded ? 1 : 0};color:#34d399">${t('off.current')}</div>
-      <div class="offer-name" style="color:#34d399">Funded</div>
+      <div class="offer-badge-current" style="opacity:${isFunded ? 1 : 0};color:#a78bfa">${t('off.current')}</div>
+      <div class="offer-name" style="color:#a78bfa">Funded</div>
       <div class="offer-tag">${t('off.funded.tag')}</div>
       <div class="offer-price-hidden">
         <span data-price-monthly>14,99 €<span class="offer-price-suffix">/${t('off.month')}</span></span>
@@ -187,7 +187,7 @@ UI.renderOffers = function () {
         <div class="pro-code-error" id="proCodeError"></div>
         <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">
           ${t('off.no.code')}
-          <span style="color:#34d399;cursor:pointer;font-weight:600" id="btnGoContact">${t('off.contact.us')}</span>
+          <span style="color:#a78bfa;cursor:pointer;font-weight:600" id="btnGoContact">${t('off.contact.us')}</span>
         </div>
       </div>`;
 
