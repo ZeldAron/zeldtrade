@@ -68,7 +68,7 @@
   const fr = (navigator.language || '').toLowerCase().indexOf('fr') === 0;
   const banner = document.createElement('div');
   banner.setAttribute('role', 'status');
-  banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;max-width:92%;background:#16161c;color:#fff;border:1px solid rgba(16, 185, 129,0.55);border-radius:12px;padding:14px 18px;font-size:14px;line-height:1.4;box-shadow:0 10px 34px rgba(0,0,0,0.45);display:flex;align-items:center;gap:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  banner.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:99999;max-width:92%;background:#16161c;color:#fff;border:1px solid rgba(124, 58, 237,0.55);border-radius:12px;padding:14px 18px;font-size:14px;line-height:1.4;box-shadow:0 10px 34px rgba(0,0,0,0.45);display:flex;align-items:center;gap:12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
   const msg = document.createElement('span');
   msg.textContent = '✓ ' + (fr
     ? 'Ton compte et toutes tes données ont été supprimés. À bientôt 👋'

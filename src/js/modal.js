@@ -1174,7 +1174,7 @@ const Modal = (() => {
     });
 
     // Drag & drop
-    el.addEventListener('dragover', (e) => { e.preventDefault(); el.style.borderColor = 'var(--accent)'; el.style.background = 'rgba(16, 185, 129,0.05)'; });
+    el.addEventListener('dragover', (e) => { e.preventDefault(); el.style.borderColor = 'var(--accent)'; el.style.background = 'rgba(124, 58, 237,0.05)'; });
     el.addEventListener('dragleave', () => { el.style.borderColor = ''; el.style.background = ''; });
     el.addEventListener('drop', (e) => {
       e.preventDefault();
@@ -1889,7 +1889,7 @@ const Modal = (() => {
       shotZone.addEventListener('dragover', e => {
         e.preventDefault();
         shotZone.style.borderColor = 'var(--purple-l)';
-        shotZone.style.background  = 'rgba(16, 185, 129,0.05)';
+        shotZone.style.background  = 'rgba(124, 58, 237,0.05)';
       });
       shotZone.addEventListener('dragleave', () => {
         shotZone.style.borderColor = '';
