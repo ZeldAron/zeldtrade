@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.286',
+      date: '2026-05-21',
+      time: '15:00',
+      tags: ['fix', 'ui'],
+      title: 'Corrections issues d\'un audit UX (landing + inscription)',
+      titleEn: 'UX audit fixes (landing + signup)',
+      items: [
+        { type: 'fix', text: 'Inscription : messages d\'erreur explicites (email invalide, mot de passe trop court, mots de passe différents, règles du pseudo) au lieu d\'un simple liseré rouge. Ajout des attributs d\'accessibilité pour les lecteurs d\'écran.', textEn: 'Sign-up: explicit error messages (invalid email, password too short, passwords don\'t match, username rules) instead of just a red border. Added accessibility attributes for screen readers.' },
+        { type: 'fix', text: 'Mobile : le titre d\'accueil ne déborde plus de l\'écran sur les petits smartphones.', textEn: 'Mobile: the homepage title no longer overflows the screen on small phones.' },
+        { type: 'ui', text: 'Landing : libellés des plans clarifiés pendant la bêta (« Rejoindre la bêta gratuitement »), fondu du bandeau prop firms adouci, et mentions légales harmonisées.', textEn: 'Landing: plan buttons clarified during beta ("Join the beta for free"), prop-firm strip fade softened, and legal notice harmonized.' },
+      ],
+    },
+    {
       version: '0.9.285',
       date: '2026-05-21',
       time: '14:00',

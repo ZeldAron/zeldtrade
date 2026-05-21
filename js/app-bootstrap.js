@@ -54,6 +54,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!el) return;
       el.classList.toggle('input-valid',   valid === true);
       el.classList.toggle('input-invalid', valid === false);
+      // v0.9.286 : accessibilité — annonce l'état invalide aux lecteurs d'écran (#audit)
+      if (valid === false) el.setAttribute('aria-invalid', 'true');
+      else el.removeAttribute('aria-invalid');
     }
     const emailEl = $('regEmail');
     if (emailEl && !emailEl.dataset.liveBound) {
