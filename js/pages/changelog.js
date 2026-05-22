@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.310',
+      date: '2026-05-23',
+      time: '03:00',
+      tags: ['fix'],
+      title: 'Paires crypto affichées avec un compte crypto',
+      titleEn: 'Crypto pairs shown with a crypto account',
+      items: [
+        { type: 'fix', text: 'Quand tu sélectionnes un compte Crypto dans un trade, la liste d\'instruments affiche enfin les bonnes paires (BTC, ETH, SOL, BNB…) au lieu des futures (S&P, Gold…). Un bug faisait chercher ton compte au mauvais endroit et affichait toujours les futures.', textEn: 'When you select a Crypto account in a trade, the instrument list finally shows the right pairs (BTC, ETH, SOL, BNB…) instead of futures (S&P, Gold…). A bug looked up your account in the wrong place and always showed futures.' },
+      ],
+    },
+    {
       version: '0.9.309',
       date: '2026-05-23',
       time: '02:30',
