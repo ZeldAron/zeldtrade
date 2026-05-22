@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.299',
+      date: '2026-05-22',
+      time: '23:00',
+      tags: ['fix'],
+      title: 'Passage Funded → Elite en 1 clic (page de confirmation directe)',
+      titleEn: 'Funded → Elite upgrade in 1 click (direct confirmation page)',
+      items: [
+        { type: 'fix', text: 'Choisir un autre plan quand tu es déjà abonné t\'emmène désormais DIRECTEMENT sur la page Stripe de confirmation du changement (montant proratisé affiché), au lieu de t\'ouvrir le portail où il fallait chercher « Changer d\'offre » (option que Stripe cachait si ton abonnement était en cours de résiliation). Le cycle (mensuel/annuel) est conservé automatiquement.', textEn: 'Choosing another plan when you\'re already subscribed now takes you STRAIGHT to the Stripe change-confirmation page (prorated amount shown), instead of the portal where you had to find "Switch plan" (an option Stripe hid if your subscription was being canceled). Your billing cycle (monthly/yearly) is kept automatically.' },
+      ],
+    },
+    {
       version: '0.9.298',
       date: '2026-05-22',
       time: '19:00',

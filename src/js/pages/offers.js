@@ -284,7 +284,10 @@ UI.renderOffers = function () {
         const o0 = btn.textContent;
         btn.disabled = true; btn.textContent = '…';
         try {
-          const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({});
+          // v0.9.299 : on passe le palier cible → la CF crée une session qui
+          // DEEP-LINK direct sur la page Stripe « confirmer le passage à <tier> »
+          // (plus besoin de chercher « Changer d'offre » dans le menu du portail).
+          const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({ flowToTier: tier });
           if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
           UI.toast(t('off.changeplan') || 'Pour changer de plan, gère ton abonnement (Réglages → Gérer mon abonnement).', true);
         } catch (e) {
