@@ -5,6 +5,18 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.296',
+      date: '2026-05-22',
+      time: '17:00',
+      tags: ['ui', 'fix'],
+      title: 'Mes comptes : compteur X/Y + feedback clair à la limite',
+      titleEn: 'My accounts: X/Y counter + clear limit feedback',
+      items: [
+        { type: 'ui', text: 'Le nombre de comptes utilisés s\'affiche désormais (ex. 7/10) dans Réglages → Mes comptes, pour anticiper la limite de ton plan.', textEn: 'The number of accounts used now shows (e.g. 7/10) in Settings → My accounts, so you can anticipate your plan\'s limit.' },
+        { type: 'fix', text: 'Quand la limite de comptes est atteinte, cliquer « + Ajouter un compte » affiche maintenant un message clair et fait défiler vers l\'offre d\'upgrade (avant : le clic ne donnait aucun retour).', textEn: 'When the account limit is reached, clicking "+ Add account" now shows a clear message and scrolls to the upgrade offer (before: the click gave no feedback).' },
+      ],
+    },
+    {
       version: '0.9.294',
       date: '2026-05-22',
       time: '16:00',
