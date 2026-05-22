@@ -268,6 +268,25 @@ UI.renderOffers = function () {
           UI.toast(t('off.checkout.err') || 'Service de paiement indisponible — recharge la page.', true);
           return;
         }
+        // v0.9.297 (#bug upgrade) : si l'utilisateur a DÉJÀ un abonnement Stripe actif,
+        // on NE crée PAS un nouveau checkout (ça créerait une 2e souscription / double
+        // facturation, d'où le 503). Un changement de plan (Funded ↔ Elite) passe par
+        // le PORTAIL client Stripe (proratisation gérée par Stripe).
+        const _s = (Store.getStripeInfo && Store.getStripeInfo()) || {};
+        const _hasActiveSub = _s.customerId && _s.subscriptionStatus
+          && !['canceled', 'incomplete_expired', 'incomplete'].includes(_s.subscriptionStatus);
+        if (_hasActiveSub) {
+          const o0 = btn.textContent;
+          btn.disabled = true; btn.textContent = '…';
+          try {
+            const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({});
+            if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+            UI.toast(t('off.changeplan') || 'Pour changer de plan, gère ton abonnement (Réglages → Gérer mon abonnement).', true);
+          } catch (e) {
+            UI.toast(t('off.changeplan') || 'Pour changer de plan, va dans Réglages → Gérer mon abonnement.', true);
+          } finally { btn.disabled = false; btn.textContent = o0; }
+          return;
+        }
         const original = btn.textContent;
         btn.disabled = true;
         btn.textContent = '…';
