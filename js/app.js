@@ -254,16 +254,25 @@ function initApp() {
 
   // Badge plan + sidebar upgrade CTA
   function refreshPlanUI() {
+    // v0.9.314 : tant que le plan n'est pas résolu depuis Firestore (~1 s), on affiche
+    // un placeholder neutre au lieu de « BASIC » → fini le flash au rechargement.
+    const loaded     = (typeof Store.isPlanLoaded === 'function') ? Store.isPlanLoaded() : true;
     const pro        = Store.isPro();
     const planBadge  = $('planBadge');
     const upgradeBlock = $('sidebarUpgrade');
     if (planBadge) {
-      const b = Store.getTierBadge();
-      planBadge.textContent = b.label;
-      planBadge.className   = 'plan-badge ' + b.cls;
+      if (!loaded) {
+        planBadge.textContent = '…';
+        planBadge.className    = 'plan-badge plan-loading';
+      } else {
+        const b = Store.getTierBadge();
+        planBadge.textContent = b.label;
+        planBadge.className    = 'plan-badge ' + b.cls;
+      }
     }
     if (upgradeBlock) {
-      upgradeBlock.style.display = pro ? 'none' : 'block';
+      // pendant le chargement on cache aussi le CTA upgrade (sinon il flashe pour un Pro)
+      upgradeBlock.style.display = (loaded && !pro) ? 'block' : 'none';
     }
   }
   refreshPlanUI();
