@@ -822,13 +822,17 @@ const Modal = (() => {
       row.className = 'partial-row';
       row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:center';
       row.innerHTML = `
-        <input class="form-input mono partial-lots"  type="number" step="any" min="0" lang="en" inputmode="decimal" placeholder="ex: 2"    value="${p.lots != null ? p.lots : ''}">
-        <input class="form-input mono partial-price" type="number" step="any"        lang="en" inputmode="decimal" placeholder="ex: 7194" value="${p.price != null ? p.price : ''}">
+        <input class="form-input mono partial-lots"  type="number" step="any" min="0" lang="en" inputmode="decimal" placeholder="ex: 2">
+        <input class="form-input mono partial-price" type="number" step="any"        lang="en" inputmode="decimal" placeholder="ex: 7194">
         <button type="button" class="btn-ghost partial-remove" style="padding:6px;font-size:14px;color:var(--red)" aria-label="Supprimer cette sortie">✕</button>
       `;
       list.appendChild(row);
       const lotsInp  = row.querySelector('.partial-lots');
       const priceInp = row.querySelector('.partial-price');
+      // v0.9.291 (audit) : valeurs posées via .value (propriété DOM) et non par
+      // interpolation HTML d'attribut → aucun risque de breakout d'attribut.
+      lotsInp.value  = (p.lots  != null ? p.lots  : '');
+      priceInp.value = (p.price != null ? p.price : '');
       const removeBtn= row.querySelector('.partial-remove');
       const onInput = () => {
         _partials[i].lots  = lotsInp.value.trim()  !== '' ? parseFloat(lotsInp.value)  : null;

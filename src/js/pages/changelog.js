@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.291',
+      date: '2026-05-22',
+      time: '12:00',
+      tags: ['security'],
+      title: 'Renforcement de sécurité (audit complet)',
+      titleEn: 'Security hardening (full audit)',
+      items: [
+        { type: 'security', text: 'Suite à un audit de sécurité complet (règles, serveur, interface) : protections anti-spam et anti-abus renforcées côté serveur, et nettoyage défensif côté interface. Aucun impact sur ton utilisation — aucune faille critique n\'a été trouvée.', textEn: 'Following a full security audit (rules, backend, UI): stronger server-side anti-spam/anti-abuse protections and defensive cleanup in the UI. No impact on your usage — no critical vulnerability was found.' },
+      ],
+    },
+    {
       version: '0.9.290',
       date: '2026-05-22',
       time: '11:00',

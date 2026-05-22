@@ -460,8 +460,8 @@
         <div class="account-card">
           <div class="ac-header">
             <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
-              <span class="ac-name" style="font-weight:700;font-size:13px">${a.size}</span>
-              ${a.subType ? `<span style="font-size:9px;color:var(--accent-l);font-weight:700;letter-spacing:0.7px;text-transform:uppercase">${a.subType}</span>` : ''}
+              <span class="ac-name" style="font-weight:700;font-size:13px">${UI.escHtml(a.size)}</span>
+              ${a.subType ? `<span style="font-size:9px;color:var(--accent-l);font-weight:700;letter-spacing:0.7px;text-transform:uppercase">${UI.escHtml(a.subType)}</span>` : ''}
             </div>
             ${ddBadge(a.drawdownType)}
           </div>
@@ -485,7 +485,7 @@
           </div>
           <div class="ac-field">
             <span class="ac-label">${t('set.pf.dd.type')}</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${a.drawdownType}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${UI.escHtml(a.drawdownType)}</span>
           </div>
           <div class="ac-field">
             <span class="ac-label">${t('set.pf.min.days')}</span>
@@ -493,11 +493,11 @@
           </div>
           <div class="ac-field">
             <span class="ac-label">${t('set.pf.consistency')}</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${a.consistency}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${UI.escHtml(a.consistency)}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
             <span class="ac-label" style="padding-top:2px">${t('set.pf.payout')}</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:58%;line-height:1.4">${a.payoutConditions}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:58%;line-height:1.4">${UI.escHtml(a.payoutConditions)}</span>
           </div>
         </div>
       `;
@@ -514,7 +514,7 @@
         return order.map(sub => `
           <div class="pf-subgroup" style="margin-bottom:18px">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)">
-              <h4 style="margin:0;font-size:14px;font-weight:600;color:var(--text)">${firm.name} ${sub}</h4>
+              <h4 style="margin:0;font-size:14px;font-weight:600;color:var(--text)">${UI.escHtml(firm.name)} ${UI.escHtml(sub)}</h4>
               <span style="font-size:10px;color:var(--muted2);text-transform:uppercase;letter-spacing:0.5px">${groups[sub].length} taille${groups[sub].length > 1 ? 's' : ''}</span>
             </div>
             <div class="accounts-grid">${groups[sub].map(renderCard).join('')}</div>
@@ -528,7 +528,7 @@
     function render(activeKey) {
       const tabs = FIRM_ORDER
         .filter(k => firms[k])
-        .map(k => `<button class="chip${activeKey === k ? ' active' : ''}" data-pf-tab="${k}">${firms[k].name}</button>`)
+        .map(k => `<button class="chip${activeKey === k ? ' active' : ''}" data-pf-tab="${k}">${UI.escHtml(firms[k].name)}</button>`)
         .join('');
 
       el.innerHTML = `
