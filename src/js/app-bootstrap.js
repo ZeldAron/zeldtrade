@@ -254,14 +254,18 @@ document.addEventListener('DOMContentLoaded', () => {
     Store.initForUser(user.id);
     $('userPillName').textContent = user.username;
     $('userAvatar').textContent   = user.username[0].toUpperCase();
-    // Fade-out du loader uniquement (landingScreen supprimé v0.9.114)
-    if (loader) {
-      loader.style.transition = 'opacity 0.45s ease';
-      loader.style.opacity    = '0';
-      setTimeout(() => { loader.style.display = 'none'; }, 450);
-    }
-    initApp();
-    window.addEventListener('store:synced', () => {
+    initApp();   // rend l'app DERRIÈRE le loader plein écran (encore visible) → invisible
+
+    // v0.9.315 : on GARDE le loader plein écran jusqu'à ce que les données soient
+    // chargées (Firestore résolu) → fini le dashboard à moitié rempli pendant ~1 s.
+    // Avant : le loader disparaissait à 450 ms, bien avant l'arrivée des données.
+    // store:planChanged fire TOUJOURS (finally du Store, même hors-ligne/erreur) ; on
+    // double avec store:synced + un fallback timeout pour ne jamais bloquer le loader.
+    const _loaderT0 = Date.now();
+    let _appRevealed = false;
+    function _doReveal() {
+      if (_appRevealed) return;
+      _appRevealed = true;
       try {
         UI.renderList();
         UI.updateStats();
@@ -272,10 +276,24 @@ document.addEventListener('DOMContentLoaded', () => {
           planBadge.textContent = b.label;
           planBadge.className   = 'plan-badge ' + b.cls;
         }
-        // v0.9.275 (F1/F2) : profil de trading non renseigné → modale 1er login
-        if (Store.getTradingTypes && !Store.getTradingTypes()) _showTradingProfileModal();
       } catch {}
-    }, { once: true });
+      if (loader) {
+        loader.style.transition = 'opacity 0.45s ease';
+        loader.style.opacity    = '0';
+        setTimeout(() => { loader.style.display = 'none'; }, 450);
+      }
+      // v0.9.275 (F1/F2) : profil de trading non renseigné → modale 1er login
+      try { if (Store.getTradingTypes && !Store.getTradingTypes()) _showTradingProfileModal(); } catch {}
+    }
+    function revealApp() {
+      // min 700 ms d'affichage (évite un flash de loader si Firestore répond très vite)
+      const elapsed = Date.now() - _loaderT0;
+      if (elapsed < 700) { setTimeout(revealApp, 700 - elapsed); return; }
+      _doReveal();
+    }
+    window.addEventListener('store:planChanged', revealApp, { once: true });
+    window.addEventListener('store:synced',      revealApp, { once: true });
+    setTimeout(revealApp, 5000);   // fallback : ne jamais laisser le loader bloqué
   }
 
   // v0.9.275 (F1/F2) — modale « profil de trading » (1er login, nouveaux + existants).
