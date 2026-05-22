@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.290',
+      date: '2026-05-22',
+      time: '11:00',
+      tags: ['feature'],
+      title: 'La capture analysée devient la 1ʳᵉ capture du trade',
+      titleEn: 'The analyzed screenshot becomes the trade\'s first screenshot',
+      items: [
+        { type: 'feature', text: 'L\'image que tu colles pour l\'analyse IA est désormais enregistrée automatiquement comme 1ʳᵉ capture du trade — tu la vois directement dans la section captures, sans la re-déposer. Tu peux toujours ajouter 2 captures de plus (ex : sortie, gestion) → 3 au total.', textEn: 'The image you paste for AI analysis is now automatically saved as the trade\'s first screenshot — you see it right away in the screenshots section, no need to re-drop it. You can still add 2 more (e.g. exit, management) → 3 total.' },
+      ],
+    },
+    {
       version: '0.9.289',
       date: '2026-05-22',
       time: '10:00',
