@@ -258,62 +258,66 @@ UI.renderOffers = function () {
         });
       });
     });
-
-    // ── v0.9.255 : Checkout Stripe self-service ──────────────────────────────
-    el.querySelectorAll('[data-checkout-tier]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const tier = btn.getAttribute('data-checkout-tier');   // 'funded' | 'elite'
-        const plan = `${tier}_${_billingCycle}`;                // ex 'funded_monthly'
-        if (typeof _fbFunctions === 'undefined' || !_fbFunctions) {
-          UI.toast(t('off.checkout.err') || 'Service de paiement indisponible — recharge la page.', true);
-          return;
-        }
-        // v0.9.297 (#bug upgrade) : si l'utilisateur a DÉJÀ un abonnement Stripe actif,
-        // on NE crée PAS un nouveau checkout (ça créerait une 2e souscription / double
-        // facturation, d'où le 503). Un changement de plan (Funded ↔ Elite) passe par
-        // le PORTAIL client Stripe (proratisation gérée par Stripe).
-        const _s = (Store.getStripeInfo && Store.getStripeInfo()) || {};
-        const _hasActiveSub = _s.customerId && _s.subscriptionStatus
-          && !['canceled', 'incomplete_expired', 'incomplete'].includes(_s.subscriptionStatus);
-        if (_hasActiveSub) {
-          const o0 = btn.textContent;
-          btn.disabled = true; btn.textContent = '…';
-          try {
-            const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({});
-            if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
-            UI.toast(t('off.changeplan') || 'Pour changer de plan, gère ton abonnement (Réglages → Gérer mon abonnement).', true);
-          } catch (e) {
-            UI.toast(t('off.changeplan') || 'Pour changer de plan, va dans Réglages → Gérer mon abonnement.', true);
-          } finally { btn.disabled = false; btn.textContent = o0; }
-          return;
-        }
-        const original = btn.textContent;
-        btn.disabled = true;
-        btn.textContent = '…';
-        if (window.Analytics) Analytics.track('checkout_started', { label: plan });
-        try {
-          const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan });
-          if (res && res.data && res.data.url) {
-            window.location.href = res.data.url;   // redirection vers Stripe Checkout
-            return;                                 // pas de reset (on quitte la page)
-          }
-          UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
-        } catch (e) {
-          const code = (e && (e.code || e.message)) || '';
-          if (/unauthenticated/.test(code)) {
-            UI.toast(t('off.checkout.login') || 'Connecte-toi pour souscrire.', true);
-          } else if (/failed-precondition/.test(code)) {
-            UI.toast(t('off.checkout.verify') || 'Vérifie ton email avant de souscrire.', true);
-          } else {
-            UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
-          }
-        } finally {
-          btn.disabled = false;
-          btn.textContent = original;
-        }
-      });
-    });
   }
+
+  // ── Checkout Stripe self-service (v0.9.255) ────────────────────────────────
+  // v0.9.298 (#bug upgrade) : ce binding était à tort DANS `if (!pro)`, donc le
+  // bouton « Choisir Elite » d'un abonné Funded n'avait aucun handler (clic mort,
+  // ni console, ni réseau). On le sort : un abonné actif est routé vers le
+  // portail client Stripe pour changer de plan ; un visiteur libre va au checkout.
+  el.querySelectorAll('[data-checkout-tier]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const tier = btn.getAttribute('data-checkout-tier');   // 'funded' | 'elite'
+      const plan = `${tier}_${_billingCycle}`;                // ex 'funded_monthly'
+      if (typeof _fbFunctions === 'undefined' || !_fbFunctions) {
+        UI.toast(t('off.checkout.err') || 'Service de paiement indisponible — recharge la page.', true);
+        return;
+      }
+      // v0.9.297 (#bug upgrade) : si l'utilisateur a DÉJÀ un abonnement Stripe actif,
+      // on NE crée PAS un nouveau checkout (ça créerait une 2e souscription / double
+      // facturation, d'où le 503). Un changement de plan (Funded ↔ Elite) passe par
+      // le PORTAIL client Stripe (proratisation gérée par Stripe).
+      const _s = (Store.getStripeInfo && Store.getStripeInfo()) || {};
+      const _hasActiveSub = _s.customerId && _s.subscriptionStatus
+        && !['canceled', 'incomplete_expired', 'incomplete'].includes(_s.subscriptionStatus);
+      if (_hasActiveSub) {
+        const o0 = btn.textContent;
+        btn.disabled = true; btn.textContent = '…';
+        try {
+          const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({});
+          if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+          UI.toast(t('off.changeplan') || 'Pour changer de plan, gère ton abonnement (Réglages → Gérer mon abonnement).', true);
+        } catch (e) {
+          UI.toast(t('off.changeplan') || 'Pour changer de plan, va dans Réglages → Gérer mon abonnement.', true);
+        } finally { btn.disabled = false; btn.textContent = o0; }
+        return;
+      }
+      const original = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '…';
+      if (window.Analytics) Analytics.track('checkout_started', { label: plan });
+      try {
+        const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan });
+        if (res && res.data && res.data.url) {
+          window.location.href = res.data.url;   // redirection vers Stripe Checkout
+          return;                                 // pas de reset (on quitte la page)
+        }
+        UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
+      } catch (e) {
+        const code = (e && (e.code || e.message)) || '';
+        if (/unauthenticated/.test(code)) {
+          UI.toast(t('off.checkout.login') || 'Connecte-toi pour souscrire.', true);
+        } else if (/failed-precondition/.test(code)) {
+          UI.toast(t('off.checkout.verify') || 'Vérifie ton email avant de souscrire.', true);
+        } else {
+          UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
+        }
+      } finally {
+        btn.disabled = false;
+        btn.textContent = original;
+      }
+    });
+  });
 
   // ── Founding apply button → contact bubble ─────────────────────────────────
   const foundingBtn = document.getElementById('btnFoundingApply');
