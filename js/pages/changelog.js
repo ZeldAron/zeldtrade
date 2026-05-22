@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.313',
+      date: '2026-05-23',
+      time: '04:15',
+      tags: ['ui'],
+      title: 'Interface simplifiée (spreads masqués)',
+      titleEn: 'Simplified interface (spreads hidden)',
+      items: [
+        { type: 'ui', text: 'La configuration et l\'affichage des spreads ont été retirés de l\'interface pour la rendre plus claire. Le calcul de tes résultats reste identique.', textEn: 'Spread configuration and display were removed from the interface to keep it cleaner. Your results calculation stays the same.' },
+      ],
+    },
+    {
       version: '0.9.312',
       date: '2026-05-23',
       time: '03:45',
