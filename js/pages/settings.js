@@ -68,7 +68,9 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
             <div style="display:flex;align-items:center;gap:8px">
               <h3 style="margin:0">${t('set.accounts')}</h3>
-              ${!Store.isPro() ? `<span class="plan-badge plan-basic" style="font-size:9px">Basic · 1 max</span>` : ''}
+              ${!Store.isPro()
+                ? `<span class="plan-badge plan-basic" style="font-size:9px">Basic · 1 max</span>`
+                : `<span style="font-size:11px;color:var(--muted);font-weight:500" title="${t('set.accounts')}">${myAccs.length}/${Store.getLimits().maxAccounts === Infinity ? '∞' : Store.getLimits().maxAccounts}</span>`}
             </div>
             <button class="btn-ghost" id="btnAddMyAccount">${t('set.acc.add')}</button>
           </div>
@@ -214,28 +216,35 @@
           const limit = Store.getLimits().maxAccounts;
           const tierLabel = tier === 'trader' ? 'Trader' : tier === 'funded' ? 'Funded' : 'Elite';
           const nextTier = tier === 'trader' ? 'Funded (10 comptes)' : 'Elite (100 comptes)';
-          // Show inline upgrade banner instead of toast
-          const existing = document.getElementById('accLimitBanner');
-          if (existing) { existing.remove(); return; }
-          const banner = document.createElement('div');
-          banner.id = 'accLimitBanner';
-          banner.className = 'upgrade-inline';
-          banner.style.marginTop = '12px';
-          banner.innerHTML = `
-            <div class="upgrade-inline-icon">${Icons.svg('lock',20)}</div>
-            <div class="upgrade-inline-body">
-              <div class="upgrade-inline-title">${isEn
-                ? `Account limit reached (${limit} on ${tierLabel})`
-                : `Limite atteinte (${limit} compte${limit > 1 ? 's' : ''} sur ${tierLabel})`}</div>
-              <div class="upgrade-inline-sub">${isEn
-                ? `Upgrade to ${nextTier} to manage more challenges at once.`
-                : `Passe au plan ${nextTier} pour gérer plus de comptes simultanément.`}</div>
-            </div>
-            <button class="upgrade-inline-btn" id="btnUpgradeAccounts">${isEn ? 'Upgrade →' : 'Voir les offres →'}</button>`;
-          document.getElementById('maList').after(banner);
-          document.getElementById('btnUpgradeAccounts').addEventListener('click', () => {
-            document.querySelector('[data-page="offers"]').click();
-          });
+          // v0.9.296 (#audit) : feedback CLAIR au clic quand la limite est atteinte.
+          // Avant : un 2e clic SUPPRIMAIT le bandeau → impression de « rien ne se passe ».
+          // Maintenant : on affiche (ou réutilise) le bandeau, on scrolle dessus + toast.
+          let banner = document.getElementById('accLimitBanner');
+          if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'accLimitBanner';
+            banner.className = 'upgrade-inline';
+            banner.style.marginTop = '12px';
+            banner.innerHTML = `
+              <div class="upgrade-inline-icon">${Icons.svg('lock',20)}</div>
+              <div class="upgrade-inline-body">
+                <div class="upgrade-inline-title">${isEn
+                  ? `Account limit reached (${limit} on ${tierLabel})`
+                  : `Limite atteinte (${limit} compte${limit > 1 ? 's' : ''} sur ${tierLabel})`}</div>
+                <div class="upgrade-inline-sub">${isEn
+                  ? `Upgrade to ${nextTier} to manage more challenges at once.`
+                  : `Passe au plan ${nextTier} pour gérer plus de comptes simultanément.`}</div>
+              </div>
+              <button class="upgrade-inline-btn" id="btnUpgradeAccounts">${isEn ? 'Upgrade →' : 'Voir les offres →'}</button>`;
+            document.getElementById('maList').after(banner);
+            document.getElementById('btnUpgradeAccounts').addEventListener('click', () => {
+              document.querySelector('[data-page="offers"]').click();
+            });
+          }
+          banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          UI.toast(isEn
+            ? `Account limit reached (${limit} on ${tierLabel}) — see Offers to upgrade.`
+            : `Limite atteinte (${limit} compte${limit > 1 ? 's' : ''} sur ${tierLabel}) — passe à ${nextTier}.`, true);
           return;
         }
         $('maFormTitle').textContent = t('set.acc.new');
