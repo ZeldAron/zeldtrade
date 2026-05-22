@@ -1356,7 +1356,10 @@
     try { renderPropFirmsSettings(); }  catch(e) { console.error('[Settings] propfirms error:', e); }
     try { renderPersonalSettings(); }   catch(e) { console.error('[Settings] personal error:', e); }
     try { renderCryptoSettings(); }     catch(e) { console.error('[Settings] crypto error:', e); }
-    try { renderSpreadsSettings(); }    catch(e) { console.error('[Settings] spreads error:', e); }
+    // v0.9.313 : spreads MASQUÉS aux utilisateurs — on ne rend plus la section
+    // (valeurs par défaut toujours appliquées au calcul P&L côté Store). Pour réactiver :
+    // remettre `renderSpreadsSettings();`.
+    try { const _spEl = $('settingsSpreads'); if (_spEl) { _spEl.style.display = 'none'; _spEl.innerHTML = ''; } } catch(e) {}
 
     // v0.9.275 (F1/F2) : adapte « Règles & marchés » au profil de trading.
     // Profil non renseigné (null) → on montre tout (défaut).
