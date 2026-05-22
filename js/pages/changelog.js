@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.298',
+      date: '2026-05-22',
+      time: '19:00',
+      tags: ['fix'],
+      title: 'Bouton « Choisir Elite » réparé pour les abonnés',
+      titleEn: '"Choose Elite" button fixed for subscribers',
+      items: [
+        { type: 'fix', text: 'Quand tu es déjà abonné (ex. Funded), le bouton « Choisir Elite » fonctionne enfin : il ouvre ton espace « Gérer mon abonnement » pour passer au plan supérieur. Avant, le clic était totalement sans effet pour les abonnés (un détail technique empêchait le bouton de réagir).', textEn: 'When you\'re already subscribed (e.g. Funded), the "Choose Elite" button finally works: it opens your "Manage subscription" portal to upgrade. Before, the click did nothing at all for subscribers (a technical detail kept the button from reacting).' },
+      ],
+    },
+    {
       version: '0.9.297',
       date: '2026-05-22',
       time: '18:00',
