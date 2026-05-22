@@ -270,6 +270,12 @@ function initApp() {
   $('btnSidebarUpgrade')?.addEventListener('click', () => switchPage('offers'));
   $('btnTopbarHelp')?.addEventListener('click', () => switchPage('tutorial'));
   UI.initNotifs && UI.initNotifs();   // v0.9.304 : centre de notifications (cloche topbar)
+  // v0.9.309 : version affichée (Réglages → À propos) lue du changelog → jamais périmée
+  try {
+    const _vEntry = (window.Changelog && Changelog.getEntries && Changelog.getEntries()[0]) || null;
+    const _vEl = document.getElementById('appVersionLabel');
+    if (_vEntry && _vEntry.version && _vEl) _vEl.textContent = _vEntry.version;
+  } catch {}
   _applySubtitle(currentPage);
   if (window.Analytics) Analytics.page(currentPage);
   window.addEventListener('store:planChanged', () => {
