@@ -684,8 +684,8 @@ const Admin = (() => {
     }
   }
 
-  // ── Config Groq — DÉPRÉCIÉE depuis v0.9.82 ───────────────────────────────────
-  // La clé Groq est désormais stockée dans Google Secret Manager et utilisée
+  // ── Config IA — DÉPRÉCIÉE depuis v0.9.82 ───────────────────────────────────
+  // La clé IA est désormais stockée dans Google Secret Manager et utilisée
   // exclusivement par la Cloud Function `analyzeChart`. Plus aucune lecture
   // ni écriture client (rules Firestore : `allow read, write: if false`).
   async function renderConfig() {
@@ -694,21 +694,21 @@ const Admin = (() => {
     wrap.textContent = '';
 
     // Section 1 — Clés API IA (admin info)
-    const sectionGroq = document.createElement('div');
-    sectionGroq.style.cssText = 'max-width:560px;margin-bottom:32px';
-    sectionGroq.innerHTML = `
+    const sectionAI = document.createElement('div');
+    sectionAI.style.cssText = 'max-width:560px;margin-bottom:32px';
+    sectionAI.innerHTML = `
       <h3 style="margin:0 0 6px;font-size:15px">Clés API IA Vision</h3>
       <p style="font-size:12px;color:var(--muted);line-height:1.6">
         Les clés des fournisseurs IA tiers sont dans <strong>Google Secret Manager</strong>, utilisées uniquement par
         la Cloud Function <code>analyzeChart</code>. Jamais exposées au client.
       </p>
       <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:14px;font-family:monospace;font-size:12px;color:var(--muted);line-height:1.7">
-        # IA standard (Groq Llama 4) :<br>
+        # IA standard (modèle vision) :<br>
         <span style="color:var(--text)">firebase functions:secrets:set GROQ_API_KEY</span><br><br>
         # IA avancée (Anthropic Claude) :<br>
         <span style="color:var(--text)">firebase functions:secrets:set CLAUDE_API_KEY</span>
       </div>`;
-    wrap.appendChild(sectionGroq);
+    wrap.appendChild(sectionAI);
 
     // Section 2 — Cleanup userEmails orphelins
     const sectionCleanup = document.createElement('div');

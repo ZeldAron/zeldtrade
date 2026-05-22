@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.292',
+      date: '2026-05-22',
+      time: '14:00',
+      tags: ['infra'],
+      title: 'Nettoyage technique interne',
+      titleEn: 'Internal technical cleanup',
+      items: [
+        { type: 'infra', text: 'Harmonisation du nommage interne du moteur d\'analyse (cohérence du code) et mise à jour de la documentation technique. Aucun changement visible côté utilisation.', textEn: 'Harmonized the internal naming of the analysis engine (code consistency) and updated the technical documentation. No visible change on your end.' },
+      ],
+    },
+    {
       version: '0.9.291',
       date: '2026-05-22',
       time: '12:00',

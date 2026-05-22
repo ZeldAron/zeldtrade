@@ -62,11 +62,11 @@ const Modal = (() => {
     badge.style.color      = d === 'long' ? 'var(--green)' : 'var(--red)';
     badge.style.background = d === 'long' ? 'var(--green-dim)' : 'var(--red-dim)';
     goToStep(2);
-    const groqBadge = $('groqStatusBadge');
-    if (groqBadge) {
+    const aiBadge = $('aiStatusBadge');
+    if (aiBadge) {
       // Avec la Cloud Function, l'IA est toujours disponible côté serveur
-      groqBadge.textContent = i18n.t('modal.groq.active');
-      groqBadge.style.color = 'var(--green)';
+      aiBadge.textContent = i18n.t('modal.ai.active');
+      aiBadge.style.color = 'var(--green)';
     }
     setTimeout(() => $('wDropZone').focus?.(), 150);
   }
@@ -241,8 +241,8 @@ const Modal = (() => {
     return { tp1: min, entry: mid, sl: max };
   }
 
-  // ── Groq Vision API (via Cloud Function — clé API jamais exposée au client) ──
-  async function analyzeWithGroq(imageB64, _unusedApiKey, direction) {
+  // ── IA Vision API (via Cloud Function — clé API jamais exposée au client) ──
+  async function analyzeWithAI(imageB64, _unusedApiKey, direction) {
     const isLong = direction !== 'short';
     // v0.9.220 — Prompt insiste sur les LABELS d'ORDRES (LMT/STP/SL/TP/OCO)
     // + gestion des screenshots split-screen (Sierra Chart, multi-monitor setup).
@@ -283,14 +283,14 @@ const Modal = (() => {
       `Respond with ONLY this JSON on one line:\n` +
       `{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER}`;
 
-    // v0.9.217 — Retiré llama-3.2-vision-preview (deprecated par Groq, retourne 404).
+    // v0.9.217 — Retiré llama-3.2-vision-preview (deprecated par IA, retourne 404).
     // Llama 4 Scout/Maverick sont les modèles vision officiels en GA.
-    const GROQ_MODELS = [
+    const AI_MODELS = [
       'meta-llama/llama-4-scout-17b-16e-instruct',
       'meta-llama/llama-4-maverick-17b-128e-instruct',
     ];
 
-    // Appel via Cloud Function (clé Groq côté serveur, quota enforce côté serveur)
+    // Appel via Cloud Function (clé IA côté serveur, quota enforce côté serveur)
     if (!_fbFunctions) throw new Error('Service IA indisponible — recharge la page.');
 
     // v0.9.160 : hybride Turnstile + rate-limit IP.
@@ -303,11 +303,11 @@ const Modal = (() => {
     const callable = _fbFunctions.httpsCallable('analyzeChart');
     let lastError = null;
     // v0.9.216 — Garde le meilleur résultat partiel (1 ou 2 valeurs) pour fallback
-    // si AUCUN modèle Groq n'arrive à détecter les 3 niveaux complets.
+    // si AUCUN modèle IA n'arrive à détecter les 3 niveaux complets.
     let bestPartial = null;
     const _partialScore = r => (r ? (r.entry ? 1 : 0) + (r.sl ? 1 : 0) + (r.tp1 ? 1 : 0) : 0);
 
-    for (const model of GROQ_MODELS) {
+    for (const model of AI_MODELS) {
       let data;
       try {
         const result = await callable({ model, prompt, imageB64, turnstileToken });
@@ -316,15 +316,15 @@ const Modal = (() => {
         lastError = e;
         const code = e.code || '';
         const msg  = e.message || '';
-        console.warn('[Groq via CF] error for', model, ':', code, msg, e);
+        console.warn('[IA via CF] error for', model, ':', code, msg, e);
         if (code === 'functions/unauthenticated' || code === 'unauthenticated')
           throw new Error('Tu dois être connecté pour analyser un screenshot.');
         if (code === 'functions/resource-exhausted' || code === 'resource-exhausted')
           throw new Error(msg || 'Limite quotidienne atteinte. Passe Pro pour des analyses illimitées.');
         if (code === 'functions/failed-precondition' || code === 'failed-precondition')
           // v0.9.141 : afficher le vrai message serveur (email non vérifié,
-          // captcha invalide, etc.) au lieu du mapping erroné "Clé Groq invalide"
-          // qui datait de l'époque où la clé Groq était côté client.
+          // captcha invalide, etc.) au lieu du mapping erroné "Clé IA invalide"
+          // qui datait de l'époque où la clé IA était côté client.
           throw new Error(msg || 'Action non autorisée — vérifie ton compte.');
         if (code === 'functions/invalid-argument' || code === 'invalid-argument')
           throw new Error('Requête invalide : ' + msg);
@@ -376,7 +376,7 @@ const Modal = (() => {
           return result;
         }
         // v0.9.216 — Si seulement 1-2 valeurs détectées, on garde comme fallback
-        // et on essaye le modèle suivant (peut-être qu'un autre modèle Groq lit les 3).
+        // et on essaye le modèle suivant (peut-être qu'un autre modèle IA lit les 3).
         if (_partialScore(result) > _partialScore(bestPartial)) {
           bestPartial = result;
         }
@@ -393,14 +393,14 @@ const Modal = (() => {
     if (lastError) {
       throw new Error('IA : ' + (lastError.message || lastError.code || 'erreur inconnue'));
     }
-    throw new Error(i18n.t('modal.groq.nomodel'));
+    throw new Error(i18n.t('modal.ai.nomodel'));
   }
 
   // ── Claude Vision via Cloud Function (fallback pour screenshots complexes) ──
-  // v0.9.222 — Gated server-side aux tiers Funded/Elite/Beta (Trader = Groq only).
+  // v0.9.222 — Gated server-side aux tiers Funded/Elite/Beta (Trader = IA only).
   async function analyzeWithClaude(imageB64, direction) {
     const isLong = direction !== 'short';
-    // Même prompt que Groq (déjà optimisé v0.9.220)
+    // Même prompt que IA (déjà optimisé v0.9.220)
     const prompt =
       `You are reading a trading chart screenshot (TradingView, NinjaTrader, Sierra Chart, MT4/MT5, cTrader, ThinkorSwim, Quantower, ATAS, or similar platforms).\n` +
       `This is a ${isLong ? 'LONG' : 'SHORT'} trade.\n\n` +
@@ -434,7 +434,7 @@ const Modal = (() => {
         // Tier insuffisant — déjà filtré côté client mais double safety
         return null;
       }
-      // Réseau ou autre → on retourne null, le client gardera le résultat Groq partiel
+      // Réseau ou autre → on retourne null, le client gardera le résultat IA partiel
       return null;
     }
 
@@ -455,7 +455,7 @@ const Modal = (() => {
         if (!isNaN(v) && isFinite(v) && v > 0) out[key] = v;
       }
     }
-    // Tri direction-aware (même logique que Groq)
+    // Tri direction-aware (même logique que IA)
     const triplet = [out.entry, out.sl, out.tp1];
     const reordered = _sortLevelsByDirection(triplet, isLong);
     if (reordered) {
@@ -481,7 +481,7 @@ const Modal = (() => {
     const textHint = ($('wTextHint').value || '').trim();
 
     statusEl.style.display  = 'block';
-    statusEl.innerHTML      = `<span style="color:var(--muted)">${i18n.t('modal.groq.analyzing')}</span>`;
+    statusEl.innerHTML      = `<span style="color:var(--muted)">${i18n.t('modal.ai.analyzing')}</span>`;
     $('wBtnNext2').disabled = true;
     $('wAnalysisResult').style.display = 'none';
     retryBtn.style.display  = 'none';
@@ -504,7 +504,7 @@ const Modal = (() => {
       }
 
       // v0.9.223 — Force Claude direct si l'user clique "Réanalyser" (opt-in fallback explicite).
-      // Sinon route normale : Groq d'abord + fallback Claude auto si Groq raté.
+      // Sinon route normale : IA d'abord + fallback Claude auto si IA raté.
       const _scoreResult = r => r ? ((r.entry ? 1 : 0) + (r.sl ? 1 : 0) + (r.tp1 ? 1 : 0)) : 0;
       const _isAberrantTrade = (r) => {
         if (!r || !r.entry || !r.sl || !r.tp1) return false;
@@ -517,7 +517,7 @@ const Modal = (() => {
 
       let result;
       if (_forceClaude && _canUseClaudeFallback()) {
-        // Réanalyse forcée → Claude direct sans passer par Groq
+        // Réanalyse forcée → Claude direct sans passer par IA
         statusEl.innerHTML = `<span style="color:var(--accent-l);display:inline-flex;align-items:center;gap:6px">${Icons.svg('cpu',13)} Analyse approfondie via Claude…</span>`;
         try {
           result = await analyzeWithClaude(capturedImage, direction);
@@ -528,27 +528,27 @@ const Modal = (() => {
         Store.refreshAiUsage();
         _forceClaude = false; // reset pour la prochaine analyse
       } else {
-        // Route normale : Groq d'abord
-        result = await analyzeWithGroq(capturedImage, null, direction);
+        // Route normale : IA d'abord
+        result = await analyzeWithAI(capturedImage, null, direction);
         Store.refreshAiUsage();
 
-        // Fallback Claude si Groq insuffisant OU résultat aberrant (R:R cassé)
-        const groqScore   = _scoreResult(result);
-        const groqAberrant = _isAberrantTrade(result);
-        const groqBad     = groqScore < 3 || groqAberrant;
-        if (groqBad && _canUseClaudeFallback()) {
+        // Fallback Claude si IA insuffisant OU résultat aberrant (R:R cassé)
+        const aiScore   = _scoreResult(result);
+        const aiAberrant = _isAberrantTrade(result);
+        const aiBad     = aiScore < 3 || aiAberrant;
+        if (aiBad && _canUseClaudeFallback()) {
           statusEl.innerHTML = `<span style="color:var(--accent-l);display:inline-flex;align-items:center;gap:6px">${Icons.svg('cpu',13)} Analyse approfondie via Claude…</span>`;
           try {
             const claudeResult = await analyzeWithClaude(capturedImage, direction);
             // On garde Claude SI il fait mieux (score plus haut OU non-aberrant)
             const claudeScore = _scoreResult(claudeResult);
             const claudeAberrant = _isAberrantTrade(claudeResult);
-            if (claudeResult && (claudeScore > groqScore || (claudeScore === groqScore && !claudeAberrant && groqAberrant))) {
+            if (claudeResult && (claudeScore > aiScore || (claudeScore === aiScore && !claudeAberrant && aiAberrant))) {
               result = claudeResult;
             }
           } catch (e) {
             console.warn('[Claude fallback] failed:', e && e.message);
-            // Continue silencieusement avec le résultat Groq partiel
+            // Continue silencieusement avec le résultat IA partiel
           }
         }
       }
@@ -572,7 +572,7 @@ const Modal = (() => {
           parsedTrade = hint;
           statusEl.innerHTML = `<span style="color:var(--amber)">${i18n.t('modal.img.unreadable')}</span>`;
         } else {
-          throw new Error(i18n.t('modal.groq.notfound'));
+          throw new Error(i18n.t('modal.ai.notfound'));
         }
       } else {
         parsedTrade = { entry, sl, tp1, tp2: null, tp3: null, instrument: null, contracts: 1 };
@@ -600,7 +600,7 @@ const Modal = (() => {
           }
         }
 
-        // v0.9.222 — Upsell Claude pour les Trader si Groq a raté (missing values).
+        // v0.9.222 — Upsell Claude pour les Trader si IA a raté (missing values).
         // Funded/Elite ont déjà eu le fallback Claude automatique en amont.
         let upsellHtml = '';
         const _tier = (typeof Store !== 'undefined' && Store.getTier) ? Store.getTier() : 'trader';
@@ -1788,8 +1788,8 @@ const Modal = (() => {
       }
       goToStep(1);
     });
-    // v0.9.223 — "Réanalyser" force Claude direct (skip Groq) si tier le permet.
-    // Trader → relance Groq (pas accès Claude). Funded/Elite/Beta → Claude direct.
+    // v0.9.223 — "Réanalyser" force Claude direct (skip IA) si tier le permet.
+    // Trader → relance IA (pas accès Claude). Funded/Elite/Beta → Claude direct.
     $('wBtnRetry').addEventListener('click', () => {
       if (_canUseClaudeFallback()) _forceClaude = true;
       analyzeImage();
