@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.294',
+      date: '2026-05-22',
+      time: '16:00',
+      tags: ['feature'],
+      title: 'Page « Nouveautés » publique',
+      titleEn: 'Public "Updates" page',
+      items: [
+        { type: 'feature', text: 'Nouvelle page publique (/updates) qui regroupe toutes les mises à jour de ZeldTrade, avec des liens directs pour rejoindre le Discord et recevoir les nouveautés par email.', textEn: 'New public page (/updates) gathering all ZeldTrade updates, with direct links to join the Discord and get updates by email.' },
+      ],
+    },
+    {
       version: '0.9.293',
       date: '2026-05-22',
       time: '15:00',
