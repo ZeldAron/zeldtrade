@@ -724,8 +724,11 @@ const Modal = (() => {
 
   function populateInstrumentSelect(fk, keepVal) {
     // v0.9.190 : si compte crypto sélectionné, lister les paires crypto
+    // v0.9.310 (FIX) : utiliser getMyAccountByName (MES comptes) et NON getAccountByName
+    // qui cherchait dans le catalogue des prop firms → toujours null → futures affichés
+    // même pour un compte crypto. C'était LE bug « pas de crypto dans le trade ».
     const apexValue = $('wApex') ? $('wApex').value : '';
-    const account = apexValue && Store.getAccountByName ? Store.getAccountByName(apexValue) : null;
+    const account = apexValue && Store.getMyAccountByName ? Store.getMyAccountByName(apexValue) : null;
     if (account && account.accountType === 'crypto') {
       const sel = $('wInstr');
       const cur = keepVal || sel.value || 'BTCUSDT';
