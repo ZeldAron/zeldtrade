@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.312',
+      date: '2026-05-23',
+      time: '03:45',
+      tags: ['feature'],
+      title: 'Instruments favoris ⭐ (épinglés en haut de la liste)',
+      titleEn: 'Favorite instruments ⭐ (pinned to the top)',
+      items: [
+        { type: 'feature', text: 'Tu peux maintenant mettre des instruments en favori : dans un trade, clique l\'étoile ☆ à côté d\'« Instrument ». Tes favoris (Gold, BTC, ton indice…) remontent dans un groupe « ⭐ Favoris » en haut de la liste, pour les retrouver en un coup d\'œil. Synchronisé sur tous tes appareils.', textEn: 'You can now favorite instruments: in a trade, click the ☆ star next to "Instrument". Your favorites (Gold, BTC, your index…) move to a "⭐ Favorites" group at the top of the list, so you find them instantly. Synced across all your devices.' },
+      ],
+    },
+    {
       version: '0.9.311',
       date: '2026-05-23',
       time: '03:15',
