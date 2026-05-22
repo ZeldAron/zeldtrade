@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.305',
+      date: '2026-05-23',
+      time: '01:30',
+      tags: ['feature'],
+      title: 'Notifications synchronisées entre tes appareils',
+      titleEn: 'Notifications synced across your devices',
+      items: [
+        { type: 'feature', text: 'Tes notifications sont désormais rattachées à ton compte (et plus seulement à ton navigateur) : tu les retrouves quand tu te connectes depuis un autre appareil ou après une déconnexion.', textEn: 'Your notifications are now tied to your account (not just your browser): you find them again when you log in from another device or after signing out.' },
+      ],
+    },
+    {
       version: '0.9.304',
       date: '2026-05-23',
       time: '01:00',
