@@ -5,14 +5,14 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
-      version: '0.9.300',
+      version: '0.9.301',
       date: '2026-05-22',
-      time: '23:45',
+      time: '23:55',
       tags: ['fix'],
       title: 'Changement de plan Funded ↔ Elite : direct, en 1 clic',
       titleEn: 'Plan change Funded ↔ Elite: direct, in 1 click',
       items: [
-        { type: 'fix', text: 'Le changement de plan se fait maintenant directement : un clic sur « Choisir Elite » bascule ton abonnement (cycle mensuel/annuel conservé, différence proratisée sur ta prochaine facture), sans passer par le portail Stripe qui refusait l\'opération. Ton palier se met à jour automatiquement dans l\'app.', textEn: 'Plan changes are now direct: one click on "Choose Elite" switches your subscription (monthly/yearly cycle kept, difference prorated on your next invoice), without going through the Stripe portal that rejected the operation. Your tier updates automatically in the app.' },
+        { type: 'fix', text: 'Le changement de plan se fait maintenant directement : un clic sur « Choisir Elite » bascule ton abonnement (cycle mensuel/annuel conservé), sans passer par le portail Stripe qui refusait l\'opération. La différence est calculée au prorata et facturée immédiatement, et ton palier se met à jour automatiquement dans l\'app.', textEn: 'Plan changes are now direct: one click on "Choose Elite" switches your subscription (monthly/yearly cycle kept), without going through the Stripe portal that rejected the operation. The difference is prorated and charged immediately, and your tier updates automatically in the app.' },
       ],
     },
     {
