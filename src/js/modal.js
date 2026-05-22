@@ -723,50 +723,83 @@ const Modal = (() => {
   const CRYPTO_INSTRS_COINBASE = ['BTC-USD','ETH-USD','SOL-USD','XRP-USD','AVAX-USD'];
 
   function populateInstrumentSelect(fk, keepVal) {
-    // v0.9.190 : si compte crypto sélectionné, lister les paires crypto
-    // v0.9.310 (FIX) : utiliser getMyAccountByName (MES comptes) et NON getAccountByName
-    // qui cherchait dans le catalogue des prop firms → toujours null → futures affichés
-    // même pour un compte crypto. C'était LE bug « pas de crypto dans le trade ».
+    const sel = $('wInstr');
+    if (!sel) return;
+    const prevVal = sel.value;
+    // v0.9.310 (FIX) : getMyAccountByName (MES comptes), pas getAccountByName (presets prop firm).
     const apexValue = $('wApex') ? $('wApex').value : '';
     const account = apexValue && Store.getMyAccountByName ? Store.getMyAccountByName(apexValue) : null;
+
+    // Instruments disponibles selon le type de compte :
+    //  - crypto   → paires de la plateforme
+    //  - personal → futures + crypto (v0.9.311 : « on a tout » avec ton propre capital)
+    //  - prop/autre → futures
+    const available = [];   // [{ value, cat }]
     if (account && account.accountType === 'crypto') {
-      const sel = $('wInstr');
-      const cur = keepVal || sel.value || 'BTCUSDT';
       const list = account.cryptoPlatform === 'coinbase' ? CRYPTO_INSTRS_COINBASE : CRYPTO_INSTRS_BINANCE;
-      sel.innerHTML = list.map(i => `<option value="${i}">${i}</option>`).join('');
-      sel.value = list.includes(cur) ? cur : list[0];
-      return;
+      list.forEach(i => available.push({ value: i, cat: 'Crypto' }));
+    } else {
+      const sp = Store.getSpreadsByFirm(fk || 'apex');
+      Object.keys(sp).filter(i => VALID_INSTRS.has(i)).forEach(i => available.push({ value: i, cat: INSTR_CAT[i] || 'Autres' }));
+      if (account && account.accountType === 'personal') {
+        [...CRYPTO_INSTRS_BINANCE, ...CRYPTO_INSTRS_COINBASE].forEach(i => available.push({ value: i, cat: 'Crypto' }));
+      }
     }
 
-    const sp     = Store.getSpreadsByFirm(fk || 'apex');
-    const instrs = Object.keys(sp).filter(i => VALID_INSTRS.has(i));
-    const sel    = $('wInstr');
-    const cur    = keepVal || sel.value || 'MES1';
+    // v0.9.312 : favoris (⭐) en tête, filtrés sur les instruments dispo du compte courant
+    const favs = (Store.getSettings && Store.getSettings().favInstruments) || [];
+    const availSet = new Set(available.map(a => a.value));
+    const favList = (Array.isArray(favs) ? favs : []).filter(f => availSet.has(f));
+    const favSet = new Set(favList);
 
+    let html = '';
+    if (favList.length) {
+      html += `<optgroup label="⭐ Favoris">${favList.map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`;
+    }
     const groups = {};
-    instrs.forEach(i => {
-      const cat = INSTR_CAT[i] || 'Autres';
-      if (!groups[cat]) groups[cat] = [];
-      groups[cat].push(i);
+    available.forEach(a => {
+      if (favSet.has(a.value)) return;   // déjà listé dans Favoris → pas de doublon
+      (groups[a.cat] = groups[a.cat] || []).push(a.value);
+    });
+    Object.keys(groups).forEach(cat => {
+      html += `<optgroup label="${cat}">${groups[cat].map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`;
     });
 
-    const cats = Object.keys(groups);
-    let html = cats.map(cat =>
-      cats.length > 1
-        ? `<optgroup label="${cat}">${groups[cat].map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`
-        : groups[cat].map(i => `<option value="${i}">${i}</option>`).join('')
-    ).join('');
-
-    // v0.9.311 : compte Fonds propres → on a TOUT (futures + crypto), car avec ton
-    // propre capital tu n'es pas limité comme une prop firm. Le calc gère la crypto
-    // par instrument (Calc.isCrypto) → P&L correct même hors compte crypto dédié.
-    if (account && account.accountType === 'personal') {
-      const cryptoList = [...CRYPTO_INSTRS_BINANCE, ...CRYPTO_INSTRS_COINBASE];
-      html += `<optgroup label="Crypto">${cryptoList.map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`;
-    }
-
     sel.innerHTML = html;
-    sel.value = [...sel.options].some(o => o.value === cur) ? cur : (sel.options[0]?.value || 'MES1');
+    const fallback = (account && account.accountType === 'crypto') ? 'BTCUSDT' : 'MES1';
+    const cur = keepVal || prevVal || fallback;
+    sel.value = [...sel.options].some(o => o.value === cur) ? cur : (sel.options[0]?.value || fallback);
+    _updateFavStar();
+  }
+
+  // v0.9.312 : étoile favoris — reflète si l'instrument courant est en favori
+  function _updateFavStar() {
+    const star = $('wFavStar'); const sel = $('wInstr');
+    if (!star || !sel) return;
+    const favs = (Store.getSettings && Store.getSettings().favInstruments) || [];
+    const isFav = Array.isArray(favs) && favs.includes(sel.value);
+    star.textContent = isFav ? '★' : '☆';
+    star.style.color = isFav ? 'var(--accent)' : 'var(--muted)';
+    star.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+  }
+
+  // v0.9.312 : ajoute/retire l'instrument courant des favoris (persisté dans settings, cross-device)
+  function _toggleFavInstrument() {
+    const sel = $('wInstr');
+    if (!sel || !sel.value) return;
+    const cur = sel.value;
+    const favs = ((Store.getSettings && Store.getSettings().favInstruments) || []).slice();
+    const idx = favs.indexOf(cur);
+    if (idx >= 0) favs.splice(idx, 1);
+    else favs.unshift(cur);   // nouveau favori placé en tête
+    if (Store.updateSettings) Store.updateSettings({ favInstruments: favs });
+    populateInstrumentSelect(firmKey, cur);   // re-rend (favori en tête) en gardant la sélection
+    if (window.UI && UI.toast) {
+      const en = (window.i18n && i18n.getLang && i18n.getLang() === 'en');
+      UI.toast(idx >= 0
+        ? (en ? 'Removed from favorites' : 'Retiré des favoris')
+        : (en ? 'Added to favorites ⭐' : 'Ajouté aux favoris ⭐'));
+    }
   }
 
   function populateApexSelect(currentVal) {
@@ -2009,8 +2042,11 @@ const Modal = (() => {
       spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
       updateLotsInput($('wInstr').value);
       updateSpreadDisplay();
+      _updateFavStar();   // v0.9.312 : refléter l'état favori du nouvel instrument
       wRecalc();
     });
+    // v0.9.312 : étoile favoris (à droite du label Instrument)
+    if ($('wFavStar')) $('wFavStar').addEventListener('click', _toggleFavInstrument);
 
     $('wApex').addEventListener('change', () => {
       const val = $('wApex').value;

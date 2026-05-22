@@ -10,7 +10,7 @@ const Store = (() => {
   }
 
   // ── Données statiques (presets, référence) ───────────────────────────────────
-  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1', tradingTypes: null };
+  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1', tradingTypes: null, favInstruments: [] };
 
   // v0.9.275 (F1/F2) — profil de trading utilisateur (multi-choix). null = pas encore répondu.
   const VALID_TRADING_TYPES = ['fundsOwn', 'propFirm', 'crypto'];
@@ -405,6 +405,9 @@ const Store = (() => {
           contracts:  (typeof raw.contracts  === 'number' && isFinite(raw.contracts))  ? Math.max(0.01, Math.min(999, raw.contracts))  : DEFAULT_SETTINGS.contracts,
           instrument: (typeof raw.instrument === 'string' && raw.instrument.length > 0) ? String(raw.instrument).replace(/[^A-Za-z0-9/. _-]/g, '').slice(0, 20) || DEFAULT_SETTINGS.instrument : DEFAULT_SETTINGS.instrument,
           tradingTypes: _sanitizeTradingTypes(raw.tradingTypes),
+          favInstruments: Array.isArray(raw.favInstruments)
+            ? [...new Set(raw.favInstruments.filter(x => typeof x === 'string' && x.length <= 20))].slice(0, 100)
+            : [],
         };
         changed = true;
       }
@@ -795,7 +798,7 @@ const Store = (() => {
   // ── Settings ─────────────────────────────────────────────────────────────────
   function getSettings()        { return { ...settings }; }
   function getTradingTypes()    { return Array.isArray(settings.tradingTypes) ? [...settings.tradingTypes] : null; }
-  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes']);
+  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes','favInstruments']);
   function updateSettings(data) {
     const safe = Object.create(null);
     for (const [k, v] of Object.entries(data)) {
@@ -804,6 +807,12 @@ const Store = (() => {
       else if (k === 'contracts')  safe.contracts  = _safeNum(v, 0.01, 999, 1);
       else if (k === 'instrument') safe.instrument = String(v).replace(/[^A-Za-z0-9/. _-]/g,'').slice(0,20) || 'MES1';
       else if (k === 'tradingTypes') { const tt = _sanitizeTradingTypes(v); if (tt) safe.tradingTypes = tt; }
+      else if (k === 'favInstruments') {
+        // v0.9.312 : favoris d'instruments (symbols), cap 100, validés strings courtes
+        safe.favInstruments = Array.isArray(v)
+          ? [...new Set(v.filter(x => typeof x === 'string' && x.length <= 20))].slice(0, 100)
+          : [];
+      }
     }
     settings = { ...settings, ...safe };
     lsSet(lk().settings, settings);
