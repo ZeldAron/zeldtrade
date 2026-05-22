@@ -274,14 +274,19 @@ const Modal = (() => {
         : `- TOP (highest price)    → sl    (often label "STP" or "SL")\n- MIDDLE                 → entry (often blue/teal label "STP LMT" or position icon with "Brut")\n- BOTTOM (lowest price)  → tp1   (often label "LMT" or "TP")`}\n\n` +
 
       `RULES:\n` +
-      `- A complete trade has 3 levels WITH order labels. If you see 4+ lines, the extras are indicators (ignore them).\n` +
+      `- The core trade is 3 levels WITH order labels (entry, sl, tp1). Lines WITHOUT an order label are indicators — ignore them.\n` +
       `- European format may use "," or " " (28 944,25 = 28944.25)\n` +
       `- Never invent numbers. Copy EXACTLY from the chart.\n` +
       `- Constraint: ${isLong ? 'sl < entry < tp1' : 'tp1 < entry < sl'}\n` +
       `- Read the EXACT price from the right axis (the price label aligned with the order line).\n\n` +
 
+      // v0.9.293 (F9) — détection des TP partiels (scale-out). Reste OPTIONNEL et
+      // secondaire : le coeur entry/sl/tp1 est inchangé ; on n'ajoute tp2/tp3 que
+      // pour des lignes EXPLICITEMENT labellisées TP/LMT au-delà de tp1.
+      `OPTIONAL — extra take-profit targets (scale-out / partial exits): if, BEYOND tp1, there are MORE horizontal lines WITH a valid "TP"/"LMT" order label, ${isLong ? 'at even HIGHER prices than tp1' : 'at even LOWER prices than tp1'}, add them as tp2 then tp3 (nearest to entry first). ONLY count clearly labeled order lines — NEVER an indicator. Most trades have only tp1: if there is no extra labeled TP line, set tp2 and tp3 to null.\n\n` +
+
       `Respond with ONLY this JSON on one line:\n` +
-      `{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER}`;
+      `{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER,"tp2":NUMBER_or_null,"tp3":NUMBER_or_null}`;
 
     // v0.9.217 — Retiré llama-3.2-vision-preview (deprecated par IA, retourne 404).
     // Llama 4 Scout/Maverick sont les modèles vision officiels en GA.
@@ -355,7 +360,7 @@ const Modal = (() => {
         const parsed = JSON.parse(jsonStr);
         if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) continue;
         const result = {};
-        for (const key of ['entry', 'sl', 'tp1', 'tp2']) {
+        for (const key of ['entry', 'sl', 'tp1', 'tp2', 'tp3']) {
           if (key in parsed) {
             const v = parseFloat(parsed[key]);
             // v0.9.218 — Filtre les 0 et négatifs (l'IA peut retourner 0 au lieu de null)
@@ -373,6 +378,14 @@ const Modal = (() => {
           result.entry = reordered.entry;
           result.sl    = reordered.sl;
           result.tp1   = reordered.tp1;
+          // v0.9.293 (F9) : ne garde tp2/tp3 que s'ils sont au-delà de tp1 dans le
+          // sens du profit (sinon = erreur de l'IA, on les jette plutôt que polluer).
+          for (const k of ['tp2', 'tp3']) {
+            if (result[k] != null) {
+              const ok = isLong ? result[k] > result.tp1 : result[k] < result.tp1;
+              if (!ok) delete result[k];
+            }
+          }
           return result;
         }
         // v0.9.216 — Si seulement 1-2 valeurs détectées, on garde comme fallback
@@ -412,13 +425,15 @@ const Modal = (() => {
       `(cart 🛒, briefcase 💼) with "Brut" or "P&L" or "USD".\n\n` +
       `IGNORE: VPOC, VWAP, MA, EMA, SMA, Dynamic, Anchored lines; volume bars; live price ticker;\n` +
       `right-axis labels with ⊕ symbol or HH:MM countdown; any horizontal line WITHOUT order label.\n\n` +
-      `Find EXACTLY 3 horizontal levels with order labels and assign by position:\n` +
+      `Find the 3 core horizontal levels with order labels and assign by position:\n` +
       `${isLong
         ? `- TOP (highest price)    → tp1\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → sl`
         : `- TOP (highest price)    → sl\n- MIDDLE                 → entry\n- BOTTOM (lowest price)  → tp1`}\n\n` +
       `European format may use "," or " " (28 944,25 = 28944.25). Constraint: ${isLong ? 'sl < entry < tp1' : 'tp1 < entry < sl'}.\n` +
-      `Read EXACT prices from the right axis. Prefer giving an approximate number from the visible axis over null. Return null ONLY if no horizontal line/box with a price label is visible at all.\n\n` +
-      `Respond with ONLY this JSON on one line:\n{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER}`;
+      `Read EXACT prices from the right axis. Prefer giving an approximate number from the visible axis over null. Return null ONLY if no horizontal line/box with a price label is visible at all.\n` +
+      // v0.9.293 (F9) — TP partiels optionnels (cf. prompt principal).
+      `OPTIONAL: extra TP targets beyond tp1 (more lines labeled "TP"/"LMT", ${isLong ? 'higher' : 'lower'} than tp1) → tp2, tp3 (else null). Only labeled order lines, never indicators.\n\n` +
+      `Respond with ONLY this JSON on one line:\n{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER,"tp2":NUMBER_or_null,"tp3":NUMBER_or_null}`;
 
     if (!_fbFunctions) throw new Error('Service IA indisponible — recharge la page.');
     const turnstileToken = await _getTurnstileToken();

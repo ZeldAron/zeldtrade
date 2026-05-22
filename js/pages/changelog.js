@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.293',
+      date: '2026-05-22',
+      time: '15:00',
+      tags: ['feature'],
+      title: 'L\'IA détecte tes TP partiels (cibles multiples)',
+      titleEn: 'AI detects your partial TPs (multiple targets)',
+      items: [
+        { type: 'feature', text: 'Quand ton screenshot montre plusieurs cibles de take-profit (scale-out), l\'IA détecte maintenant TP1, TP2 et TP3 et les remplit automatiquement — plus seulement le premier. La détection du cœur du trade (entrée / stop / TP1) reste inchangée et aussi fiable.', textEn: 'When your screenshot shows several take-profit targets (scale-out), the AI now detects TP1, TP2 and TP3 and fills them in automatically — not just the first one. Core detection (entry / stop / TP1) is unchanged and just as reliable.' },
+      ],
+    },
+    {
       version: '0.9.292',
       date: '2026-05-22',
       time: '14:00',
