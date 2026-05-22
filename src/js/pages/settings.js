@@ -256,7 +256,8 @@
         $('maMaxContracts').value = ''; $('maFeePerSide').value = '2.14';
         $('maPnlOffset').value = '';
         if ($('maAccountType')) {
-          // v0.9.275 (F1/F2) : type par défaut selon le profil de trading
+          // v0.9.305 : ne propose QUE les types du profil ; v0.9.275 : défaut intelligent
+          _buildAccountTypeOptions(null);
           const _tt = (Store.getTradingTypes && Store.getTradingTypes()) || [];
           $('maAccountType').value = (!_tt.length || _tt.includes('propFirm')) ? 'prop'
                                    : _tt.includes('fundsOwn') ? 'personal' : 'crypto';
@@ -265,6 +266,25 @@
         $('maForm').style.display = 'block';
         $('maName').focus();
       });
+
+      // v0.9.305 : restreint les types de compte au PROFIL de trading choisi.
+      // Si l'user n'a coché que « Prop firm » au 1er login, le sélecteur ne propose
+      // QUE Prop firm (idem Fonds propres / Crypto). Profil vide → tous les types.
+      // En édition, on garde TOUJOURS le type du compte édité (sinon on casserait un
+      // compte dont le type a été retiré du profil après coup).
+      const _ACCOUNT_TYPES = [
+        { value: 'prop',     tt: 'propFirm', label: 'Prop firm — Apex, Topstep, FTMO, Lucid, Funding Pips' },
+        { value: 'personal', tt: 'fundsOwn', label: 'Fonds propres — mon capital, sans règles prop firm' },
+        { value: 'crypto',   tt: 'crypto',   label: 'Crypto — Binance / Coinbase' },
+      ];
+      function _buildAccountTypeOptions(currentValue) {
+        const sel = $('maAccountType'); if (!sel) return;
+        const tt = (Store.getTradingTypes && Store.getTradingTypes()) || [];
+        const allowAll = !tt.length;
+        const opts = _ACCOUNT_TYPES.filter(o => allowAll || tt.includes(o.tt) || o.value === currentValue);
+        sel.innerHTML = (opts.length ? opts : _ACCOUNT_TYPES)
+          .map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+      }
 
       // v0.9.189 (Phase 1) + v0.9.190 (Phase 3) : show/hide des champs selon accountType
       function _applyAccountTypeVisibility() {
@@ -398,7 +418,10 @@
           $('maFeePerSide').value   = (acc.feePerSide || 2.14).toFixed(2);
           $('maPnlOffset').value    = acc.pnlOffset || 0;
           // v0.9.189 : charger accountType (default 'prop' pour compatibilité comptes existants)
-          if ($('maAccountType')) $('maAccountType').value = acc.accountType || 'prop';
+          if ($('maAccountType')) {
+            _buildAccountTypeOptions(acc.accountType || 'prop');   // v0.9.305 : garde le type du compte édité
+            $('maAccountType').value = acc.accountType || 'prop';
+          }
           // v0.9.190 : charger les champs crypto si compte crypto
           if (acc.accountType === 'crypto') {
             if ($('maCryptoPlatform')) $('maCryptoPlatform').value = acc.cryptoPlatform || 'binance';
