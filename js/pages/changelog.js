@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.309',
+      date: '2026-05-23',
+      time: '02:30',
+      tags: ['fix'],
+      title: 'Numéro de version affiché corrigé',
+      titleEn: 'Displayed version number fixed',
+      items: [
+        { type: 'fix', text: 'Le numéro de version dans Réglages → À propos était resté bloqué sur une ancienne valeur (0.9.279). Il reflète maintenant automatiquement la version réelle de l\'app.', textEn: 'The version number in Settings → About was stuck on an old value (0.9.279). It now automatically reflects the app\'s real version.' },
+      ],
+    },
+    {
       version: '0.9.308',
       date: '2026-05-23',
       time: '02:00',
