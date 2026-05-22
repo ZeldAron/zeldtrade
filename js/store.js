@@ -178,7 +178,6 @@ const Store = (() => {
     decisiveVote:     ['elite', 'beta'],
     partials:         ['funded', 'elite', 'beta'],   // v0.9.251 : sorties partielles = Pro only
   };
-  let _globalGroqKey = '';
 
   // ── Clés localStorage (cache local) ─────────────────────────────────────────
   const lk = () => ({
@@ -243,7 +242,6 @@ const Store = (() => {
     _uid           = userId || 'default';
     _plan          = { plan: 'basic' };
     _aiUsage       = { date: '', count: 0 };
-    _globalGroqKey = '';
     trades        = [];
     settings      = { ...DEFAULT_SETTINGS };
     accountTypes  = DEFAULT_ACCOUNT_TYPES.map(a => ({ ...a }));
@@ -797,7 +795,6 @@ const Store = (() => {
   // ── Settings ─────────────────────────────────────────────────────────────────
   function getSettings()        { return { ...settings }; }
   function getTradingTypes()    { return Array.isArray(settings.tradingTypes) ? [...settings.tradingTypes] : null; }
-  function getGroqKey()         { return _globalGroqKey; }
   const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes']);
   function updateSettings(data) {
     const safe = Object.create(null);
@@ -1157,7 +1154,7 @@ const Store = (() => {
     getTrades, getTradeById, addTrade, addTradesBatch, updateTrade, deleteTrade, importTrades, clearTrades, exportJSON, exportFullJSON,
     newTradeId: _newTradeId, uploadTradeScreenshot, getTradeScreenshotUrl, deleteTradeScreenshot,
     getMaxScreenshots, canSaveScreenshots,
-    getSettings, getTradingTypes, getGroqKey, updateSettings,
+    getSettings, getTradingTypes, updateSettings,
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,
     getMyAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount,
