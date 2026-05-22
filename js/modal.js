@@ -751,12 +751,21 @@ const Modal = (() => {
     });
 
     const cats = Object.keys(groups);
-    sel.innerHTML = cats.map(cat =>
+    let html = cats.map(cat =>
       cats.length > 1
         ? `<optgroup label="${cat}">${groups[cat].map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`
         : groups[cat].map(i => `<option value="${i}">${i}</option>`).join('')
     ).join('');
 
+    // v0.9.311 : compte Fonds propres → on a TOUT (futures + crypto), car avec ton
+    // propre capital tu n'es pas limité comme une prop firm. Le calc gère la crypto
+    // par instrument (Calc.isCrypto) → P&L correct même hors compte crypto dédié.
+    if (account && account.accountType === 'personal') {
+      const cryptoList = [...CRYPTO_INSTRS_BINANCE, ...CRYPTO_INSTRS_COINBASE];
+      html += `<optgroup label="Crypto">${cryptoList.map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`;
+    }
+
+    sel.innerHTML = html;
     sel.value = [...sel.options].some(o => o.value === cur) ? cur : (sel.options[0]?.value || 'MES1');
   }
 
