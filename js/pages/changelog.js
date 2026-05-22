@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.303',
+      date: '2026-05-23',
+      time: '00:30',
+      tags: ['ui'],
+      title: 'Notifications affichées plus longtemps',
+      titleEn: 'Notifications shown longer',
+      items: [
+        { type: 'ui', text: 'Les messages en bas de l\'écran (notifications) restent affichés plus longtemps — 4,5 s pour une info, 6,5 s pour une alerte (avant : 2,5 s) — pour avoir le temps de les lire, par exemple « crée d\'abord un compte de trading ».', textEn: 'The messages at the bottom of the screen (notifications) now stay longer — 4.5s for info, 6.5s for warnings (was 2.5s) — so you have time to read them, e.g. "create a trading account first".' },
+      ],
+    },
+    {
       version: '0.9.302',
       date: '2026-05-22',
       time: '23:55',
