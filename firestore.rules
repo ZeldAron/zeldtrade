@@ -2,13 +2,31 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Helper unique : "est-ce le compte admin authentifié, email vérifié ?"
+    // Email hardcodé volontairement (single-tenant). Pour ajouter un 2e admin,
+    // utiliser un custom claim Firebase plutôt que d'allonger cette liste.
     function isAdmin() {
       return request.auth != null
           && request.auth.token.email == 'zeldtradepro@gmail.com'
           && request.auth.token.email_verified == true;
     }
 
-    // Règle par défaut : tout refuser
+    // Helper : "user authentifié ET email vérifié". Defense-in-depth contre
+    // un attaquant qui aurait compromis le client (XSS, token volé) sans avoir
+    // validé l'email. Les Cloud Functions critiques (analyzeChart, signup)
+    // exigent déjà email_verified côté serveur ; on l'aligne ici sur les writes
+    // Firestore client (S-NEW-01 v0.9.230). NB : la création initiale du doc
+    // userEmails au signup et l'activation d'un code Pro restent autorisées
+    // SANS email_verified pour ne pas casser le flow d'onboarding.
+    function isVerified(userId) {
+      return request.auth != null
+          && request.auth.uid == userId
+          && request.auth.token.email_verified == true;
+    }
+
+    // Fail-closed par défaut : toute collection non explicitement matchée
+    // refuse read+write. Toute nouvelle collection doit être ajoutée ci-dessous
+    // avec ses propres conditions sinon elle reste inaccessible.
     match /{document=**} {
       allow read, write: if false;
     }
@@ -96,9 +114,8 @@ service cloud.firestore {
     // ── Trades — seuls les champs attendus, limite taille ────────────────────────
     match /users/{userId}/data/trades {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow delete: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null
-                   && request.auth.uid == userId
+      allow delete: if isVerified(userId);
+      allow write:  if isVerified(userId)
                    && request.resource.data.keys().hasOnly(['items'])
                    && request.resource.data.items is list
                    && request.resource.data.items.size() <= 10000;
@@ -107,10 +124,9 @@ service cloud.firestore {
     // ── Settings — whitelist stricte des champs, types validés ──────────────────
     match /users/{userId}/data/settings {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow delete: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null
-                   && request.auth.uid == userId
-                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument'])
+      allow delete: if isVerified(userId);
+      allow write:  if isVerified(userId)
+                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument', 'tradingTypes'])
                    && request.resource.data.capital is number
                    && request.resource.data.capital >= 0
                    && request.resource.data.capital <= 1000000000
@@ -118,7 +134,11 @@ service cloud.firestore {
                    && request.resource.data.contracts >= 1
                    && request.resource.data.contracts <= 999
                    && request.resource.data.instrument is string
-                   && request.resource.data.instrument.size() <= 20;
+                   && request.resource.data.instrument.size() <= 20
+                   && (!('tradingTypes' in request.resource.data)
+                       || (request.resource.data.tradingTypes is list
+                           && request.resource.data.tradingTypes.size() >= 1
+                           && request.resource.data.tradingTypes.size() <= 3));
     }
 
     // ── Mes comptes — 1 max Basic, 100 max Pro ───────────────────────────────────
@@ -130,9 +150,8 @@ service cloud.firestore {
     // compromission admin (XSS / token volé) qui aurait pu corrompre les comptes users.
     match /users/{userId}/data/myAccounts {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow delete: if request.auth != null && request.auth.uid == userId;
-      allow write:  if request.auth != null
-                    && request.auth.uid == userId
+      allow delete: if isVerified(userId);
+      allow write:  if isVerified(userId)
                     && request.resource.data.keys().hasOnly(['items'])
                     && request.resource.data.items is list
                     && (
@@ -145,8 +164,11 @@ service cloud.firestore {
                     );
     }
 
-    // ── Clé Groq globale — DEPRECATED, la clé est dans Google Secret Manager ────
-    // (anciennement lisible par tout user authentifié — faille corrigée)
+    // ── Clé IA — DEPRECATED, déplacée dans Google Secret Manager ─────────────
+    // Anciennement lisible par tout user authentifié → exposait la clé Groq en
+    // clair côté DevTools. La clé vit désormais dans Secret Manager et est
+    // injectée uniquement dans la Cloud Function `analyzeChart`. Ce document
+    // Firestore reste verrouillé pour rétro-compatibilité (anciens clients).
     match /config/groq {
       allow read, write: if false;
     }
@@ -154,9 +176,8 @@ service cloud.firestore {
     // ── Spreads par firm ─────────────────────────────────────────────────────────
     match /users/{userId}/data/spreadsByFirm {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow delete: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null
-                   && request.auth.uid == userId
+      allow delete: if isVerified(userId);
+      allow write:  if isVerified(userId)
                    && request.resource.data.keys().hasOnly(['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips'])
                    && request.resource.data.size() <= 6;
     }
@@ -164,9 +185,8 @@ service cloud.firestore {
     // ── Groupes — Pro uniquement ─────────────────────────────────────────────────
     match /users/{userId}/data/groups {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
-      allow delete: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null
-                   && request.auth.uid == userId
+      allow delete: if isVerified(userId);
+      allow write:  if isVerified(userId)
                    && request.resource.data.keys().hasOnly(['items'])
                    && request.resource.data.items is list
                    && request.resource.data.items.size() <= 50
@@ -202,10 +222,14 @@ service cloud.firestore {
     match /users/{userId}/data/plan {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
       allow delete: if isAdmin();
+      // v0.9.211 : champ 'tier' ajouté (4 valeurs : trader/funded/elite/beta).
+      // Client ne peut écrire que tier='beta' (workflow Founding Members).
+      // Les écritures Stripe (tier='funded'/'elite') passent par admin SDK qui bypasse les rules.
       allow write:  if request.auth != null
                     && request.auth.uid == userId
-                    && request.resource.data.keys().hasOnly(['plan', 'activatedAt', 'codeHash'])
+                    && request.resource.data.keys().hasOnly(['plan', 'activatedAt', 'codeHash', 'tier'])
                     && request.resource.data.plan == 'pro'
+                    && (!('tier' in request.resource.data) || request.resource.data.tier == 'beta')
                     && request.resource.data.activatedAt is int
                     && request.resource.data.activatedAt > 1700000000000
                     && request.resource.data.activatedAt <= request.time.toMillis()
@@ -225,6 +249,45 @@ service cloud.firestore {
     match /users/{userId}/data/stripe {
       allow read: if (request.auth != null && request.auth.uid == userId) || isAdmin();
       allow write, delete: if false;
+    }
+
+    // ── Stats publiques agrégées (compteur d'inscrits affiché sur la landing) ─
+    // Écrit par les CFs (notifyNewSignup increment). Lu via la CF getPublicStats
+    // (callable anonyme) — pas d'accès client direct nécessaire. Aucune PII.
+    match /publicStats/{doc} {
+      allow read:  if isAdmin();
+      allow write, delete: if false;
+    }
+
+    // ── Events Brevo (transactional webhooks : bounces/spam/blocked) ─────────
+    // Écrits exclusivement par la Cloud Function `brevoWebhook` (admin SDK).
+    // Read admin pour traçabilité / debug ops. TTL 90j via champ `expireAt`.
+    match /emailEvents/{eventId} {
+      allow read:  if isAdmin();
+      allow write, delete: if false;
+    }
+
+    // ── Idempotence Stripe webhook events (TTL 30j) ─────────────────────────
+    // Écrits par stripeWebhook CF pour bloquer les replays. Read admin.
+    match /stripeWebhookEvents/{eventId} {
+      allow read:  if isAdmin();
+      allow write, delete: if false;
+    }
+
+    // ── Analytics produit (v0.9.277) — pages vues + actions clés ────────────
+    // Écrit par l'utilisateur connecté pour SES propres events (uid == auth.uid).
+    // Read admin (onglet Activité). Pas d'update/delete côté client.
+    // Schéma strict : type, uid, sid, ts, + page/label optionnels.
+    match /analyticsEvents/{eventId} {
+      allow read:   if isAdmin();
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.type is string
+                    && request.resource.data.type.size() <= 40
+                    && request.resource.data.sid is string
+                    && request.resource.data.sid.size() <= 24
+                    && request.resource.data.keys().hasOnly(['type','uid','sid','ts','page','label']);
+      allow update, delete: if false;
     }
   }
 }

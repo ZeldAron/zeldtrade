@@ -279,7 +279,13 @@ exports.analyzeChart = onCall(
       } catch (e) {
         if (e instanceof HttpsError) throw e;
         console.warn('[analyzeChart] IP rate-limit lookup failed:', e && e.message);
-        // En cas d'échec lookup Firestore, on laisse passer (best-effort, pas DoS user)
+        // v0.9.291 (audit F2) : fail-CLOSED. Sans Turnstile valide ET lookup IP en
+        // échec, on REFUSE au lieu de laisser passer (sinon un attaquant peut
+        // neutraliser le burst-limit en provoquant l'échec du lookup). Les users
+        // légitimes ont soit Turnstile (ils ne passent pas ici), soit leur quota
+        // par-uid intact — un simple retry passe.
+        throw new HttpsError('resource-exhausted',
+          'Vérification anti-bot temporairement indisponible — réessaie dans un instant.');
       }
     }
 
@@ -752,6 +758,16 @@ exports.sendContactMessage = onCall(
       source       = 'landing';
       throttlePath = `contactThrottleAnon/${ipId}`;
       footerExtra  = `IP: ${ipId}`;
+
+      // v0.9.291 (audit F3) : plafond GLOBAL anti-spam sur le canal anonyme.
+      // Le throttle 60s/IP ne suffit pas face à un pool d'IP (rotation). On borne
+      // à 40 messages anonymes/heure tous IP confondus → un visiteur légitime ne
+      // l'atteint jamais, mais un flood par rotation d'IP est coupé.
+      const globalCap = await _emailRateLimit('contact_anon_global', 40);
+      if (!globalCap.allowed) {
+        throw new HttpsError('resource-exhausted',
+          'Trop de messages en ce moment — réessaie dans quelques minutes.');
+      }
     }
 
     // Throttle 60s (anti-race : commit avant envoi Discord)
@@ -909,11 +925,21 @@ async function _emailRateLimit(key, maxPerWindow, windowMs = 3600_000) {
 }
 
 function _clientIp(request) {
+  // v0.9.291 (audit fix F5) : aligné sur la logique anti-spoofing v0.9.170.
+  // Sur Cloud Run derrière le LB Google, le XFF est `<spoofable...>, <client réel>,
+  // <google-lb>`. L'AVANT-DERNIÈRE IP est celle vue par le LB → NON forgeable par
+  // le client. L'ancien code prenait parts[0] (forgeable) → rate-limit IP bypassable.
   try {
-    const xff = request.rawRequest && request.rawRequest.headers
+    const ipRaw = request.rawRequest && request.rawRequest.headers
       && request.rawRequest.headers['x-forwarded-for'];
-    if (xff) return String(xff).split(',')[0].trim();
-    return (request.rawRequest && request.rawRequest.ip) || 'unknown';
+    let ip = 'unknown';
+    if (typeof ipRaw === 'string') {
+      const parts = ipRaw.split(',').map(s => s.trim()).filter(Boolean);
+      if (parts.length >= 2) ip = parts[parts.length - 2];
+      else if (parts.length === 1) ip = parts[0];
+    }
+    if (ip === 'unknown' && request.rawRequest && request.rawRequest.ip) ip = request.rawRequest.ip;
+    return ip.replace(/[^A-Za-z0-9.:_-]/g, '_').slice(0, 64) || 'unknown';
   } catch { return 'unknown'; }
 }
 
@@ -1031,8 +1057,15 @@ exports.recordVisit = onCall(
     memory:         '128MiB',
     timeoutSeconds:  10,
   },
-  async () => {
+  async (request) => {
     try {
+      // v0.9.291 (audit F4) : borne l'inflation du compteur public. Le client
+      // dédup déjà par session ; ce rate-limit (20 visites comptées / IP / heure)
+      // empêche un attaquant de boucler l'appel pour fausser la stat affichée.
+      const ipHash = crypto.createHash('sha256').update(_clientIp(request)).digest('hex');
+      const rl = await _emailRateLimit('visit_' + ipHash, 20);
+      if (!rl.allowed) return { ok: true, throttled: true };
+
       const db  = admin.firestore();
       const inc = admin.firestore.FieldValue.increment(1);
       const day = new Date().toISOString().slice(0, 10);

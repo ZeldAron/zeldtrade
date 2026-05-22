@@ -40,15 +40,11 @@
     ],
     "headers": [
       {
-        "source": "**/*.@(html|htm)",
+        "source": "**",
         "headers": [
           {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          },
-          {
             "key": "Strict-Transport-Security",
-            "value": "max-age=31536000; includeSubDomains"
+            "value": "max-age=31536000; includeSubDomains; preload"
           },
           {
             "key": "X-Frame-Options",
@@ -63,6 +59,10 @@
             "value": "strict-origin-when-cross-origin"
           },
           {
+            "key": "Cross-Origin-Opener-Policy",
+            "value": "same-origin-allow-popups"
+          },
+          {
             "key": "Permissions-Policy",
             "value": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), bluetooth=(), accelerometer=(), gyroscope=(), magnetometer=(), midi=(), serial=(), hid=(), idle-detection=(), screen-wake-lock=(), display-capture=(), picture-in-picture=(), autoplay=(), encrypted-media=(), publickey-credentials-get=(), publickey-credentials-create=(), interest-cohort=(), browsing-topics=(), join-ad-interest-group=(), run-ad-auction=(), attribution-reporting=(), private-state-token-issuance=(), private-state-token-redemption=()"
           },
@@ -73,15 +73,20 @@
         ]
       },
       {
+        "source": "**/*.@(html|htm)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
         "source": "**/*.@(js|css|svg|png|jpg|jpeg|webp|gif|ico|woff|woff2|ttf|otf|eot)",
         "headers": [
           {
             "key": "Cache-Control",
             "value": "public, max-age=31536000, immutable"
-          },
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
           }
         ]
       }
