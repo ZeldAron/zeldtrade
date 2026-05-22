@@ -126,7 +126,7 @@ service cloud.firestore {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
       allow delete: if isVerified(userId);
       allow write:  if isVerified(userId)
-                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument', 'tradingTypes'])
+                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument', 'tradingTypes', 'favInstruments'])
                    && request.resource.data.capital is number
                    && request.resource.data.capital >= 0
                    && request.resource.data.capital <= 1000000000
@@ -138,7 +138,22 @@ service cloud.firestore {
                    && (!('tradingTypes' in request.resource.data)
                        || (request.resource.data.tradingTypes is list
                            && request.resource.data.tradingTypes.size() >= 1
-                           && request.resource.data.tradingTypes.size() <= 3));
+                           && request.resource.data.tradingTypes.size() <= 3))
+                   && (!('favInstruments' in request.resource.data)
+                       || (request.resource.data.favInstruments is list
+                           && request.resource.data.favInstruments.size() <= 100));
+    }
+
+    // ── Notifications (centre de notifs, v0.9.305) ───────────────────────────
+    // Historique des messages UI, rattaché au compte → suit l'user d'un appareil
+    // à l'autre. Données non sensibles ; on borne juste la taille (cap 30 client).
+    match /users/{userId}/data/notifications {
+      allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
+      allow delete: if isVerified(userId);
+      allow write:  if isVerified(userId)
+                    && request.resource.data.keys().hasOnly(['items', 'updatedAt'])
+                    && request.resource.data.items is list
+                    && request.resource.data.items.size() <= 50;
     }
 
     // ── Mes comptes — 1 max Basic, 100 max Pro ───────────────────────────────────

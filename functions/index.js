@@ -972,9 +972,24 @@ exports.sendVerificationEmail = onCall(
 
     const displayName = (u.displayName && u.displayName.trim())
       || (u.email.split('@')[0]) || 'trader';
-    const link = await admin.auth().generateEmailVerificationLink(u.email, {
-      url: `${PUBLIC_SITE_URL}/app.html`,
-    });
+    let link;
+    try {
+      link = await admin.auth().generateEmailVerificationLink(u.email, {
+        url: `${PUBLIC_SITE_URL}/app.html`,
+      });
+    } catch (e) {
+      // v0.9.296 : Firebase rate-limite la génération de liens d'action
+      // (TOO_MANY_ATTEMPTS_TRY_LATER / auth/too-many-requests). C'est un throttle
+      // ATTENDU, pas un crash → message clair + pas de bruit #dev-logs (HttpsError
+      // n'est pas reporté par _wrapCF). Le throttle se réarme en quelques minutes.
+      const code = (e && e.code) || '';
+      const msg  = (e && e.message) || '';
+      if (code === 'auth/too-many-requests' || /TOO_MANY_ATTEMPTS/i.test(msg)) {
+        throw new HttpsError('resource-exhausted',
+          'Trop de demandes d\'email de vérification récemment — réessaie dans quelques minutes.');
+      }
+      throw e;  // autre erreur → laissée remonter (reportée par _wrapCF)
+    }
 
     const { subject, html } = emails.verificationEmail({ displayName, email: u.email, link });
     await emails.sendEmail({
@@ -1552,12 +1567,24 @@ exports.createCheckoutSession = onCall(
 
     // 4. Réutilise le customer Stripe existant si on le connaît (anti-doublon)
     let existingCustomerId = null;
+    let activeSubStatus = null;
     try {
       const stripeDoc = await admin.firestore().doc(`users/${uid}/data/stripe`).get();
-      if (stripeDoc.exists && stripeDoc.data().customerId) {
-        existingCustomerId = stripeDoc.data().customerId;
+      if (stripeDoc.exists) {
+        const sd = stripeDoc.data() || {};
+        if (sd.customerId) existingCustomerId = sd.customerId;
+        activeSubStatus = (typeof sd.subscriptionStatus === 'string') ? sd.subscriptionStatus : null;
       }
     } catch { /* non bloquant */ }
+
+    // v0.9.297 : si un abonnement Stripe est déjà ACTIF, on REFUSE un nouveau
+    // checkout (sinon Stripe crée une 2e souscription / double facturation, d'où le
+    // 503 observé). Le changement de plan (Funded ↔ Elite) passe par le portail
+    // client (createBillingPortalSession). Throw HORS du try → bien propagé.
+    if (activeSubStatus && !['canceled', 'incomplete_expired', 'incomplete'].includes(activeSubStatus)) {
+      throw new HttpsError('failed-precondition',
+        'Tu as déjà un abonnement actif. Pour changer de plan, utilise « Gérer mon abonnement ».');
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -1585,16 +1612,26 @@ exports.createCheckoutSession = onCall(
 ));
 
 /**
- * createBillingPortalSession (v0.9.255) — espace client Stripe.
- * Permet à l'utilisateur de gérer/résilier son abonnement, changer de carte,
- * voir ses factures. Sécurité : auth + customer pris du doc Firestore du user
- * (jamais d'un input → on ne peut pas ouvrir le portail d'un autre customer).
+ * createBillingPortalSession (v0.9.255 ; v0.9.302 : deep-link changement de plan)
+ * Espace client Stripe : gérer/résilier l'abonnement, changer de carte, factures.
+ * Sécurité : auth + customer pris du doc Firestore du user (jamais d'un input →
+ * on ne peut pas ouvrir le portail d'un autre customer).
+ *
+ * data = { flowToTier?: 'funded' | 'elite' }
+ *   - Sans flowToTier : page d'accueil du portail (gestion / carte / résiliation).
+ *   - Avec flowToTier : session `flow_data` qui DEEP-LINK directement sur la page
+ *     Stripe « confirmer le passage à <tier> » → le client VOIT le montant proratisé
+ *     avant de payer (anti-surprise) puis confirme. Nécessite que « Les clients
+ *     peuvent changer d'offre » soit activé+ENREGISTRÉ dans le portail (test ET live).
+ *
+ * Le cycle (mensuel/annuel) du plan cible est dérivé SERVEUR de l'abonnement courant
+ * (un client annuel reste annuel). Le prix vient des secrets (montant infalsifiable).
  */
 exports.createBillingPortalSession = onCall(
   {
-    secrets: [STRIPE_SECRET_KEY, DISCORD_ERRORS_WEBHOOK],
+    secrets: [STRIPE_SECRET_KEY, ...STRIPE_PRICE_SECRETS, DISCORD_ERRORS_WEBHOOK],
     maxInstances:    5,
-    timeoutSeconds:  15,
+    timeoutSeconds:  20,
     memory:          '256MiB',
     region:          'europe-west1',
   },
@@ -1609,9 +1646,40 @@ exports.createBillingPortalSession = onCall(
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: '2024-06-20' });
+
+    // ── Changement de plan en deep-link (flow_data) ───────────────────────────
+    const flowToTier = String(request.data?.flowToTier || '').trim();
+    let flowData;
+    if (flowToTier === 'funded' || flowToTier === 'elite') {
+      const subs = await stripe.subscriptions.list({ customer: customerId, limit: 10 });
+      const sub = subs.data.find(s => ['active', 'trialing', 'past_due'].includes(s.status));
+      if (sub && sub.items && sub.items.data[0]) {
+        const item = sub.items.data[0];
+        const interval = item.price && item.price.recurring && item.price.recurring.interval;
+        const cycle = interval === 'year' ? 'yearly' : 'monthly';   // garde le cycle courant
+        const conf = PLAN_TO_PRICE[`${flowToTier}_${cycle}`];
+        const priceId = conf && conf.secret.value();
+        if (priceId && priceId.startsWith('price_')) {
+          flowData = {
+            type: 'subscription_update_confirm',
+            subscription_update_confirm: {
+              subscription: sub.id,
+              items: [{ id: item.id, price: priceId, quantity: 1 }],
+            },
+            after_completion: {
+              type: 'redirect',
+              redirect: { return_url: PUBLIC_SITE_URL + '/app?payment=success' },
+            },
+          };
+        }
+      }
+      // Si aucun abonnement modifiable / prix non configuré → fallback portail simple.
+    }
+
     const portal = await stripe.billingPortal.sessions.create({
       customer:   customerId,
       return_url: PUBLIC_SITE_URL + '/app',
+      ...(flowData ? { flow_data: flowData } : {}),
     });
     return { url: portal.url };
   }
@@ -1629,7 +1697,7 @@ exports.createBillingPortalSession = onCall(
  */
 exports.stripeWebhook = onRequest(
   {
-    secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, DISCORD_ERRORS_WEBHOOK],
+    secrets: [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, ...STRIPE_PRICE_SECRETS, DISCORD_ERRORS_WEBHOOK],
     maxInstances:    5,
     timeoutSeconds:  20,
     memory:          "256MiB",
@@ -1768,18 +1836,40 @@ exports.stripeWebhook = onRequest(
           const cus = _validCusId(sub.customer) ? (sub.customer || null) : null;
           if (!(await _checkCustomerMatch(uid, cus))) break;
           const isActive = sub.status === "active" || sub.status === "trialing";
-          await db.doc(`users/${uid}/data/stripe`).set({
+          // v0.9.302 : le palier peut CHANGER (upgrade/downgrade Funded↔Elite). On le
+          // déduit du PRIX de l'abonnement — le portail Stripe change le prix mais PAS
+          // le metadata.tier, donc se fier au metadata laisserait un upgrade payé affiché
+          // Funded. On mappe priceId→tier depuis les secrets ; fallback metadata sinon.
+          const PRICE_TO_TIER = {};
+          [[STRIPE_PRICE_FUNDED_MONTHLY, 'funded'], [STRIPE_PRICE_FUNDED_YEARLY, 'funded'],
+           [STRIPE_PRICE_ELITE_MONTHLY, 'elite'],   [STRIPE_PRICE_ELITE_YEARLY, 'elite']]
+            .forEach(([sec, tr]) => { try { const v = sec.value(); if (v) PRICE_TO_TIER[v] = tr; } catch {} });
+          const priceId = sub.items && sub.items.data && sub.items.data[0]
+            && sub.items.data[0].price && sub.items.data[0].price.id;
+          let tier = (priceId && PRICE_TO_TIER[priceId]) || sub.metadata?.tier;
+          if (!_validTier(tier) || ['monthly', 'yearly', 'lifetime'].includes(tier)) tier = null;
+          const stripePatch = {
             subscriptionStatus: sub.status,
             currentPeriodEnd:   sub.current_period_end ? sub.current_period_end * 1000 : null,
             cancelAtPeriodEnd:  sub.cancel_at_period_end || false,
             updatedAt:          Date.now(),
-          }, { merge: true });
+          };
+          if (tier) stripePatch.tier = tier;
+          await db.doc(`users/${uid}/data/stripe`).set(stripePatch, { merge: true });
           if (!isActive) {
             await db.doc(`users/${uid}/data/plan`).set({
               plan: "basic",
               source: "stripe",
               downgradeAt: Date.now(),
             }, { merge: false });
+          } else if (tier) {
+            // Toujours Pro, mais le palier a pu changer → maj sans écraser activatedAt
+            await db.doc(`users/${uid}/data/plan`).set({
+              plan: "pro",
+              source: "stripe",
+              tier,
+              updatedAt: Date.now(),
+            }, { merge: true });
           }
           break;
         }
