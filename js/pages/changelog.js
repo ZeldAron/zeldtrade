@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.288',
+      date: '2026-05-22',
+      time: '09:00',
+      tags: ['fix'],
+      title: '« Créer un compte » ouvre bien l\'inscription',
+      titleEn: '"Create account" now opens sign-up',
+      items: [
+        { type: 'fix', text: 'Depuis la page d\'accueil, les boutons « Créer un compte » / « Commencer gratuitement » / « Rejoindre la bêta » ouvrent maintenant directement le formulaire d\'inscription, au lieu de te renvoyer sur la connexion. Le bouton « Connexion » reste sur la connexion.', textEn: 'From the homepage, the "Create account" / "Start free" / "Join the beta" buttons now open the sign-up form directly, instead of sending you to the login screen. The "Login" button still goes to login.' },
+      ],
+    },
+    {
       version: '0.9.287',
       date: '2026-05-21',
       time: '16:00',
