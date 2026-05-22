@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.311',
+      date: '2026-05-23',
+      time: '03:15',
+      tags: ['feature'],
+      title: 'Compte Fonds propres : tous les instruments (futures + crypto)',
+      titleEn: 'Own-funds account: all instruments (futures + crypto)',
+      items: [
+        { type: 'feature', text: 'Sur un compte Fonds propres (ton propre capital), tu as maintenant accès à TOUT dans un trade : les futures (indices, métaux, énergie) ET les paires crypto (BTC, ETH, SOL…). Logique : avec ton capital tu n\'es pas limité comme sur une prop firm.', textEn: 'On an Own-funds account (your own capital), you now have access to EVERYTHING in a trade: futures (indices, metals, energy) AND crypto pairs (BTC, ETH, SOL…). Makes sense: with your own capital you\'re not restricted like on a prop firm.' },
+      ],
+    },
+    {
       version: '0.9.310',
       date: '2026-05-23',
       time: '03:00',
