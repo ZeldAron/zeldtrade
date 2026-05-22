@@ -63,6 +63,19 @@
         ).join('')}</optgroup>`
       ).join('');
 
+      // v0.9.307 : options « Type de compte » générées ICI depuis le profil de trading
+      // (Store.getTradingTypes) → le sélecteur reflète le profil dès le rendu, pas
+      // seulement au clic « + Ajouter ». Profil vide → tous les types (défaut).
+      const _accTypeAll = [
+        { value: 'prop',     tt: 'propFirm', label: 'Prop firm — Apex, Topstep, FTMO, Lucid, Funding Pips' },
+        { value: 'personal', tt: 'fundsOwn', label: 'Fonds propres — mon capital, sans règles prop firm' },
+        { value: 'crypto',   tt: 'crypto',   label: 'Crypto — Binance / Coinbase' },
+      ];
+      const _ttNow = (Store.getTradingTypes && Store.getTradingTypes()) || [];
+      const _accTypeOptionsHtml = _accTypeAll
+        .filter(o => !_ttNow.length || _ttNow.includes(o.tt))
+        .map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+
       el.innerHTML = `
         <div class="settings-section settings-section--wide">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -85,9 +98,7 @@
             <div class="form-field" style="margin-bottom:12px">
               <label class="form-label">Type de compte</label>
               <select class="form-input" id="maAccountType">
-                <option value="prop">Prop firm — Apex, Topstep, FTMO, Lucid, Funding Pips</option>
-                <option value="personal">Fonds propres — mon capital, sans règles prop firm</option>
-                <option value="crypto">Crypto — Binance / Coinbase</option>
+                ${_accTypeOptionsHtml}
               </select>
             </div>
 
@@ -267,22 +278,16 @@
         $('maName').focus();
       });
 
-      // v0.9.305 : restreint les types de compte au PROFIL de trading choisi.
-      // Si l'user n'a coché que « Prop firm » au 1er login, le sélecteur ne propose
-      // QUE Prop firm (idem Fonds propres / Crypto). Profil vide → tous les types.
-      // En édition, on garde TOUJOURS le type du compte édité (sinon on casserait un
-      // compte dont le type a été retiré du profil après coup).
-      const _ACCOUNT_TYPES = [
-        { value: 'prop',     tt: 'propFirm', label: 'Prop firm — Apex, Topstep, FTMO, Lucid, Funding Pips' },
-        { value: 'personal', tt: 'fundsOwn', label: 'Fonds propres — mon capital, sans règles prop firm' },
-        { value: 'crypto',   tt: 'crypto',   label: 'Crypto — Binance / Coinbase' },
-      ];
+      // v0.9.305/307 : restreint les types de compte au PROFIL de trading choisi
+      // (réutilise _accTypeAll défini plus haut). Profil vide → tous. En édition, on
+      // garde TOUJOURS le type du compte édité (sinon on casserait un compte dont le
+      // type a été retiré du profil après coup).
       function _buildAccountTypeOptions(currentValue) {
         const sel = $('maAccountType'); if (!sel) return;
         const tt = (Store.getTradingTypes && Store.getTradingTypes()) || [];
         const allowAll = !tt.length;
-        const opts = _ACCOUNT_TYPES.filter(o => allowAll || tt.includes(o.tt) || o.value === currentValue);
-        sel.innerHTML = (opts.length ? opts : _ACCOUNT_TYPES)
+        const opts = _accTypeAll.filter(o => allowAll || tt.includes(o.tt) || o.value === currentValue);
+        sel.innerHTML = (opts.length ? opts : _accTypeAll)
           .map(o => `<option value="${o.value}">${o.label}</option>`).join('');
       }
 
