@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.289',
+      date: '2026-05-22',
+      time: '10:00',
+      tags: ['fix'],
+      title: 'Glisser-déposer des captures plus fiable',
+      titleEn: 'More reliable screenshot drag & drop',
+      items: [
+        { type: 'fix', text: 'Glisser-déposer une capture dans le wizard est plus robuste : si tu rates légèrement la zone, le navigateur n\'ouvre plus l\'image (tu ne perds plus ton trade en cours), et davantage de sources de glissement sont reconnues (pas seulement les fichiers du bureau).', textEn: 'Dragging-and-dropping a screenshot into the wizard is more robust: if you slightly miss the zone, the browser no longer opens the image (you no longer lose your in-progress trade), and more drag sources are recognized (not just desktop files).' },
+      ],
+    },
+    {
       version: '0.9.288',
       date: '2026-05-22',
       time: '09:00',
