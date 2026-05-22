@@ -72,9 +72,18 @@
         { value: 'crypto',   tt: 'crypto',   label: 'Crypto — Binance / Coinbase' },
       ];
       const _ttNow = (Store.getTradingTypes && Store.getTradingTypes()) || [];
-      const _accTypeOptionsHtml = _accTypeAll
-        .filter(o => !_ttNow.length || _ttNow.includes(o.tt))
+      const _accTypeShown = _accTypeAll.filter(o => !_ttNow.length || _ttNow.includes(o.tt));
+      const _accTypeOptionsHtml = _accTypeShown
         .map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+      // v0.9.308 : « Strict + raccourci » — si des types sont masqués par le profil,
+      // on affiche un lien vers l'éditeur de profil (onglet Général) pour en activer
+      // un autre → plus de blocage (ex. impossible de créer un compte crypto).
+      const _someTypesHidden = _accTypeShown.length < _accTypeAll.length;
+      const _hintNeed = i18n.getLang() === 'en' ? 'Need another account type?' : 'Besoin d\'un autre type de compte ?';
+      const _hintLink = i18n.getLang() === 'en' ? 'Enable it in your profile →' : 'Active-le dans ton profil →';
+      const _accTypeHintHtml = _someTypesHidden
+        ? `<div style="font-size:11px;color:var(--muted);margin:-4px 0 12px 0">${_hintNeed} <button type="button" id="btnEditProfileTypes" style="background:none;border:none;color:var(--accent);cursor:pointer;font:inherit;padding:0;text-decoration:underline">${_hintLink}</button></div>`
+        : '';
 
       el.innerHTML = `
         <div class="settings-section settings-section--wide">
@@ -101,6 +110,7 @@
                 ${_accTypeOptionsHtml}
               </select>
             </div>
+            ${_accTypeHintHtml}
 
             <!-- v0.9.190 : champs crypto spécifiques (visible uniquement si accountType === 'crypto') -->
             <div class="maCryptoOnly" style="display:none;background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:12px 14px;margin-bottom:14px">
@@ -333,6 +343,18 @@
       }
       if ($('maAccountType')) {
         $('maAccountType').addEventListener('change', _applyAccountTypeVisibility);
+      }
+      // v0.9.308 : raccourci « Active-le dans ton profil » → onglet Général + scroll
+      if ($('btnEditProfileTypes')) {
+        $('btnEditProfileTypes').addEventListener('click', () => {
+          const genTab = document.querySelector('[data-settings-tab="general"]');
+          if (genTab) genTab.click();
+          setTimeout(() => {
+            const target = document.querySelector('.set-tp-choice') || $('btnSaveProfile');
+            const box = target ? (target.closest('.settings-section') || target) : null;
+            if (box && box.scrollIntoView) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 120);
+        });
       }
 
       // Preset auto-fill — Pro only (Basic has a hidden input, not a select)
