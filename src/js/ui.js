@@ -124,8 +124,44 @@ const UI = (() => {
     if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) _notifs = arr.slice(0, _NOTIF_MAX); }
   } catch {}
 
+  // v0.9.305 : sync Firestore (rattaché au compte) → les notifs suivent l'user
+  // d'un appareil à l'autre. localStorage reste pour l'affichage instant/offline.
+  let _notifSaveTimer = null;
+  function _notifUser() {
+    try { return (typeof _fbAuth !== 'undefined' && _fbAuth && _fbAuth.currentUser) ? _fbAuth.currentUser : null; }
+    catch { return null; }
+  }
+  function _notifDocRef(u) {
+    if (!u || typeof _fbDb === 'undefined' || !_fbDb) return null;
+    try { return _fbDb.collection('users').doc(u.uid).collection('data').doc('notifications'); }
+    catch { return null; }
+  }
   function _saveNotifs() {
+    // 1) localStorage immédiat (instant + offline)
     try { localStorage.setItem(_NOTIF_KEY, JSON.stringify(_notifs.slice(0, _NOTIF_MAX))); } catch {}
+    // 2) Firestore débounce (compte vérifié uniquement → la rule exige isVerified)
+    const u = _notifUser();
+    if (!u || u.emailVerified !== true) return;
+    const ref = _notifDocRef(u);
+    if (!ref) return;
+    clearTimeout(_notifSaveTimer);
+    _notifSaveTimer = setTimeout(() => {
+      try { ref.set({ items: _notifs.slice(0, _NOTIF_MAX), updatedAt: Date.now() }).catch(() => {}); } catch {}
+    }, 1500);
+  }
+  async function _loadNotifsRemote() {
+    const ref = _notifDocRef(_notifUser());
+    if (!ref) return;
+    try {
+      const snap = await ref.get();
+      if (snap.exists && Array.isArray(snap.data().items)) {
+        _notifs = snap.data().items.slice(0, _NOTIF_MAX);
+        try { localStorage.setItem(_NOTIF_KEY, JSON.stringify(_notifs)); } catch {}
+        const panel = $('notifPanel');
+        if (panel && !panel.hidden) _renderNotifList();
+        _renderNotifBadge();
+      }
+    } catch {}
   }
   function _unreadCount() { return _notifs.reduce((n, x) => n + (x.read ? 0 : 1), 0); }
   function _fmtNotifTime(ts) {
@@ -209,6 +245,7 @@ const UI = (() => {
     });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') _closeNotifPanel(); });
     _renderNotifBadge();
+    _loadNotifsRemote();   // v0.9.305 : récupère les notifs du compte (cross-device)
   }
 
   // ── Sidebar stats ───────────────────────────────────────────────────────────
