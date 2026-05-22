@@ -81,8 +81,10 @@ const UI = (() => {
   let toastTimer = null;
   // v0.9.238 : file d'attente toast. Avant : 2 toasts rapides → le 2e écrasait
   // le 1er instantanément, l'user ratait le message. Maintenant : queue FIFO,
-  // chaque toast est visible 2.5s avant de céder la place. Évite la perte
-  // d'info quand plusieurs erreurs/confirmations arrivent en cascade.
+  // chaque toast est visible (durée ci-dessous) avant de céder la place. Évite la
+  // perte d'info quand plusieurs erreurs/confirmations arrivent en cascade.
+  // v0.9.303 : durées allongées (avant 2.5s, trop court pour lire un message de
+  // guidage type « crée un compte de trading… ») → 4.5s info / 6.5s erreur+warning.
   const _toastQueue = [];
   let _toastShowing = false;
   function _drainToast() {
@@ -101,7 +103,7 @@ const UI = (() => {
       setTimeout(() => { _toastShowing = false; _drainToast(); }, 250);
     }, next.duration);
   }
-  function toast(msg, isError = false, duration = 2500) {
+  function toast(msg, isError = false, duration = isError ? 6500 : 4500) {
     _toastQueue.push({ msg, isError, duration });
     // Cap soft à 5 toasts en queue (sinon spam d'erreurs réseau peut empiler 50 toasts)
     if (_toastQueue.length > 5) _toastQueue.splice(0, _toastQueue.length - 5);
