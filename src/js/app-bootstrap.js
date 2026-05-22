@@ -30,6 +30,18 @@ document.addEventListener('DOMContentLoaded', () => {
     showForm(mode);
     authModal.style.display = 'flex';
   }
+  // v0.9.288 : intention venant de la landing. « Créer un compte » pointe vers
+  // /app?signup=1 → on ouvre directement le formulaire d'inscription (avant, tout
+  // atterrissait sur la connexion). « Connexion » reste sur /app (login par défaut).
+  function _initialAuthMode() {
+    try {
+      const p = new URLSearchParams(location.search);
+      if (p.get('signup') === '1' || location.hash === '#signup' || location.hash === '#register') {
+        return 'register';
+      }
+    } catch (e) { /* ignore */ }
+    return 'login';
+  }
   function closeModal() {
     // Early return si déjà fermée → évite de vider les champs par erreur (Escape global, etc.)
     if (authModal.style.display === 'none' || authModal.style.display === '') return;
@@ -377,8 +389,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       _wasLoggedIn = false;
-      // Pas loggé → ouvre direct le modal login (pas de flash sur ancien content)
-      openModal('login');
+      // Pas loggé → ouvre le modal. Mode = inscription si on vient d'un CTA
+      // « Créer un compte » (/app?signup=1), sinon connexion. (#bug landing)
+      openModal(_initialAuthMode());
     }
   });
 
