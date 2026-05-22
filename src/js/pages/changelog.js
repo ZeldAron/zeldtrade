@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.314',
+      date: '2026-05-23',
+      time: '04:30',
+      tags: ['fix'],
+      title: 'Plus de flash « BASIC » au rechargement',
+      titleEn: 'No more "BASIC" flash on reload',
+      items: [
+        { type: 'fix', text: 'Au rechargement de la page, ton palier (Funded/Elite) affichait brièvement « BASIC » le temps de charger — c\'est corrigé : un petit « … » discret s\'affiche jusqu\'à ce que ton vrai palier soit connu.', textEn: 'On page reload, your tier (Funded/Elite) briefly showed "BASIC" while loading — fixed: a subtle "…" now shows until your real tier is known.' },
+      ],
+    },
+    {
       version: '0.9.313',
       date: '2026-05-23',
       time: '04:15',

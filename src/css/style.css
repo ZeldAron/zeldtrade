@@ -3359,6 +3359,12 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   color: var(--muted);
   border: 1px solid rgba(255,255,255,0.06);
 }
+/* v0.9.314 : état « plan en cours de chargement » (évite le flash BASIC au refresh) */
+.plan-loading {
+  background: transparent;
+  color: var(--muted);
+  opacity: 0.5;
+}
 .plan-pro {
   background: linear-gradient(135deg, #7c3aed, #5b21b6);
   color: #fff;

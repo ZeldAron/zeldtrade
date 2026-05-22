@@ -354,6 +354,7 @@ const Store = (() => {
     return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('Firestore timeout')), ms))]);
   }
 
+  let _planLoaded = false;   // v0.9.314 : true après la 1ère résolution du plan (Firestore) → évite le flash « BASIC »
   async function _loadFromFirestore() {
     try {
       // Note : config/groq supprimé — la clé Groq vit désormais dans Google
@@ -472,6 +473,11 @@ const Store = (() => {
       }
     } catch (e) {
       console.warn('[Store] Firestore read error (mode hors-ligne ?)', e);
+    } finally {
+      // v0.9.314 : plan « résolu » (succès OU erreur) → l'UI affiche le vrai palier
+      // au lieu d'un flash « BASIC » pendant le chargement Firestore.
+      _planLoaded = true;
+      window.dispatchEvent(new CustomEvent('store:planChanged'));
     }
   }
 
@@ -1170,6 +1176,7 @@ const Store = (() => {
     getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm,
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
     getPlanInfo, isPro, getTier, getTierBadge, getLimits, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,
+    isPlanLoaded: () => _planLoaded,
     activatePro, canAnalyzeToday, refreshAiUsage, canAddAccount,
     getLastWizardPrefs, setLastWizardPrefs,
     getStats,
