@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.304',
+      date: '2026-05-23',
+      time: '01:00',
+      tags: ['feature'],
+      title: 'Centre de notifications (cloche dans la barre du haut)',
+      titleEn: 'Notification center (bell in the top bar)',
+      items: [
+        { type: 'feature', text: 'Une cloche apparaît à droite de la recherche : elle garde l\'historique de tes derniers messages (ceux qui s\'affichent en bas de l\'écran) pour que tu puisses les relire si tu en rates un. Un pastille indique les non-lus, et tu peux tout effacer d\'un clic.', textEn: 'A bell now appears to the right of the search bar: it keeps the history of your recent messages (the ones shown at the bottom of the screen) so you can re-read any you missed. A badge shows unread ones, and you can clear them all in one click.' },
+      ],
+    },
+    {
       version: '0.9.303',
       date: '2026-05-23',
       time: '00:30',

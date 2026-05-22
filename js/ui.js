@@ -108,6 +108,107 @@ const UI = (() => {
     // Cap soft à 5 toasts en queue (sinon spam d'erreurs réseau peut empiler 50 toasts)
     if (_toastQueue.length > 5) _toastQueue.splice(0, _toastQueue.length - 5);
     _drainToast();
+    // v0.9.304 : on journalise aussi dans le centre de notifications (cloche)
+    try { notify(msg, isError); } catch {}
+  }
+
+  // ── Centre de notifications (v0.9.304) ──────────────────────────────────────
+  // Cloche à droite de la recherche : historique persistant des messages (les
+  // toasts y sont journalisés), badge de non-lus, panneau déroulant. Permet de
+  // relire un message manqué (ex. « crée d'abord un compte de trading »).
+  const _NOTIF_KEY = 'zeld_notifs_v1';
+  const _NOTIF_MAX = 30;
+  let _notifs = [];
+  try {
+    const raw = localStorage.getItem(_NOTIF_KEY);
+    if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) _notifs = arr.slice(0, _NOTIF_MAX); }
+  } catch {}
+
+  function _saveNotifs() {
+    try { localStorage.setItem(_NOTIF_KEY, JSON.stringify(_notifs.slice(0, _NOTIF_MAX))); } catch {}
+  }
+  function _unreadCount() { return _notifs.reduce((n, x) => n + (x.read ? 0 : 1), 0); }
+  function _fmtNotifTime(ts) {
+    try {
+      const d = new Date(ts);
+      const sameDay = d.toDateString() === new Date().toDateString();
+      const hm = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return sameDay ? hm : (d.toLocaleDateString([], { day: '2-digit', month: '2-digit' }) + ' ' + hm);
+    } catch { return ''; }
+  }
+  function _renderNotifBadge() {
+    const badge = $('notifBadge'); const btn = $('btnNotif');
+    if (!badge || !btn) return;
+    const n = _unreadCount();
+    if (n > 0) { badge.textContent = n > 99 ? '99+' : String(n); badge.hidden = false; btn.classList.add('has-unread'); }
+    else { badge.hidden = true; btn.classList.remove('has-unread'); }
+  }
+  function _renderNotifList() {
+    const list = $('notifList'); const empty = $('notifEmpty');
+    if (!list) return;
+    if (_notifs.length === 0) {
+      list.innerHTML = '';
+      if (empty) empty.style.display = '';
+      return;
+    }
+    if (empty) empty.style.display = 'none';
+    list.innerHTML = _notifs.map(x =>
+      '<div class="notif-item' + (x.read ? '' : ' unread') + (x.isError ? ' error' : '') + '">' +
+        '<span class="notif-item-msg">' + escHtml(x.msg) + '</span>' +
+        '<span class="notif-item-time">' + escHtml(_fmtNotifTime(x.ts)) + '</span>' +
+      '</div>'
+    ).join('');
+  }
+  function notify(msg, isError = false) {
+    if (!msg) return;
+    _notifs.unshift({
+      id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      msg: String(msg), isError: !!isError, ts: Date.now(), read: false,
+    });
+    if (_notifs.length > _NOTIF_MAX) _notifs = _notifs.slice(0, _NOTIF_MAX);
+    _saveNotifs();
+    _renderNotifBadge();
+    const panel = $('notifPanel');
+    if (panel && !panel.hidden) _renderNotifList();   // panneau ouvert → refresh live
+  }
+  function _notifOutside(e) {
+    const wrap = $('notifWrap');
+    if (wrap && !wrap.contains(e.target)) _closeNotifPanel();
+  }
+  function _openNotifPanel() {
+    const panel = $('notifPanel'); const btn = $('btnNotif');
+    if (!panel) return;
+    _renderNotifList();
+    panel.hidden = false;
+    if (btn) btn.setAttribute('aria-expanded', 'true');
+    let changed = false;
+    _notifs.forEach(x => { if (!x.read) { x.read = true; changed = true; } });
+    if (changed) _saveNotifs();
+    _renderNotifBadge();
+    setTimeout(() => document.addEventListener('click', _notifOutside), 0);
+  }
+  function _closeNotifPanel() {
+    const panel = $('notifPanel'); const btn = $('btnNotif');
+    if (panel) panel.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+    document.removeEventListener('click', _notifOutside);
+  }
+  function initNotifs() {
+    const btn = $('btnNotif');
+    if (!btn || btn._wired) return;   // idempotent
+    btn._wired = true;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const panel = $('notifPanel');
+      if (panel && panel.hidden) _openNotifPanel(); else _closeNotifPanel();
+    });
+    const clear = $('btnNotifClear');
+    if (clear) clear.addEventListener('click', (e) => {
+      e.stopPropagation();
+      _notifs = []; _saveNotifs(); _renderNotifList(); _renderNotifBadge();
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') _closeNotifPanel(); });
+    _renderNotifBadge();
   }
 
   // ── Sidebar stats ───────────────────────────────────────────────────────────
@@ -659,7 +760,7 @@ const UI = (() => {
   }
 
   return {
-    toast, confirmModal, updateStats, renderList, selectTrade, renderDetail,
+    toast, notify, initNotifs, confirmModal, updateStats, renderList, selectTrade, renderDetail,
     // Shared utilities exposed for js/pages/*.js
     escHtml, localDay, localToday, statsForTrades,
     OB_CLASS, OB_LABEL, MICRO_RATES,

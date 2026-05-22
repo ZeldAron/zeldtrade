@@ -269,6 +269,7 @@ function initApp() {
   refreshPlanUI();
   $('btnSidebarUpgrade')?.addEventListener('click', () => switchPage('offers'));
   $('btnTopbarHelp')?.addEventListener('click', () => switchPage('tutorial'));
+  UI.initNotifs && UI.initNotifs();   // v0.9.304 : centre de notifications (cloche topbar)
   _applySubtitle(currentPage);
   if (window.Analytics) Analytics.page(currentPage);
   window.addEventListener('store:planChanged', () => {

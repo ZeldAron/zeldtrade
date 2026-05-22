@@ -480,6 +480,80 @@ body {
 }
 .search-wrap input::placeholder { color: var(--muted); }
 
+/* v0.9.304 — Centre de notifications (cloche à droite de la recherche) */
+.notif-wrap { position: relative; flex-shrink: 0; }
+.notif-btn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transition: all 0.15s;
+}
+.notif-btn svg { width: 15px; height: 15px; }
+.notif-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--active-bg); }
+.notif-btn.has-unread { color: var(--accent); border-color: var(--accent); }
+.notif-badge {
+  position: absolute;
+  top: -5px; right: -5px;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 10px; font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--bg2);
+}
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  max-height: 60vh;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.notif-panel[hidden] { display: none; }   /* sinon display:flex écrase l'attribut hidden */
+.notif-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600; font-size: 13px;
+}
+.notif-clear {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); font-size: 11.5px;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.notif-clear:hover { color: var(--accent); }
+.notif-list { overflow-y: auto; flex: 1; }
+.notif-item {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item.unread { background: var(--active-bg); }
+.notif-item.error { border-left: 3px solid var(--red); }
+.notif-item-msg { color: var(--text); word-break: break-word; }
+.notif-item-time { color: var(--muted); font-size: 10.5px; }
+.notif-empty { padding: 24px 14px; text-align: center; color: var(--muted); font-size: 12px; }
+
 /* ═══ v0.9.267 — DÉTAILS « PRO » (scrollbars fines, sélection accent, lissage typo) ═══ */
 * { scrollbar-width: thin; scrollbar-color: var(--border2) transparent; }
 ::-webkit-scrollbar { width: 11px; height: 11px; }
