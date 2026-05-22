@@ -5,14 +5,14 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
-      version: '0.9.307',
+      version: '0.9.308',
       date: '2026-05-23',
       time: '02:00',
       tags: ['ui'],
-      title: 'Types de compte limités à ton profil de trading',
-      titleEn: 'Account types limited to your trading profile',
+      title: 'Types de compte limités à ton profil (+ raccourci)',
+      titleEn: 'Account types limited to your profile (+ shortcut)',
       items: [
-        { type: 'ui', text: 'Quand tu crées un compte, le choix du type est désormais limité à ce que tu as sélectionné dans ton profil (Prop firm / Fonds propres / Crypto). Tu peux le modifier à tout moment dans Réglages → ton profil de trading.', textEn: 'When you create an account, the type choice is now limited to what you selected in your profile (Prop firm / Own funds / Crypto). You can change it anytime in Settings → your trading profile.' },
+        { type: 'ui', text: 'Quand tu crées un compte, le choix du type est limité à ce que tu as sélectionné dans ton profil (Prop firm / Fonds propres / Crypto). Et si tu as besoin d\'un type masqué, un lien « Besoin d\'un autre type ? » t\'amène directement à ton profil pour l\'activer — plus de blocage.', textEn: 'When you create an account, the type choice is limited to what you selected in your profile (Prop firm / Own funds / Crypto). And if you need a hidden type, a "Need another type?" link takes you straight to your profile to enable it — no more dead end.' },
       ],
     },
     {
