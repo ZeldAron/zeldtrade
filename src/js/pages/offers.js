@@ -283,16 +283,33 @@ UI.renderOffers = function () {
       if (_hasActiveSub) {
         const o0 = btn.textContent;
         btn.disabled = true; btn.textContent = '…';
+        const _reset = () => { btn.disabled = false; btn.textContent = o0; };
         try {
-          // v0.9.299 : on passe le palier cible → la CF crée une session qui
-          // DEEP-LINK direct sur la page Stripe « confirmer le passage à <tier> »
-          // (plus besoin de chercher « Changer d'offre » dans le menu du portail).
-          const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({ flowToTier: tier });
-          if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
-          UI.toast(t('off.changeplan') || 'Pour changer de plan, gère ton abonnement (Réglages → Gérer mon abonnement).', true);
+          // v0.9.300 : changement de plan DIRECT côté serveur. La CF modifie
+          // l'abonnement Stripe existant (pas de portail, dont la config bloquait
+          // l'update avec « subscription update feature disabled »). Cycle conservé.
+          const res = await _fbFunctions.httpsCallable('changeSubscriptionPlan')({ targetTier: tier });
+          if (res && res.data && res.data.ok) {
+            UI.toast(t('off.changeplan.ok') || 'Changement de plan confirmé ! Mise à jour en cours…');
+            btn.textContent = '✓';
+            // Le webhook met à jour le palier de façon ASYNCHRONE : on resync
+            // jusqu'à voir le nouveau palier (ou 6 essais ~9 s) puis on recharge.
+            let n = 0;
+            const sync = async () => {
+              try { await Store.resync(); } catch {}
+              const info = (Store.getStripeInfo && Store.getStripeInfo()) || {};
+              if (info.tier === tier || n++ >= 6) { window.location.href = '/app'; return; }
+              setTimeout(sync, 1500);
+            };
+            sync();
+            return;   // bouton laissé désactivé jusqu'au rechargement
+          }
+          UI.toast(t('off.changeplan.err') || 'Le changement de plan a échoué. Réessaie ou contacte le support.', true);
+          _reset();
         } catch (e) {
-          UI.toast(t('off.changeplan') || 'Pour changer de plan, va dans Réglages → Gérer mon abonnement.', true);
-        } finally { btn.disabled = false; btn.textContent = o0; }
+          UI.toast(t('off.changeplan.err') || 'Le changement de plan a échoué. Réessaie ou contacte le support.', true);
+          _reset();
+        }
         return;
       }
       const original = btn.textContent;
