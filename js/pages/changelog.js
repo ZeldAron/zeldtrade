@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.297',
+      date: '2026-05-22',
+      time: '18:00',
+      tags: ['fix'],
+      title: 'Changement de plan abonné : passe par le portail',
+      titleEn: 'Subscriber plan change: routed via the portal',
+      items: [
+        { type: 'fix', text: 'Si tu es déjà abonné, choisir un autre plan (ex. Funded → Elite) ouvre désormais ton espace « Gérer mon abonnement » pour changer de plan proprement — avant, le bouton restait sans effet (un nouveau paiement aurait créé un doublon de facturation).', textEn: 'If you\'re already subscribed, choosing another plan (e.g. Funded → Elite) now opens your "Manage subscription" portal to switch cleanly — before, the button did nothing (a new payment would have created a duplicate subscription).' },
+      ],
+    },
+    {
       version: '0.9.296',
       date: '2026-05-22',
       time: '17:00',
