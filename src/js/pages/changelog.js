@@ -5,47 +5,14 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
-      version: '0.9.301',
+      version: '0.9.302',
       date: '2026-05-22',
       time: '23:55',
       tags: ['fix'],
-      title: 'Changement de plan Funded ↔ Elite : direct, en 1 clic',
-      titleEn: 'Plan change Funded ↔ Elite: direct, in 1 click',
+      title: 'Changement de plan Funded ↔ Elite en 1 clic',
+      titleEn: 'Switch plan Funded ↔ Elite in 1 click',
       items: [
-        { type: 'fix', text: 'Le changement de plan se fait maintenant directement : un clic sur « Choisir Elite » bascule ton abonnement (cycle mensuel/annuel conservé), sans passer par le portail Stripe qui refusait l\'opération. La différence est calculée au prorata et facturée immédiatement, et ton palier se met à jour automatiquement dans l\'app.', textEn: 'Plan changes are now direct: one click on "Choose Elite" switches your subscription (monthly/yearly cycle kept), without going through the Stripe portal that rejected the operation. The difference is prorated and charged immediately, and your tier updates automatically in the app.' },
-      ],
-    },
-    {
-      version: '0.9.299',
-      date: '2026-05-22',
-      time: '23:00',
-      tags: ['fix'],
-      title: 'Passage Funded → Elite en 1 clic (page de confirmation directe)',
-      titleEn: 'Funded → Elite upgrade in 1 click (direct confirmation page)',
-      items: [
-        { type: 'fix', text: 'Choisir un autre plan quand tu es déjà abonné t\'emmène désormais DIRECTEMENT sur la page Stripe de confirmation du changement (montant proratisé affiché), au lieu de t\'ouvrir le portail où il fallait chercher « Changer d\'offre » (option que Stripe cachait si ton abonnement était en cours de résiliation). Le cycle (mensuel/annuel) est conservé automatiquement.', textEn: 'Choosing another plan when you\'re already subscribed now takes you STRAIGHT to the Stripe change-confirmation page (prorated amount shown), instead of the portal where you had to find "Switch plan" (an option Stripe hid if your subscription was being canceled). Your billing cycle (monthly/yearly) is kept automatically.' },
-      ],
-    },
-    {
-      version: '0.9.298',
-      date: '2026-05-22',
-      time: '19:00',
-      tags: ['fix'],
-      title: 'Bouton « Choisir Elite » réparé pour les abonnés',
-      titleEn: '"Choose Elite" button fixed for subscribers',
-      items: [
-        { type: 'fix', text: 'Quand tu es déjà abonné (ex. Funded), le bouton « Choisir Elite » fonctionne enfin : il ouvre ton espace « Gérer mon abonnement » pour passer au plan supérieur. Avant, le clic était totalement sans effet pour les abonnés (un détail technique empêchait le bouton de réagir).', textEn: 'When you\'re already subscribed (e.g. Funded), the "Choose Elite" button finally works: it opens your "Manage subscription" portal to upgrade. Before, the click did nothing at all for subscribers (a technical detail kept the button from reacting).' },
-      ],
-    },
-    {
-      version: '0.9.297',
-      date: '2026-05-22',
-      time: '18:00',
-      tags: ['fix'],
-      title: 'Changement de plan abonné : passe par le portail',
-      titleEn: 'Subscriber plan change: routed via the portal',
-      items: [
-        { type: 'fix', text: 'Si tu es déjà abonné, choisir un autre plan (ex. Funded → Elite) ouvre désormais ton espace « Gérer mon abonnement » pour changer de plan proprement — avant, le bouton restait sans effet (un nouveau paiement aurait créé un doublon de facturation).', textEn: 'If you\'re already subscribed, choosing another plan (e.g. Funded → Elite) now opens your "Manage subscription" portal to switch cleanly — before, the button did nothing (a new payment would have created a duplicate subscription).' },
+        { type: 'fix', text: 'Quand tu es déjà abonné, le bouton « Choisir Elite » (ou Funded) t\'emmène directement sur une page Stripe pour confirmer le changement, avec le montant proratisé affiché avant de payer. Ton cycle (mensuel/annuel) est conservé et ton palier se met à jour automatiquement dans l\'app. Avant, le bouton restait sans effet pour les abonnés.', textEn: 'When you\'re already subscribed, the "Choose Elite" (or Funded) button takes you straight to a Stripe page to confirm the change, with the prorated amount shown before you pay. Your billing cycle (monthly/yearly) is kept and your tier updates automatically in the app. Before, the button did nothing for subscribers.' },
       ],
     },
     {
