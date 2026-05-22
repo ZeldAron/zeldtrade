@@ -6,6 +6,7 @@ const Modal = (() => {
   let onSaved       = null;
   let direction     = null;    // 'long' | 'short'
   let capturedImage = null;    // base64
+  let _analysisFile = null;    // v0.9.290 : blob original de l'image d'analyse → seed slot 0 du trade
   let parsedTrade   = null;    // { entry, sl, tp1, tp2, tp3, instrument }
   let _forceClaude  = false;   // v0.9.223 — set par "Réanalyser" pour forcer Claude direct
   let capital       = 50000;
@@ -109,6 +110,7 @@ const Modal = (() => {
         try {
           const b64 = ev.target.result.split(',')[1];
           capturedImage = b64;
+          _analysisFile = file;  // v0.9.290 : conservé pour seed le slot 0 du trade
           $('wPreviewImg').src             = 'data:image/png;base64,' + b64;
           $('wDropPrompt').style.display   = 'none';
           $('wImagePreview').style.display = '';
@@ -138,6 +140,7 @@ const Modal = (() => {
 
   function clearImage() {
     capturedImage = null;
+    _analysisFile = null;
     parsedTrade   = null;
     $('wDropZone').classList.remove('has-image');
     $('wDropPrompt').style.display   = '';
@@ -1101,6 +1104,19 @@ const Modal = (() => {
     }
   }
 
+  // v0.9.290 : seed le slot 0 du trade avec l'image utilisée pour l'analyse IA,
+  // pour qu'elle soit conservée automatiquement (visible en bas, étape 3) sans que
+  // l'user ait à la re-déposer. Il reste alors 2 slots → 3 captures au total.
+  // Conditions : tier Pro (max>=1), slot 0 vide, et une image d'analyse existe.
+  async function _seedSlot0FromAnalysis() {
+    try {
+      const max = (Store && Store.getMaxScreenshots) ? Store.getMaxScreenshots() : 0;
+      if (max < 1 || !_analysisFile || !_isSlot0Empty()) return;
+      await handleShotFromBlob(_analysisFile);
+      _refreshShotsGate();
+    } catch (e) { console.warn('[wizard] seed slot0 from analysis', e && e.message); }
+  }
+
   // v0.9.246 : applique le gating tier sur la section screenshots du wizard.
   // - Trader : affiche la banner upsell, cache tout slot.
   // - Pro    : affiche les slots (slot 0 + extras dans la limite getMaxScreenshots).
@@ -1389,6 +1405,7 @@ const Modal = (() => {
 
     // Reset
     capturedImage = null;
+    _analysisFile = null;
     parsedTrade   = null;
     capital       = Store.getSettings().capital || 50000;
     feePerSide    = 2.14;
@@ -1532,6 +1549,7 @@ const Modal = (() => {
     $('modalOverlay').classList.remove('open');
     editingId     = null;
     capturedImage = null;
+    _analysisFile = null;
     parsedTrade   = null;
     // Révoque l'objectURL du preview screenshot (anti-leak mémoire)
     if (_shotPreviewUrl) { try { URL.revokeObjectURL(_shotPreviewUrl); } catch {} _shotPreviewUrl = null; }
@@ -1787,6 +1805,7 @@ const Modal = (() => {
       // de choisir son compte 50x par jour quand il est déjà sélectionné par défaut.
       populateApexSelect($('wApex').value || '');
       goToStep(3);
+      _seedSlot0FromAnalysis();   // v0.9.290 : l'image d'analyse devient la capture #1
       $('wContracts').focus();
     });
 
