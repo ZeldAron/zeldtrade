@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.315',
+      date: '2026-05-23',
+      time: '04:45',
+      tags: ['ui'],
+      title: 'Écran de chargement jusqu\'au chargement complet',
+      titleEn: 'Loading screen until everything is ready',
+      items: [
+        { type: 'ui', text: 'Au démarrage, l\'écran de chargement reste affiché jusqu\'à ce que tes données soient complètement chargées — fini le tableau de bord à moitié vide qui s\'affichait pendant une seconde.', textEn: 'On startup, the loading screen now stays until your data is fully loaded — no more half-empty dashboard flashing for a second.' },
+      ],
+    },
+    {
       version: '0.9.314',
       date: '2026-05-23',
       time: '04:30',
