@@ -1159,6 +1159,26 @@ const Modal = (() => {
     }
   }
 
+  // v0.9.289 : extrait une image d'un drop, qu'elle arrive via dataTransfer.files
+  // (fichier du bureau) OU dataTransfer.items (certains navigateurs / drags depuis
+  // une autre app). Avant on ne lisait que .files → des drags valides ne faisaient
+  // rien (« drag & drop pas tout à fait »).
+  function _imageFileFromDT(dt) {
+    if (!dt) return null;
+    if (dt.files && dt.files[0] && dt.files[0].type && dt.files[0].type.startsWith('image/')) {
+      return dt.files[0];
+    }
+    if (dt.items) {
+      for (const it of dt.items) {
+        if (it.kind === 'file') {
+          const f = it.getAsFile();
+          if (f && f.type && f.type.startsWith('image/')) return f;
+        }
+      }
+    }
+    return null;
+  }
+
   // v0.9.246 : handlers drag/drop/click pour un slot extra (1 ou 2).
   function _bindExtraSlot(el, extraIdx) {
     const replaceBtn = el.querySelector('.shot-slot-replace');
@@ -1177,11 +1197,12 @@ const Modal = (() => {
     // Drag & drop
     el.addEventListener('dragover', (e) => { e.preventDefault(); el.style.borderColor = 'var(--accent)'; el.style.background = 'rgba(124, 58, 237,0.05)'; });
     el.addEventListener('dragleave', () => { el.style.borderColor = ''; el.style.background = ''; });
+    el.addEventListener('dragenter', (e) => e.preventDefault());
     el.addEventListener('drop', (e) => {
       e.preventDefault();
       el.style.borderColor = ''; el.style.background = '';
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) _handleExtraBlob(file, extraIdx);
+      const file = _imageFileFromDT(e.dataTransfer);
+      if (file) _handleExtraBlob(file, extraIdx);
     });
 
     if (replaceBtn) {
@@ -1787,6 +1808,7 @@ const Modal = (() => {
     });
 
     // Drag-and-drop
+    $('wDropZone').addEventListener('dragenter', e => e.preventDefault());
     $('wDropZone').addEventListener('dragover', e => {
       e.preventDefault();
       $('wDropZone').classList.add('dz-dragover');
@@ -1798,8 +1820,18 @@ const Modal = (() => {
     $('wDropZone').addEventListener('drop', e => {
       e.preventDefault();
       $('wDropZone').classList.remove('dz-dragover');
-      const file = e.dataTransfer.files && e.dataTransfer.files[0];
-      if (file && file.type.startsWith('image/')) loadImageFile(file);
+      const file = _imageFileFromDT(e.dataTransfer);
+      if (file) loadImageFile(file);
+    });
+
+    // v0.9.289 : garde anti-navigation. Si on rate une zone de drop pendant que
+    // le wizard est ouvert, le navigateur OUVRIRAIT le fichier déposé (et on
+    // perdrait tout le wizard). On bloque le comportement par défaut au niveau
+    // document quand la modale est ouverte ; les zones gardent leur propre handler.
+    ['dragover', 'drop'].forEach(evt => {
+      document.addEventListener(evt, e => {
+        if ($('modalOverlay') && $('modalOverlay').classList.contains('open')) e.preventDefault();
+      });
     });
 
     // Q44 : UN SEUL handler paste global qui route selon le step actif.
@@ -1887,21 +1919,25 @@ const Modal = (() => {
         e.target.value = ''; // reset pour permettre re-sélection même fichier
       });
       // Drag & drop
+      shotZone.addEventListener('dragenter', e => e.preventDefault());
       shotZone.addEventListener('dragover', e => {
         e.preventDefault();
         shotZone.style.borderColor = 'var(--purple-l)';
         shotZone.style.background  = 'rgba(124, 58, 237,0.05)';
       });
-      shotZone.addEventListener('dragleave', () => {
-        shotZone.style.borderColor = '';
-        shotZone.style.background  = '';
+      shotZone.addEventListener('dragleave', e => {
+        // Ne réinitialise que si on quitte vraiment la zone (pas un enfant) → anti-flicker
+        if (!shotZone.contains(e.relatedTarget)) {
+          shotZone.style.borderColor = '';
+          shotZone.style.background  = '';
+        }
       });
       shotZone.addEventListener('drop', e => {
         e.preventDefault();
         shotZone.style.borderColor = '';
         shotZone.style.background  = '';
-        const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) handleShotFromBlob(file);
+        const file = _imageFileFromDT(e.dataTransfer);
+        if (file) handleShotFromBlob(file);
       });
       // Replace / Delete
       $('wShotReplace').addEventListener('click', e => {
