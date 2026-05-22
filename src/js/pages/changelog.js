@@ -5,7 +5,7 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
-      version: '0.9.306',
+      version: '0.9.307',
       date: '2026-05-23',
       time: '02:00',
       tags: ['ui'],
