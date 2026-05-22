@@ -1375,7 +1375,7 @@
     })();
 
     if (_settingsBound) {
-      updateGroqStatus();
+      updateAIStatus();
       _refreshThemeToggle();
       return;
     }
@@ -1403,17 +1403,17 @@
       });
     });
 
-    function updateGroqStatus() {
-      const statusEl = $('groqKeyStatus');
+    function updateAIStatus() {
+      const statusEl = $('aiKeyStatus');
       if (!statusEl) return;
       // v0.9.229 : la clé IA est gérée côté serveur (Firebase Secret Manager).
       // L'IA est toujours active pour tous les users, indépendamment du tier
       // (le quota par tier est appliqué côté Cloud Function).
-      statusEl.textContent = t('set.groq.ok') || '✓ IA active';
+      statusEl.textContent = t('set.ai.ok') || '✓ IA active';
       statusEl.style.color = 'var(--green)';
     }
-    updateGroqStatus();
-    window.addEventListener('store:groqReady', updateGroqStatus);
+    updateAIStatus();
+    window.addEventListener('store:aiReady', updateAIStatus);
 
     $('btnExport').addEventListener('click', () => {
       const blob = new Blob([Store.exportJSON()], { type: 'application/json' });
