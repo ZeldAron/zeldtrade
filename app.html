@@ -46,10 +46,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=0.9.317">
+  <link rel="stylesheet" href="css/style.css?v=0.9.318">
   <!-- v0.9.255 : theme manager en TÊTE du head — applique data-theme="light"
        AVANT le parsing du body pour éviter le FOUC (flash dark → light). -->
-  <script src="js/theme.js?v=0.9.317"></script>
+  <script src="js/theme.js?v=0.9.318"></script>
 </head>
 <body>
 
@@ -251,19 +251,40 @@
   </div>
 
   <!-- ══ LOADER (après auth) ════════════════════════════════════════════════════ -->
-  <div id="loginLoader" class="lp-loader" style="display:none">
-    <div class="loader-logo">
-      <div class="logo-mark login-logo-mark">
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M28 28 L72 28 L72 38 L41 65 L72 65 L72 72 L28 72 L28 62 L59 35 L28 35 Z" fill="#fff"/>
-          <circle cx="78" cy="22" r="4.5" fill="#f472b6"/>
-        </svg>
+  <!-- LOADER-UI (v0.9.318) — écran de chargement animé. CSS scopé sous .zt-loader. -->
+  <div id="loginLoader" class="lp-loader zt-loader" style="display:none" aria-live="polite" aria-busy="true">
+    <div class="stage">
+      <div class="grid"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="core">
+        <div class="logo">
+          <div class="logo-ring"></div>
+          <div class="logo-tile">
+            <svg class="logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <path class="logo-z" d="M30 32 L70 32 L32 68 L70 68"/>
+              <circle class="logo-dot" cx="78" cy="22" r="4.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="wordmark">
+          <span class="eyebrow" id="ztLoaderEyebrow">Journal de trading</span>
+          <h1>ZeldTrade</h1>
+        </div>
+        <div class="status" id="ztLoaderStatus" aria-label="État du chargement"></div>
+        <div class="progress-wrap">
+          <div class="progress"><div class="progress-bar" id="ztLoaderBar"></div></div>
+          <div class="progress-meta">
+            <span id="ztLoaderMetaLabel">CHARGEMENT</span>
+            <span class="pct" id="ztLoaderPct">0%</span>
+          </div>
+        </div>
       </div>
-      <div class="login-title">ZeldTrade</div>
-      <div class="loader-user" id="loaderUser"></div>
     </div>
-    <div class="loader-track">
-      <div class="loader-fill" id="loaderFill"></div>
+    <div class="corners">
+      <div class="corner corner-tl"><span class="dot"></span> SYSTÈME EN LIGNE</div>
+      <div class="corner corner-tr">CHIFFREMENT TLS · UE-WEST</div>
+      <div class="corner corner-bl" id="ztLoaderVer">v0.9.318</div>
     </div>
   </div>
 
@@ -1028,31 +1049,31 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js" integrity="sha384-oFrOL1TiREYNET0lsYF3LjQuyi2gL7vhjH1X8vFr+umcmzAdPELopeSgbcrv4uRm" crossorigin="anonymous"></script>
-  <script src="js/firebase.js?v=0.9.317"></script>
+  <script src="js/firebase.js?v=0.9.318"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" defer></script>
-  <script src="js/i18n.js?v=0.9.317"></script>
-  <script src="js/icons.js?v=0.9.317"></script>
-  <script src="js/analytics.js?v=0.9.317"></script>
+  <script src="js/i18n.js?v=0.9.318"></script>
+  <script src="js/icons.js?v=0.9.318"></script>
+  <script src="js/analytics.js?v=0.9.318"></script>
   <script src="js/lib/jspdf.umd.min.js?v=3.0.1" defer></script>
-  <script src="js/auth.js?v=0.9.317"></script>
-  <script src="js/store.js?v=0.9.317"></script>
-  <script src="js/calc.js?v=0.9.317"></script>
-  <script src="js/modal.js?v=0.9.317"></script>
-  <script src="js/ui.js?v=0.9.317"></script>
-  <script src="js/pages/dashboard.js?v=0.9.317"></script>
-  <script src="js/pages/analytics.js?v=0.9.317"></script>
-  <script src="js/pages/export-pdf.js?v=0.9.317"></script>
-  <script src="js/pages/settings.js?v=0.9.317"></script>
-  <script src="js/pages/goals.js?v=0.9.317"></script>
-  <script src="js/pages/calendar.js?v=0.9.317"></script>
-  <script src="js/pages/micro.js?v=0.9.317"></script>
-  <script src="js/pages/outils.js?v=0.9.317"></script>
-  <script src="js/pages/offers.js?v=0.9.317"></script>
-  <script src="js/contact.js?v=0.9.317"></script>
-  <script src="js/app.js?v=0.9.317"></script>
+  <script src="js/auth.js?v=0.9.318"></script>
+  <script src="js/store.js?v=0.9.318"></script>
+  <script src="js/calc.js?v=0.9.318"></script>
+  <script src="js/modal.js?v=0.9.318"></script>
+  <script src="js/ui.js?v=0.9.318"></script>
+  <script src="js/pages/dashboard.js?v=0.9.318"></script>
+  <script src="js/pages/analytics.js?v=0.9.318"></script>
+  <script src="js/pages/export-pdf.js?v=0.9.318"></script>
+  <script src="js/pages/settings.js?v=0.9.318"></script>
+  <script src="js/pages/goals.js?v=0.9.318"></script>
+  <script src="js/pages/calendar.js?v=0.9.318"></script>
+  <script src="js/pages/micro.js?v=0.9.318"></script>
+  <script src="js/pages/outils.js?v=0.9.318"></script>
+  <script src="js/pages/offers.js?v=0.9.318"></script>
+  <script src="js/contact.js?v=0.9.318"></script>
+  <script src="js/app.js?v=0.9.318"></script>
 
-  <script src="js/app-bootstrap.js?v=0.9.317"></script>
+  <script src="js/app-bootstrap.js?v=0.9.318"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent
