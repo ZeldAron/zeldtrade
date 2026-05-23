@@ -1821,6 +1821,10 @@ exports.stripeWebhook = onRequest(
             customerId:     cus,
             subscriptionId: sub,
             tier,
+            // v0.9.317 : on persiste le cycle (mensuel/annuel) — l'UI Offres en a besoin
+            // pour n'afficher "Actif" que sur la bonne formule (sinon "Actif" sur l'annuel
+            // alors que l'abonné est au mensuel).
+            cycle:          (s.metadata?.cycle === 'monthly' || s.metadata?.cycle === 'yearly') ? s.metadata.cycle : null,
             checkoutAt:     Date.now(),
           }, { merge: true });
           await _writeAuditLog("stripeCheckoutCompleted", "stripe-webhook", { uid, tier, sessionId: s.id });
@@ -1855,6 +1859,12 @@ exports.stripeWebhook = onRequest(
             updatedAt:          Date.now(),
           };
           if (tier) stripePatch.tier = tier;
+          // v0.9.317 : persiste le cycle (mensuel/annuel) déduit de l'intervalle du prix —
+          // suit donc un éventuel changement de formule. Lu par la page Offres.
+          const _interval = sub.items && sub.items.data && sub.items.data[0]
+            && sub.items.data[0].price && sub.items.data[0].price.recurring
+            && sub.items.data[0].price.recurring.interval;
+          if (_interval) stripePatch.cycle = _interval === 'year' ? 'yearly' : 'monthly';
           await db.doc(`users/${uid}/data/stripe`).set(stripePatch, { merge: true });
           if (!isActive) {
             await db.doc(`users/${uid}/data/plan`).set({
