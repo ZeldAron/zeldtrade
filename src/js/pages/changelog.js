@@ -5,6 +5,19 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.316',
+      date: '2026-05-23',
+      time: '02:36',
+      tags: ['ui'],
+      title: 'Page Abonnements redessinée + facturation annuelle pour tous',
+      titleEn: 'Redesigned Subscriptions page + yearly billing for everyone',
+      items: [
+        { type: 'ui', text: 'La page Abonnements reprend le design soigné de la page d\'accueil : cartes claires, plan « le plus populaire » mis en avant, Elite en premium ambré.', textEn: 'The Subscriptions page now uses the polished design of the home page: clean cards, the "most popular" plan highlighted, premium amber Elite.' },
+        { type: 'ui', text: 'Le choix mensuel / annuel est désormais visible et utilisable par tout le monde — y compris si tu es déjà abonné (avant, l\'annuel était caché aux abonnés).', textEn: 'The monthly / yearly switch is now visible and usable by everyone — including current subscribers (yearly used to be hidden from them).' },
+        { type: 'ui', text: 'Ton plan actuel est clairement surligné, et les boutons d\'upgrade inutiles ont disparu (rien au-dessus d\'Elite).', textEn: 'Your current plan is clearly highlighted, and useless upgrade buttons are gone (nothing above Elite).' },
+      ],
+    },
+    {
       version: '0.9.315',
       date: '2026-05-23',
       time: '04:45',
