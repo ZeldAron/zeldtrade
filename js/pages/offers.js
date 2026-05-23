@@ -49,86 +49,99 @@ UI.renderOffers = function () {
       <button type="button" class="billing-toggle-btn" data-billing="yearly" role="tab" aria-selected="false">${t('off.billing.yearly')} <span class="billing-toggle-save">−2 ${isEn ? 'mo' : 'mois'}</span></button>
     </div>`;
 
+  // ── Plan possédé → carte surlignée "current" (un bêta-testeur ⇒ Funded) ────
+  const currentCardTier = isElite ? 'elite' : (isFunded || isBeta) ? 'funded' : 'trader';
+  const curTag = ct => currentCardTier === ct
+    ? `<div class="pricing-current-tag">✓ ${t('off.current')}</div>` : '';
+
+  // ── CTA par carte — gère OFF-1 : aucun bouton d'upgrade quand on est au palier
+  //    max (Elite) ou au-dessus de la carte ; les paliers possédés/inclus sont inertes.
+  const ctaTrader = isTrader
+    ? `<div class="pricing-cta current">✓ ${t('off.cta.cur')}</div>`
+    : `<div class="pricing-cta included">${isEn ? 'Included' : 'Inclus'}</div>`;
+  const ctaFunded = (isFunded || isBeta)
+    ? `<div class="pricing-cta current">✓ ${t('off.cta.act')}</div>`
+    : isElite
+      ? `<div class="pricing-cta included">${isEn ? 'Included in Elite' : 'Inclus dans Elite'}</div>`
+      : `<button type="button" class="pricing-cta primary" data-checkout-tier="funded">${t('off.cta.funded.btn')}</button>`;
+  const ctaElite = (isElite || isBeta)
+    ? `<div class="pricing-cta current">✓ ${t('off.cta.act')}</div>`
+    : `<button type="button" class="pricing-cta ghost-elite" data-checkout-tier="elite">${t('off.cta.elite.btn')}</button>`;
+
   // ── Card : TRADER (gratuit) ───────────────────────────────────────────────
   const cardTrader = `
-    <div class="offer-card ${isTrader ? 'offer-current' : ''}">
-      <div class="offer-badge-basic">GRATUIT</div>
-      <div class="offer-badge-current" style="opacity:${isTrader ? 1 : 0}">${t('off.current')}</div>
-      <div class="offer-name">Trader</div>
-      <div class="offer-tag">${t('off.trader.tag')}</div>
-      <div class="offer-price-hidden" style="color:var(--green)">0 €<span class="offer-price-suffix"> · ${t('off.forever')}</span></div>
-      <div class="offer-perday">&nbsp;</div>
-      <ul class="offer-features">
-        <li class="ok">${t('off.trader.f1')}</li>
-        <li class="ok">${t('off.trader.f2')}</li>
-        <li class="ok">${t('off.trader.f3')}</li>
-        <li class="ok">${t('off.trader.f4')}</li>
-        <li class="ok">${t('off.trader.f5')}</li>
-        <li class="limit">${t('off.trader.f6')}</li>
-        <li class="limit">${t('off.trader.f7')}</li>
-        <li class="no">${t('off.trader.f8')}</li>
-        <li class="no">${t('off.trader.f9')}</li>
+    <div class="pricing-card ${currentCardTier === 'trader' ? 'current' : ''}">
+      ${curTag('trader')}
+      <div class="pricing-badge-row"><span class="pricing-badge-free">✓ ${isEn ? 'Free for life' : 'Gratuit à vie'}</span></div>
+      <div class="pricing-card-name">Trader</div>
+      <p class="pricing-card-tagline">${t('off.trader.tag')}</p>
+      <div class="pricing-card-price">0 €<span class="price-suffix">/ ${t('off.forever')}</span></div>
+      <div class="pricing-card-perday" aria-hidden="true">&nbsp;</div>
+      <ul class="pricing-features">
+        <li>${t('off.trader.f1')}</li>
+        <li>${t('off.trader.f2')}</li>
+        <li>${t('off.trader.f3')}</li>
+        <li>${t('off.trader.f4')}</li>
+        <li>${t('off.trader.f5')}</li>
+        <li>${t('off.trader.f6')}</li>
+        <li>${t('off.trader.f7')}</li>
+        <li class="muted">${t('off.trader.f8')}</li>
+        <li class="muted">${t('off.trader.f9')}</li>
       </ul>
-      <div class="offer-cta offer-cta-current">${!pro ? t('off.cta.cur') : 'Trader'}</div>
+      ${ctaTrader}
     </div>`;
 
   // ── Card : FUNDED (14.99 €/mois — featured) ──────────────────────────────
   const cardFunded = `
-    <div class="offer-card offer-pro ${isFunded ? 'offer-current' : ''}">
-      <div class="offer-badge-pro">${isBeta ? 'BÊTA' : t('off.popular')}</div>
-      <div class="offer-badge-current" style="opacity:${isFunded ? 1 : 0};color:#a78bfa">${t('off.current')}</div>
-      <div class="offer-name" style="color:#a78bfa">Funded</div>
-      <div class="offer-tag">${t('off.funded.tag')}</div>
-      <div class="offer-price-hidden">
-        <span data-price-monthly>14,99 €<span class="offer-price-suffix">/${t('off.month')}</span></span>
+    <div class="pricing-card featured ${currentCardTier === 'funded' ? 'current' : ''}">
+      ${curTag('funded')}
+      <div class="pricing-badge-row"><span class="pricing-badge">✦ ${isBeta ? 'Bêta' : t('off.popular')}</span></div>
+      <div class="pricing-card-name">Funded</div>
+      <p class="pricing-card-tagline">${t('off.funded.tag')}</p>
+      <div class="pricing-card-price">
+        <span data-price-monthly>14,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
         <span data-price-yearly style="display:none">${t('off.funded.yearly')}</span>
       </div>
-      <div class="offer-perday">
+      <div class="pricing-card-perday">
         <span data-price-monthly>${t('off.funded.perday')}</span>
-        <span data-price-yearly style="display:none;color:var(--green);font-weight:600">${t('off.funded.yearly.save')}</span>
+        <span data-price-yearly style="display:none;color:#4ade80;font-weight:600">${t('off.funded.yearly.save')}</span>
       </div>
-      <ul class="offer-features">
-        <li class="ok">${t('off.funded.f1')}</li>
-        <li class="ok"><strong>${t('off.funded.f2')}</strong></li>
-        <li class="ok"><strong>${t('off.funded.f3')}</strong></li>
-        <li class="ok"><strong>${t('off.funded.f4')}</strong></li>
-        <li class="ok">${t('off.funded.f5')}</li>
-        <li class="ok">${t('off.funded.f6')}</li>
-        <li class="ok">${t('off.funded.f7')}</li>
+      <ul class="pricing-features">
+        <li>${t('off.funded.f1')}</li>
+        <li>${t('off.funded.f2')}</li>
+        <li>${t('off.funded.f3')}</li>
+        <li>${t('off.funded.f4')}</li>
+        <li>${t('off.funded.f5')}</li>
+        <li>${t('off.funded.f6')}</li>
+        <li>${t('off.funded.f7')}</li>
       </ul>
-      ${isFunded || isBeta
-        ? `<div class="offer-cta offer-cta-current">${t('off.cta.act')}</div>`
-        : isElite
-          ? `<div class="offer-cta offer-cta-current" style="background:rgba(255,255,255,0.04)">Inclus dans Elite</div>`
-          : `<button type="button" class="offer-cta offer-cta-link offer-cta-pro" data-checkout-tier="funded">${t('off.cta.funded.btn')}</button>`}
+      ${ctaFunded}
     </div>`;
 
   // ── Card : ELITE (29.99 €/mois) ───────────────────────────────────────────
   const cardElite = `
-    <div class="offer-card offer-elite ${isElite ? 'offer-current' : ''}">
-      <div class="offer-badge-elite">✦ Premium</div>
-      <div class="offer-badge-current" style="opacity:${isElite ? 1 : 0};color:#fbbf24">${t('off.current')}</div>
-      <div class="offer-name" style="color:#f59e0b">Elite</div>
-      <div class="offer-tag">${t('off.elite.tag')}</div>
-      <div class="offer-price-hidden">
-        <span data-price-monthly>29,99 €<span class="offer-price-suffix">/${t('off.month')}</span></span>
+    <div class="pricing-card elite ${currentCardTier === 'elite' ? 'current' : ''}">
+      ${curTag('elite')}
+      <div class="pricing-badge-row"><span class="pricing-badge-elite">✦ Premium</span></div>
+      <div class="pricing-card-name">Elite</div>
+      <p class="pricing-card-tagline">${t('off.elite.tag')}</p>
+      <div class="pricing-card-price">
+        <span data-price-monthly>29,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
         <span data-price-yearly style="display:none">${t('off.elite.yearly')}</span>
       </div>
-      <div class="offer-perday">
+      <div class="pricing-card-perday">
         <span data-price-monthly>${t('off.elite.perday')}</span>
-        <span data-price-yearly style="display:none;color:var(--green);font-weight:600">${t('off.elite.yearly.save')}</span>
+        <span data-price-yearly style="display:none;color:#4ade80;font-weight:600">${t('off.elite.yearly.save')}</span>
       </div>
-      <ul class="offer-features">
-        <li class="ok">${t('off.elite.f1')}</li>
-        <li class="ok"><strong>${t('off.elite.f2')}</strong></li>
-        <li class="ok"><strong>${t('off.elite.f3')}</strong></li>
-        <li class="ok">${t('off.elite.f4')}</li>
-        <li class="ok">${t('off.elite.f5')}</li>
-        <li class="ok">${t('off.elite.f6')}</li>
+      <ul class="pricing-features">
+        <li>${t('off.elite.f1')}</li>
+        <li>${t('off.elite.f2')}</li>
+        <li>${t('off.elite.f3')}</li>
+        <li>${t('off.elite.f4')}</li>
+        <li>${t('off.elite.f5')}</li>
+        <li>${t('off.elite.f6')}</li>
       </ul>
-      ${isElite || isBeta
-        ? `<div class="offer-cta offer-cta-current">${t('off.cta.act')}</div>`
-        : `<button type="button" class="offer-cta offer-cta-link offer-cta-elite" data-checkout-tier="elite">${t('off.cta.elite.btn')}</button>`}
+      ${ctaElite}
     </div>`;
 
   // ── Trust banner ───────────────────────────────────────────────────────────
@@ -202,9 +215,9 @@ UI.renderOffers = function () {
       ${statusBanner}
       ${foundingBanner}
 
-      ${pro ? '' : billingToggle}
+      ${billingToggle}
 
-      <div class="offers-cards">
+      <div class="pricing-cards">
         ${cardTrader}
         ${cardFunded}
         ${cardElite}
@@ -238,27 +251,27 @@ UI.renderOffers = function () {
   `;
 
   // ── Billing toggle logic ──────────────────────────────────────────────────
+  // v0.9.316 (OFF-LANDING) : le toggle est désormais affiché et actif pour TOUT
+  // le monde (avant : caché aux abonnés, qui ne pouvaient donc pas voir l'annuel).
   let _billingCycle = 'monthly';   // v0.9.255 : suivi pour le checkout
-  if (!pro) {
-    const toggleBtns = el.querySelectorAll('.billing-toggle-btn');
-    toggleBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const billing = btn.getAttribute('data-billing');
-        _billingCycle = billing === 'yearly' ? 'yearly' : 'monthly';
-        toggleBtns.forEach(b => {
-          const isActive = b.getAttribute('data-billing') === billing;
-          b.classList.toggle('active', isActive);
-          b.setAttribute('aria-selected', isActive ? 'true' : 'false');
-        });
-        el.querySelectorAll('[data-price-monthly]').forEach(p => {
-          p.style.display = billing === 'monthly' ? '' : 'none';
-        });
-        el.querySelectorAll('[data-price-yearly]').forEach(p => {
-          p.style.display = billing === 'yearly' ? '' : 'none';
-        });
+  const toggleBtns = el.querySelectorAll('.billing-toggle-btn');
+  toggleBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const billing = btn.getAttribute('data-billing');
+      _billingCycle = billing === 'yearly' ? 'yearly' : 'monthly';
+      toggleBtns.forEach(b => {
+        const isActive = b.getAttribute('data-billing') === billing;
+        b.classList.toggle('active', isActive);
+        b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+      });
+      el.querySelectorAll('[data-price-monthly]').forEach(p => {
+        p.style.display = billing === 'monthly' ? '' : 'none';
+      });
+      el.querySelectorAll('[data-price-yearly]').forEach(p => {
+        p.style.display = billing === 'yearly' ? '' : 'none';
       });
     });
-  }
+  });
 
   // ── Checkout Stripe self-service (v0.9.255) ────────────────────────────────
   // v0.9.298 (#bug upgrade) : ce binding était à tort DANS `if (!pro)`, donc le
