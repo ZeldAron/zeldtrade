@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.319',
+      date: '2026-05-23',
+      time: '03:18',
+      tags: ['fix'],
+      title: 'Plus de flash d\'app à moitié vide au chargement',
+      titleEn: 'No more half-empty app flash on load',
+      items: [
+        { type: 'fix', text: 'L\'écran de chargement s\'affiche maintenant dès la toute première image de la page, avant même la connexion — fini la fraction de seconde où l\'app apparaissait vide (pseudo « — », stats vides) le temps que tout se charge.', textEn: 'The loading screen now shows from the very first frame, before authentication — no more split-second where the app appeared empty (blank name, empty stats) while everything loaded.' },
+      ],
+    },
+    {
       version: '0.9.318',
       date: '2026-05-23',
       time: '03:11',

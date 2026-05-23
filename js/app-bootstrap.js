@@ -261,6 +261,9 @@ document.addEventListener('DOMContentLoaded', () => {
       bar = $('ztLoaderBar'); pctEl = $('ztLoaderPct'); statusEl = $('ztLoaderStatus');
       try { const v = window.Changelog && Changelog.getEntries && Changelog.getEntries()[0]; const ve = $('ztLoaderVer'); if (v && ve) ve.textContent = 'v' + v.version; } catch (e) {}
       const eb = $('ztLoaderEyebrow'); if (eb && username) eb.textContent = tr('Bon retour, ', 'Welcome back, ') + username;
+      // v0.9.319 : lancé une 1ʳᵉ fois au boot (avant l'auth) pour couvrir l'app shell ;
+      // les appels suivants (showLoader après login) ne réinitialisent PAS la barre.
+      if (running) return;
       timers.forEach(clearTimeout); timers = [];
       current = 0; target = 0; activeNode = null;
       if (statusEl) statusEl.innerHTML = '';
@@ -285,6 +288,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loader) { loader.classList.remove('done'); loader.style.opacity = ''; loader.style.transition = ''; loader.style.display = 'flex'; }
     ZTLoader.start(username);
   }
+
+  // v0.9.319 : démarre l'animation du loader IMMÉDIATEMENT (déjà visible via display:flex
+  // dans le HTML) → couvre l'app shell dès le 1er paint, avant que l'auth soit résolue.
+  ZTLoader.start();
 
   // ── Launch app ──────────────────────────────────────────────────────────────
   async function launchApp(user) {
@@ -466,6 +473,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       _wasLoggedIn = false;
+      // v0.9.319 : pas loggé → on coupe le loader de boot et on ouvre le modal.
+      ZTLoader.stop();
+      if (loader) { loader.style.transition = ''; loader.style.opacity = ''; loader.style.display = 'none'; }
       // Pas loggé → ouvre le modal. Mode = inscription si on vient d'un CTA
       // « Créer un compte » (/app?signup=1), sinon connexion. (#bug landing)
       openModal(_initialAuthMode());
