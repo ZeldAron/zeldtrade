@@ -154,7 +154,7 @@ const Store = (() => {
   let groups        = [];
   let _plan         = { plan: 'basic', tier: 'trader' };
   let _aiUsage      = { date: '', count: 0 };
-  let _stripe       = { customerId: null, subscriptionStatus: null, tier: null, currentPeriodEnd: null, cancelAtPeriodEnd: false };
+  let _stripe       = { customerId: null, subscriptionStatus: null, tier: null, currentPeriodEnd: null, cancelAtPeriodEnd: false, cycle: null };
 
   // ─── Plans & tiers (v0.9.211) ────────────────────────────────────────────────
   // 4 tiers : trader (gratuit) / funded (14,99 €) / elite (29,99 €) / beta (admin attribué, accès tout)
@@ -379,6 +379,7 @@ const Store = (() => {
           tier:               typeof sd.tier === 'string' ? sd.tier : null,
           currentPeriodEnd:   (typeof sd.currentPeriodEnd === 'number') ? sd.currentPeriodEnd : null,
           cancelAtPeriodEnd:  sd.cancelAtPeriodEnd === true,
+          cycle:              (sd.cycle === 'monthly' || sd.cycle === 'yearly') ? sd.cycle : null,  // v0.9.317
         };
       }
       if (tSnap.exists) {
