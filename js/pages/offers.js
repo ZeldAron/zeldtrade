@@ -49,29 +49,65 @@ UI.renderOffers = function () {
       <button type="button" class="billing-toggle-btn" data-billing="yearly" role="tab" aria-selected="false">${t('off.billing.yearly')} <span class="billing-toggle-save">−2 ${isEn ? 'mo' : 'mois'}</span></button>
     </div>`;
 
-  // ── Plan possédé → carte surlignée "current" (un bêta-testeur ⇒ Funded) ────
-  const currentCardTier = isElite ? 'elite' : (isFunded || isBeta) ? 'funded' : 'trader';
-  const curTag = ct => currentCardTier === ct
-    ? `<div class="pricing-current-tag">✓ ${t('off.current')}</div>` : '';
+  // ── Plan possédé + CYCLE réel (mensuel/annuel) ─────────────────────────────
+  // v0.9.317 (bug "Actif sur l'annuel") : le "Plan actuel / Actif" doit refléter le
+  // CYCLE réellement souscrit, pas seulement le palier — sinon on affiche "Actif" sur
+  // le prix annuel alors que l'abonné est au mensuel. Le cycle vient de Stripe
+  // (getStripeInfo().cycle, persisté par le webhook depuis v0.9.317) ; pour les
+  // abonnements antérieurs, fallback heuristique sur la durée jusqu'à currentPeriodEnd.
+  const _s2          = (Store.getStripeInfo && Store.getStripeInfo()) || {};
+  const ownedTier    = isElite ? 'elite' : (isFunded || isBeta) ? 'funded' : 'trader';
+  const isPayingOwned = isFunded || isElite;          // bêta / gratuit : pas de cycle de facturation
+  const ownedCycle   = !isPayingOwned ? null
+    : (_s2.cycle === 'monthly' || _s2.cycle === 'yearly') ? _s2.cycle
+    : (() => {                                         // fallback : déduire du currentPeriodEnd
+        const cpe = _s2.currentPeriodEnd;
+        if (typeof cpe === 'number' && cpe > 0) {
+          const ms = cpe > 1e12 ? cpe : cpe * 1000;    // tolère secondes ou millisecondes
+          return ((ms - Date.now()) / 86400000) > 45 ? 'yearly' : 'monthly';
+        }
+        return 'monthly';
+      })();
+  const defaultCycle = ownedCycle || 'monthly';        // le toggle s'ouvre sur le cycle réel
 
-  // ── CTA par carte — gère OFF-1 : aucun bouton d'upgrade quand on est au palier
-  //    max (Elite) ou au-dessus de la carte ; les paliers possédés/inclus sont inertes.
-  const ctaTrader = isTrader
-    ? `<div class="pricing-cta current">✓ ${t('off.cta.cur')}</div>`
-    : `<div class="pricing-cta included">${isEn ? 'Included' : 'Inclus'}</div>`;
-  const ctaFunded = (isFunded || isBeta)
-    ? `<div class="pricing-cta current">✓ ${t('off.cta.act')}</div>`
-    : isElite
+  // CTA d'une carte NON possédée (checkout ou « inclus »). OFF-1 : pas de bouton
+  // d'upgrade si le palier est déjà couvert (Elite max, ou bêta = accès complet).
+  const ctaCheckout = (cardTier) => {
+    if (isBeta)               return `<div class="pricing-cta included">${isEn ? 'Included' : 'Inclus'}</div>`;
+    if (cardTier === 'trader')return `<div class="pricing-cta included">${isEn ? 'Included' : 'Inclus'}</div>`;
+    if (cardTier === 'funded')return isElite
       ? `<div class="pricing-cta included">${isEn ? 'Included in Elite' : 'Inclus dans Elite'}</div>`
       : `<button type="button" class="pricing-cta primary" data-checkout-tier="funded">${t('off.cta.funded.btn')}</button>`;
-  const ctaElite = (isElite || isBeta)
-    ? `<div class="pricing-cta current">✓ ${t('off.cta.act')}</div>`
-    : `<button type="button" class="pricing-cta ghost-elite" data-checkout-tier="elite">${t('off.cta.elite.btn')}</button>`;
+    return `<button type="button" class="pricing-cta ghost-elite" data-checkout-tier="elite">${t('off.cta.elite.btn')}</button>`;
+  };
+
+  // Bits "current" d'une carte : classe `.current`, attributs cycle, tag coin, CTA bas.
+  // Pour le palier possédé PAYANT, l'état "Actif" suit le cycle affiché (basculé en JS
+  // par applyCycle) ; l'autre cycle montre « Tu es au mensuel/annuel » (pas de bouton →
+  // évite une 2ᵉ souscription / double facturation).
+  const cardBits = (cardTier) => {
+    if (cardTier !== ownedTier) return { cls: '', attrs: '', corner: '', cta: ctaCheckout(cardTier) };
+    const corner = `<div class="pricing-current-tag">✓ ${t('off.current')}</div>`;
+    if (!isPayingOwned)        // Trader gratuit ou bêta → toujours actif (pas de cycle)
+      return { cls: ' current', attrs: '', corner,
+        cta: `<div class="pricing-cta current">✓ ${isTrader ? t('off.cta.cur') : t('off.cta.act')}</div>` };
+    const otherLabel = isEn
+      ? (ownedCycle === 'yearly' ? "You're on yearly" : "You're on monthly")
+      : (ownedCycle === 'yearly' ? "Tu es à l'annuel" : 'Tu es au mensuel');
+    return {
+      cls: ' current',
+      attrs: ` data-owned-card data-owned-cycle="${ownedCycle}"`,
+      corner,
+      cta: `<div class="pricing-cta current" data-owned-active>✓ ${t('off.cta.act')}</div>`
+         + `<div class="pricing-cta included" data-owned-other style="display:none">${otherLabel}</div>`,
+    };
+  };
+  const bT = cardBits('trader'), bF = cardBits('funded'), bE = cardBits('elite');
 
   // ── Card : TRADER (gratuit) ───────────────────────────────────────────────
   const cardTrader = `
-    <div class="pricing-card ${currentCardTier === 'trader' ? 'current' : ''}">
-      ${curTag('trader')}
+    <div class="pricing-card${bT.cls}"${bT.attrs}>
+      ${bT.corner}
       <div class="pricing-badge-row"><span class="pricing-badge-free">✓ ${isEn ? 'Free for life' : 'Gratuit à vie'}</span></div>
       <div class="pricing-card-name">Trader</div>
       <p class="pricing-card-tagline">${t('off.trader.tag')}</p>
@@ -88,13 +124,13 @@ UI.renderOffers = function () {
         <li class="muted">${t('off.trader.f8')}</li>
         <li class="muted">${t('off.trader.f9')}</li>
       </ul>
-      ${ctaTrader}
+      ${bT.cta}
     </div>`;
 
   // ── Card : FUNDED (14.99 €/mois — featured) ──────────────────────────────
   const cardFunded = `
-    <div class="pricing-card featured ${currentCardTier === 'funded' ? 'current' : ''}">
-      ${curTag('funded')}
+    <div class="pricing-card featured${bF.cls}"${bF.attrs}>
+      ${bF.corner}
       <div class="pricing-badge-row"><span class="pricing-badge">✦ ${isBeta ? 'Bêta' : t('off.popular')}</span></div>
       <div class="pricing-card-name">Funded</div>
       <p class="pricing-card-tagline">${t('off.funded.tag')}</p>
@@ -115,13 +151,13 @@ UI.renderOffers = function () {
         <li>${t('off.funded.f6')}</li>
         <li>${t('off.funded.f7')}</li>
       </ul>
-      ${ctaFunded}
+      ${bF.cta}
     </div>`;
 
   // ── Card : ELITE (29.99 €/mois) ───────────────────────────────────────────
   const cardElite = `
-    <div class="pricing-card elite ${currentCardTier === 'elite' ? 'current' : ''}">
-      ${curTag('elite')}
+    <div class="pricing-card elite${bE.cls}"${bE.attrs}>
+      ${bE.corner}
       <div class="pricing-badge-row"><span class="pricing-badge-elite">✦ Premium</span></div>
       <div class="pricing-card-name">Elite</div>
       <p class="pricing-card-tagline">${t('off.elite.tag')}</p>
@@ -141,7 +177,7 @@ UI.renderOffers = function () {
         <li>${t('off.elite.f5')}</li>
         <li>${t('off.elite.f6')}</li>
       </ul>
-      ${ctaElite}
+      ${bE.cta}
     </div>`;
 
   // ── Trust banner ───────────────────────────────────────────────────────────
@@ -251,27 +287,32 @@ UI.renderOffers = function () {
   `;
 
   // ── Billing toggle logic ──────────────────────────────────────────────────
-  // v0.9.316 (OFF-LANDING) : le toggle est désormais affiché et actif pour TOUT
-  // le monde (avant : caché aux abonnés, qui ne pouvaient donc pas voir l'annuel).
+  // v0.9.316 (OFF-LANDING) : toggle affiché + actif pour TOUT le monde (avant caché aux abonnés).
+  // v0.9.317 : applyCycle() met aussi à jour l'état "Actif" de la carte possédée selon le cycle
+  // affiché, et le toggle s'ouvre sur le cycle réel de l'abonné (defaultCycle).
   let _billingCycle = 'monthly';   // v0.9.255 : suivi pour le checkout
   const toggleBtns = el.querySelectorAll('.billing-toggle-btn');
-  toggleBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const billing = btn.getAttribute('data-billing');
-      _billingCycle = billing === 'yearly' ? 'yearly' : 'monthly';
-      toggleBtns.forEach(b => {
-        const isActive = b.getAttribute('data-billing') === billing;
-        b.classList.toggle('active', isActive);
-        b.setAttribute('aria-selected', isActive ? 'true' : 'false');
-      });
-      el.querySelectorAll('[data-price-monthly]').forEach(p => {
-        p.style.display = billing === 'monthly' ? '' : 'none';
-      });
-      el.querySelectorAll('[data-price-yearly]').forEach(p => {
-        p.style.display = billing === 'yearly' ? '' : 'none';
-      });
+  function applyCycle(billing) {
+    _billingCycle = billing === 'yearly' ? 'yearly' : 'monthly';
+    toggleBtns.forEach(b => {
+      const on = b.getAttribute('data-billing') === _billingCycle;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-  });
+    el.querySelectorAll('[data-price-monthly]').forEach(p => { p.style.display = _billingCycle === 'monthly' ? '' : 'none'; });
+    el.querySelectorAll('[data-price-yearly]').forEach(p => { p.style.display = _billingCycle === 'yearly' ? '' : 'none'; });
+    // La carte possédée payante n'est "Actif" que si le cycle affiché == cycle souscrit.
+    const oc = el.querySelector('[data-owned-card]');
+    if (oc) {
+      const match = oc.getAttribute('data-owned-cycle') === _billingCycle;
+      oc.classList.toggle('current', match);
+      const tag = oc.querySelector('.pricing-current-tag'); if (tag) tag.style.display = match ? '' : 'none';
+      const act = oc.querySelector('[data-owned-active]'); if (act) act.style.display = match ? '' : 'none';
+      const oth = oc.querySelector('[data-owned-other]'); if (oth) oth.style.display = match ? 'none' : '';
+    }
+  }
+  toggleBtns.forEach(btn => btn.addEventListener('click', () => applyCycle(btn.getAttribute('data-billing'))));
+  applyCycle(defaultCycle);   // ouvre sur le cycle réel + cale l'état "Actif"
 
   // ── Checkout Stripe self-service (v0.9.255) ────────────────────────────────
   // v0.9.298 (#bug upgrade) : ce binding était à tort DANS `if (!pro)`, donc le

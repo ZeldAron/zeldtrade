@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.317',
+      date: '2026-05-23',
+      time: '02:52',
+      tags: ['fix'],
+      title: '« Actif » affiché sur la bonne formule (mensuel / annuel)',
+      titleEn: '"Active" now shows on the correct billing period',
+      items: [
+        { type: 'fix', text: 'La page Abonnements pouvait indiquer « Plan actuel / Actif » sur le prix annuel alors que tu es abonné au mensuel (et inversement). Désormais le « Actif » n\'apparaît que sur ta vraie formule, et le sélecteur Mensuel/Annuel s\'ouvre directement dessus.', textEn: 'The Subscriptions page could show "Current plan / Active" on the yearly price while you\'re actually subscribed monthly (and vice-versa). Now "Active" only shows on your real billing period, and the Monthly/Yearly switch opens on it.' },
+      ],
+    },
+    {
       version: '0.9.316',
       date: '2026-05-23',
       time: '02:36',
