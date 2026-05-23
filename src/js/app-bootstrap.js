@@ -218,17 +218,72 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape' && authModal.style.display === 'flex') closeModal();
   });
 
-  // ── Loader ──────────────────────────────────────────────────────────────────
+  // ── Loader animé (LOADER-UI v0.9.318) ────────────────────────────────────────
+  // Progression « perçue » : la barre s'approche par étapes jusqu'à ~92 %, puis
+  // reste là jusqu'au signal « données prêtes » (finish → snap 100 % + fondu).
+  // Un seul rAF qui ease vers `target` → pas de tweens concurrents.
+  const ZTLoader = (() => {
+    const tr = (fr, en) => (i18n.getLang && i18n.getLang() === 'en') ? en : fr;
+    const STAGES = [
+      { pct: 8,  at: 0,    fr: 'Initialisation…',                          en: 'Initializing…' },
+      { pct: 24, at: 420,  fr: 'Connexion sécurisée TLS…',                 en: 'Secure TLS connection…' },
+      { pct: 45, at: 950,  fr: 'Synchronisation des comptes…',            en: 'Syncing accounts…' },
+      { pct: 66, at: 1550, fr: 'Application des règles prop firms…',       en: 'Applying prop firm rules…' },
+      { pct: 84, at: 2200, fr: 'Calcul des KPIs (R:R, DD, win rate)…',     en: 'Computing KPIs (R:R, DD, win rate)…' },
+      { pct: 92, at: 2850, fr: 'Préparation du journal…',                 en: 'Preparing your journal…' },
+    ];
+    let bar, pctEl, statusEl, current = 0, target = 0, raf = 0, running = false, activeNode = null, timers = [];
+    function loop() {
+      current += (target - current) * 0.08;
+      if (Math.abs(target - current) < 0.25) current = target;
+      if (bar)   bar.style.width = current.toFixed(1) + '%';
+      if (pctEl) pctEl.textContent = Math.round(current) + '%';
+      if (running) raf = requestAnimationFrame(loop);
+    }
+    function setStatus(label, withCheck) {
+      if (!statusEl) return;
+      const node = document.createElement('div');
+      node.className = 'status-text';
+      if (withCheck) {
+        node.innerHTML = '<svg class="check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 12 10 17 19 8"/></svg>';
+        node.appendChild(document.createTextNode(label));
+      } else {
+        node.textContent = label;
+      }
+      statusEl.appendChild(node);
+      requestAnimationFrame(() => {
+        if (activeNode) { const old = activeNode; old.classList.remove('is-active'); setTimeout(() => old.remove(), 340); }
+        node.classList.add('is-active');
+        activeNode = node;
+      });
+    }
+    function start(username) {
+      bar = $('ztLoaderBar'); pctEl = $('ztLoaderPct'); statusEl = $('ztLoaderStatus');
+      try { const v = window.Changelog && Changelog.getEntries && Changelog.getEntries()[0]; const ve = $('ztLoaderVer'); if (v && ve) ve.textContent = 'v' + v.version; } catch (e) {}
+      const eb = $('ztLoaderEyebrow'); if (eb && username) eb.textContent = tr('Bon retour, ', 'Welcome back, ') + username;
+      timers.forEach(clearTimeout); timers = [];
+      current = 0; target = 0; activeNode = null;
+      if (statusEl) statusEl.innerHTML = '';
+      if (bar) bar.style.width = '0%';
+      if (pctEl) pctEl.textContent = '0%';
+      running = true; cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
+      STAGES.forEach(s => timers.push(setTimeout(() => { target = s.pct; setStatus(tr(s.fr, s.en), false); }, s.at)));
+    }
+    function finish(cb) {
+      timers.forEach(clearTimeout); timers = [];
+      target = 100;
+      setStatus(tr('Prêt — bon trade.', 'Ready — happy trading.'), true);
+      if (loader) loader.classList.add('done');
+      timers.push(setTimeout(() => { running = false; cancelAnimationFrame(raf); if (cb) cb(); }, 700));
+    }
+    function stop() { running = false; cancelAnimationFrame(raf); timers.forEach(clearTimeout); timers = []; }
+    return { start, finish, stop };
+  })();
+
   function showLoader(username) {
     closeModal();
-    loader.style.display = 'flex';
-    $('loaderUser').textContent = username;
-    const fill = $('loaderFill');
-    fill.style.transition = 'none'; fill.style.width = '0%';
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      fill.style.transition = 'width 1.1s cubic-bezier(0.4,0,0.2,1)';
-      fill.style.width = '100%';
-    }));
+    if (loader) { loader.classList.remove('done'); loader.style.opacity = ''; loader.style.transition = ''; loader.style.display = 'flex'; }
+    ZTLoader.start(username);
   }
 
   // ── Launch app ──────────────────────────────────────────────────────────────
@@ -277,11 +332,14 @@ document.addEventListener('DOMContentLoaded', () => {
           planBadge.className   = 'plan-badge ' + b.cls;
         }
       } catch {}
-      if (loader) {
-        loader.style.transition = 'opacity 0.45s ease';
-        loader.style.opacity    = '0';
-        setTimeout(() => { loader.style.display = 'none'; }, 450);
-      }
+      // v0.9.318 : on termine l'animation (snap 100 % + « Prêt ») PUIS fondu de sortie.
+      ZTLoader.finish(() => {
+        if (loader) {
+          loader.style.transition = 'opacity 0.45s ease';
+          loader.style.opacity    = '0';
+          setTimeout(() => { loader.style.display = 'none'; loader.classList.remove('done'); loader.style.opacity = ''; }, 450);
+        }
+      });
       // v0.9.275 (F1/F2) : profil de trading non renseigné → modale 1er login
       try { if (Store.getTradingTypes && !Store.getTradingTypes()) _showTradingProfileModal(); } catch {}
     }
@@ -343,6 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
       errEl.textContent = '';
       // Cacher le loader pour pas le voir derrière le modal pendant l'attente
       if (loader) loader.style.display = 'none';
+      ZTLoader.stop();
       modal.style.display = 'flex';
 
       async function onSubmit(e) {
@@ -420,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const gate = document.getElementById('accountDeletedGate');
     if (!gate) return;
     if (loader) loader.style.display = 'none';
+    ZTLoader.stop();
     // Masque tout overlay résiduel (verify email gate, login modal, etc.)
     const overlays = ['verifyEmailGate', 'loginModal', 'consentModal'];
     overlays.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
@@ -450,6 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!gate) return;
 
     if (loader) loader.style.display = 'none';
+    ZTLoader.stop();
     if (emailEl) emailEl.textContent = email || '—';
     status.textContent = '';
     gate.style.display = 'flex';

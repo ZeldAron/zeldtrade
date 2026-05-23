@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.318',
+      date: '2026-05-23',
+      time: '03:11',
+      tags: ['ui'],
+      title: 'Nouvel écran de chargement animé',
+      titleEn: 'New animated loading screen',
+      items: [
+        { type: 'ui', text: 'Tout nouvel écran de chargement (à la connexion, à l\'inscription, au rechargement) : logo ZeldTrade animé, fond constellation, barre de progression à étapes. Plus soigné et premium.', textEn: 'Brand-new loading screen (on login, sign-up, reload): animated ZeldTrade logo, constellation background, staged progress bar. Much more polished.' },
+      ],
+    },
+    {
       version: '0.9.317',
       date: '2026-05-23',
       time: '02:52',
