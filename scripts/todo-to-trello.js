@@ -25,6 +25,8 @@
  *   Synchro TODO.md → board :        node scripts/todo-to-trello.js
  *   Basculer une tâche « En cours » : node scripts/todo-to-trello.js --doing CODE [CODE2 …]
  *     (déplace la carte vers « En cours », ou la crée là si absente du board)
+ *   Pousser TOUT le TODO (faits inclus) : node scripts/todo-to-trello.js --all [--dry]
+ *     (puces `- **…**` + findings `### CODE …` ; --dry = prévisualise sans créer)
  */
 'use strict';
 const fs   = require('fs');
@@ -88,6 +90,66 @@ function parseTodos() {
   return items;
 }
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+/** Nettoie un libellé : enlève ~~, **, `, emojis de statut, ponctuation de tête. */
+function cleanText(s) {
+  return String(s)
+    .replace(/~~/g, '').replace(/\*\*/g, '').replace(/`/g, '')
+    .replace(/[✅🔴🟠🟡🟢⚪⏳🛠🔧💡🐛🎯📋💼💰🔒📊📚🧪⚙🌍🆕🔄✨⭐]/gu, ' ')
+    .replace(/^[\s—–:\-]+/, '')
+    .replace(/\s+/g, ' ').trim();
+}
+/** Titre nettoyé + sans préfixe de priorité (CRITIQUE/HAUT/MOYEN/BAS) ni date de tête. */
+function cleanTitle(s) {
+  let t = cleanText(s);
+  t = t.replace(/^(CRITIQUE|HAUT|MOYEN|BAS)\b\s*[—–\-:]*\s*/i, '');
+  t = t.replace(/^\d{4}-\d{2}-\d{2}[^—–]*[—–]\s*/, '');
+  t = t.replace(/^\(v[\d.]+\)\s*[—–\-]?\s*/i, '');
+  return t.trim();
+}
+/** Une ligne est-elle « faite » ? (✅ / barré / FAIT / Résolu / Déjà fait / N/A) */
+function isDone(line) { return /✅|~~|\bFAIT\b|Résolu|RÉSOLU|Déjà fait|\bN\/A\b/.test(line); }
+/** Clé « code » d'un nom de carte (préfixe OFF-1, Q25, B-NEW-01…). null si pas un vrai code. */
+function codeKey(name) {
+  const m = String(name).match(/^([A-Z0-9][A-Z0-9/\-]*)/);
+  if (!m) return null;
+  const k = m[1].toUpperCase();
+  return k.length >= 2 ? k : null;
+}
+/** Clé normalisée (anti-doublon robuste, même pour les items sans code). */
+function normKey(name) { return String(name).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().slice(0, 70); }
+
+/** TOUS les items du TODO : puces `- **…**` ET en-têtes de findings `### CODE — …`. */
+function parseAllTodos() {
+  const lines = fs.readFileSync(TODO_PATH, 'utf8').split('\n');
+  const items = [];
+  let section = '', sectionDone = false;
+  for (const raw of lines) {
+    const line = raw.replace(/\s+$/, '');
+    const h = line.match(/^(#{2,3})\s+(.+)$/);
+    if (h) {
+      sectionDone = /✅|\bfaits?\b|résolu|terminé/i.test(h[2]);
+      if (h[1] === '##') section = cleanText(h[2]);
+      if (h[1] === '###') {
+        // finding : ### [~~]CODE[~~] — Title  (CODE doit contenir un chiffre)
+        const f = h[2].match(/^(~~)?\s*([A-Za-z][A-Za-z0-9/\-]*\d[A-Za-z0-9/\-]*)\s*(~~)?\s*[—–]\s*(.+)$/);
+        if (f) items.push({ code: f[2].toUpperCase(), title: cleanTitle(f[4]), desc: '', section, done: isDone(line) });
+      }
+      continue;
+    }
+    const b = line.match(/^- \*\*(.+?)\*\*\s*(.*)$/);
+    if (b) {
+      const bold = b[1].trim(), rest = b[2] || '';
+      let code = null, title = bold;
+      const cm = bold.match(/^([A-Za-z0-9][A-Za-z0-9/\-]*)\s*[—–]\s*(.+)$/);
+      if (cm && cm[1].length <= 22) { code = cm[1].toUpperCase(); title = cm[2]; }
+      items.push({ code, title: cleanTitle(title), desc: cleanText(rest).slice(0, 300), section, done: isDone(line) || sectionDone });
+    }
+  }
+  return items;
+}
+
 (async () => {
   const cfg   = loadConfig();
   const todos = parseTodos();
@@ -103,11 +165,15 @@ function parseTodos() {
   // Tâches actives → liste `list` de la config, sinon la 1ʳᵉ liste qui n'est ni « Terminé » ni « En cours », sinon la 1ʳᵉ
   const activeList = findList(cfg.list) || lists.find(l => l !== doneList && l !== doingList) || lists[0];
 
-  // Cartes existantes sur TOUT le board (anti-doublon + respecte ton tri manuel)
-  const existing = {};
+  // Cartes existantes sur TOUT le board (anti-doublon + respecte ton tri manuel).
+  // Indexées par CODE (préfixe) ET par nom normalisé (pour les items sans code).
+  const existingByCode = {}, existingByNorm = {};
   for (const l of lists) {
     const cards = await trello('GET', `/lists/${l.id}/cards`, cfg, { fields: 'name' });
-    for (const c of cards) { const cm = c.name.match(/^([A-Z0-9-]+)/); if (cm) existing[cm[1]] = c; }
+    for (const c of cards) {
+      const ck = codeKey(c.name); if (ck) existingByCode[ck] = c;
+      existingByNorm[normKey(c.name)] = c;
+    }
   }
 
   // ── Mode « --doing CODE [CODE2 …] » : bascule une tâche en « En cours » (la crée si absente) ──
@@ -118,7 +184,7 @@ function parseTodos() {
     if (!codes.length) die('Usage : node scripts/todo-to-trello.js --doing CODE [CODE2 …]');
     if (!doingList) die('Aucune liste « En cours » trouvée. Ajoute-la au board, ou mets `doinglist=NomDeLaListe` dans la config.');
     for (const code of codes) {
-      const card = existing[code];
+      const card = existingByCode[code];
       const todo = todos.find(t => t.code === code);
       if (card) {
         await trello('PUT', `/cards/${card.id}`, cfg, { idList: doingList.id });
@@ -132,6 +198,44 @@ function parseTodos() {
     return;
   }
 
+  // ── Mode « --all » : pousse TOUT le TODO (puces + findings ###), faits inclus ──
+  //    --dry pour prévisualiser sans rien créer.
+  if (args.includes('--all')) {
+    const all = parseAllTodos();
+    if (!all.length) die('Aucun item détecté dans docs/TODO.md.');
+    const exists = (name, code) => (code && existingByCode[code]) || existingByNorm[normKey(name)];
+    const toCreate = [];
+    const seen = new Set();
+    for (const t of all) {
+      const name = (t.code ? `${t.code} — ${t.title}` : t.title).slice(0, 250).trim();
+      if (name.length < 3) continue;
+      if (exists(name, t.code)) continue;
+      const nk = normKey(name);
+      if (seen.has(nk)) continue;                 // doublon interne à ce run
+      seen.add(nk);
+      const target = t.done ? doneList : activeList;
+      if (!target) continue;                       // faite mais pas de liste Terminé
+      toCreate.push({ name, desc: (t.section ? `[${t.section}]\n\n` : '') + (t.desc || ''), done: t.done, target });
+    }
+    const nDone = toCreate.filter(c => c.done).length;
+    console.log(`TODO : ${all.length} items détectés ; ${toCreate.length} à créer (le reste déjà sur le board).`);
+    console.log(`  → ${toCreate.length - nDone} vers « ${activeList.name} »` +
+                (doneList ? `, ${nDone} vers « ${doneList.name} »` : `, ${nDone} faite(s) ignorée(s) (pas de liste Terminé)`) + '.\n');
+    if (args.includes('--dry')) {
+      toCreate.forEach(c => console.log(`  [${c.done ? (doneList && doneList.name) : activeList.name}] ${c.name}`));
+      console.log(`\n(DRY-RUN — rien créé. Relance sans --dry pour pousser.)`);
+      return;
+    }
+    let n = 0;
+    for (const c of toCreate) {
+      await trello('POST', '/cards', cfg, { idList: c.target.id, name: c.name, desc: c.desc.slice(0, 16000) });
+      n++; if (n % 15 === 0) console.log(`  … ${n}/${toCreate.length}`);
+      await sleep(120);                            // throttle anti rate-limit Trello
+    }
+    console.log(`\n✓ ${n} carte(s) créée(s).`);
+    return;
+  }
+
   // ── Mode normal : synchro TODO.md → board ──
   if (!todos.length) die('Aucun item dans la section « 🎯 Demandes user » de docs/TODO.md.');
   console.log(`Board : ${lists.length} liste(s). Actives → « ${activeList.name} »` +
@@ -140,7 +244,7 @@ function parseTodos() {
 
   let created = 0, present = 0, ignoredDone = 0;
   for (const t of todos) {
-    if (existing[t.code]) { present++; continue; }            // déjà sur le board → on n'y touche pas
+    if (existingByCode[t.code]) { present++; continue; }      // déjà sur le board → on n'y touche pas
     const target = t.done ? doneList : activeList;
     if (!target) { ignoredDone++; continue; }                 // faite mais pas de liste Fait
     const name = `${t.code} — ${t.title}`.slice(0, 250);
