@@ -164,8 +164,8 @@ const Store = (() => {
   // n'est PAS uploadée dans Storage au save). Pro = 3 images max.
   const TIER_LIMITS = {
     trader: { maxAccounts: 1,        maxAiPerDay: 1,        maxScreenshots: 0   },
-    funded: { maxAccounts: 10,       maxAiPerDay: 20,       maxScreenshots: 3   },
-    elite:  { maxAccounts: 100,      maxAiPerDay: 100,      maxScreenshots: 3   },
+    funded: { maxAccounts: 2,        maxAiPerDay: 5,        maxScreenshots: 3   },   // v0.9.342 : resserré (2 comptes groupables + 5 IA/j) → pression upsell vers Elite
+    elite:  { maxAccounts: Infinity, maxAiPerDay: Infinity, maxScreenshots: 3   },   // illimité = la soupape
     beta:   { maxAccounts: Infinity, maxAiPerDay: Infinity, maxScreenshots: 3   },
   };
   // Matrice features → tiers qui y ont accès. Si non listée = accès libre.
