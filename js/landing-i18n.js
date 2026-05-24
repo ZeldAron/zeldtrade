@@ -314,6 +314,7 @@
     'test.stars':      { fr: '5 étoiles sur 5', en: '5 stars out of 5' },
     'test.q1':         { fr: '« Après plus d\'un an de trading, c\'est clairement le meilleur site que j\'ai utilisé pour tenir un journal de trading. L\'interface est claire, soignée, rapide et surtout efficace. Je n\'ai jamais autant apprécié analyser et journaliser mes trades. »', en: '"After more than a year of trading, this is clearly the best site I\'ve used to keep a trading journal. The interface is clean, polished, fast and, above all, effective. I\'ve never enjoyed analyzing and journaling my trades this much."' },
     'test.q2':         { fr: '« Je trouve le site très complet, une belle interface et facile de compréhension. »', en: '"I find the site really complete, with a great interface that\'s easy to understand."' },
+    'test.q3':         { fr: '« Après 3 ans de trading à journaliser sur Notion, ce site est incroyable : il donne envie de journaliser ses trades. L\'interface est propre et rapide. »', en: '"After 3 years of trading and journaling on Notion, this site is incredible — it makes you want to journal your trades. The interface is clean and fast."' },
 
     // Tarifs (pricing)
     'pr.eyebrow':      { fr: 'Tarifs', en: 'Pricing' },
