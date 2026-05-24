@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.338',
+      date: '2026-05-24',
+      time: '20:30',
+      tags: ['ui'],
+      title: 'Nouveau logo ZeldTrade unifié partout',
+      titleEn: 'New unified ZeldTrade logo everywhere',
+      items: [
+        { type: 'ui', text: 'Le logo officiel (Z stylisé + point rose) est désormais identique partout : favicon (onglet + recherche Google), barre de navigation, écran de connexion, écran de chargement, et image de partage sur les réseaux. Fini les deux variantes du Z qui cohabitaient.', textEn: 'The official logo (stylized Z + pink dot) is now identical everywhere: favicon (browser tab + Google search), navigation bar, login screen, loading screen, and social-share image. No more two coexisting Z variants.' },
+      ],
+    },
+    {
       version: '0.9.337',
       date: '2026-05-24',
       time: '20:10',
