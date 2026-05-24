@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.337',
+      date: '2026-05-24',
+      time: '20:10',
+      tags: ['ui'],
+      title: 'Logo ZeldTrade dans les résultats de recherche Google',
+      titleEn: 'ZeldTrade logo in Google search results',
+      items: [
+        { type: 'ui', text: 'Ajout d\'un vrai jeu d\'icônes (favicon.ico multi-tailles + icône iOS) en plus du SVG : Google et les navigateurs affichent désormais le logo ZeldTrade au lieu d\'un globe générique (la prise en compte côté Google peut prendre quelques jours, le temps qu\'il ré-explore le site).', textEn: 'Added a proper icon set (multi-size favicon.ico + iOS icon) on top of the SVG: Google and browsers now show the ZeldTrade logo instead of a generic globe (Google may take a few days to update as it re-crawls the site).' },
+      ],
+    },
+    {
       version: '0.9.335',
       date: '2026-05-24',
       time: '18:40',
