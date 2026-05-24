@@ -5,6 +5,18 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.322',
+      date: '2026-05-24',
+      time: '15:09',
+      tags: ['ui'],
+      title: 'Compteur d\'inscrits affiné + sélecteur de langue (landing)',
+      titleEn: 'Refined sign-up counter + language toggle (landing)',
+      items: [
+        { type: 'ui', text: 'Le compteur d\'inscrits de la page d\'accueil ne compte plus les comptes de test/internes — il reflète les vrais utilisateurs (affiché à partir de 5).', textEn: 'The home-page sign-up counter no longer counts test/internal accounts — it reflects real users (shown from 5).' },
+        { type: 'ui', text: 'Arrivée progressive d\'un sélecteur de langue FR/EN sur la page d\'accueil (traduction anglaise en cours de finalisation).', textEn: 'A FR/EN language toggle is rolling out on the home page (English translation being finalized).' },
+      ],
+    },
+    {
       version: '0.9.320',
       date: '2026-05-24',
       time: '12:04',
