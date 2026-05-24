@@ -2634,8 +2634,10 @@
         <a href="/updates" class="nav-link" data-i18n="nav.updates">Nouveautés</a>
         <a href="/app" class="btn btn-ghost btn-sm" data-i18n="nav.login">Connexion</a>
         <a href="/app?signup=1" class="btn btn-primary btn-sm" data-i18n="nav.signup">Créer un compte</a>
-        <button type="button" id="langToggle" aria-label="Switch to English"
-          style="background:transparent;border:1px solid rgba(255,255,255,0.18);color:#cbd5e1;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;letter-spacing:0.05em;font-family:inherit;line-height:1.2">EN</button>
+        <span class="lang-switch" role="group" aria-label="Langue / Language" style="display:inline-flex;gap:5px;align-items:center">
+          <button type="button" class="lang-btn" data-lang="fr" aria-label="Français" title="Français" style="background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:7px;padding:4px 7px;font-size:15px;line-height:1;cursor:pointer;transition:opacity .15s,border-color .15s">🇫🇷</button>
+          <button type="button" class="lang-btn" data-lang="en" aria-label="English" title="English" style="background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:7px;padding:4px 7px;font-size:15px;line-height:1;cursor:pointer;transition:opacity .15s,border-color .15s">🇬🇧</button>
+        </span>
       </div>
       <button type="button" class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navLinks">
         <span></span>
@@ -2864,13 +2866,13 @@
               <span class="mockup-block-label" data-i18n="mk.may">Mai 2026</span>
               <span class="mockup-block-val">↑ + 2 340 $</span>
               <div class="mockup-cal-grid">
-                <span class="mockup-cal-header">L</span>
-                <span class="mockup-cal-header">M</span>
-                <span class="mockup-cal-header">M</span>
-                <span class="mockup-cal-header">J</span>
-                <span class="mockup-cal-header">V</span>
-                <span class="mockup-cal-header">S</span>
-                <span class="mockup-cal-header">D</span>
+                <span class="mockup-cal-header" data-i18n="mk.cal.1">L</span>
+                <span class="mockup-cal-header" data-i18n="mk.cal.2">M</span>
+                <span class="mockup-cal-header" data-i18n="mk.cal.3">M</span>
+                <span class="mockup-cal-header" data-i18n="mk.cal.4">J</span>
+                <span class="mockup-cal-header" data-i18n="mk.cal.5">V</span>
+                <span class="mockup-cal-header" data-i18n="mk.cal.6">S</span>
+                <span class="mockup-cal-header" data-i18n="mk.cal.7">D</span>
                 <span class="mockup-cal-day empty"></span>
                 <span class="mockup-cal-day empty"></span>
                 <span class="mockup-cal-day empty"></span>
@@ -2924,37 +2926,37 @@
               <span class="mockup-block-val">+ 1 480 $</span>
               <div class="mockup-trades">
                 <div class="mockup-trade">
-                  <span class="mockup-trade-date">14 mai</span>
+                  <span class="mockup-trade-date" data-i18n="mk.date.may14">14 mai</span>
                   <span class="mockup-trade-instr">MNQ</span>
                   <span class="mockup-trade-side long">LONG</span>
                   <span class="mockup-trade-pnl up">+ 320 $</span>
                 </div>
                 <div class="mockup-trade">
-                  <span class="mockup-trade-date">14 mai</span>
+                  <span class="mockup-trade-date" data-i18n="mk.date.may14">14 mai</span>
                   <span class="mockup-trade-instr">MES</span>
                   <span class="mockup-trade-side short">SHORT</span>
                   <span class="mockup-trade-pnl up">+ 180 $</span>
                 </div>
                 <div class="mockup-trade">
-                  <span class="mockup-trade-date">13 mai</span>
+                  <span class="mockup-trade-date" data-i18n="mk.date.may13">13 mai</span>
                   <span class="mockup-trade-instr">MGC</span>
                   <span class="mockup-trade-side long">LONG</span>
                   <span class="mockup-trade-pnl up">+ 540 $</span>
                 </div>
                 <div class="mockup-trade">
-                  <span class="mockup-trade-date">13 mai</span>
+                  <span class="mockup-trade-date" data-i18n="mk.date.may13">13 mai</span>
                   <span class="mockup-trade-instr">CL</span>
                   <span class="mockup-trade-side long">LONG</span>
                   <span class="mockup-trade-pnl down">− 120 $</span>
                 </div>
                 <div class="mockup-trade">
-                  <span class="mockup-trade-date">12 mai</span>
+                  <span class="mockup-trade-date" data-i18n="mk.date.may12">12 mai</span>
                   <span class="mockup-trade-instr">MNQ</span>
                   <span class="mockup-trade-side short">SHORT</span>
                   <span class="mockup-trade-pnl up">+ 260 $</span>
                 </div>
                 <div class="mockup-trade">
-                  <span class="mockup-trade-date">12 mai</span>
+                  <span class="mockup-trade-date" data-i18n="mk.date.may12">12 mai</span>
                   <span class="mockup-trade-instr">MES</span>
                   <span class="mockup-trade-side long">LONG</span>
                   <span class="mockup-trade-pnl up">+ 300 $</span>
@@ -3738,7 +3740,7 @@
   <script src="js/landing-pricing.js?v=0.9.198"></script>
   <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.272" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.326" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.327" defer></script>
 
 </body>
 </html>
