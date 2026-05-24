@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.334',
+      date: '2026-05-24',
+      time: '18:20',
+      tags: ['ui'],
+      title: 'Page d\'accueil entièrement bilingue FR / EN',
+      titleEn: 'Home page fully bilingual FR / EN',
+      items: [
+        { type: 'ui', text: 'La page d\'accueil est désormais 100 % traduite en anglais, avec un sélecteur de langue (drapeaux 🇫🇷 / 🇬🇧) en haut à droite et une détection automatique selon la langue du navigateur. Les témoignages défilent en carrousel.', textEn: 'The home page is now fully translated to English, with a language switch (🇫🇷 / 🇬🇧 flags) top-right and automatic detection based on browser language. Testimonials now slide in a carousel.' },
+      ],
+    },
+    {
       version: '0.9.322',
       date: '2026-05-24',
       time: '15:09',

@@ -415,12 +415,10 @@
       if (p === 'en' || p === 'fr') return p;
       const ls = localStorage.getItem(LS_KEY);
       if (ls === 'en' || ls === 'fr') return ls;
-      // v0.9.322 : pendant le build de la traduction EN, défaut FR pour TOUS (on ne
-      // montre pas une page mi-FR/mi-EN aux visiteurs non-francophones). Le toggle +
-      // ?lang=en + localStorage permettent quand même de prévisualiser l'EN.
-      // TODO (EN complet) : rétablir la détection navigateur :
-      //   return (navigator.language||'').toLowerCase().indexOf('fr')===0 ? 'fr' : 'en';
-      return 'fr';
+      // v0.9.334 : traduction EN complète → détection navigateur activée.
+      // Navigateur francophone → FR ; tout le reste → EN (le visiteur peut toujours
+      // basculer via les drapeaux, choix mémorisé en localStorage + ?lang=).
+      return (navigator.language || '').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en';
     } catch (e) { return 'fr'; }
   }
 
