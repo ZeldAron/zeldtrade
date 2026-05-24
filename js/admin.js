@@ -123,6 +123,19 @@ const Admin = (() => {
     beta:   { label: 'BÊTA',     cls: 'plan-tag-beta'   },
   };
 
+  // Badges spéciaux (v0.9.346) — réutilisés dans la liste ET le détail user.
+  // Test : pseudo OU partie locale de l'email = « test », « test1 », « test2 »…
+  const _isTestAccount = (u) => {
+    const re = /^test\d*$/i;
+    return re.test((u.username || '').trim()) || re.test((u.email || '').split('@')[0].trim());
+  };
+  const _specialBadges = (u) => {
+    let h = '';
+    if (u.email === ADMIN_EMAIL) h += '<span class="badge-admin" title="Compte administrateur">ADMIN</span>';
+    if (_isTestAccount(u))       h += '<span class="badge-test" title="Compte de test">TEST</span>';
+    return h;
+  };
+
   async function renderUsers() {
     const wrap = $('tabUsers');
     wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
@@ -187,7 +200,7 @@ const Admin = (() => {
 
       return `<tr class="urow" data-rowuid="${esc(u.uid)}" title="Voir le détail">
         <td>
-          <div class="cell-user-name">${esc(u.username)}${newsletter}</div>
+          <div class="cell-user-name">${esc(u.username)}${_specialBadges(u)}${newsletter}</div>
           <div class="cell-user-email">${esc(u.email)}</div>
         </td>
         <td><span class="plan-tag ${_TIER_META[tier].cls}">${_TIER_META[tier].label}</span></td>
@@ -1028,7 +1041,7 @@ const Admin = (() => {
   async function openUserDrawer(uid) {
     const u = (_cachedUsers || []).find(x => x.uid === uid);
     if (!u) return;
-    $('drawerTitle').textContent = u.username || u.email || uid;
+    $('drawerTitle').innerHTML = esc(u.username || u.email || uid) + _specialBadges(u);
     $('drawerBody').innerHTML = '<div class="admin-loading">Chargement…</div>';
     $('userDrawer').classList.add('open');
     $('drawerOverlay').classList.add('open');
