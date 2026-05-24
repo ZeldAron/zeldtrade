@@ -125,6 +125,9 @@
     'demo.save':    { fr: '✓ Sauvegarder le trade', en: '✓ Save the trade' },
     'demo.toast':   { fr: '✓ Trade ajouté à ton journal &amp; dashboard mis à jour', en: '✓ Trade added to your journal &amp; dashboard updated' },
     'demo.caption': { fr: 'Animation simplifiée — la vraie app est plus complète (multi-comptes, groupes, partial close, etc.)', en: 'Simplified animation — the real app is more complete (multi-account, groups, partial close, etc.)' },
+    'demo.nav.new':      { fr: 'Nouveau trade', en: 'New trade' },
+    'demo.nav.goals':    { fr: 'Objectifs', en: 'Goals' },
+    'demo.nav.settings': { fr: 'Réglages', en: 'Settings' },
 
     // Avant / Après
     'ba.eyebrow':      { fr: 'Avant / Après', en: 'Before / After' },
