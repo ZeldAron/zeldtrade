@@ -148,6 +148,45 @@ exports.analyzeChart = onCall(
         throw new HttpsError('permission-denied',
           'Analyse approfondie réservée aux plans Funded et Elite. Upgrade ton plan pour en profiter.');
       }
+      // v0.9.336 (audit sécu #2) : applique le MÊME quota journalier que la branche
+      // Groq (compteur `aiUsage` PARTAGÉ) → borne le coût Anthropic. Avant ce fix, la
+      // branche Claude n'avait aucun plafond (un compte beta/funded/elite pouvait
+      // scripter Claude sans limite). Tiers pro déjà gatés ci-dessus → cap = 20/j.
+      // Admin (ADMIN_EMAIL) : illimité mais re-auth 60 min (cohérent avec Groq).
+      const dbC        = admin.firestore();
+      const usageRefC  = dbC.doc(`users/${uid}/data/aiUsage`);
+      const todayC     = new Date().toISOString().split('T')[0];
+      const CLAUDE_CAP = 20;   // aligné sur PRO_CAP (analyses IA/jour, Groq + Claude cumulés)
+      let skipQuotaC   = false;
+      if (request.auth.token.email === ADMIN_EMAIL && request.auth.token.email_verified) {
+        const at = (request.auth.token.auth_time || 0) * 1000;
+        if (at > 0 && (Date.now() - at) > 60 * 60 * 1000) {
+          throw new HttpsError('failed-precondition',
+            'admin-reauth-required:Session admin expirée (>60 min). Déconnecte-toi et reconnecte-toi pour continuer (sécurité).');
+        }
+        skipQuotaC = true;
+      }
+      if (!skipQuotaC) {
+        await dbC.runTransaction(async (tx) => {
+          const usage = await tx.get(usageRefC);
+          const data  = usage.exists ? usage.data() : { date: '', count: 0 };
+          if (data.date === todayC && data.count >= CLAUDE_CAP) {
+            throw new HttpsError('resource-exhausted',
+              `Limite de ${CLAUDE_CAP} analyses IA/jour atteinte. Réessaie demain.`);
+          }
+          tx.set(usageRefC, { date: todayC, count: data.date === todayC ? data.count + 1 : 1 });
+        });
+      }
+      // Rollback du quota si l'appel Claude échoue (ne pas pénaliser pour un down service).
+      const rollbackClaudeQuota = async () => {
+        if (skipQuotaC) return;
+        try {
+          await dbC.runTransaction(async (tx) => {
+            const u = await tx.get(usageRefC);
+            if (u.exists && u.data().date === todayC && u.data().count > 0) tx.update(usageRefC, { count: u.data().count - 1 });
+          });
+        } catch (e) { console.warn('[Claude quota rollback] failed', e && e.message); }
+      };
       // Appel Anthropic API (Claude Sonnet 4.6 — modèle vision optimal)
       const claudeResp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -167,7 +206,8 @@ exports.analyzeChart = onCall(
             ],
           }],
         }),
-      }).catch(e => {
+      }).catch(async (e) => {
+        await rollbackClaudeQuota();
         console.error('[Claude] network error', e && e.message);
         throw new HttpsError('unavailable', 'Service Claude indisponible — réessaie dans un instant');
       });
@@ -175,6 +215,7 @@ exports.analyzeChart = onCall(
         let errBody = '';
         try { errBody = (await claudeResp.text()).slice(0, 200); } catch {}
         console.error('[Claude] error', claudeResp.status, errBody);
+        await rollbackClaudeQuota();
         if (claudeResp.status === 401) throw new HttpsError('failed-precondition', 'Claude key invalid (admin)');
         if (claudeResp.status === 429) throw new HttpsError('resource-exhausted', 'Claude rate limit');
         if (claudeResp.status === 404 || claudeResp.status === 503) {
@@ -570,6 +611,19 @@ function _sanitizeMessage(s, max) {
 }
 
 /**
+ * \u00C9chappe les m\u00E9tacaract\u00E8res markdown Discord d'une valeur user (pseudo, nom,
+ * email) affich\u00E9e dans un embed post\u00E9 sur un canal PUBLIC. Emp\u00EAche l'injection
+ * de liens/formatage trompeurs \u2014 ex. un pseudo `[clique](https://phishing)` ou
+ * `**gras**` qui se rendrait dans #new-users / #support-tickets (audit s\u00E9cu #1).
+ * Discord consomme le backslash d'\u00E9chappement \u2192 visuellement transparent pour
+ * un nom normal (`Jean_Marc` reste `Jean_Marc`). Les embeds ne pinguent jamais
+ * les @mentions, donc ce helper vise uniquement le formatage/les liens.
+ */
+function _escapeDiscordMd(s) {
+  return String(s == null ? '' : s).replace(/([\\`*_~|>\[\]()])/g, '\\$1');
+}
+
+/**
  * POST sur un webhook Discord. Format embed coherent avec le branding ZeldTrade.
  * Securite :
  *  - URL whitelistee (regex format Discord) - defense en profondeur meme si
@@ -779,11 +833,11 @@ exports.sendContactMessage = onCall(
       ? message.slice(0, 3900) + '\n\n*… (message tronqué)*'
       : message;
     const embed = {
-      title:       `📩 Message de ${displayName}`,
+      title:       `📩 Message de ${_escapeDiscordMd(displayName)}`,
       description,
       color:       source === 'app' ? DISCORD_COLOR_BRAND : DISCORD_COLOR_INFO,
       fields: [
-        { name: '👤 Pseudo', value: displayName,                          inline: true },
+        { name: '👤 Pseudo', value: _escapeDiscordMd(displayName),         inline: true },
         { name: '🌐 Source', value: source === 'app' ? 'App (connecté)' : 'Landing (anonyme)', inline: true },
       ],
       footer:    { text: footerExtra },
@@ -876,7 +930,7 @@ exports.notifyNewSignup = onCall(
     // Embed Discord (canal #new-users, PUBLIC — pas d'email pour privacy)
     const embed = {
       title:       '🎉 Nouvel utilisateur inscrit',
-      description: `Bienvenue à **${name}** dans la communauté ZeldTrade ! 🎯`,
+      description: `Bienvenue à **${_escapeDiscordMd(name)}** dans la communauté ZeldTrade ! 🎯`,
       color:       DISCORD_COLOR_GREEN,
       timestamp:   new Date().toISOString(),
     };
@@ -1983,6 +2037,7 @@ exports.cleanupOrphanUserEmails = onCall(
   },
   _wrapCF('cleanupOrphanUserEmails', async (request) => {
     _assertAdmin(request);
+    await _assertAdminRateLimit('cleanupOrphanUserEmails', 5);
 
     const confirm = request.data?.confirm === true;
     const db = admin.firestore();
@@ -2468,7 +2523,7 @@ exports.brevoWebhook = onRequest(
           const lines = summaries.map(s => {
             const flag = s.isHard ? '🛑' : '⚠️';
             const uid  = s.uid ? ` → uid \`${s.uid.slice(0, 8)}…\` désinscrit` : '';
-            return `${flag} **${s.evType}** · \`${s.email}\`${uid}`;
+            return `${flag} **${s.evType}** · ${_escapeDiscordMd(s.email)}${uid}`;
           }).join('\n');
           const hardCount = summaries.filter(s => s.isHard).length;
           await _postDiscordWebhook(DISCORD_ERRORS_WEBHOOK.value(), {
