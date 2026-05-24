@@ -3513,7 +3513,15 @@
   <section class="section" id="testimonials">
     <div class="section-eyebrow" data-i18n="test.eyebrow">Ils l'utilisent</div>
     <h2 class="section-title" data-i18n-html="test.title">Ce qu'en disent <span class="title-accent">les traders</span></h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;max-width:920px;margin:36px auto 0">
+    <style>
+      .testimonials-scroll { display:flex; gap:20px; overflow-x:auto; scroll-snap-type:x proximity; max-width:920px; margin:36px auto 0; padding:4px 2px 18px; -webkit-overflow-scrolling:touch; scrollbar-width:thin; scrollbar-color:rgba(124,58,237,0.45) transparent; }
+      .testimonials-scroll > figure { flex:0 0 330px; scroll-snap-align:start; }
+      .testimonials-scroll::-webkit-scrollbar { height:8px; }
+      .testimonials-scroll::-webkit-scrollbar-thumb { background:rgba(124,58,237,0.45); border-radius:8px; }
+      .testimonials-scroll::-webkit-scrollbar-track { background:rgba(255,255,255,0.04); border-radius:8px; }
+      @media (max-width:480px) { .testimonials-scroll > figure { flex-basis:82vw; } }
+    </style>
+    <div class="testimonials-scroll">
 
       <figure style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:26px 24px;margin:0;display:flex;flex-direction:column">
         <div style="color:var(--amber);font-size:15px;letter-spacing:2px;margin-bottom:14px" aria-label="5 étoiles sur 5" data-i18n-aria="test.stars">★★★★★</div>
