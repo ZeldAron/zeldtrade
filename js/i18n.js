@@ -78,6 +78,9 @@ const i18n = (() => {
       'tuto.s5.d':             'Vérifie <b>Objectifs</b> chaque matin pour voir où tu en es par rapport aux règles Prop Firm',
       'tuto.s5.e':             'Page <b>Outils</b> : calcule ta taille de position et ton risque avant d\'entrer en trade',
       'tuto.cta':              'Commencer →',
+      'tuto.replay.title':     'Visite guidée interactive',
+      'tuto.replay.desc':      'Revois le tour de bienvenue pas à pas, directement dans l\'app.',
+      'tuto.replay.btn':       '✦ Relancer le tour guidé',
       // Shared buttons
       'btn.edit':       'Modifier',
       'btn.delete':     'Supprimer',
@@ -824,6 +827,9 @@ const i18n = (() => {
       'tuto.s5.d':             'Check <b>Goals</b> every morning to see where you stand against Prop Firm rules',
       'tuto.s5.e':             '<b>Tools</b> page: calculate position size and risk before entering a trade',
       'tuto.cta':              'Get started →',
+      'tuto.replay.title':     'Interactive guided tour',
+      'tuto.replay.desc':      'Replay the welcome tour step by step, right inside the app.',
+      'tuto.replay.btn':       '✦ Replay guided tour',
       // Shared buttons
       'btn.edit':       'Edit',
       'btn.delete':     'Delete',

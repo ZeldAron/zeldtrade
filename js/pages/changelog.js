@@ -5,6 +5,18 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.335',
+      date: '2026-05-24',
+      time: '18:40',
+      tags: ['feat', 'ux'],
+      title: 'Visite guidée interactive au premier login',
+      titleEn: 'Interactive guided tour on first login',
+      items: [
+        { type: 'feat', text: 'À la première connexion, une visite guidée présente les fonctionnalités clés étape par étape (nouveau trade, journal, dashboard, outils, offres) avec un surlignage de chaque élément. Bilingue FR / EN.', textEn: 'On first login, a guided tour walks you through the key features step by step (new trade, journal, dashboard, tools, plans) with each element highlighted. Bilingual FR / EN.' },
+        { type: 'ux', text: 'La visite est relançable à tout moment depuis la page Guide (bouton « Relancer le tour guidé ») ou via le « ? » en haut à droite.', textEn: 'The tour can be replayed anytime from the Guide page ("Replay guided tour" button) or via the "?" top-right.' },
+      ],
+    },
+    {
       version: '0.9.334',
       date: '2026-05-24',
       time: '18:20',

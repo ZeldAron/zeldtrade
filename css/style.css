@@ -5303,3 +5303,66 @@ img { -webkit-user-drag: none; }
     scroll-behavior: auto !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   v0.9.335 — VISITE GUIDÉE (onboarding 1er login)
+   Spotlight via 4 masques sombres autour de la cible + anneau accent + popover.
+   z-index 100000+ : au-dessus de tout le chrome app (plafond existant = 9999).
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.zt-tour-mask {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.66);
+  z-index: 100000;
+  pointer-events: auto;          /* bloque l'interaction avec l'app pendant le tour */
+}
+.zt-tour-ring {
+  position: fixed;
+  z-index: 100001;
+  pointer-events: auto;          /* intercepte les clics sur la cible (pas d'ouverture accidentelle) */
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 0 6px rgba(124, 58, 237, 0.32), 0 10px 34px rgba(124, 58, 237, 0.25);
+  transition: left .25s cubic-bezier(.2,.7,.2,1), top .25s cubic-bezier(.2,.7,.2,1), width .25s, height .25s;
+  animation: ztTourPulse 1.9s ease-in-out infinite;
+}
+@keyframes ztTourPulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--accent), 0 0 0 6px rgba(124, 58, 237, 0.30), 0 10px 34px rgba(124, 58, 237, 0.18); }
+  50%      { box-shadow: 0 0 0 2px var(--accent), 0 0 0 10px rgba(124, 58, 237, 0.10), 0 10px 34px rgba(124, 58, 237, 0.30); }
+}
+.zt-tour-pop {
+  position: fixed;
+  z-index: 100010;
+  width: 330px;
+  max-width: calc(100vw - 24px);
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-pop);
+  padding: 18px 18px 14px;
+  transition: left .25s cubic-bezier(.2,.7,.2,1), top .25s cubic-bezier(.2,.7,.2,1);
+  animation: ztTourPopIn .3s ease;
+}
+@keyframes ztTourPopIn { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+.zt-tour-count { font-size: 11px; font-weight: 600; letter-spacing: .05em; color: var(--accent-l); text-transform: uppercase; margin-bottom: 7px; }
+.zt-tour-title { font-size: 16px; font-weight: 650; color: var(--text); margin: 0 0 6px; line-height: 1.3; }
+.zt-tour-text  { font-size: 13px; color: var(--muted); line-height: 1.55; margin: 0 0 16px; }
+.zt-tour-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.zt-tour-navbtns { display: flex; gap: 8px; }
+.zt-tour-skip { background: none; border: none; color: var(--muted2); font-size: 12px; cursor: pointer; padding: 6px 2px; transition: color .12s; }
+.zt-tour-skip:hover { color: var(--muted); }
+.zt-tour-prev, .zt-tour-next { border-radius: 8px; font-size: 13px; font-weight: 600; padding: 7px 14px; cursor: pointer; border: 1px solid var(--border2); transition: background .12s, opacity .12s; }
+.zt-tour-prev { background: var(--bg4); color: var(--text); }
+.zt-tour-prev:hover { background: var(--hover-bg); }
+.zt-tour-next { background: var(--accent); color: #fff; border-color: var(--accent); }
+.zt-tour-next:hover { opacity: .88; }
+
+/* Carte « relancer le tour » en tête du Guide */
+.tuto-replay-card {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.14), rgba(244, 114, 182, 0.07));
+  border: 1px solid var(--border2);
+  border-radius: var(--r-lg);
+  padding: 16px 18px; margin-bottom: 28px;
+}
+.tuto-replay-title { font-size: 14px; font-weight: 650; color: var(--text); margin-bottom: 3px; }
+.tuto-replay-desc  { font-size: 12.5px; color: var(--muted); }
+.tuto-replay-btn   { white-space: nowrap; flex-shrink: 0; padding: 10px 18px; font-size: 13px; }
