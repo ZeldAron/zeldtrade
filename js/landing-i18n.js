@@ -146,6 +146,27 @@
     'ba.after.5':      { fr: '<span class="ba-check">✓</span> <strong>P&amp;L net</strong> calculé avec fees + spreads par instrument', en: '<span class="ba-check">✓</span> <strong>Net P&amp;L</strong> computed with fees + spreads per instrument' },
     'ba.after.6':      { fr: '<span class="ba-check">✓</span> <strong>Analytics</strong> par setup, session, instrument, jour, mois', en: '<span class="ba-check">✓</span> <strong>Analytics</strong> by setup, session, instrument, day, month' },
     'ba.after.7':      { fr: '<span class="ba-check">✓</span> <strong>Made in France</strong> à 14,99 €/mois — 50% moins cher que les US', en: '<span class="ba-check">✓</span> <strong>Made in France</strong> at €14.99/mo — 50% cheaper than US tools' },
+
+    // Mockup app preview (aperçu interactif)
+    'mk.bartitle':     { fr: 'zeldtrade.app — Aperçu interactif', en: 'zeldtrade.app — Interactive preview' },
+    'mk.nav.calendar': { fr: 'Calendrier', en: 'Calendar' },
+    'mk.nav.goals':    { fr: 'Objectifs', en: 'Goals' },
+    'mk.equity':       { fr: 'Équité (30 j)', en: 'Equity (30d)' },
+    'mk.tradestotal':  { fr: 'Trades total', en: 'Total trades' },
+    'mk.avgrr':        { fr: 'R:R moyen', en: 'Avg R:R' },
+    'mk.perfinstr':    { fr: 'Perf par instrument', en: 'Perf by instrument' },
+    'mk.may':          { fr: 'Mai 2026', en: 'May 2026' },
+    'mk.activedays':   { fr: '14 j actifs', en: '14 active days' },
+    'mk.thisweek':     { fr: 'Cette semaine', en: 'This week' },
+    'mk.recenttrades': { fr: 'Trades récents', en: 'Recent trades' },
+    'mk.active':       { fr: 'Actifs', en: 'Active' },
+    'mk.reached':      { fr: 'Atteints', en: 'Reached' },
+    'mk.inprogress':   { fr: 'En cours', en: 'In progress' },
+    'mk.monthlyprofit':{ fr: 'Profit mensuel', en: 'Monthly profit' },
+    'mk.tradesmonth':  { fr: 'Trades / mois', en: 'Trades / month' },
+    'mk.targetwr':     { fr: 'Win rate cible', en: 'Target win rate' },
+    'mk.goalreached':  { fr: '✓ Atteint', en: '✓ Reached' },
+    'demo.curl':       { fr: 'zeldtrade.com/app · Nouveau trade', en: 'zeldtrade.com/app · New trade' },
   };
 
   // ── Méta traduisibles (<title>, description) ────────────────────────────────
