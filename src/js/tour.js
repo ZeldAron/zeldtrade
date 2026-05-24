@@ -30,6 +30,7 @@
   }
 
   let els = null, steps = [], idx = 0, active = false;
+  let _sb = null, _sbOpened = false, _sbExpanded = false;   // sidebar forcée visible par le tour
 
   function el(cls) { const d = document.createElement('div'); d.className = cls; document.body.appendChild(d); return d; }
 
@@ -59,7 +60,34 @@
     return b;
   }
 
+  // Révèle la sidebar si l'étape courante vise un élément qui s'y trouve alors
+  // qu'elle est cachée (tiroir mobile ≤768px fermé, ou sidebar repliée desktop).
+  // Sans ça, le tour ne trouvait pas la cible et se centrait au milieu de l'écran
+  // (bug fenêtre étroite / split-screen). Snap SANS animation → getBoundingClientRect
+  // fiable immédiatement (pas de flash de centrage le temps de la transition CSS).
+  function ensureSidebarVisible() {
+    const step = steps[idx];
+    if (!step || !step.sel) return;
+    const t = document.querySelector(step.sel);
+    if (!t) return;
+    const sb = t.closest('.sidebar');
+    if (!sb) return;
+    const r = sb.getBoundingClientRect();
+    const offscreen = (r.right <= 1 || r.left >= window.innerWidth);
+    const collapsed = sb.classList.contains('sb-collapsed');
+    const needOpen  = offscreen && !sb.classList.contains('sb-open');
+    if (!collapsed && !needOpen) return;       // déjà visible
+    const prevTransition = sb.style.transition;
+    sb.style.transition = 'none';
+    if (collapsed) { sb.classList.remove('sb-collapsed'); _sbExpanded = true; }
+    if (needOpen)  { sb.classList.add('sb-open');         _sbOpened   = true; }
+    _sb = sb;
+    void sb.offsetWidth;                        // reflow → applique le snap
+    requestAnimationFrame(function () { if (_sb) _sb.style.transition = prevTransition; });
+  }
+
   function place() {
+    ensureSidebarVisible();
     const vw = window.innerWidth, vh = window.innerHeight;
     const r = targetRect();
     if (r) {
@@ -126,6 +154,12 @@
   function finish() {
     if (!active) return;
     active = false;
+    // restaure la sidebar dans son état d'origine si le tour l'a forcée visible
+    if (_sb) {
+      if (_sbOpened)   _sb.classList.remove('sb-open');
+      if (_sbExpanded) _sb.classList.add('sb-collapsed');
+      _sb = null; _sbOpened = false; _sbExpanded = false;
+    }
     try { localStorage.setItem(LS_KEY, '1'); } catch (e) {}
     window.removeEventListener('resize', onResize);
     window.removeEventListener('scroll', onResize, true);

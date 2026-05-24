@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.339',
+      date: '2026-05-24',
+      time: '20:45',
+      tags: ['fix'],
+      title: 'Tour guidé : bon positionnement sur fenêtre étroite / mobile',
+      titleEn: 'Guided tour: correct positioning on narrow / mobile screens',
+      items: [
+        { type: 'fix', text: 'Sur une fenêtre étroite ou en affichage mobile (barre latérale repliée en tiroir), la visite guidée s\'affichait au milieu de l\'écran au lieu de pointer les éléments. Elle déplie maintenant automatiquement la barre latérale pour surligner le bon endroit (Nouveau trade, Journal, Dashboard, Outils, Offres), puis la restaure en sortant.', textEn: 'On a narrow window or mobile layout (sidebar collapsed into a drawer), the guided tour appeared in the middle of the screen instead of pointing at the elements. It now auto-opens the sidebar to highlight the right spot (New trade, Journal, Dashboard, Tools, Plans), then restores it on exit.' },
+      ],
+    },
+    {
       version: '0.9.338',
       date: '2026-05-24',
       time: '20:30',
