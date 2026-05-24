@@ -6,6 +6,7 @@
 //   2. firebase deploy --only functions
 
 const { onCall, onRequest, HttpsError } = require('firebase-functions/v2/https');
+const { onDocumentWritten }              = require('firebase-functions/v2/firestore');
 const { defineSecret }                   = require('firebase-functions/params');
 const admin                              = require('firebase-admin');
 const Stripe                             = require('stripe');
@@ -2543,6 +2544,35 @@ exports.brevoWebhook = onRequest(
       console.error('[brevoWebhook] error', e && e.message);
       try { await _reportError({ source: 'brevoWebhook', error: e }); } catch {}
       res.status(500).send('Server error');
+    }
+  }
+);
+
+// ── Sync custom claim `pro` ↔ doc plan (FIX-SS-CLAIMS, audit sécu) ───────────
+// v0.9.336 : enforce le palier d'upload de captures CÔTÉ SERVEUR via un custom
+// claim Auth fiable (sans lecture cross-service Firestore — c'est cette lecture
+// qui avait cassé TOUS les uploads en v0.9.321). Politique répliquée à l'identique :
+//   plan == 'pro' (funded / elite / beta) → pro:true → peut uploader (cap 3/trade)
+//   sinon (trader gratuit)                → pro:false → refusé par storage.rules
+// Un trigger sur le doc `plan` couvre TOUTES les sources de changement :
+// Stripe (webhook), activation beta (write client), code pro, admin, résiliation.
+// Le client rafraîchit son token via getIdToken(true) (déjà fait par le retry
+// d'upload sur storage/unauthorized) → le claim se propage sans action user.
+exports.syncProClaim = onDocumentWritten(
+  { document: 'users/{userId}/data/plan', region: 'europe-west1', maxInstances: 10 },
+  async (event) => {
+    const uid   = event.params.userId;
+    const after = event.data && event.data.after;
+    const isPro = !!(after && after.exists && after.data() && after.data().plan === 'pro');
+    try {
+      const user   = await admin.auth().getUser(uid);
+      const claims = user.customClaims || {};
+      if (!!claims.pro === isPro) return;   // déjà à jour → évite un write inutile
+      await admin.auth().setCustomUserClaims(uid, Object.assign({}, claims, { pro: isPro }));
+      console.log(`[syncProClaim] uid=${uid.slice(0, 8)} pro=${isPro}`);
+    } catch (e) {
+      // user supprimé d'Auth, etc. → non bloquant (le doc plan peut survivre brièvement)
+      console.error('[syncProClaim] failed uid=' + uid.slice(0, 8), e && e.message);
     }
   }
 );

@@ -2,22 +2,23 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // Screenshots de trades : owner only, email vérifié, max 3 captures par trade.
-    // v0.9.321 (FIX-SS) : RETRAIT de la lecture cross-service Firestore `isProUser()`
-    //   (firestore.get(users/{uid}/data/plan).plan == 'pro'). Cette lecture inter-service
-    //   échouait en prod → la règle refusait TOUT upload, même pour des comptes Elite/bêta
-    //   pourtant vérifiés + plan 'pro' (diagnostic Admin SDK : email_verified=true,
-    //   plan='pro' confirmés, et upload quand même `storage/unauthorized`).
-    //   Le gating par palier reste assuré CÔTÉ APP (Trader gratuit = 0 emplacement de
-    //   capture, cf. Store.getMaxScreenshots). Anti-abus conservé ici : owner only +
-    //   email vérifié + nom borné (cap dur à 3 fichiers/trade) + taille + type image.
-    //   TODO (FIX-SS-CLAIMS) : ré-enforcer le palier CÔTÉ SERVEUR via un custom claim
-    //   Auth (`pro`/`tier`) posé par CF (fiable, sans lecture cross-service).
+    // Screenshots de trades : owner only, email vérifié, palier Pro, max 3/trade.
+    // v0.9.336 (FIX-SS-CLAIMS) : le palier est ré-enforcé CÔTÉ SERVEUR via le custom
+    //   claim Auth `pro` (≡ plan 'pro' = funded/elite/beta), posé par le trigger
+    //   `syncProClaim` (functions/index.js) + backfill initial. C'est FIABLE et SANS
+    //   lecture cross-service Firestore — c'est justement cette lecture (`isProUser()`)
+    //   qui échouait en prod et refusait TOUT upload en v0.9.321 (retirée alors, le
+    //   gating était depuis client-only). Le claim se propage au token via
+    //   getIdToken(true) (le retry d'upload sur storage/unauthorized le fait déjà).
+    //   Politique inchangée : Trader gratuit (pro absent/false) = refusé ; les autres
+    //   gardent leurs 3 captures/trade. Anti-abus conservé : owner + email vérifié +
+    //   nom borné (cap dur 3 fichiers) + taille 2 Mo + type image.
     match /users/{userId}/trades/{tradeId}/{filename} {
       allow read: if request.auth != null && request.auth.uid == userId;
       allow write: if request.auth != null
                    && request.auth.uid == userId
                    && request.auth.token.email_verified == true
+                   && request.auth.token.pro == true
                    && filename.matches('screenshot(_[12])?[.](jpe?g|png|webp)')
                    && request.resource.size < 2 * 1024 * 1024              // 2 MB max après compression
                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
