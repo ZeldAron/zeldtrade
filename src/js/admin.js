@@ -326,10 +326,10 @@ const Admin = (() => {
   // Période d'analyse de l'activité (défaut 24h) + cache des events bruts.
   let _actRange = '24h';
   const _ACT_RANGES = [
-    { k: '24h', lbl: '24 h',     ms: 86400000 },
-    { k: '7d',  lbl: '7 jours',  ms: 7 * 86400000 },
-    { k: '30d', lbl: '30 jours', ms: 30 * 86400000 },
-    { k: 'all', lbl: 'Tout',     ms: Infinity },
+    { k: '24h', lbl: '24 h',     ms: 86400000,      days: 1 },
+    { k: '7d',  lbl: '7 jours',  ms: 7 * 86400000,  days: 7 },
+    { k: '30d', lbl: '30 jours', ms: 30 * 86400000, days: 30 },
+    { k: 'all', lbl: 'Tout',     ms: Infinity,      days: Infinity },
   ];
   let _actCache = null;
 
@@ -337,18 +337,23 @@ const Admin = (() => {
     const wrap = $('tabActivity');
     wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
     const _today = new Date().toISOString().slice(0, 10);
+    const _since = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10); // 30 jours glissants
     try {
-      const [u, ev, gSnap, dSnap] = await Promise.all([
+      const [u, ev, gSnap, dvSnap] = await Promise.all([
         loadUsers(),
         _fbDb.collection('analyticsEvents').orderBy('ts', 'desc').limit(1500).get(),
         _fbDb.doc('publicStats/global').get().catch(() => null),
-        _fbDb.doc('publicStats/visits-' + _today).get().catch(() => null),
+        // Compteur de visites cookieless, par jour (publicStats/visits-YYYY-MM-DD,
+        // champ `day`='YYYY-MM-DD' qui trie par ordre chronologique). On prend les
+        // 30 derniers jours d'un coup ; 'global' n'a pas de champ `day` donc exclu.
+        _fbDb.collection('publicStats').where('day', '>=', _since).get().catch(() => null),
+
       ]);
       _actCache = {
         users:       u,
         events:      ev.docs.map(d => d.data()),
         visitsTotal: (gSnap && gSnap.exists) ? Math.max(0, Number(gSnap.data().visitsTotal) || 0) : 0,
-        visitsToday: (dSnap && dSnap.exists) ? Math.max(0, Number(dSnap.data().count) || 0) : 0,
+        dailyVisits: dvSnap ? dvSnap.docs.map(d => ({ day: d.data().day || d.id.replace('visits-', ''), count: Math.max(0, Number(d.data().count) || 0) })) : [],
         capped:      ev.size >= 1500,
       };
     } catch (e) {
@@ -362,7 +367,7 @@ const Admin = (() => {
   function _renderActivityView() {
     const wrap = $('tabActivity');
     if (!_actCache) { renderActivity(); return; }
-    const { users, events, visitsTotal, visitsToday, capped } = _actCache;
+    const { users, events, visitsTotal, dailyVisits, capped } = _actCache;
     const range = _ACT_RANGES.find(r => r.k === _actRange) || _ACT_RANGES[0];
     const now = Date.now();
     const evMs = e => (e.ts && e.ts.toMillis) ? e.ts.toMillis() : null;
@@ -373,6 +378,15 @@ const Admin = (() => {
     const activeOnRange = (range.ms === Infinity)
       ? users.filter(u => u.lastSeen).length
       : users.filter(u => u.lastSeen && now - u.lastSeen <= range.ms).length;
+
+    // Visiteurs sur la période (compteur cookieless, tout le trafic) : somme des docs
+    // journaliers ; « Tout » = total cumulé global (au-delà des 30 jours chargés).
+    const rangeVisits = (range.days === Infinity)
+      ? visitsTotal
+      : (() => {
+          const cutoff = new Date(now - (range.days - 1) * 86400000).toISOString().slice(0, 10);
+          return (dailyVisits || []).filter(d => d.day >= cutoff).reduce((s, d) => s + d.count, 0);
+        })();
 
     const byType = {}, byPage = {}, sids = new Set();
     ev.forEach(e => {
@@ -413,21 +427,22 @@ const Admin = (() => {
     }).join('');
 
     const visitorsBlock = `
-      <div style="display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+      <div style="display:flex;gap:14px;margin-bottom:8px;flex-wrap:wrap">
         <div style="flex:1;min-width:170px;background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(124,58,237,0.05));border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:18px 22px">
-          <div style="font-size:34px;font-weight:800;color:var(--purple-l);line-height:1">${visitsToday}</div>
-          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px">Visiteurs aujourd'hui</div>
+          <div style="font-size:34px;font-weight:800;color:var(--purple-l);line-height:1">${rangeVisits}</div>
+          <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px">Visiteurs · ${range.lbl}</div>
         </div>
         <div style="flex:1;min-width:170px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 22px">
           <div style="font-size:34px;font-weight:800;color:var(--text);line-height:1">${visitsTotal}</div>
           <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px">Visiteurs au total</div>
         </div>
-      </div>`;
+      </div>
+      <p class="ov-note" style="margin:0 0 16px">Trafic global (compteur cookieless, landing incluse). L'activité détaillée ci-dessous ne concerne que les comptes connectés.</p>`;
 
     const cappedNote = (capped && range.ms === Infinity)
       ? '<p class="ov-note">Affichage limité aux 1500 événements les plus récents.</p>' : '';
 
-    wrap.innerHTML = visitorsBlock + selector + chips +
+    wrap.innerHTML = selector + visitorsBlock + chips +
       `<h3 style="font-size:13px;margin:20px 0 10px;color:var(--text)">Pages visitées <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3>${pagesHtml}` +
       `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Actions clés <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3><div class="admin-stats">${actionsHtml}</div>` +
       `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Flux récent <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3>` +
