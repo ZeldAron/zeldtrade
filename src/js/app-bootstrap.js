@@ -348,7 +348,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       // v0.9.275 (F1/F2) : profil de trading non renseigné → modale 1er login
-      try { if (Store.getTradingTypes && !Store.getTradingTypes()) _showTradingProfileModal(); } catch {}
+      let _tpmShown = false;
+      try {
+        if (Store.getTradingTypes && !Store.getTradingTypes()) {
+          _showTradingProfileModal();
+          const m = document.getElementById('tradingProfileModal');
+          _tpmShown = !!(m && m.style.display === 'flex');
+        }
+      } catch {}
+      // v0.9.335 : visite guidée au 1er login (flag localStorage zt_tour_done).
+      // Si la modale profil de trading vient de s'afficher, on attend sa validation
+      // (store:profileChanged) pour ne pas empiler deux overlays sur l'écran d'accueil.
+      try {
+        if (window.ZTTour) {
+          if (_tpmShown) window.addEventListener('store:profileChanged', () => { try { ZTTour.maybeAuto(); } catch (e) {} }, { once: true });
+          else ZTTour.maybeAuto();
+        }
+      } catch (e) {}
     }
     function revealApp() {
       // min 700 ms d'affichage (évite un flash de loader si Firestore répond très vite)

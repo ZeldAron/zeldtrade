@@ -278,6 +278,8 @@ function initApp() {
   refreshPlanUI();
   $('btnSidebarUpgrade')?.addEventListener('click', () => switchPage('offers'));
   $('btnTopbarHelp')?.addEventListener('click', () => switchPage('tutorial'));
+  // v0.9.335 : relancer la visite guidée depuis le Guide (page tutorial)
+  $('btnReplayTour')?.addEventListener('click', () => { try { window.ZTTour && ZTTour.start(); } catch {} });
   UI.initNotifs && UI.initNotifs();   // v0.9.304 : centre de notifications (cloche topbar)
   // v0.9.309 : version affichée (Réglages → À propos) lue du changelog → jamais périmée
   try {
