@@ -123,17 +123,22 @@ const Admin = (() => {
     beta:   { label: 'BÊTA',     cls: 'plan-tag-beta'   },
   };
 
-  // Badges spéciaux (v0.9.346) — réutilisés dans la liste ET le détail user.
+  // Palier spécial (v0.9.347) — ADMIN/TEST affichés DANS la colonne palier.
   // Test : pseudo OU partie locale de l'email = « test », « test1 », « test2 »…
   const _isTestAccount = (u) => {
+    if (u.isTestAccount === true) return true;            // marqueur posé par adminCreateTestAccount
     const re = /^test\d*$/i;
     return re.test((u.username || '').trim()) || re.test((u.email || '').split('@')[0].trim());
   };
-  const _specialBadges = (u) => {
-    let h = '';
-    if (u.email === ADMIN_EMAIL) h += '<span class="badge-admin" title="Compte administrateur">ADMIN</span>';
-    if (_isTestAccount(u))       h += '<span class="badge-test" title="Compte de test">TEST</span>';
-    return h;
+  // Méta du palier spécial (admin prioritaire sur test), ou null si user normal.
+  const _specialTier = (u) =>
+    (u.email === ADMIN_EMAIL) ? { label: 'ADMIN', cls: 'plan-tag-admin' }
+    : _isTestAccount(u)       ? { label: 'TEST',  cls: 'plan-tag-test' }
+    : null;
+  // Tag de palier à afficher : spécial (admin/test) sinon palier réel.
+  const _planTag = (u, tier) => {
+    const m = _specialTier(u) || _TIER_META[tier];
+    return `<span class="plan-tag ${m.cls}">${m.label}</span>`;
   };
 
   async function renderUsers() {
@@ -200,10 +205,10 @@ const Admin = (() => {
 
       return `<tr class="urow" data-rowuid="${esc(u.uid)}" title="Voir le détail">
         <td>
-          <div class="cell-user-name">${esc(u.username)}${_specialBadges(u)}${newsletter}</div>
+          <div class="cell-user-name">${esc(u.username)}${newsletter}</div>
           <div class="cell-user-email">${esc(u.email)}</div>
         </td>
-        <td><span class="plan-tag ${_TIER_META[tier].cls}">${_TIER_META[tier].label}</span></td>
+        <td>${_planTag(u, tier)}</td>
         <td>
           <div class="cell-dates-act">${activated ? 'Activé ' + activated : '—'}</div>
           <div class="cell-dates-seen">Vu ${lastSeenRel}</div>
@@ -257,7 +262,10 @@ const Admin = (() => {
         </select>
         ${_isFiltered ? '<button id="fltReset" class="admin-flt-reset" title="Réinitialiser les filtres">✕ Réinitialiser</button>' : ''}
       </div>
-      <div class="admin-flt-count">${filtered.length} résultat${filtered.length > 1 ? 's' : ''}${_isFiltered ? ' (filtré)' : ''}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
+        <div class="admin-flt-count" style="margin:0">${filtered.length} résultat${filtered.length > 1 ? 's' : ''}${_isFiltered ? ' (filtré)' : ''}</div>
+        <button id="btnNewTest" class="btn-refresh" title="Créer un compte de test (réservé admin)">+ Compte test</button>
+      </div>
       <table class="admin-table">
         <thead><tr><th>Utilisateur</th><th>Palier</th><th>Activité</th><th class="th-actions">Actions</th></tr></thead>
         <tbody>${rows || emptyRow}</tbody>
@@ -288,6 +296,8 @@ const Admin = (() => {
       _userSearchQuery = ''; _filterPlan = 'all'; _filterNews = 'all'; _filterSource = 'all'; _sortBy = 'lastSeen';
       _renderUsersTable();
     });
+    const newTestEl = $('btnNewTest');
+    if (newTestEl) newTestEl.addEventListener('click', openTestModal);
 
     // Bind actions (data-action). stopPropagation → ne pas ouvrir le drawer en cliquant un bouton.
     wrap.querySelectorAll('[data-action]').forEach(btn => {
@@ -613,6 +623,50 @@ const Admin = (() => {
       toast('Code copié !');
     } catch {
       toast('Sélectionne le code manuellement.', true);
+    }
+  }
+
+  // ── Modale « créer un compte de test » (v0.9.347) ───────────────────────────
+  // Propose le prochain pseudo testN libre + un email/mot de passe par défaut
+  // (tout est éditable). La création passe par la CF adminCreateTestAccount
+  // (admin SDK : email auto-vérifié, n'affecte pas la session admin).
+  function _nextTestName() {
+    const used = new Set((_cachedUsers || []).map(u => (u.username || '').toLowerCase()));
+    let n = 1; while (used.has('test' + n)) n++;
+    return 'test' + n;
+  }
+  function openTestModal() {
+    const name = _nextTestName();
+    $('testUsername').value    = name;
+    $('testEmail').value       = name + '@zeldtrade.test';
+    $('testPassword').value    = 'Test1234';
+    $('testError').textContent = '';
+    $('testModal').style.display = 'flex';
+    setTimeout(() => { const el = $('testEmail'); if (el) { el.focus(); el.select(); } }, 0);
+  }
+  function closeTestModal() { $('testModal').style.display = 'none'; }
+
+  async function doCreateTestAccount() {
+    const email    = ($('testEmail').value || '').trim();
+    const password = $('testPassword').value || '';
+    const username = ($('testUsername').value || '').trim();
+    const btn = $('btnDoTest');
+    $('testError').textContent = '';
+    if (!_fbFunctions) { $('testError').textContent = 'SDK Functions non chargé.'; return; }
+    if (!/^test\d*$/i.test(username)) { $('testError').textContent = 'Le pseudo doit être test / test1 / test2…'; return; }
+    if (password.length < 6)          { $('testError').textContent = 'Mot de passe : 6 caractères minimum.'; return; }
+    btn.disabled = true; btn.textContent = '…';
+    try {
+      const callable = _fbFunctions.httpsCallable('adminCreateTestAccount');
+      const res = await callable({ email, password, username });
+      toast(`Compte de test « ${res.data.username} » créé ✓`);
+      closeTestModal();
+      await renderUsers(); // recharge → le compte apparaît avec le palier TEST
+    } catch (e) {
+      console.warn('[Admin] adminCreateTestAccount failed', e);
+      $('testError').textContent = (e && e.message) || 'Création échouée — réessaie.';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Créer le compte';
     }
   }
 
@@ -1041,7 +1095,7 @@ const Admin = (() => {
   async function openUserDrawer(uid) {
     const u = (_cachedUsers || []).find(x => x.uid === uid);
     if (!u) return;
-    $('drawerTitle').innerHTML = esc(u.username || u.email || uid) + _specialBadges(u);
+    $('drawerTitle').textContent = u.username || u.email || uid;
     $('drawerBody').innerHTML = '<div class="admin-loading">Chargement…</div>';
     $('userDrawer').classList.add('open');
     $('drawerOverlay').classList.add('open');
@@ -1083,7 +1137,7 @@ const Admin = (() => {
       : '<span class="dr-ok">Aucun incident ✓</span>';
 
     $('drawerBody').innerHTML = `
-      <div class="dr-sec"><span class="plan-tag ${_TIER_META[tier].cls}">${_TIER_META[tier].label}</span>${u.newsletterOptIn ? ' <span class="ev-tag ev-soft">newsletter</span>' : ''}</div>
+      <div class="dr-sec">${_planTag(u, tier)}${u.newsletterOptIn ? ' <span class="ev-tag ev-soft">newsletter</span>' : ''}</div>
       <div class="dr-sec">
         ${r('Email', esc(u.email || '—'))}
         ${r('UID', `<code class="dr-uid">${esc(uid)}</code>`)}
@@ -1220,6 +1274,10 @@ const Admin = (() => {
     $('btnDoDelete').addEventListener('click', doDeleteUser);
     $('delConfirmInput').addEventListener('input', onConfirmInputChange);
     $('deleteModal').addEventListener('click', e => { if (e.target === $('deleteModal')) closeDeleteModal(); });
+    // Modale création compte de test (v0.9.347)
+    const btCl = $('btnCloseTest'); if (btCl) btCl.addEventListener('click', closeTestModal);
+    const btDo = $('btnDoTest');    if (btDo) btDo.addEventListener('click', doCreateTestAccount);
+    const tm   = $('testModal');    if (tm)   tm.addEventListener('click', e => { if (e.target === tm) closeTestModal(); });
     // Drawer détail utilisateur
     const drClose = $('drawerClose'); if (drClose) drClose.addEventListener('click', closeDrawer);
     const drOv = $('drawerOverlay'); if (drOv) drOv.addEventListener('click', closeDrawer);

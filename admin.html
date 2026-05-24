@@ -291,13 +291,8 @@
     .cell-user-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
     .cell-user-email { font-size: 12px; color: var(--muted); }
     .badge-news { font-size: 11px; margin-left: 4px; opacity: 0.85; }
-    .badge-admin, .badge-test {
-      display: inline-block; font-size: 9px; font-weight: 800; line-height: 1.4;
-      padding: 1px 5px; border-radius: 4px; letter-spacing: 0.5px;
-      margin-left: 6px; vertical-align: 1px;
-    }
-    .badge-admin { background: rgba(124,58,237,0.9); color: #fff; }
-    .badge-test  { background: rgba(245,158,11,0.18); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); }
+    .plan-tag-admin { background: rgba(124,58,237,0.9); color: #fff; }
+    .plan-tag-test  { background: rgba(245,158,11,0.2); color: #fbbf24; }
     .cell-dates-act { font-size: 12px; color: var(--text); }
     .cell-dates-seen { font-size: 11px; color: var(--muted); margin-top: 1px; }
 
@@ -486,6 +481,7 @@
     }
 
     .confirm-input:focus { border-color: var(--red); }
+    #testModal .confirm-input:focus { border-color: var(--purple); } /* create ≠ danger */
 
     .admin-loading { color: var(--muted); padding: 20px 0; }
     .admin-empty   { color: var(--muted); padding: 20px 0; }
@@ -783,6 +779,25 @@
     </div>
   </div>
 
+  <!-- ── Modale création compte de test (v0.9.347) ──────────────────────────── -->
+  <div id="testModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:100">
+    <div class="modal-card">
+      <h3>Créer un compte de test</h3>
+      <p>Crée un compte <strong>de test</strong> (email auto-vérifié, prêt à l'emploi). Le pseudo doit rester <code>test</code> / <code>test1</code>… — il apparaîtra avec le palier <strong style="color:#fbbf24">TEST</strong>.</p>
+      <label style="display:block;font-size:12px;color:var(--muted);margin:10px 0 4px">Pseudo</label>
+      <input type="text" id="testUsername" class="confirm-input" autocomplete="off" maxlength="30" placeholder="test1">
+      <label style="display:block;font-size:12px;color:var(--muted);margin:10px 0 4px">Email</label>
+      <input type="email" id="testEmail" class="confirm-input" autocomplete="off" maxlength="254" placeholder="test1@zeldtrade.test">
+      <label style="display:block;font-size:12px;color:var(--muted);margin:10px 0 4px">Mot de passe</label>
+      <input type="text" id="testPassword" class="confirm-input" autocomplete="off" maxlength="100" placeholder="6 caractères minimum">
+      <div class="gen-error" id="testError"></div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="btnCloseTest">Annuler</button>
+        <button class="btn-primary" id="btnDoTest" style="flex:2">Créer le compte</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Drawer détail utilisateur (v0.9.340) ───────────────────────────────── -->
   <div class="drawer-overlay" id="drawerOverlay"></div>
   <aside class="user-drawer" id="userDrawer" aria-label="Détail utilisateur">
@@ -803,7 +818,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="js/firebase.js"></script>
-  <script src="js/admin.js?v=0.9.346"></script>
+  <script src="js/admin.js?v=0.9.347"></script>
 
 </body>
 </html>
