@@ -3514,15 +3514,16 @@
     <div class="section-eyebrow" data-i18n="test.eyebrow">Ils l'utilisent</div>
     <h2 class="section-title" data-i18n-html="test.title">Ce qu'en disent <span class="title-accent">les traders</span></h2>
     <style>
-      /* Carrousel : 1 témoignage affiché à la fois (cartes empilées en grid → hauteur = carte la + grande), fondu entre elles. Auto-rotation gérée par js/landing-testimonials.js. */
-      .testi-carousel { display:grid; max-width:580px; margin:32px auto 0; }
-      .testi-carousel > figure { grid-area:1 / 1; opacity:0; transform:translateY(10px); transition:opacity .55s ease, transform .55s ease; pointer-events:none; }
-      .testi-carousel > figure.is-active { opacity:1; transform:none; pointer-events:auto; }
+      /* Carrousel glissant : 1 témoignage visible (viewport overflow:hidden), la piste flex défile en translateX. Boucle infinie via un clone (js/landing-testimonials.js). Sans JS → 1ʳᵉ carte visible. */
+      .testi-viewport { overflow:hidden; max-width:580px; margin:32px auto 0; }
+      .testi-track { display:flex; will-change:transform; }
+      .testi-track > figure { flex:0 0 100%; }
       .testi-dots { display:flex; justify-content:center; gap:9px; margin-top:18px; }
       .testi-dot { width:8px; height:8px; padding:0; border:none; border-radius:50%; background:rgba(255,255,255,0.22); cursor:pointer; transition:background .2s, transform .2s; }
       .testi-dot.is-active { background:var(--accent-l); transform:scale(1.35); }
     </style>
-    <div class="testi-carousel">
+    <div class="testi-viewport">
+      <div class="testi-track">
 
       <figure class="is-active" style="background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:26px 24px;margin:0;display:flex;flex-direction:column">
         <div style="color:var(--amber);font-size:15px;letter-spacing:2px;margin-bottom:14px" aria-label="5 étoiles sur 5" data-i18n-aria="test.stars">★★★★★</div>
@@ -3551,6 +3552,7 @@
         </figcaption>
       </figure>
 
+      </div>
     </div>
     <div class="testi-dots"></div>
   </section>
@@ -3760,7 +3762,7 @@
   <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.272" defer></script>
   <script src="js/landing-i18n.js?v=0.9.330" defer></script>
-  <script src="js/landing-testimonials.js?v=0.9.332" defer></script>
+  <script src="js/landing-testimonials.js?v=0.9.333" defer></script>
 
 </body>
 </html>
