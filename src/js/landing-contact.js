@@ -83,6 +83,9 @@
 
   let _lastSubmit = 0;
 
+  // v0.9.328 : messages JS du formulaire contact adaptés à la langue active de la landing.
+  const L = (fr, en) => (document.documentElement.lang === 'en' ? en : fr);
+
   async function submit() {
     errEl.textContent = '';
     const name    = (nameEl.value || '').trim().replace(/[\r\n]/g, '').slice(0, 100);
@@ -96,14 +99,14 @@
       return;
     }
     if (Date.now() - _lastSubmit < 60000) {
-      errEl.textContent = 'Merci de patienter 60 secondes avant de renvoyer un message.';
+      errEl.textContent = L('Merci de patienter 60 secondes avant de renvoyer un message.', 'Please wait 60 seconds before sending another message.');
       return;
     }
-    if (name.length < 2)    { errEl.textContent = 'Pseudo trop court (min 2 caractères).'; return; }
-    if (message.length < 5) { errEl.textContent = 'Message trop court (min 5 caractères).'; return; }
+    if (name.length < 2)    { errEl.textContent = L('Pseudo trop court (min 2 caractères).', 'Name too short (min 2 characters).'); return; }
+    if (message.length < 5) { errEl.textContent = L('Message trop court (min 5 caractères).', 'Message too short (min 5 characters).'); return; }
 
     btn.disabled    = true;
-    btn.textContent = 'Envoi…';
+    btn.textContent = L('Envoi…', 'Sending…');
     try {
       const callable = fn.httpsCallable('sendContactMessage');
       const res      = await callable({ name, message });
@@ -121,12 +124,12 @@
       if (code === 'functions/resource-exhausted' || code === 'resource-exhausted') {
         errEl.textContent = msg;
       } else if (code === 'functions/invalid-argument' || code === 'invalid-argument') {
-        errEl.textContent = msg || 'Données invalides.';
+        errEl.textContent = msg || L('Données invalides.', 'Invalid data.');
       } else {
-        errEl.textContent = 'Erreur d\'envoi — réessaie dans un instant.';
+        errEl.textContent = L('Erreur d\'envoi — réessaie dans un instant.', 'Send error — try again in a moment.');
       }
       btn.disabled    = false;
-      btn.textContent = 'Envoyer →';
+      btn.textContent = L('Envoyer →', 'Send →');
     }
   }
 
