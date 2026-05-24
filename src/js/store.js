@@ -731,7 +731,24 @@ const Store = (() => {
     const fileName = idx === 0 ? 'screenshot.jpg' : `screenshot_${idx}.jpg`;
     const path = `users/${_uid}/trades/${tradeId}/${fileName}`;
     const ref  = _fbStorage.ref(path);
-    await ref.put(blob, { contentType: 'image/jpeg', cacheControl: 'private, max-age=31536000' });
+    const opts = { contentType: 'image/jpeg', cacheControl: 'private, max-age=31536000' };
+    try {
+      await ref.put(blob, opts);
+    } catch (e) {
+      // v0.9.320 : un storage/unauthorized peut venir d'un token dont le claim
+      // email_verified est PÉRIMÉ (compte pourtant vérifié + Pro), ou du throttle 30s
+      // qui a fait sauter le refresh préventif. On force un refresh HORS throttle et on
+      // retente UNE fois avant d'abandonner.
+      if (e && (e.code === 'storage/unauthorized' || /unauthorized/i.test(e.message || ''))) {
+        try {
+          const u = (typeof firebase !== 'undefined') && firebase.auth && firebase.auth().currentUser;
+          if (u) { await u.getIdToken(true); _lastTokenRefresh = Date.now(); }
+        } catch (_) { /* ignore */ }
+        await ref.put(blob, opts);   // 2ᵉ essai ; si re-throw → remonte à l'appelant
+      } else {
+        throw e;
+      }
+    }
     return path;
   }
 

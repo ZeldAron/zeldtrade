@@ -5,6 +5,17 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.320',
+      date: '2026-05-24',
+      time: '12:04',
+      tags: ['fix'],
+      title: 'Upload des captures plus fiable (échec « unauthorized »)',
+      titleEn: 'More reliable screenshot upload (fixes "unauthorized")',
+      items: [
+        { type: 'fix', text: 'Sur un compte vérifié + payant, l\'enregistrement d\'un trade avec plusieurs captures pouvait échouer avec « permission refusée » à cause d\'un jeton d\'authentification momentanément périmé. L\'app force désormais un rafraîchissement du jeton et réessaie automatiquement l\'upload une fois.', textEn: 'On a verified + paid account, saving a trade with several screenshots could fail with "permission denied" due to a momentarily stale auth token. The app now force-refreshes the token and automatically retries the upload once.' },
+      ],
+    },
+    {
       version: '0.9.319',
       date: '2026-05-23',
       time: '03:18',
