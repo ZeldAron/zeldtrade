@@ -185,7 +185,7 @@ const Admin = (() => {
         ? `<button class="ico-btn" disabled title="Vous ne pouvez pas vous supprimer vous-même">${_trash}</button>`
         : `<button class="ico-btn ico-btn-red" data-action="delete" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Supprimer le compte">${_trash}</button>`;
 
-      return `<tr>
+      return `<tr class="urow" data-rowuid="${esc(u.uid)}" title="Voir le détail">
         <td>
           <div class="cell-user-name">${esc(u.username)}${newsletter}</div>
           <div class="cell-user-email">${esc(u.email)}</div>
@@ -197,7 +197,6 @@ const Admin = (() => {
         </td>
         <td class="cell-actions">
           <button class="ico-btn ico-btn-violet" data-action="gen"    data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Générer un code Bêta Testeur (accès complet)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H6a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><line x1="10" y1="6" x2="10" y2="16" stroke-dasharray="1.5 2"/></svg></button>
-          <button class="ico-btn ico-btn-violet" data-action="stripe" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Créer un lien de paiement Stripe"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
           <button class="ico-btn ico-btn-blue"   data-action="verify" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Forcer email_verified=true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><polyline points="4 7 12 13 20 7"/></svg></button>
           ${deleteBtn}
         </td>
@@ -277,18 +276,19 @@ const Admin = (() => {
       _renderUsersTable();
     });
 
-    // Bind actions (event delegation par data-action)
+    // Bind actions (data-action). stopPropagation → ne pas ouvrir le drawer en cliquant un bouton.
     wrap.querySelectorAll('[data-action]').forEach(btn => {
       const action = btn.dataset.action;
-      btn.addEventListener('click', () => {
-        const uid = btn.dataset.uid;
-        const email = btn.dataset.email;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const uid = btn.dataset.uid, email = btn.dataset.email;
         if (action === 'gen')         openGenModal(uid, email);
-        else if (action === 'stripe') openStripeModal(uid, email);
         else if (action === 'verify') markUserVerified(uid, email, btn);
         else if (action === 'delete') openDeleteModal(uid, email);
       });
     });
+    // Clic sur une ligne → drawer détail utilisateur
+    wrap.querySelectorAll('tr.urow').forEach(tr => tr.addEventListener('click', () => openUserDrawer(tr.dataset.rowuid)));
   }
 
   // ── Forcer email_verified=true sur un compte (v0.9.144) ─────────────────────
@@ -556,60 +556,12 @@ const Admin = (() => {
     }
   }
 
-  // ── Modale génération de lien Stripe (admin uniquement) ─────────────────────
-  // Le user ne fait RIEN — il reçoit juste le lien par message direct (Discord/email)
-  // et clique → Stripe affiche le prix → il paie → webhook active Pro automatiquement.
-  function openStripeModal(uid, email) {
-    $('stripeTargetUid').value      = uid;
-    $('stripeTargetEmail').value    = email;
-    $('stripeTargetEmailLabel').textContent = email;
-    $('stripeResult').style.display = 'none';
-    $('stripeError').textContent    = '';
-    $('stripeUrl').value            = '';
-    $('stripeTier').value           = 'monthly';
-    $('btnDoStripe').disabled       = false;
-    $('btnDoStripe').textContent    = 'Générer le lien';
-    $('adminStripeModal').style.display = 'flex';
-  }
-  function closeStripeModal() {
-    $('adminStripeModal').style.display = 'none';
-  }
-  async function doGenerateStripeLink() {
-    const tier        = $('stripeTier').value;
-    const targetUid   = $('stripeTargetUid').value;
-    const targetEmail = $('stripeTargetEmail').value;
-    const btn         = $('btnDoStripe');
-    btn.disabled    = true;
-    btn.textContent = '…';
-    $('stripeError').textContent = '';
-    if (!_fbFunctions) {
-      $('stripeError').textContent = 'SDK Functions non chargé.';
-      btn.disabled = false; btn.textContent = 'Générer le lien';
-      return;
-    }
-    try {
-      const callable = _fbFunctions.httpsCallable('createCheckoutSession');
-      const res = await callable({ tier, targetUid, targetEmail });
-      $('stripeUrl').value = res.data.url;
-      $('stripeResult').style.display = 'block';
-      toast('Lien Stripe généré !');
-    } catch (e) {
-      console.warn('[Admin] createCheckoutSession failed', e);
-      $('stripeError').textContent = (e && e.message) || 'Erreur lors de la génération.';
-    } finally {
-      btn.disabled    = false;
-      btn.textContent = 'Générer le lien';
-    }
-  }
-  async function copyStripeUrl() {
-    const url = $('stripeUrl').value;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast('Lien copié — envoie-le par message au bêta-testeur');
-    } catch {
-      toast('Sélectionne le lien manuellement.', true);
-    }
-  }
+  // ── (retiré v0.9.340) Modale « lien de paiement Stripe » ────────────────────
+  // createCheckoutSession prend l'uid/email du TOKEN (jamais targetUid) → le lien
+  // aurait visé le compte admin ; et le param envoyé (`tier: monthly/yearly/lifetime`)
+  // ne matchait aucune clé prix (`funded_monthly`…). Pour donner l'accès à un
+  // testeur → bouton « Code bêta ». Pour un vrai paiement → le user souscrit
+  // lui-même via la page Offres. (Si besoin un jour : Stripe Payment Links.)
 
   // ── Modale suppression utilisateur ───────────────────────────────────────────
   function openDeleteModal(uid, email) {
@@ -693,24 +645,7 @@ const Admin = (() => {
     // Construction via DOM API (pas innerHTML user-injection — sécurité)
     wrap.textContent = '';
 
-    // Section 1 — Clés API IA (admin info)
-    const sectionAI = document.createElement('div');
-    sectionAI.style.cssText = 'max-width:560px;margin-bottom:32px';
-    sectionAI.innerHTML = `
-      <h3 style="margin:0 0 6px;font-size:15px">Clés API IA Vision</h3>
-      <p style="font-size:12px;color:var(--muted);line-height:1.6">
-        Les clés des fournisseurs IA tiers sont dans <strong>Google Secret Manager</strong>, utilisées uniquement par
-        la Cloud Function <code>analyzeChart</code>. Jamais exposées au client.
-      </p>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:14px;font-family:monospace;font-size:12px;color:var(--muted);line-height:1.7">
-        # IA standard (modèle vision) :<br>
-        <span style="color:var(--text)">firebase functions:secrets:set GROQ_API_KEY</span><br><br>
-        # IA avancée (Anthropic Claude) :<br>
-        <span style="color:var(--text)">firebase functions:secrets:set CLAUDE_API_KEY</span>
-      </div>`;
-    wrap.appendChild(sectionAI);
-
-    // Section 2 — Cleanup userEmails orphelins
+    // Section 1 — Cleanup userEmails orphelins
     const sectionCleanup = document.createElement('div');
     sectionCleanup.style.cssText = 'max-width:680px';
 
@@ -876,14 +811,254 @@ const Admin = (() => {
     });
   }
 
+  // ════════════════════════════════════════════════════════════════════════════
+  //  v0.9.340 — Cockpit : Vue d'ensemble · Revenu · Audit & Emails · drawer user
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // Prix de référence pour estimer le MRR (montants réels = dans Stripe ; ajuste
+  // ici si les tarifs annuels changent). Mensuel-équivalent annuel = annuel / 12.
+  const PRICES = { funded: { monthly: 14.99, yearly: 149 }, elite: { monthly: 29.99, yearly: 299 } };
+  function mrrFor(tier, cycle) { const p = PRICES[tier]; if (!p) return 0; return cycle === 'yearly' ? p.yearly / 12 : p.monthly; }
+  const _eur = n => (Math.round(n) === n ? n : Math.round(n * 100) / 100).toLocaleString('fr-FR') + ' €';
+  const _tsMs = x => (x && x.toMillis) ? x.toMillis() : (typeof x === 'number' ? x : null);
+
+  async function loadStripeDocs(users) {
+    const snaps = await Promise.all(users.map(u =>
+      _fbDb.collection('users').doc(u.uid).collection('data').doc('stripe').get().catch(() => null)));
+    return snaps.map(s => (s && s.exists) ? s.data() : null);
+  }
+  const _isActiveSub = s => s && (s.subscriptionStatus === 'active' || s.subscriptionStatus === 'trialing');
+
+  // ── VUE D'ENSEMBLE (cockpit) ──────────────────────────────────────────────
+  async function renderOverview() {
+    const wrap = $('tabOverview');
+    wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
+    let users, plans, stripes;
+    try {
+      users = await loadUsers();
+      [plans, stripes] = await Promise.all([
+        Promise.all(users.map(u => getUserPlan(u.uid))),
+        loadStripeDocs(users),
+      ]);
+    } catch (e) { wrap.innerHTML = '<p class="admin-empty">Erreur de chargement.</p>'; return; }
+    _cachedUsers = users; _cachedPlans = plans;
+
+    const now = Date.now(), DAY = 86400000;
+    const total = users.length;
+    const a7  = users.filter(u => u.lastSeen && now - u.lastSeen <= 7 * DAY).length;
+    const a30 = users.filter(u => u.lastSeen && now - u.lastSeen <= 30 * DAY).length;
+    const tiers = { basic: 0, funded: 0, elite: 0, beta: 0 };
+    plans.forEach(p => tiers[_userTier(p)]++);
+    const paying = tiers.funded + tiers.elite;
+    let mrr = 0, activeSubs = 0;
+    stripes.forEach(s => { if (_isActiveSub(s) && s.tier) { activeSubs++; mrr += mrrFor(s.tier, s.cycle); } });
+    const conv = total ? Math.round(paying / total * 100) : 0;
+
+    const card = (v, l, cls) => `<div class="ov-card ${cls || ''}"><div class="ov-val">${v}</div><div class="ov-lbl">${l}</div></div>`;
+    wrap.innerHTML = `
+      <div class="ov-grid">
+        ${card(total, 'Utilisateurs')}
+        ${card(a7, 'Actifs 7j')}
+        ${card(a30, 'Actifs 30j')}
+        ${card(paying, 'Payants', 'ov-accent')}
+        ${card(tiers.beta, 'Bêta (gratuit)')}
+        ${card(_eur(mrr), 'MRR estimé', 'ov-green')}
+        ${card(conv + '%', 'Conversion payante')}
+        ${card(activeSubs, 'Abos Stripe actifs')}
+      </div>
+      <div class="ov-split">
+        <div class="ov-panel">
+          <h3 class="ov-h">Répartition des paliers</h3>
+          ${_tierBar('✦ Funded', tiers.funded, total, '#a78bfa')}
+          ${_tierBar('✦ Elite', tiers.elite, total, '#f0b232')}
+          ${_tierBar('Bêta', tiers.beta, total, '#3fb950')}
+          ${_tierBar('Basic', tiers.basic, total, 'var(--muted)')}
+        </div>
+        <div class="ov-panel">
+          <h3 class="ov-h">Raccourcis</h3>
+          <div class="ov-links">
+            <button class="btn-secondary" data-goto="users">Gérer les utilisateurs →</button>
+            <button class="btn-secondary" data-goto="revenue">Revenu &amp; abonnements →</button>
+            <button class="btn-secondary" data-goto="audit">Journal d'audit &amp; emails →</button>
+          </div>
+          <p class="ov-note">MRR estimé au tarif courant (Funded ${_eur(PRICES.funded.monthly)}/m, Elite ${_eur(PRICES.elite.monthly)}/m). Montants réels dans Stripe.</p>
+        </div>
+      </div>`;
+    wrap.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.goto)));
+  }
+  function _tierBar(label, n, total, color) {
+    const pct = total ? Math.round(n / total * 100) : 0;
+    return `<div class="ov-bar"><span class="ov-bar-lbl">${esc(label)}</span><div class="ov-bar-track"><div class="ov-bar-fill" style="width:${pct}%;background:${color}"></div></div><span class="ov-bar-n">${n} · ${pct}%</span></div>`;
+  }
+
+  // ── REVENU / ABONNEMENTS ──────────────────────────────────────────────────
+  async function renderRevenue() {
+    const wrap = $('tabRevenue');
+    wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
+    let users, stripes;
+    try { users = await loadUsers(); stripes = await loadStripeDocs(users); }
+    catch (e) { wrap.innerHTML = '<p class="admin-empty">Erreur de chargement.</p>'; return; }
+
+    const subs = [];
+    stripes.forEach((s, i) => { if (s && s.tier) subs.push(Object.assign({}, s, { email: users[i].email, username: users[i].username })); });
+    const active = subs.filter(_isActiveSub);
+    let mrr = 0; active.forEach(s => mrr += mrrFor(s.tier, s.cycle));
+    const f = active.filter(s => s.tier === 'funded').length, el = active.filter(s => s.tier === 'elite').length;
+    const mo = active.filter(s => s.cycle === 'monthly').length, yr = active.filter(s => s.cycle === 'yearly').length;
+    const canceling = active.filter(s => s.cancelAtPeriodEnd).length;
+    const card = (v, l, cls) => `<div class="ov-card ${cls || ''}"><div class="ov-val">${v}</div><div class="ov-lbl">${l}</div></div>`;
+    const head = `<div class="ov-grid">
+        ${card(_eur(mrr), 'MRR estimé', 'ov-green')}
+        ${card(_eur(mrr * 12), 'ARR estimé')}
+        ${card(active.length, 'Abos actifs', 'ov-accent')}
+        ${card(f, '✦ Funded')}
+        ${card(el, '✦ Elite')}
+        ${card(mo + ' / ' + yr, 'Mensuel / Annuel')}
+        ${card(canceling, 'Résiliations prévues', canceling ? 'ov-red' : '')}
+      </div>`;
+
+    if (!subs.length) {
+      wrap.innerHTML = head + '<p class="admin-empty" style="margin-top:18px">Aucun abonnement Stripe enregistré.<br>En mode TEST ça se remplit avec les paiements de test ; en LIVE avec les vrais abonnements.</p>';
+      return;
+    }
+    const rows = subs.sort((a, b) => (_isActiveSub(b) ? 1 : 0) - (_isActiveSub(a) ? 1 : 0)).map(s => {
+      const meta = _TIER_META[s.tier] || { label: esc(s.tier), cls: 'plan-tag-basic' };
+      const stCls = _isActiveSub(s) ? 'plan-tag-pro' : 'plan-tag-basic';
+      return `<tr>
+        <td><div class="cell-user-name">${esc(s.username || '?')}</div><div class="cell-user-email">${esc(s.email || '')}</div></td>
+        <td><span class="plan-tag ${meta.cls}">${meta.label}</span></td>
+        <td>${s.cycle === 'yearly' ? 'Annuel' : s.cycle === 'monthly' ? 'Mensuel' : '—'}</td>
+        <td><span class="plan-tag ${stCls}">${esc(s.subscriptionStatus || '—')}</span>${s.cancelAtPeriodEnd ? ' <span class="ev-tag ev-hard">résil.</span>' : ''}</td>
+        <td style="color:var(--muted)">${s.currentPeriodEnd ? formatDateShort(s.currentPeriodEnd) : '—'}</td>
+      </tr>`;
+    }).join('');
+    wrap.innerHTML = head +
+      '<h3 class="ov-h" style="margin-top:24px">Abonnements</h3>' +
+      `<table class="admin-table"><thead><tr><th>Client</th><th>Palier</th><th>Cycle</th><th>Statut</th><th>Échéance</th></tr></thead><tbody>${rows}</tbody></table>` +
+      `<p class="ov-note" style="margin-top:14px">Prix de réf. : Funded ${_eur(PRICES.funded.monthly)}/m · ${_eur(PRICES.funded.yearly)}/an, Elite ${_eur(PRICES.elite.monthly)}/m · ${_eur(PRICES.elite.yearly)}/an (ajuste <code>PRICES</code> dans admin.js).</p>`;
+  }
+
+  // ── AUDIT & EMAILS ────────────────────────────────────────────────────────
+  async function renderAudit() {
+    const wrap = $('tabAudit');
+    wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
+    let logs = [], emails = [];
+    try {
+      const [aSnap, eSnap] = await Promise.all([
+        _fbDb.collection('auditLogs').orderBy('at', 'desc').limit(100).get().catch(() => null),
+        _fbDb.collection('emailEvents').orderBy('at', 'desc').limit(50).get().catch(() => null),
+      ]);
+      if (aSnap) logs = aSnap.docs.map(d => d.data());
+      if (eSnap) emails = eSnap.docs.map(d => d.data());
+    } catch (e) { wrap.innerHTML = '<p class="admin-empty">Erreur (index Firestore en cours de création ? réessaie dans 1 min).</p>'; return; }
+
+    const auditRows = logs.map(l => {
+      const ms = _tsMs(l.at);
+      const p = l.payload || {};
+      const tgt = p.email || p.targetEmail || p.uid || p.targetUid || '';
+      const detail = esc(JSON.stringify(p).slice(0, 140));
+      return `<tr><td><code>${esc(l.action || '?')}</code></td><td>${esc(l.admin || '—')}</td><td title="${detail}">${esc(String(tgt).slice(0, 42)) || '—'}</td><td style="color:var(--muted)">${ms ? formatRelative(ms) : '—'}</td></tr>`;
+    }).join('');
+    const emailRows = emails.map(e => {
+      const ms = _tsMs(e.at) || _tsMs(e.ts);
+      const type = e.evType || e.type || e.event || '?';
+      const hard = e.isHard || /bounce|blocked|spam|hard|error|invalid/i.test(type);
+      return `<tr><td><span class="ev-tag ${hard ? 'ev-hard' : 'ev-soft'}">${esc(type)}</span></td><td>${esc(e.email || '—')}</td><td style="color:var(--muted)">${ms ? formatRelative(ms) : '—'}</td></tr>`;
+    }).join('');
+
+    wrap.innerHTML =
+      '<h3 class="ov-h">Journal d\'audit <span class="ov-sub">— actions admin (100 dernières)</span></h3>' +
+      (logs.length
+        ? `<table class="admin-table"><thead><tr><th>Action</th><th>Admin</th><th>Cible</th><th>Quand</th></tr></thead><tbody>${auditRows}</tbody></table>`
+        : '<p class="admin-empty">Aucune action enregistrée.</p>') +
+      '<h3 class="ov-h" style="margin-top:28px">Délivrabilité email <span class="ov-sub">— bounces / spam / blocked (Brevo)</span></h3>' +
+      (emails.length
+        ? `<table class="admin-table"><thead><tr><th>Événement</th><th>Email</th><th>Quand</th></tr></thead><tbody>${emailRows}</tbody></table>`
+        : '<p class="admin-empty">Aucun incident email. 👍</p>');
+  }
+
+  // ── DRAWER détail utilisateur (clic sur une ligne) ────────────────────────
+  async function openUserDrawer(uid) {
+    const u = (_cachedUsers || []).find(x => x.uid === uid);
+    if (!u) return;
+    $('drawerTitle').textContent = u.username || u.email || uid;
+    $('drawerBody').innerHTML = '<div class="admin-loading">Chargement…</div>';
+    $('userDrawer').classList.add('open');
+    $('drawerOverlay').classList.add('open');
+
+    let plan = null, stripe = null, trades = '—', accounts = '—', myAudit = [], myEmails = [];
+    try {
+      const base = _fbDb.collection('users').doc(uid).collection('data');
+      const [pS, sS, tS, aS] = await Promise.all([
+        base.doc('plan').get().catch(() => null), base.doc('stripe').get().catch(() => null),
+        base.doc('trades').get().catch(() => null), base.doc('myAccounts').get().catch(() => null),
+      ]);
+      if (pS && pS.exists) plan = pS.data();
+      if (sS && sS.exists) stripe = sS.data();
+      if (tS && tS.exists) trades = (tS.data().items || []).length;
+      if (aS && aS.exists) accounts = (aS.data().items || []).length;
+      const [audS, emS] = await Promise.all([
+        _fbDb.collection('auditLogs').orderBy('at', 'desc').limit(200).get().catch(() => null),
+        _fbDb.collection('emailEvents').where('email', '==', u.email).limit(20).get().catch(() => null),
+      ]);
+      if (audS) myAudit = audS.docs.map(d => d.data()).filter(l => { const p = l.payload || {}; return p.uid === uid || p.targetUid === uid || p.email === u.email; });
+      if (emS) myEmails = emS.docs.map(d => d.data());
+    } catch (e) { /* best-effort */ }
+
+    const tier = _userTier(plan);
+    const r = (k, v) => `<div class="dr-row"><span class="dr-k">${k}</span><span class="dr-v">${v}</span></div>`;
+    const subBlock = (plan && plan.plan === 'pro')
+      ? (r('Source', _userSource(plan) || '—') + (stripe
+          ? r('Statut', esc(stripe.subscriptionStatus || '—')) +
+            r('Cycle', stripe.cycle === 'yearly' ? 'Annuel' : stripe.cycle === 'monthly' ? 'Mensuel' : '—') +
+            r('Échéance', stripe.currentPeriodEnd ? formatDateShort(stripe.currentPeriodEnd) : '—') +
+            (stripe.cancelAtPeriodEnd ? r('Résiliation', '<span class="ev-tag ev-hard">prévue</span>') : '')
+          : (plan.activatedAt ? r('Activé', formatDateShort(plan.activatedAt)) : '')))
+      : '<span class="dr-empty">Compte gratuit (Basic).</span>';
+    const audHtml = myAudit.length
+      ? myAudit.map(l => `<div class="dr-log"><code>${esc(l.action)}</code> · <span style="color:var(--muted)">${formatRelative(_tsMs(l.at))}</span></div>`).join('')
+      : '<span class="dr-empty">Aucune action admin.</span>';
+    const emHtml = myEmails.length
+      ? myEmails.map(e => `<span class="ev-tag ev-hard">${esc(e.evType || e.type || '?')}</span>`).join(' ')
+      : '<span class="dr-ok">Aucun incident ✓</span>';
+
+    $('drawerBody').innerHTML = `
+      <div class="dr-sec"><span class="plan-tag ${_TIER_META[tier].cls}">${_TIER_META[tier].label}</span>${u.newsletterOptIn ? ' <span class="ev-tag ev-soft">newsletter</span>' : ''}</div>
+      <div class="dr-sec">
+        ${r('Email', esc(u.email || '—'))}
+        ${r('UID', `<code class="dr-uid">${esc(uid)}</code>`)}
+        ${r('Dernière activité', formatRelative(u.lastSeen))}
+        ${r('Trades', trades)}
+        ${r('Comptes', accounts)}
+      </div>
+      <div class="dr-sec"><div class="dr-sec-h">Abonnement</div>${subBlock}</div>
+      <div class="dr-sec"><div class="dr-sec-h">Délivrabilité email</div>${emHtml}</div>
+      <div class="dr-sec"><div class="dr-sec-h">Historique admin</div>${audHtml}</div>
+      <div class="dr-actions">
+        <button class="btn-secondary" data-dr="gen">Code bêta</button>
+        <button class="btn-secondary" data-dr="verify">Forcer vérif</button>
+        <button class="btn-danger" data-dr="delete">Supprimer</button>
+      </div>`;
+    $('drawerBody').querySelectorAll('[data-dr]').forEach(b => b.addEventListener('click', () => {
+      const a = b.dataset.dr;
+      if (a === 'gen') openGenModal(uid, u.email);
+      else if (a === 'verify') markUserVerified(uid, u.email, b);
+      else if (a === 'delete') { closeDrawer(); openDeleteModal(uid, u.email); }
+    }));
+  }
+  function closeDrawer() { $('userDrawer').classList.remove('open'); $('drawerOverlay').classList.remove('open'); }
+
   // ── Onglets ───────────────────────────────────────────────────────────────────
   function switchTab(name) {
-    ['users', 'activity', 'codes', 'config'].forEach(t => {
-      $('tab-' + t).classList.toggle('tab-active', t === name);
-      $('tab' + t.charAt(0).toUpperCase() + t.slice(1)).style.display = t === name ? '' : 'none';
+    ['overview', 'users', 'revenue', 'activity', 'audit', 'codes', 'config'].forEach(t => {
+      const btn = $('tab-' + t); if (btn) btn.classList.toggle('tab-active', t === name);
+      const div = $('tab' + t.charAt(0).toUpperCase() + t.slice(1)); if (div) div.style.display = t === name ? '' : 'none';
     });
+    if (name === 'overview') renderOverview();
     if (name === 'users')    renderUsers();
+    if (name === 'revenue')  renderRevenue();
     if (name === 'activity') renderActivity();
+    if (name === 'audit')    renderAudit();
     if (name === 'codes')    renderCodes();
     if (name === 'config')   renderConfig();
   }
@@ -945,7 +1120,7 @@ const Admin = (() => {
     hide('loginScreen');
     show('dashboard', 'block');
     $('adminUserEmail').textContent = user.email;
-    switchTab('users');
+    switchTab('overview');
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
@@ -962,10 +1137,9 @@ const Admin = (() => {
     $('btnLogin').addEventListener('click', login);
     $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
     $('btnLogout').addEventListener('click', () => _fbAuth.signOut());
-    $('tab-users').addEventListener('click', () => switchTab('users'));
-    $('tab-activity').addEventListener('click', () => switchTab('activity'));
-    $('tab-codes').addEventListener('click', () => switchTab('codes'));
-    $('tab-config').addEventListener('click', () => switchTab('config'));
+    ['overview', 'users', 'revenue', 'activity', 'audit', 'codes', 'config'].forEach(t => {
+      const b = $('tab-' + t); if (b) b.addEventListener('click', () => switchTab(t));
+    });
     $('btnDoGen').addEventListener('click', doGenerate);
     $('btnCopyCode').addEventListener('click', copyCode);
     $('btnCloseModal').addEventListener('click', closeGenModal);
@@ -974,11 +1148,9 @@ const Admin = (() => {
     $('btnDoDelete').addEventListener('click', doDeleteUser);
     $('delConfirmInput').addEventListener('input', onConfirmInputChange);
     $('deleteModal').addEventListener('click', e => { if (e.target === $('deleteModal')) closeDeleteModal(); });
-    // Stripe modal
-    $('btnDoStripe').addEventListener('click', doGenerateStripeLink);
-    $('btnCloseStripe').addEventListener('click', closeStripeModal);
-    $('btnCopyStripeUrl').addEventListener('click', copyStripeUrl);
-    $('adminStripeModal').addEventListener('click', e => { if (e.target === $('adminStripeModal')) closeStripeModal(); });
+    // Drawer détail utilisateur
+    const drClose = $('drawerClose'); if (drClose) drClose.addEventListener('click', closeDrawer);
+    const drOv = $('drawerOverlay'); if (drOv) drOv.addEventListener('click', closeDrawer);
   }
 
   return { init };

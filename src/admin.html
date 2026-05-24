@@ -598,6 +598,61 @@
 
     .admin-toast-ok  { background: var(--green); color: #fff; }
     .admin-toast-err { background: var(--red);   color: #fff; }
+
+    /* ═══ v0.9.340 — Cockpit (Vue d'ensemble / Revenu) ═══ */
+    .ov-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .ov-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+    .ov-card .ov-val { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1.1; }
+    .ov-card .ov-lbl { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 6px; }
+    .ov-card.ov-accent { background: linear-gradient(135deg, rgba(124,58,237,0.18), rgba(124,58,237,0.05)); border-color: rgba(124,58,237,0.4); }
+    .ov-card.ov-accent .ov-val { color: var(--purple-l, #a78bfa); }
+    .ov-card.ov-green .ov-val { color: #3fb950; }
+    .ov-card.ov-red .ov-val { color: var(--red); }
+    .ov-split { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
+    @media (max-width: 760px) { .ov-split { grid-template-columns: 1fr; } }
+    .ov-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
+    .ov-h { font-size: 14px; margin: 0 0 14px; color: var(--text); }
+    .ov-h .ov-sub { font-weight: 400; color: var(--muted); font-size: 12px; }
+    .ov-note { font-size: 11.5px; color: var(--muted); line-height: 1.6; margin: 12px 0 0; }
+    .ov-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
+    .ov-bar-lbl { width: 110px; font-size: 12px; color: var(--text); }
+    .ov-bar-track { flex: 1; background: var(--bg); border-radius: 5px; overflow: hidden; height: 18px; }
+    .ov-bar-fill { height: 100%; border-radius: 5px; transition: width .3s; }
+    .ov-bar-n { width: 78px; text-align: right; font-size: 12px; color: var(--muted); }
+    .ov-links { display: flex; flex-direction: column; gap: 8px; }
+    .ov-links .btn-secondary { text-align: left; }
+
+    /* tags événements (audit / emails) */
+    .ev-tag { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; text-transform: uppercase; letter-spacing: .3px; }
+    .ev-hard { background: var(--red-dim, rgba(255,69,58,0.13)); color: var(--red); }
+    .ev-soft { background: rgba(124,58,237,0.14); color: var(--purple-l, #a78bfa); }
+
+    /* lignes cliquables (drawer) */
+    tr.urow { cursor: pointer; }
+    tr.urow:hover { background: rgba(255,255,255,0.04); }
+
+    /* ═══ Drawer détail utilisateur ═══ */
+    .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 120; backdrop-filter: blur(2px); }
+    .drawer-overlay.open { display: block; }
+    .user-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 420px; max-width: 92vw; background: var(--bg2, #141417); border-left: 1px solid var(--border); z-index: 121; transform: translateX(100%); transition: transform .26s cubic-bezier(.4,0,.2,1); display: flex; flex-direction: column; box-shadow: -8px 0 32px rgba(0,0,0,0.5); }
+    .user-drawer.open { transform: translateX(0); }
+    .drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+    .drawer-head h3 { margin: 0; font-size: 16px; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .drawer-close { background: none; border: none; color: var(--muted); font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px; }
+    .drawer-close:hover { color: var(--text); }
+    .drawer-body { padding: 18px 20px; overflow-y: auto; flex: 1; }
+    .dr-sec { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .dr-sec:last-child { border-bottom: none; }
+    .dr-sec-h { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin-bottom: 8px; }
+    .dr-row { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; padding: 3px 0; }
+    .dr-k { color: var(--muted); flex-shrink: 0; }
+    .dr-v { color: var(--text); text-align: right; word-break: break-word; }
+    .dr-uid { font-size: 10.5px; }
+    .dr-log { font-size: 12px; padding: 3px 0; }
+    .dr-empty { color: var(--muted); font-size: 12px; }
+    .dr-ok { color: #3fb950; font-size: 12px; }
+    .dr-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .dr-actions button { flex: 1; min-width: 110px; }
   </style>
 </head>
 <body>
@@ -639,22 +694,21 @@
     <main class="admin-content">
 
       <div class="admin-tabs">
-        <button class="admin-tab tab-active" id="tab-users">Utilisateurs</button>
+        <button class="admin-tab tab-active" id="tab-overview">Vue d'ensemble</button>
+        <button class="admin-tab" id="tab-users">Utilisateurs</button>
+        <button class="admin-tab" id="tab-revenue">Revenu</button>
         <button class="admin-tab" id="tab-activity">Activité</button>
-        <button class="admin-tab" id="tab-codes">Codes générés</button>
-        <button class="admin-tab" id="tab-config">Config</button>
+        <button class="admin-tab" id="tab-audit">Audit &amp; emails</button>
+        <button class="admin-tab" id="tab-codes">Codes</button>
+        <button class="admin-tab" id="tab-config">Outils</button>
       </div>
 
-      <!-- Onglet Utilisateurs -->
-      <div id="tabUsers"></div>
-
-      <!-- Onglet Activité -->
+      <div id="tabOverview"></div>
+      <div id="tabUsers" style="display:none"></div>
+      <div id="tabRevenue" style="display:none"></div>
       <div id="tabActivity" style="display:none"></div>
-
-      <!-- Onglet Codes -->
+      <div id="tabAudit" style="display:none"></div>
       <div id="tabCodes" style="display:none"></div>
-
-      <!-- Onglet Config -->
       <div id="tabConfig" style="display:none"></div>
 
     </main>
@@ -706,38 +760,15 @@
     </div>
   </div>
 
-  <!-- ── Modale génération lien Stripe (admin uniquement, prix stealth) ────── -->
-  <div id="adminStripeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:100">
-    <div class="modal-card" style="width:480px">
-      <h3>💳 Générer un lien de paiement Stripe</h3>
-      <p>Pour <strong id="stripeTargetEmailLabel" style="color:var(--text)"></strong></p>
-      <p style="font-size:12px;color:var(--muted);margin-top:8px">
-        Le lien généré ouvre directement la page de paiement Stripe (sans afficher les prix sur ZeldTrade).
-        Envoie-le par message direct au bêta-testeur. Une fois payé, le plan Pro est activé automatiquement via webhook.
-      </p>
-      <div style="margin:14px 0">
-        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Type d'abonnement</label>
-        <select id="stripeTier" class="confirm-input" style="font-family:inherit">
-          <option value="monthly">Mensuel — 19,90 €/mois</option>
-          <option value="yearly">Annuel — 179 €/an (≈ -25%)</option>
-          <option value="lifetime">Lifetime — 399 € (50 places Founding)</option>
-        </select>
-      </div>
-      <input type="hidden" id="stripeTargetUid">
-      <input type="hidden" id="stripeTargetEmail">
-      <div class="gen-error" id="stripeError"></div>
-      <div class="modal-actions">
-        <button class="btn-secondary" id="btnCloseStripe">Fermer</button>
-        <button class="btn-primary" id="btnDoStripe" style="flex:2">Générer le lien</button>
-      </div>
-
-      <div id="stripeResult" style="display:none;margin-top:18px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px">
-        <small style="font-size:11px;color:var(--muted);display:block;margin-bottom:8px">Lien checkout généré — valable 24h</small>
-        <input type="text" id="stripeUrl" readonly style="width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px;border-radius:6px;font-family:'SF Mono',monospace;font-size:11px;margin-bottom:10px">
-        <button class="btn-copy" id="btnCopyStripeUrl">Copier le lien</button>
-      </div>
+  <!-- ── Drawer détail utilisateur (v0.9.340) ───────────────────────────────── -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="user-drawer" id="userDrawer" aria-label="Détail utilisateur">
+    <div class="drawer-head">
+      <h3 id="drawerTitle">Utilisateur</h3>
+      <button class="drawer-close" id="drawerClose" title="Fermer" aria-label="Fermer">×</button>
     </div>
-  </div>
+    <div class="drawer-body" id="drawerBody"></div>
+  </aside>
 
   <!-- ── Toast ──────────────────────────────────────────────────────────────── -->
   <div class="admin-toast" id="adminToast"></div>
@@ -749,7 +780,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="js/firebase.js"></script>
-  <script src="js/admin.js?v=0.9.292"></script>
+  <script src="js/admin.js?v=0.9.340"></script>
 
 </body>
 </html>
