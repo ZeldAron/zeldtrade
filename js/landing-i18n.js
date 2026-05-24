@@ -167,6 +167,17 @@
     'mk.targetwr':     { fr: 'Win rate cible', en: 'Target win rate' },
     'mk.goalreached':  { fr: '✓ Atteint', en: '✓ Reached' },
     'demo.curl':       { fr: 'zeldtrade.com/app · Nouveau trade', en: 'zeldtrade.com/app · New trade' },
+    // Mini-calendrier (initiales jours Lun→Dim) + dates du mockup
+    'mk.cal.1': { fr: 'L', en: 'M' },
+    'mk.cal.2': { fr: 'M', en: 'T' },
+    'mk.cal.3': { fr: 'M', en: 'W' },
+    'mk.cal.4': { fr: 'J', en: 'T' },
+    'mk.cal.5': { fr: 'V', en: 'F' },
+    'mk.cal.6': { fr: 'S', en: 'S' },
+    'mk.cal.7': { fr: 'D', en: 'S' },
+    'mk.date.may14': { fr: '14 mai', en: 'May 14' },
+    'mk.date.may13': { fr: '13 mai', en: 'May 13' },
+    'mk.date.may12': { fr: '12 mai', en: 'May 12' },
   };
 
   // ── Méta traduisibles (<title>, description) ────────────────────────────────
@@ -225,11 +236,13 @@
       if (d && m.description) d.setAttribute('content', m.description);
     }
 
-    const tg = document.getElementById('langToggle');
-    if (tg) {
-      tg.textContent = (lang === 'fr') ? 'EN' : 'FR';
-      tg.setAttribute('aria-label', lang === 'fr' ? 'Switch to English' : 'Passer en français');
-    }
+    // v0.9.327 : deux boutons drapeaux (FR / EN) côte à côte ; on surligne l'actif.
+    document.querySelectorAll('.lang-btn').forEach(function (b) {
+      const on = b.getAttribute('data-lang') === lang;
+      b.style.opacity = on ? '1' : '0.4';
+      b.style.borderColor = on ? 'var(--accent-l)' : 'rgba(255,255,255,0.18)';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
 
     try { localStorage.setItem(LS_KEY, lang); } catch (e) {}
     try { const u = new URL(location.href); u.searchParams.set('lang', lang); history.replaceState(null, '', u); } catch (e) {}
@@ -250,9 +263,11 @@
 
   function init() {
     applyLang(getInitialLang());
-    const tg = document.getElementById('langToggle');
-    if (tg) tg.addEventListener('click', function () {
-      switchWithLoader(document.documentElement.lang === 'fr' ? 'en' : 'fr');
+    document.querySelectorAll('.lang-btn').forEach(function (b) {
+      b.addEventListener('click', function () {
+        const l = b.getAttribute('data-lang');
+        if (document.documentElement.lang !== l) switchWithLoader(l);
+      });
     });
   }
 
