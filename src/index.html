@@ -248,7 +248,7 @@
       border-bottom: 1px solid var(--border);
     }
     .nav-inner {
-      max-width: 1060px;          /* v0.9.324 : élargi pour que le FR (textes + longs) tienne sur 1 ligne comme l'EN */
+      max-width: 920px;           /* v0.9.326 : alignée sur la largeur du hero (920px) → plus de nav décalée à droite en EN. Le FR tient grâce au gap resserré + nowrap. */
       margin: 0 auto;
       padding: 12px 24px;
       display: flex;
@@ -279,7 +279,7 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 18px;
+      gap: 15px;
     }
     .nav-link {
       font-size: 13px;
@@ -2726,7 +2726,7 @@
 
     <div class="mockup" role="region" aria-label="Aperçu interactif de l'application ZeldTrade">
       <div class="mockup-bar">
-        <span class="mockup-bar-title">zeldtrade.app — Aperçu interactif</span>
+        <span class="mockup-bar-title" data-i18n="mk.bartitle">zeldtrade.app — Aperçu interactif</span>
       </div>
       <div class="mockup-body">
         <aside class="mockup-sidebar" role="tablist">
@@ -2740,7 +2740,7 @@
           </label>
           <label for="mt-calendrier" class="mockup-nav-item" role="tab">
             <svg class="mockup-nav-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 6h12M5 2v3M11 2v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            Calendrier
+            <span data-i18n="mk.nav.calendar">Calendrier</span>
           </label>
           <label for="mt-journal" class="mockup-nav-item" role="tab">
             <svg class="mockup-nav-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 2.5h10a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.4"/><path d="M5 6h6M5 8.5h6M5 11h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -2748,7 +2748,7 @@
           </label>
           <label for="mt-objectifs" class="mockup-nav-item" role="tab">
             <svg class="mockup-nav-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.4"/><circle cx="8" cy="8" r="0.8" fill="currentColor"/></svg>
-            Objectifs
+            <span data-i18n="mk.nav.goals">Objectifs</span>
           </label>
         </aside>
 
@@ -2771,7 +2771,7 @@
               </div>
             </div>
             <div class="mockup-block">
-              <span class="mockup-block-label">Équité (30 j)</span>
+              <span class="mockup-block-label" data-i18n="mk.equity">Équité (30 j)</span>
               <span class="mockup-block-val">↑ 4.68 %</span>
               <svg class="mockup-chart-svg" viewBox="0 0 400 160" preserveAspectRatio="none" aria-hidden="true">
                 <defs>
@@ -2799,11 +2799,11 @@
           <div class="mockup-pane" data-pane="analytics">
             <div class="mockup-kpis">
               <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Trades total</div>
+                <div class="mockup-kpi-label" data-i18n="mk.tradestotal">Trades total</div>
                 <div class="mockup-kpi-val">142</div>
               </div>
               <div class="mockup-kpi">
-                <div class="mockup-kpi-label">R:R moyen</div>
+                <div class="mockup-kpi-label" data-i18n="mk.avgrr">R:R moyen</div>
                 <div class="mockup-kpi-val">2.4</div>
               </div>
               <div class="mockup-kpi">
@@ -2812,7 +2812,7 @@
               </div>
             </div>
             <div class="mockup-block">
-              <span class="mockup-block-label">Perf par instrument</span>
+              <span class="mockup-block-label" data-i18n="mk.perfinstr">Perf par instrument</span>
               <span class="mockup-block-val">7 instruments</span>
               <div class="mockup-bars">
                 <div class="mockup-bar-row">
@@ -2848,8 +2848,8 @@
           <div class="mockup-pane" data-pane="calendrier">
             <div class="mockup-kpis">
               <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Mai 2026</div>
-                <div class="mockup-kpi-val">14 j actifs</div>
+                <div class="mockup-kpi-label" data-i18n="mk.may">Mai 2026</div>
+                <div class="mockup-kpi-val" data-i18n="mk.activedays">14 j actifs</div>
               </div>
               <div class="mockup-kpi">
                 <div class="mockup-kpi-label">Best day</div>
@@ -2861,7 +2861,7 @@
               </div>
             </div>
             <div class="mockup-block">
-              <span class="mockup-block-label">Mai 2026</span>
+              <span class="mockup-block-label" data-i18n="mk.may">Mai 2026</span>
               <span class="mockup-block-val">↑ + 2 340 $</span>
               <div class="mockup-cal-grid">
                 <span class="mockup-cal-header">L</span>
@@ -2907,7 +2907,7 @@
           <div class="mockup-pane" data-pane="journal">
             <div class="mockup-kpis">
               <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Cette semaine</div>
+                <div class="mockup-kpi-label" data-i18n="mk.thisweek">Cette semaine</div>
                 <div class="mockup-kpi-val">8 trades</div>
               </div>
               <div class="mockup-kpi">
@@ -2920,7 +2920,7 @@
               </div>
             </div>
             <div class="mockup-block">
-              <span class="mockup-block-label">Trades récents</span>
+              <span class="mockup-block-label" data-i18n="mk.recenttrades">Trades récents</span>
               <span class="mockup-block-val">+ 1 480 $</span>
               <div class="mockup-trades">
                 <div class="mockup-trade">
@@ -2967,22 +2967,22 @@
           <div class="mockup-pane" data-pane="objectifs">
             <div class="mockup-kpis">
               <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Actifs</div>
+                <div class="mockup-kpi-label" data-i18n="mk.active">Actifs</div>
                 <div class="mockup-kpi-val">3</div>
               </div>
               <div class="mockup-kpi">
-                <div class="mockup-kpi-label">Atteints</div>
+                <div class="mockup-kpi-label" data-i18n="mk.reached">Atteints</div>
                 <div class="mockup-kpi-val up">1</div>
               </div>
               <div class="mockup-kpi">
-                <div class="mockup-kpi-label">En cours</div>
+                <div class="mockup-kpi-label" data-i18n="mk.inprogress">En cours</div>
                 <div class="mockup-kpi-val">2</div>
               </div>
             </div>
             <div class="mockup-goals">
               <div class="mockup-goal">
                 <div class="mockup-goal-head">
-                  <span class="mockup-goal-name">Profit mensuel</span>
+                  <span class="mockup-goal-name" data-i18n="mk.monthlyprofit">Profit mensuel</span>
                   <span class="mockup-goal-val">2 340 / 3 000 $</span>
                 </div>
                 <div class="mockup-bar-track"><div class="mockup-bar-fill" style="width:78%"></div></div>
@@ -2990,7 +2990,7 @@
               </div>
               <div class="mockup-goal">
                 <div class="mockup-goal-head">
-                  <span class="mockup-goal-name">Trades / mois</span>
+                  <span class="mockup-goal-name" data-i18n="mk.tradesmonth">Trades / mois</span>
                   <span class="mockup-goal-val">28 / 40</span>
                 </div>
                 <div class="mockup-bar-track"><div class="mockup-bar-fill" style="width:70%"></div></div>
@@ -2998,11 +2998,11 @@
               </div>
               <div class="mockup-goal done">
                 <div class="mockup-goal-head">
-                  <span class="mockup-goal-name">Win rate cible</span>
+                  <span class="mockup-goal-name" data-i18n="mk.targetwr">Win rate cible</span>
                   <span class="mockup-goal-val">68 % / 60 %</span>
                 </div>
                 <div class="mockup-bar-track"><div class="mockup-bar-fill" style="width:100%"></div></div>
-                <span class="mockup-goal-pct">✓ Atteint</span>
+                <span class="mockup-goal-pct" data-i18n="mk.goalreached">✓ Atteint</span>
               </div>
             </div>
           </div>
@@ -3023,7 +3023,7 @@
     <div class="demo-window" aria-label="Démo animée de création de trade">
       <!-- Browser chrome -->
       <div class="demo-chrome">
-        <span class="demo-curl">zeldtrade.com/app · Nouveau trade</span>
+        <span class="demo-curl" data-i18n="demo.curl">zeldtrade.com/app · Nouveau trade</span>
       </div>
 
       <div class="demo-app">
@@ -3738,7 +3738,7 @@
   <script src="js/landing-pricing.js?v=0.9.198"></script>
   <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.272" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.325" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.326" defer></script>
 
 </body>
 </html>
