@@ -248,12 +248,13 @@
       border-bottom: 1px solid var(--border);
     }
     .nav-inner {
-      max-width: 880px;
+      max-width: 1060px;          /* v0.9.324 : élargi pour que le FR (textes + longs) tienne sur 1 ligne comme l'EN */
       margin: 0 auto;
       padding: 12px 24px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
     }
     .nav-brand {
       display: flex;
@@ -278,7 +279,7 @@
     .nav-links {
       display: flex;
       align-items: center;
-      gap: 22px;
+      gap: 18px;
     }
     .nav-link {
       font-size: 13px;
@@ -358,6 +359,7 @@
       padding: 7px 14px;
       min-height: 32px;
       font-size: 12px;
+      white-space: nowrap;        /* v0.9.324 : « Créer un compte » ne passe jamais sur 2 lignes */
     }
 
     /* ── Hero ──────────────────────────────────────────────────────────── */
