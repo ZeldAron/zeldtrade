@@ -112,6 +112,40 @@
       en: 'ZeldTrade uses only <strong style="color:#e6edf3">essential</strong> cookies: login (Firebase Auth), anti-bot security (Cloudflare Turnstile / hCaptcha) and local storage of your data. <strong style="color:#e6edf3">No advertising cookies, no tracking.</strong> <a href="/privacy" style="color:#a78bfa;text-decoration:none">Privacy policy</a>',
     },
     'cookie.btn': { fr: 'J\'ai compris', en: 'Got it' },
+
+    // Démo live
+    'demo.eyebrow': { fr: 'Démo live', en: 'Live demo' },
+    'demo.title':   { fr: 'Crée ton premier trade en <span class="title-accent">30 secondes</span>', en: 'Create your first trade in <span class="title-accent">30 seconds</span>' },
+    'demo.sub':     { fr: 'Aucune saisie manuelle. Capture ton chart TradingView, l\'IA fait le reste.', en: 'No manual entry. Screenshot your TradingView chart, AI does the rest.' },
+    'demo.step1':   { fr: 'Capture', en: 'Capture' },
+    'demo.step2':   { fr: 'IA fill', en: 'AI fill' },
+    'demo.step3':   { fr: 'Sauvegarde', en: 'Save' },
+    'demo.paste':   { fr: 'Drag &amp; drop ou Ctrl+V ton screenshot TradingView', en: 'Drag &amp; drop or Ctrl+V your TradingView screenshot' },
+    'demo.aitext':  { fr: 'L\'IA Vision analyse ton chart…', en: 'AI Vision is analyzing your chart…' },
+    'demo.save':    { fr: '✓ Sauvegarder le trade', en: '✓ Save the trade' },
+    'demo.toast':   { fr: '✓ Trade ajouté à ton journal &amp; dashboard mis à jour', en: '✓ Trade added to your journal &amp; dashboard updated' },
+    'demo.caption': { fr: 'Animation simplifiée — la vraie app est plus complète (multi-comptes, groupes, partial close, etc.)', en: 'Simplified animation — the real app is more complete (multi-account, groups, partial close, etc.)' },
+
+    // Avant / Après
+    'ba.eyebrow':      { fr: 'Avant / Après', en: 'Before / After' },
+    'ba.title':        { fr: 'Pourquoi tu vas changer d\'outil ce mois-ci', en: 'Why you\'ll switch tools this month' },
+    'ba.sub':          { fr: 'Si tu trades en prop firm avec un Excel ou un journal générique, voici ce que tu rates chaque jour.', en: 'If you trade with a prop firm using Excel or a generic journal, here\'s what you miss every day.' },
+    'ba.before.title': { fr: 'Sans ZeldTrade', en: 'Without ZeldTrade' },
+    'ba.before.1':     { fr: '<span class="ba-x">✗</span> Excel chaotique avec 12 onglets pour 5 comptes différents', en: '<span class="ba-x">✗</span> Chaotic Excel with 12 tabs for 5 different accounts' },
+    'ba.before.2':     { fr: '<span class="ba-x">✗</span> Trailing drawdown calculé à la main → erreurs &amp; breach surprise', en: '<span class="ba-x">✗</span> Trailing drawdown computed by hand → errors &amp; surprise breaches' },
+    'ba.before.3':     { fr: '<span class="ba-x">✗</span> Screenshots TradingView éparpillés dans 8 dossiers', en: '<span class="ba-x">✗</span> TradingView screenshots scattered across 8 folders' },
+    'ba.before.4':     { fr: '<span class="ba-x">✗</span> Saisie manuelle de chaque trade (3-5 min × 20 trades/jour = 1h perdue)', en: '<span class="ba-x">✗</span> Manual entry of every trade (3-5 min × 20 trades/day = 1h lost)' },
+    'ba.before.5':     { fr: '<span class="ba-x">✗</span> Calculs P&amp;L approximatifs, frais oubliés', en: '<span class="ba-x">✗</span> Rough P&amp;L calculations, forgotten fees' },
+    'ba.before.6':     { fr: '<span class="ba-x">✗</span> Aucune analytics par setup, par session, par instrument', en: '<span class="ba-x">✗</span> No analytics by setup, session or instrument' },
+    'ba.before.7':     { fr: '<span class="ba-x">✗</span> Outils anglo-saxons à 30-40 $/mois pas adaptés aux prop firms', en: '<span class="ba-x">✗</span> English-only tools at $30-40/mo not built for prop firms' },
+    'ba.after.title':  { fr: 'Avec ZeldTrade', en: 'With ZeldTrade' },
+    'ba.after.1':      { fr: '<span class="ba-check">✓</span> <strong>1 journal centralisé</strong> pour tes 10 comptes prop / crypto / personnels', en: '<span class="ba-check">✓</span> <strong>1 centralized journal</strong> for your 10 prop / crypto / personal accounts' },
+    'ba.after.2':      { fr: '<span class="ba-check">✓</span> <strong>Trailing drawdown EOD précis</strong> calculé au tick près (Apex/Topstep/Lucid/FP)', en: '<span class="ba-check">✓</span> <strong>Accurate EOD trailing drawdown</strong> computed to the tick (Apex/Topstep/Lucid/FP)' },
+    'ba.after.3':      { fr: '<span class="ba-check">✓</span> <strong>Screenshots persistants</strong> stockés à vie dans le cloud (chiffrés EU)', en: '<span class="ba-check">✓</span> <strong>Persistent screenshots</strong> stored for life in the cloud (EU-encrypted)' },
+    'ba.after.4':      { fr: '<span class="ba-check">✓</span> <strong>IA Vision</strong> détecte entry/SL/TP en 2 sec (gain de 50 min/jour)', en: '<span class="ba-check">✓</span> <strong>AI Vision</strong> detects entry/SL/TP in 2 sec (saves 50 min/day)' },
+    'ba.after.5':      { fr: '<span class="ba-check">✓</span> <strong>P&amp;L net</strong> calculé avec fees + spreads par instrument', en: '<span class="ba-check">✓</span> <strong>Net P&amp;L</strong> computed with fees + spreads per instrument' },
+    'ba.after.6':      { fr: '<span class="ba-check">✓</span> <strong>Analytics</strong> par setup, session, instrument, jour, mois', en: '<span class="ba-check">✓</span> <strong>Analytics</strong> by setup, session, instrument, day, month' },
+    'ba.after.7':      { fr: '<span class="ba-check">✓</span> <strong>Made in France</strong> à 14,99 €/mois — 50% moins cher que les US', en: '<span class="ba-check">✓</span> <strong>Made in France</strong> at €14.99/mo — 50% cheaper than US tools' },
   };
 
   // ── Méta traduisibles (<title>, description) ────────────────────────────────

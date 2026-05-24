@@ -3014,9 +3014,9 @@
 
   <!-- ─── Démo live (v0.9.209) — animation 3 étapes en boucle ─────────── -->
   <section class="section" id="demo">
-    <div class="section-eyebrow">Démo live</div>
-    <h2 class="section-title">Crée ton premier trade en <span class="title-accent">30 secondes</span></h2>
-    <p class="section-sub">
+    <div class="section-eyebrow" data-i18n="demo.eyebrow">Démo live</div>
+    <h2 class="section-title" data-i18n-html="demo.title">Crée ton premier trade en <span class="title-accent">30 secondes</span></h2>
+    <p class="section-sub" data-i18n="demo.sub">
       Aucune saisie manuelle. Capture ton chart TradingView, l'IA fait le reste.
     </p>
 
@@ -3055,15 +3055,15 @@
         <main class="demo-main">
           <!-- Step indicator -->
           <div class="demo-steps">
-            <div class="demo-stepdot demo-stepdot-1"><span>1</span> Capture</div>
-            <div class="demo-stepdot demo-stepdot-2"><span>2</span> IA fill</div>
-            <div class="demo-stepdot demo-stepdot-3"><span>3</span> Sauvegarde</div>
+            <div class="demo-stepdot demo-stepdot-1"><span>1</span> <span data-i18n="demo.step1">Capture</span></div>
+            <div class="demo-stepdot demo-stepdot-2"><span>2</span> <span data-i18n="demo.step2">IA fill</span></div>
+            <div class="demo-stepdot demo-stepdot-3"><span>3</span> <span data-i18n="demo.step3">Sauvegarde</span></div>
           </div>
 
           <!-- Step 1: Drop zone -->
           <div class="demo-stage demo-stage-1">
             <div class="demo-drop">
-              <div class="demo-paste-hint"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.2"/></svg> Drag &amp; drop ou Ctrl+V ton screenshot TradingView</div>
+              <div class="demo-paste-hint"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.2"/></svg> <span data-i18n="demo.paste">Drag &amp; drop ou Ctrl+V ton screenshot TradingView</span></div>
               <!-- Fake screenshot SVG -->
               <svg class="demo-chart" viewBox="0 0 320 160" preserveAspectRatio="none" aria-hidden="true">
                 <defs>
@@ -3099,7 +3099,7 @@
           <div class="demo-stage demo-stage-2">
             <div class="demo-ai">
               <div class="demo-ai-spinner" aria-hidden="true"></div>
-              <div class="demo-ai-text">L'IA Vision analyse ton chart…</div>
+              <div class="demo-ai-text" data-i18n="demo.aitext">L'IA Vision analyse ton chart…</div>
               <div class="demo-fields">
                 <div class="demo-field demo-field-1"><span class="demo-field-label">Entry</span><span class="demo-field-value">4 523,50</span></div>
                 <div class="demo-field demo-field-2"><span class="demo-field-label">Stop Loss</span><span class="demo-field-value">4 519,50</span></div>
@@ -3117,52 +3117,52 @@
               <div class="demo-summary-row"><span>Risk</span><strong>200 $ — 0,2 %</strong></div>
               <div class="demo-summary-row"><span>R:R</span><strong>1,63</strong></div>
             </div>
-            <button class="demo-save-btn">✓ Sauvegarder le trade</button>
-            <div class="demo-toast">✓ Trade ajouté à ton journal &amp; dashboard mis à jour</div>
+            <button class="demo-save-btn" data-i18n="demo.save">✓ Sauvegarder le trade</button>
+            <div class="demo-toast" data-i18n-html="demo.toast">✓ Trade ajouté à ton journal &amp; dashboard mis à jour</div>
           </div>
         </main>
       </div>
     </div>
 
-    <p class="demo-caption">Animation simplifiée — la vraie app est plus complète (multi-comptes, groupes, partial close, etc.)</p>
+    <p class="demo-caption" data-i18n="demo.caption">Animation simplifiée — la vraie app est plus complète (multi-comptes, groupes, partial close, etc.)</p>
   </section>
 
   <!-- ─── Avant / Après (v0.9.204) ───────────────────────────────────── -->
   <section class="section" id="before-after">
-    <div class="section-eyebrow">Avant / Après</div>
-    <h2 class="section-title">Pourquoi tu vas changer d'outil ce mois-ci</h2>
-    <p class="section-sub">
+    <div class="section-eyebrow" data-i18n="ba.eyebrow">Avant / Après</div>
+    <h2 class="section-title" data-i18n="ba.title">Pourquoi tu vas changer d'outil ce mois-ci</h2>
+    <p class="section-sub" data-i18n="ba.sub">
       Si tu trades en prop firm avec un Excel ou un journal générique, voici ce que tu rates chaque jour.
     </p>
     <div class="ba-grid">
       <div class="ba-col ba-before">
         <div class="ba-col-head">
           <span class="ba-col-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15.5a4 4 0 0 1 7 0"/><line x1="8.5" y1="9.5" x2="10" y2="9.5"/><line x1="14" y1="9.5" x2="15.5" y2="9.5"/></svg></span>
-          <h3>Sans ZeldTrade</h3>
+          <h3 data-i18n="ba.before.title">Sans ZeldTrade</h3>
         </div>
         <ul class="ba-list">
-          <li><span class="ba-x">✗</span> Excel chaotique avec 12 onglets pour 5 comptes différents</li>
-          <li><span class="ba-x">✗</span> Trailing drawdown calculé à la main → erreurs &amp; breach surprise</li>
-          <li><span class="ba-x">✗</span> Screenshots TradingView éparpillés dans 8 dossiers</li>
-          <li><span class="ba-x">✗</span> Saisie manuelle de chaque trade (3-5 min × 20 trades/jour = 1h perdue)</li>
-          <li><span class="ba-x">✗</span> Calculs P&amp;L approximatifs, frais oubliés</li>
-          <li><span class="ba-x">✗</span> Aucune analytics par setup, par session, par instrument</li>
-          <li><span class="ba-x">✗</span> Outils anglo-saxons à 30-40 $/mois pas adaptés aux prop firms</li>
+          <li data-i18n-html="ba.before.1"><span class="ba-x">✗</span> Excel chaotique avec 12 onglets pour 5 comptes différents</li>
+          <li data-i18n-html="ba.before.2"><span class="ba-x">✗</span> Trailing drawdown calculé à la main → erreurs &amp; breach surprise</li>
+          <li data-i18n-html="ba.before.3"><span class="ba-x">✗</span> Screenshots TradingView éparpillés dans 8 dossiers</li>
+          <li data-i18n-html="ba.before.4"><span class="ba-x">✗</span> Saisie manuelle de chaque trade (3-5 min × 20 trades/jour = 1h perdue)</li>
+          <li data-i18n-html="ba.before.5"><span class="ba-x">✗</span> Calculs P&amp;L approximatifs, frais oubliés</li>
+          <li data-i18n-html="ba.before.6"><span class="ba-x">✗</span> Aucune analytics par setup, par session, par instrument</li>
+          <li data-i18n-html="ba.before.7"><span class="ba-x">✗</span> Outils anglo-saxons à 30-40 $/mois pas adaptés aux prop firms</li>
         </ul>
       </div>
       <div class="ba-col ba-after">
         <div class="ba-col-head">
           <span class="ba-col-icon"><svg viewBox="0 0 24 24" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-0.125em" aria-hidden="true"><path d="M5 15c-1.5 1-2 4-2 4s3-.5 4-2"/><path d="M12 15l-3-3a10 10 0 0 1 7-9 10 10 0 0 1-1 9l-3 3z"/><circle cx="14.5" cy="9.5" r="1.2"/></svg></span>
-          <h3>Avec ZeldTrade</h3>
+          <h3 data-i18n="ba.after.title">Avec ZeldTrade</h3>
         </div>
         <ul class="ba-list">
-          <li><span class="ba-check">✓</span> <strong>1 journal centralisé</strong> pour tes 10 comptes prop / crypto / personnels</li>
-          <li><span class="ba-check">✓</span> <strong>Trailing drawdown EOD précis</strong> calculé au tick près (Apex/Topstep/Lucid/FP)</li>
-          <li><span class="ba-check">✓</span> <strong>Screenshots persistants</strong> stockés à vie dans le cloud (chiffrés EU)</li>
-          <li><span class="ba-check">✓</span> <strong>IA Vision</strong> détecte entry/SL/TP en 2 sec (gain de 50 min/jour)</li>
-          <li><span class="ba-check">✓</span> <strong>P&amp;L net</strong> calculé avec fees + spreads par instrument</li>
-          <li><span class="ba-check">✓</span> <strong>Analytics</strong> par setup, session, instrument, jour, mois</li>
-          <li><span class="ba-check">✓</span> <strong>Made in France</strong> à 14,99 €/mois — 50% moins cher que les US</li>
+          <li data-i18n-html="ba.after.1"><span class="ba-check">✓</span> <strong>1 journal centralisé</strong> pour tes 10 comptes prop / crypto / personnels</li>
+          <li data-i18n-html="ba.after.2"><span class="ba-check">✓</span> <strong>Trailing drawdown EOD précis</strong> calculé au tick près (Apex/Topstep/Lucid/FP)</li>
+          <li data-i18n-html="ba.after.3"><span class="ba-check">✓</span> <strong>Screenshots persistants</strong> stockés à vie dans le cloud (chiffrés EU)</li>
+          <li data-i18n-html="ba.after.4"><span class="ba-check">✓</span> <strong>IA Vision</strong> détecte entry/SL/TP en 2 sec (gain de 50 min/jour)</li>
+          <li data-i18n-html="ba.after.5"><span class="ba-check">✓</span> <strong>P&amp;L net</strong> calculé avec fees + spreads par instrument</li>
+          <li data-i18n-html="ba.after.6"><span class="ba-check">✓</span> <strong>Analytics</strong> par setup, session, instrument, jour, mois</li>
+          <li data-i18n-html="ba.after.7"><span class="ba-check">✓</span> <strong>Made in France</strong> à 14,99 €/mois — 50% moins cher que les US</li>
         </ul>
       </div>
     </div>
@@ -3738,7 +3738,7 @@
   <script src="js/landing-pricing.js?v=0.9.198"></script>
   <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.272" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.322" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.325" defer></script>
 
 </body>
 </html>
