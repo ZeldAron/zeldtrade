@@ -323,10 +323,19 @@ const Admin = (() => {
     calendar: 'Calendrier', outils: 'Outils', offers: 'Offres', settings: 'Réglages', tutorial: 'Guide',
   };
 
+  // Période d'analyse de l'activité (défaut 24h) + cache des events bruts.
+  let _actRange = '24h';
+  const _ACT_RANGES = [
+    { k: '24h', lbl: '24 h',     ms: 86400000 },
+    { k: '7d',  lbl: '7 jours',  ms: 7 * 86400000 },
+    { k: '30d', lbl: '30 jours', ms: 30 * 86400000 },
+    { k: 'all', lbl: 'Tout',     ms: Infinity },
+  ];
+  let _actCache = null;
+
   async function renderActivity() {
     const wrap = $('tabActivity');
     wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
-    let users = [], events = [], visitsTotal = 0, visitsToday = 0;
     const _today = new Date().toISOString().slice(0, 10);
     try {
       const [u, ev, gSnap, dSnap] = await Promise.all([
@@ -335,33 +344,51 @@ const Admin = (() => {
         _fbDb.doc('publicStats/global').get().catch(() => null),
         _fbDb.doc('publicStats/visits-' + _today).get().catch(() => null),
       ]);
-      users  = u;
-      events = ev.docs.map(d => d.data());
-      if (gSnap && gSnap.exists) visitsTotal = Math.max(0, Number(gSnap.data().visitsTotal) || 0);
-      if (dSnap && dSnap.exists) visitsToday = Math.max(0, Number(dSnap.data().count) || 0);
+      _actCache = {
+        users:       u,
+        events:      ev.docs.map(d => d.data()),
+        visitsTotal: (gSnap && gSnap.exists) ? Math.max(0, Number(gSnap.data().visitsTotal) || 0) : 0,
+        visitsToday: (dSnap && dSnap.exists) ? Math.max(0, Number(dSnap.data().count) || 0) : 0,
+        capped:      ev.size >= 1500,
+      };
     } catch (e) {
       wrap.innerHTML = '<p class="admin-empty">Erreur de chargement. (Si c\'est la 1ʳᵉ fois, l\'index Firestore se crée — réessaie dans 1 min.)</p>';
       return;
     }
+    _renderActivityView();
+  }
+
+  // Re-render à partir du cache (changement de période = pas de re-fetch).
+  function _renderActivityView() {
+    const wrap = $('tabActivity');
+    if (!_actCache) { renderActivity(); return; }
+    const { users, events, visitsTotal, visitsToday, capped } = _actCache;
+    const range = _ACT_RANGES.find(r => r.k === _actRange) || _ACT_RANGES[0];
+    const now = Date.now();
+    const evMs = e => (e.ts && e.ts.toMillis) ? e.ts.toMillis() : null;
+    const ev = range.ms === Infinity ? events : events.filter(e => { const ms = evMs(e); return ms && now - ms <= range.ms; });
+
     const emailByUid = {};
     users.forEach(u => { emailByUid[u.uid] = u.email || u.username || u.uid; });
-    const now = Date.now(), DAY = 86400000;
-    const activeIn = ms => users.filter(u => u.lastSeen && (now - u.lastSeen) <= ms).length;
+    const activeOnRange = (range.ms === Infinity)
+      ? users.filter(u => u.lastSeen).length
+      : users.filter(u => u.lastSeen && now - u.lastSeen <= range.ms).length;
 
     const byType = {}, byPage = {}, sids = new Set();
-    events.forEach(e => {
+    ev.forEach(e => {
       byType[e.type] = (byType[e.type] || 0) + 1;
       if (e.sid) sids.add(e.sid);
       if (e.type === 'page_view' && e.page) byPage[e.page] = (byPage[e.page] || 0) + 1;
     });
 
+    const selector = '<div class="act-range">' + _ACT_RANGES.map(r =>
+      `<button class="act-range-btn${r.k === _actRange ? ' active' : ''}" data-range="${r.k}">${r.lbl}</button>`).join('') + '</div>';
+
     const chips = `
       <div class="admin-stats">
-        <div class="stat-chip"><span class="stat-val">${activeIn(DAY)}</span><span class="stat-lbl">Actifs 24h</span></div>
-        <div class="stat-chip"><span class="stat-val">${activeIn(7 * DAY)}</span><span class="stat-lbl">Actifs 7j</span></div>
-        <div class="stat-chip"><span class="stat-val">${activeIn(30 * DAY)}</span><span class="stat-lbl">Actifs 30j</span></div>
-        <div class="stat-chip stat-chip-pro"><span class="stat-val">${sids.size}</span><span class="stat-lbl">Sessions</span></div>
-        <div class="stat-chip"><span class="stat-val">${events.length}</span><span class="stat-lbl">Événements</span></div>
+        <div class="stat-chip stat-chip-pro"><span class="stat-val">${activeOnRange}</span><span class="stat-lbl">Actifs (${range.lbl})</span></div>
+        <div class="stat-chip"><span class="stat-val">${sids.size}</span><span class="stat-lbl">Sessions</span></div>
+        <div class="stat-chip"><span class="stat-val">${ev.length}</span><span class="stat-lbl">Événements</span></div>
       </div>`;
 
     const pages = Object.entries(byPage).sort((a, b) => b[1] - a[1]);
@@ -371,22 +398,22 @@ const Admin = (() => {
         <span style="width:95px;font-size:12px;color:var(--text)">${esc(_PAGE_LABELS[p] || p)}</span>
         <div style="flex:1;background:var(--bg);border-radius:5px;overflow:hidden;height:18px"><div style="height:100%;width:${Math.round(n / maxPage * 100)}%;background:var(--purple);border-radius:5px"></div></div>
         <span style="width:42px;text-align:right;font-size:12px;color:var(--muted)">${n}</span>
-      </div>`).join('') : '<p class="admin-empty">Aucune vue de page encore enregistrée.</p>';
+      </div>`).join('') : '<p class="admin-empty">Aucune vue de page sur cette période.</p>';
 
     const actions = ['trade_created', 'account_created', 'ai_analysis', 'checkout_started'];
     const actionsHtml = actions.map(a => `
       <div class="stat-chip" style="flex:1"><span class="stat-val">${byType[a] || 0}</span><span class="stat-lbl">${_ACT_LABELS[a]}</span></div>`).join('');
 
-    const recent = events.slice(0, 30);
+    const recent = ev.slice(0, 40);
     const recentRows = recent.map(e => {
-      const ms    = (e.ts && e.ts.toMillis) ? e.ts.toMillis() : null;
+      const ms    = evMs(e);
       const label = e.type === 'page_view' ? (_PAGE_LABELS[e.page] || e.page || '?') : (_ACT_LABELS[e.type] || e.type);
       const kind  = e.type === 'page_view' ? 'Page' : 'Action';
       return `<tr><td>${esc(emailByUid[e.uid] || e.uid || '?')}</td><td>${kind}</td><td>${esc(label)}</td><td style="color:var(--muted)">${ms ? formatRelative(ms) : '—'}</td></tr>`;
     }).join('');
 
     const visitorsBlock = `
-      <div style="display:flex;gap:14px;margin-bottom:22px;flex-wrap:wrap">
+      <div style="display:flex;gap:14px;margin-bottom:18px;flex-wrap:wrap">
         <div style="flex:1;min-width:170px;background:linear-gradient(135deg,rgba(124,58,237,0.18),rgba(124,58,237,0.05));border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:18px 22px">
           <div style="font-size:34px;font-weight:800;color:var(--purple-l);line-height:1">${visitsToday}</div>
           <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-top:6px">Visiteurs aujourd'hui</div>
@@ -397,13 +424,18 @@ const Admin = (() => {
         </div>
       </div>`;
 
-    wrap.innerHTML = visitorsBlock + chips +
-      `<h3 style="font-size:13px;margin:20px 0 10px;color:var(--text)">Pages visitées</h3>${pagesHtml}` +
-      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Actions clés</h3><div class="admin-stats">${actionsHtml}</div>` +
-      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Flux récent</h3>` +
+    const cappedNote = (capped && range.ms === Infinity)
+      ? '<p class="ov-note">Affichage limité aux 1500 événements les plus récents.</p>' : '';
+
+    wrap.innerHTML = visitorsBlock + selector + chips +
+      `<h3 style="font-size:13px;margin:20px 0 10px;color:var(--text)">Pages visitées <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3>${pagesHtml}` +
+      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Actions clés <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3><div class="admin-stats">${actionsHtml}</div>` +
+      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Flux récent <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3>` +
       (recent.length
         ? `<table class="admin-table"><thead><tr><th>Utilisateur</th><th>Type</th><th>Détail</th><th>Quand</th></tr></thead><tbody>${recentRows}</tbody></table>`
-        : '<p class="admin-empty">Aucun événement encore. L\'activité apparaîtra dès que les utilisateurs navigueront (après déploiement).</p>');
+        : '<p class="admin-empty">Aucun événement sur cette période.</p>') + cappedNote;
+
+    wrap.querySelectorAll('.act-range-btn').forEach(b => b.addEventListener('click', () => { _actRange = b.dataset.range; _renderActivityView(); }));
   }
 
   // ── Rendu onglet Codes (v0.9.179 : unifié avec design Users — stats + search + actions icônes) ──
@@ -1049,7 +1081,19 @@ const Admin = (() => {
   function closeDrawer() { $('userDrawer').classList.remove('open'); $('drawerOverlay').classList.remove('open'); }
 
   // ── Onglets ───────────────────────────────────────────────────────────────────
+  let _currentTab = 'overview';
+
+  // Rafraîchit TOUTES les données de l'onglet courant (vide les caches + re-fetch).
+  function refreshAll() {
+    _cachedUsers = []; _cachedPlans = []; _cachedCodes = []; _actCache = null;
+    const btn = $('btnRefresh');
+    if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 800); }
+    switchTab(_currentTab);
+    toast('Données rafraîchies');
+  }
+
   function switchTab(name) {
+    _currentTab = name;
     ['overview', 'users', 'revenue', 'activity', 'audit', 'codes', 'config'].forEach(t => {
       const btn = $('tab-' + t); if (btn) btn.classList.toggle('tab-active', t === name);
       const div = $('tab' + t.charAt(0).toUpperCase() + t.slice(1)); if (div) div.style.display = t === name ? '' : 'none';
@@ -1151,6 +1195,7 @@ const Admin = (() => {
     // Drawer détail utilisateur
     const drClose = $('drawerClose'); if (drClose) drClose.addEventListener('click', closeDrawer);
     const drOv = $('drawerOverlay'); if (drOv) drOv.addEventListener('click', closeDrawer);
+    const rf = $('btnRefresh'); if (rf) rf.addEventListener('click', refreshAll);
   }
 
   return { init };

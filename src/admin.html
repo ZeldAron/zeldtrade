@@ -653,6 +653,18 @@
     .dr-ok { color: #3fb950; font-size: 12px; }
     .dr-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
     .dr-actions button { flex: 1; min-width: 110px; }
+
+    /* Bouton refresh (header) */
+    .btn-refresh { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 5px; padding: 5px 11px; font-size: 12px; cursor: pointer; font-family: inherit; transition: border-color .15s, color .15s; }
+    .btn-refresh:hover { border-color: var(--purple); color: var(--purple-l); }
+    .btn-refresh.spinning svg { animation: ztspin .8s linear; }
+    @keyframes ztspin { to { transform: rotate(360deg); } }
+
+    /* Sélecteur de période (onglet Activité) */
+    .act-range { display: inline-flex; gap: 2px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 3px; margin-bottom: 18px; }
+    .act-range-btn { background: transparent; border: none; color: var(--muted); font-size: 12.5px; font-weight: 600; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: background .12s, color .12s; }
+    .act-range-btn:hover { color: var(--text); }
+    .act-range-btn.active { background: var(--purple); color: #fff; }
   </style>
 </head>
 <body>
@@ -687,6 +699,10 @@
       </div>
       <div class="admin-user">
         <span id="adminUserEmail"></span>
+        <button class="btn-refresh" id="btnRefresh" title="Rafraîchir toutes les données">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Rafraîchir
+        </button>
         <button class="btn-logout" id="btnLogout">Déconnexion</button>
       </div>
     </header>
@@ -780,7 +796,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="js/firebase.js"></script>
-  <script src="js/admin.js?v=0.9.340"></script>
+  <script src="js/admin.js?v=0.9.341"></script>
 
 </body>
 </html>
