@@ -98,6 +98,34 @@ const ALLOWED_MODELS = new Set([
  *  - Image taille max 8 MB en base64 (~6 MB binaire)
  *  - Prompt max 2000 chars
  */
+// v0.9.342 — Quota IA journalier PAR PALIER (compteur `aiUsage` partagé Groq+Claude).
+// Aligné sur src/js/store.js TIER_LIMITS.maxAiPerDay. elite/beta = illimité (borne haute
+// symbolique). Claude (coûteux) reste plafonné en plus par CLAUDE_DAILY_MAX (budget).
+const AI_DAILY_CAP   = { trader: 1, funded: 5, elite: 100000, beta: 100000 };
+const CLAUDE_DAILY_MAX = 30;
+
+// v0.9.355 — Détection serveur des niveaux dans la réponse LLM (mirroir du parser
+// client modal.js). Sert à REMBOURSER le quota si l'IA ne détecte RIEN (entry/SL/TP) :
+// l'user ne doit pas perdre son analyse du jour parce que l'IA a échoué. Conservateur :
+// au moindre niveau plausible → considère « détecté » (on ne rembourse que les vrais 0).
+function _aiDetectedLevels(content) {
+  if (typeof content !== 'string' || !content) return false;
+  const m = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/) || content.match(/(\{[\s\S]*?\})/);
+  if (m && m[1]) {
+    try {
+      const p = JSON.parse(m[1]);
+      if (p && typeof p === 'object' && !Array.isArray(p)) {
+        for (const k of ['entry', 'sl', 'tp', 'tp1', 'tp2', 'tp3']) {
+          const v = parseFloat(p[k]);
+          if (isFinite(v) && v > 0) return true;
+        }
+      }
+    } catch { /* JSON malformé → on tente le fallback numérique */ }
+  }
+  // Fallback (comme le client) : ≥3 nombres « prix » (4-6 chiffres) → niveaux probables
+  return (content.match(/\b\d{4,6}(?:\.\d+)?\b/g) || []).length >= 3;
+}
+
 exports.analyzeChart = onCall(
   {
     secrets:        [GROQ_API_KEY, CLAUDE_API_KEY, DISCORD_ERRORS_WEBHOOK, TURNSTILE_SECRET],
@@ -157,7 +185,7 @@ exports.analyzeChart = onCall(
       const dbC        = admin.firestore();
       const usageRefC  = dbC.doc(`users/${uid}/data/aiUsage`);
       const todayC     = new Date().toISOString().split('T')[0];
-      const CLAUDE_CAP = 20;   // aligné sur PRO_CAP (analyses IA/jour, Groq + Claude cumulés)
+      const CLAUDE_CAP = Math.min(AI_DAILY_CAP[tier] || 5, CLAUDE_DAILY_MAX);   // v0.9.342 : tier-aware ; Claude borné (budget)
       let skipQuotaC   = false;
       if (request.auth.token.email === ADMIN_EMAIL && request.auth.token.email_verified) {
         const at = (request.auth.token.auth_time || 0) * 1000;
@@ -227,6 +255,8 @@ exports.analyzeChart = onCall(
       const claudeData = await claudeResp.json();
       const text = (claudeData.content && claudeData.content[0] && claudeData.content[0].text) || '';
       // Format compat client : on retourne le même shape que Groq pour ne pas refactor le parser
+      // v0.9.355 : 0 niveau détecté → rembourse le quota (l'user ne perd pas son analyse).
+      if (!_aiDetectedLevels(text)) await rollbackClaudeQuota();
       await _writeAuditLog('analyzeChart.claude', request.auth.token.email || uid, { uid, tier, model: 'claude-sonnet-4-6' });
       return { choices: [{ message: { content: text } }] };
     }
@@ -348,10 +378,10 @@ exports.analyzeChart = onCall(
     // ── Vérification quota côté serveur via TRANSACTION ATOMIQUE ───────────────
     const db          = admin.firestore();
     const planSnap    = await db.doc(`users/${uid}/data/plan`).get();
-    const isPro       = planSnap.exists && planSnap.data().plan === 'pro';
-    const BASIC_CAP   = 1;
-    const PRO_CAP     = 20;  // v0.9.131 : 200 → 20 (anti-abus Groq, suffisant pour usage normal)
-    const cap         = isPro ? PRO_CAP : BASIC_CAP;
+    const _pd         = planSnap.exists ? (planSnap.data() || {}) : {};
+    const planTier    = (_pd.tier === 'funded' || _pd.tier === 'elite' || _pd.tier === 'beta') ? _pd.tier : (_pd.plan === 'pro' ? 'beta' : 'trader');
+    const isPro       = _pd.plan === 'pro';
+    const cap         = AI_DAILY_CAP[planTier] || 1;   // v0.9.342 : tier-aware (trader 1 · funded 5 · elite/beta illimité)
     const usageRef    = db.doc(`users/${uid}/data/aiUsage`);
     const today       = new Date().toISOString().split('T')[0];
 
@@ -378,8 +408,8 @@ exports.analyzeChart = onCall(
         if (data.date === today && data.count >= cap) {
           throw new HttpsError('resource-exhausted',
             isPro
-              ? `Limite Pro de ${PRO_CAP} analyses/jour atteinte. Réessaie demain.`
-              : 'Limite quotidienne atteinte (1 analyse/jour sur Basic). Passe Pro pour des analyses illimitées.');
+              ? `Limite de ${cap} analyses IA/jour atteinte sur ton plan. Réessaie demain — ou passe à Elite pour des analyses illimitées.`
+              : 'Limite quotidienne atteinte (1 analyse/jour sur le plan gratuit). Passe à un plan payant pour plus d\'analyses.');
         }
 
         tx.set(usageRef, {
@@ -485,6 +515,11 @@ exports.analyzeChart = onCall(
       console.error('[Groq] invalid JSON response', e && e.message);
       throw new HttpsError('internal', 'Groq returned invalid response');
     }
+
+    // v0.9.355 : si l'IA n'a détecté AUCUN niveau (entry/SL/TP), rembourse le quota —
+    // l'user ne doit pas perdre son analyse du jour à cause d'un échec de l'IA.
+    const _content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+    if (!_aiDetectedLevels(_content)) await rollbackQuota();
 
     // Ne renvoyer que les `choices` (pas de leak metadata, usage, fingerprint, etc.)
     return { choices: Array.isArray(data.choices) ? data.choices : [] };
@@ -1219,6 +1254,71 @@ async function _assertAdminRateLimit(action, max) {
     });
   });
 }
+
+/**
+ * Création d'un compte de TEST (admin uniquement) — v0.9.347.
+ * Outil interne : crée un compte Auth (email auto-vérifié → prêt à l'emploi)
+ * dont le pseudo DOIT matcher /^test\d*$/i. Utilise l'admin SDK → ne touche pas
+ * la session de l'admin connecté. Écrit le doc userEmails (même forme que le
+ * signup) + un marqueur `isTestAccount` + un log d'audit.
+ */
+exports.adminCreateTestAccount = onCall(
+  {
+    maxInstances:    2,
+    timeoutSeconds:  30,
+    memory:         '256MiB',
+    region:         'europe-west1',
+  },
+  _wrapCF('adminCreateTestAccount', async (request) => {
+    _assertAdmin(request);
+    await _assertAdminRateLimit('adminCreateTestAccount', 10);
+
+    const email    = String(request.data?.email || '').trim().toLowerCase();
+    const password = String(request.data?.password || '');
+    const username = String(request.data?.username || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 30);
+
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || email.length > 254) {
+      throw new HttpsError('invalid-argument', 'Email invalide.');
+    }
+    if (password.length < 6 || password.length > 100) {
+      throw new HttpsError('invalid-argument', 'Mot de passe : entre 6 et 100 caractères.');
+    }
+    // Cet outil ne crée QUE des comptes de test → pseudo verrouillé sur test/testN.
+    if (!/^test\d*$/i.test(username)) {
+      throw new HttpsError('invalid-argument', 'Le pseudo doit être « test », « test1 », « test2 »… (outil réservé aux comptes de test).');
+    }
+
+    let userRecord;
+    try {
+      userRecord = await admin.auth().createUser({
+        email,
+        password,
+        displayName:   username,
+        emailVerified: true, // compte de test prêt à l'emploi (pas d'email de vérif à attendre)
+      });
+    } catch (e) {
+      const code = (e && e.code) || '';
+      if (code === 'auth/email-already-exists') throw new HttpsError('already-exists', 'Un compte existe déjà avec cet email.');
+      if (code === 'auth/invalid-email')        throw new HttpsError('invalid-argument', 'Email invalide.');
+      if (code === 'auth/invalid-password')     throw new HttpsError('invalid-argument', 'Mot de passe trop faible (6 caractères min).');
+      throw new HttpsError('internal', 'Création échouée : ' + (code || 'erreur inconnue'));
+    }
+
+    // Doc userEmails (même forme que register → apparaît dans la liste admin).
+    await admin.firestore().collection('userEmails').doc(userRecord.uid).set({
+      uid:             userRecord.uid,
+      email,
+      username,
+      lastSeen:        Date.now(),
+      termsAccepted:   { version: 'admin-test', acceptedAt: Date.now() },
+      newsletterOptIn: false,
+      isTestAccount:   true,
+    });
+
+    await _writeAuditLog('adminCreateTestAccount', request.auth.token.email, { uid: userRecord.uid, email, username });
+    return { uid: userRecord.uid, email, username };
+  })
+);
 
 /**
  * Suppression complète d'un utilisateur (admin uniquement).
