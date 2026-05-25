@@ -324,11 +324,11 @@ const Modal = (() => {
         lastError = e;
         const code = e.code || '';
         const msg  = e.message || '';
-        console.warn('[IA via CF] error for', model, ':', code, msg, e);
+        console.warn('[IA via CF] error:', code, msg);   // v0.9.354 : ne pas exposer le nom du modèle LLM côté client
         if (code === 'functions/unauthenticated' || code === 'unauthenticated')
           throw new Error('Tu dois être connecté pour analyser un screenshot.');
         if (code === 'functions/resource-exhausted' || code === 'resource-exhausted')
-          throw new Error(msg || 'Limite quotidienne atteinte. Passe Pro pour des analyses illimitées.');
+          throw new Error(msg || 'Limite quotidienne atteinte. Passe à un plan payant pour plus d\'analyses.');
         if (code === 'functions/failed-precondition' || code === 'failed-precondition')
           // v0.9.141 : afficher le vrai message serveur (email non vérifié,
           // captcha invalide, etc.) au lieu du mapping erroné "Clé IA invalide"
@@ -704,7 +704,15 @@ const Modal = (() => {
       _errSpan.textContent = '✗ ' + (e.message || i18n.t('modal.unknown.error'));
       statusEl.appendChild(_errSpan);
       $('wBtnNext2').disabled = false;
-      retryBtn.style.display  = 'inline-flex';
+      // v0.9.354 : quota IA épuisé → NE PAS ré-afficher « Réanalyser » (sinon re-bombarde
+      // l'API, rejetée serveur) + pastille « IA active » passe en rouge « quota épuisé ».
+      const _exhausted = e && (e.code === 'functions/resource-exhausted' || e.code === 'resource-exhausted'
+        || /limite.*(analyse|quotidienn)|quota|exhausted/i.test(e.message || ''));
+      retryBtn.style.display = _exhausted ? 'none' : 'inline-flex';
+      if (_exhausted) {
+        const ab = $('aiStatusBadge');
+        if (ab) { ab.textContent = i18n.t('modal.ai.exhausted'); ab.style.color = 'var(--red)'; }
+      }
     }
   }
 
