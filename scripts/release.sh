@@ -68,14 +68,14 @@ VNUM="${VERSION#v}"   # v0.9.359 → 0.9.359
 echo ""
 echo "  → Unification des cache-busters ?v= → $VNUM"
 if [ "$DRY_RUN" = true ]; then
-    echo "  [DRY-RUN] sed ?v=… → ?v=$VNUM dans src/*.html + libellés version"
+    echo "  [DRY-RUN] sed ?v=… → ?v=$VNUM dans src/**/*.html + libellés version"
 else
-    # Tous les ?v=<num.num...> des HTML servis → version courante
-    find src -maxdepth 1 -name '*.html' -type f -exec \
+    # Tous les ?v=<num.num...> des HTML servis (src/ + src/pages/) → version courante
+    find src -name '*.html' -type f -exec \
         sed -i '' -E "s/\?v=[0-9][0-9.]*/?v=$VNUM/g" {} +
-    # Libellés de version affichés (splash loader + Réglages)
-    sed -i '' -E "s/(id=\"ztLoaderVer\"[^>]*>)v[0-9][0-9.]*/\1v$VNUM/" src/app.html
-    sed -i '' -E "s/(id=\"appVersionLabel\"[^>]*>)[0-9][0-9.]*/\1$VNUM/" src/app.html
+    # Libellés de version affichés (splash loader + Réglages) — app.html est dans src/pages/
+    sed -i '' -E "s/(id=\"ztLoaderVer\"[^>]*>)v[0-9][0-9.]*/\1v$VNUM/" src/pages/app.html
+    sed -i '' -E "s/(id=\"appVersionLabel\"[^>]*>)[0-9][0-9.]*/\1$VNUM/" src/pages/app.html
 fi
 echo "  ✓  Cache-busters + libellés unifiés sur $VNUM."
 

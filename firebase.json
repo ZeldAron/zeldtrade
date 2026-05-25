@@ -29,6 +29,11 @@
     ],
     "cleanUrls": true,
     "trailingSlash": false,
+    "redirects": [
+      { "source": "/favicon.ico", "destination": "/assets/favicon.ico", "type": 301 },
+      { "source": "/apple-touch-icon.png", "destination": "/assets/apple-touch-icon.png", "type": 301 },
+      { "source": "/pages/:page", "destination": "/:page", "type": 301 }
+    ],
     "rewrites": [
       {
         "source": "/unsubscribe",
@@ -36,7 +41,15 @@
           "functionId": "unsubscribeNewsletter",
           "region": "europe-west1"
         }
-      }
+      },
+      { "source": "/",        "destination": "/pages/index.html" },
+      { "source": "/app",     "destination": "/pages/app.html" },
+      { "source": "/updates", "destination": "/pages/updates.html" },
+      { "source": "/legal",   "destination": "/pages/legal.html" },
+      { "source": "/cgu",     "destination": "/pages/cgu.html" },
+      { "source": "/privacy", "destination": "/pages/privacy.html" },
+      { "source": "/payment", "destination": "/pages/payment.html" },
+      { "source": "/admin",   "destination": "/pages/admin.html" }
     ],
     "headers": [
       {
