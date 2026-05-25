@@ -64,9 +64,14 @@ const Modal = (() => {
     goToStep(2);
     const aiBadge = $('aiStatusBadge');
     if (aiBadge) {
-      // Avec la Cloud Function, l'IA est toujours disponible côté serveur
-      aiBadge.textContent = i18n.t('modal.ai.active');
-      aiBadge.style.color = 'var(--green)';
+      // v0.9.357 : la pastille reflète le quota du jour (vert = dispo, rouge = épuisé).
+      if (typeof Store !== 'undefined' && Store.canAnalyzeToday && !Store.canAnalyzeToday()) {
+        aiBadge.textContent = i18n.t('modal.ai.exhausted');
+        aiBadge.style.color = 'var(--red)';
+      } else {
+        aiBadge.textContent = i18n.t('modal.ai.active');
+        aiBadge.style.color = 'var(--green)';
+      }
     }
     setTimeout(() => $('wDropZone').focus?.(), 150);
   }

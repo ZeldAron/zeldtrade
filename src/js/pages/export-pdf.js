@@ -397,7 +397,7 @@ const ExportPDF = (() => {
 
     // 1. Garde Pro (double check sécurité)
     if (typeof Store === 'undefined' || !Store.isPro || !Store.isPro()) {
-      throw new Error('Export PDF réservé aux utilisateurs Pro.');
+      throw new Error('Export PDF réservé aux plans Funded / Elite.');
     }
 
     // 2. Résoud accountId → accountName (les trades stockent le nom dans `apex`,
