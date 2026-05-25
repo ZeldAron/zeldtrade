@@ -236,7 +236,7 @@
           const tier = Store.getTier();
           const limit = Store.getLimits().maxAccounts;
           const tierLabel = tier === 'trader' ? 'Trader' : tier === 'funded' ? 'Funded' : 'Elite';
-          const nextTier = tier === 'trader' ? 'Funded (10 comptes)' : 'Elite (100 comptes)';
+          const nextTier = tier === 'trader' ? 'Funded (2 comptes)' : 'Elite (comptes illimités)';
           // v0.9.296 (#audit) : feedback CLAIR au clic quand la limite est atteinte.
           // Avant : un 2e clic SUPPRIMAIT le bandeau → impression de « rien ne se passe ».
           // Maintenant : on affiche (ou réutilise) le bandeau, on scrolle dessus + toast.

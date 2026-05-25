@@ -38,7 +38,7 @@
     return `<div class="page-section">
       <div class="page-section-hd">
         <span class="page-section-ttl">${title}</span>
-        <span class="plan-badge plan-pro" style="margin-left:8px">PRO</span>
+        <span class="plan-badge plan-pro" style="margin-left:8px">Funded+</span>
         ${count ? `<span class="page-section-count" style="margin-left:auto">${count}</span>` : ''}
       </div>
       <div class="feature-lock-wrap">
@@ -56,9 +56,9 @@
         </div>
         <div class="feature-lock-overlay">
           <div class="feature-lock-icon">${Icons.svg('lock',30)}</div>
-          <div class="feature-lock-title">${isEn ? 'Pro feature' : 'Fonctionnalité Pro'}</div>
+          <div class="feature-lock-title">${isEn ? 'Funded / Elite feature' : 'Fonctionnalité Funded / Elite'}</div>
           <div class="feature-lock-sub">${subtitle}</div>
-          <button class="feature-lock-cta" id="lockCta_${Math.random().toString(36).slice(2,7)}">${isEn ? 'Upgrade to Pro →' : 'Passer PRO →'}</button>
+          <button class="feature-lock-cta" id="lockCta_${Math.random().toString(36).slice(2,7)}">${isEn ? 'See plans →' : 'Voir les offres →'}</button>
         </div>
       </div>
     </div>`;
@@ -281,15 +281,15 @@
             t('analytics.sessions.title'),
             timedTrades.length ? `${timedTrades.length} / ${all.length}` : null,
             i18n.getLang() === 'en'
-              ? 'Session & hourly breakdowns are available with the Pro plan.'
-              : 'L\'analyse par session et par heure est disponible avec le plan Pro.'
+              ? 'Session & hourly breakdowns are available with the Funded / Elite plans.'
+              : 'L\'analyse par session et par heure est disponible avec les plans Funded / Elite.'
           )
           + featureLockSection(
             t('analytics.hours.title'),
             null,
             i18n.getLang() === 'en'
-              ? 'Hourly performance heatmap is a Pro feature.'
-              : 'La heatmap de performance par heure est une fonctionnalité Pro.'
+              ? 'Hourly performance heatmap is a Funded / Elite feature.'
+              : 'La heatmap de performance par heure est une fonctionnalité Funded / Elite.'
           )
       }`;
     // Bind lock CTA buttons

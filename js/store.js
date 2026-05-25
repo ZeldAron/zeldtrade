@@ -1001,7 +1001,7 @@ const Store = (() => {
   function getTier()     { return VALID_TIERS.has(_plan.tier) ? _plan.tier : 'trader'; }
   // v0.9.256 — Badge plan par tier (label + classe CSS couleur) pour la sidebar
   const TIER_BADGE = {
-    trader: { label: 'BASIC',  cls: 'plan-basic'  },
+    trader: { label: 'TRADER', cls: 'plan-basic'  },
     funded: { label: 'FUNDED', cls: 'plan-funded' },
     elite:  { label: 'ELITE',  cls: 'plan-elite'  },
     beta:   { label: 'BÊTA',   cls: 'plan-beta'   },
