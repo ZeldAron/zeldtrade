@@ -197,7 +197,7 @@ UI.renderOffers = function () {
     { f: t('off.row.calendar'),      tr: '✓',          fu: '✓',     el: '✓' },
     { f: t('off.row.goals'),         tr: '✓',          fu: '✓',     el: '✓' },
     { f: t('off.row.calculators'),   tr: '✓',          fu: '✓',     el: '✓' },
-    { f: t('off.row.accounts'),      tr: '1',          fu: '2',     el: '∞' },
+    { f: t('off.row.accounts'),      tr: '1',          fu: '3',     el: '∞' },
     { f: t('off.row.ai'),            tr: '1' + perDay, fu: '5' + perDay, el: '∞' },
     { f: t('off.row.groups'),        tr: '✗',          fu: '✓',     el: '✓' },
     { f: t('off.row.pdf'),           tr: '✗',          fu: '✓',     el: '✓' },

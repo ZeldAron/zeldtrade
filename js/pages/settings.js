@@ -236,7 +236,7 @@
           const tier = Store.getTier();
           const limit = Store.getLimits().maxAccounts;
           const tierLabel = tier === 'trader' ? 'Trader' : tier === 'funded' ? 'Funded' : 'Elite';
-          const nextTier = tier === 'trader' ? 'Funded (2 comptes)' : 'Elite (comptes illimités)';
+          const nextTier = tier === 'trader' ? 'Funded (3 comptes)' : 'Elite (comptes illimités)';
           // v0.9.296 (#audit) : feedback CLAIR au clic quand la limite est atteinte.
           // Avant : un 2e clic SUPPRIMAIT le bandeau → impression de « rien ne se passe ».
           // Maintenant : on affiche (ou réutilise) le bandeau, on scrolle dessus + toast.
@@ -1434,6 +1434,26 @@
           btn.disabled = false; btn.textContent = orig;
         }
       });
+    })();
+
+    // v0.9.353 : onglet « Règles & marchés » (config) caché pour le plan GRATUIT (Trader).
+    // L'info des règles n'est exploitable qu'avec les presets (payant) → on ne la montre
+    // qu'aux payants. Tourne à CHAQUE render (avant le garde) car le tier arrive après coup.
+    (function gateRulesTab() {
+      const isFree = (Store.getTier ? Store.getTier() : 'trader') === 'trader';
+      const btn  = document.querySelector('[data-settings-tab="config"]');
+      const pane = document.querySelector('[data-settings-pane="config"]');
+      if (btn) btn.style.display = isFree ? 'none' : '';
+      if (!isFree) return;
+      if (pane) pane.style.display = 'none';
+      if (btn && btn.classList.contains('active')) {   // on était sur Règles → revenir sur « Mes comptes »
+        document.querySelectorAll('[data-settings-tab]').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('[data-settings-pane]').forEach(p => { p.style.display = 'none'; });
+        const accBtn = document.querySelector('[data-settings-tab="accounts"]');
+        const accPane = document.querySelector('[data-settings-pane="accounts"]');
+        if (accBtn) accBtn.classList.add('active');
+        if (accPane) accPane.style.display = '';
+      }
     })();
 
     if (_settingsBound) {

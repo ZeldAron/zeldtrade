@@ -164,7 +164,7 @@ const Store = (() => {
   // n'est PAS uploadée dans Storage au save). Pro = 3 images max.
   const TIER_LIMITS = {
     trader: { maxAccounts: 1,        maxAiPerDay: 1,        maxScreenshots: 0   },
-    funded: { maxAccounts: 2,        maxAiPerDay: 5,        maxScreenshots: 3   },   // v0.9.342 : resserré (2 comptes groupables + 5 IA/j) → pression upsell vers Elite
+    funded: { maxAccounts: 3,        maxAiPerDay: 5,        maxScreenshots: 3   },   // v0.9.342 : resserré (2 comptes groupables + 5 IA/j) → pression upsell vers Elite
     elite:  { maxAccounts: Infinity, maxAiPerDay: Infinity, maxScreenshots: 3   },   // illimité = la soupape
     beta:   { maxAccounts: Infinity, maxAiPerDay: Infinity, maxScreenshots: 3   },
   };
