@@ -3558,6 +3558,24 @@
     <div class="testi-dots"></div>
   </section>
 
+  <!-- ─── À propos / fondateur (v0.9.349) ──────────────────────────────── -->
+  <section class="section" id="about">
+    <div class="section-eyebrow" data-i18n="about.eyebrow">À propos</div>
+    <h2 class="section-title" data-i18n-html="about.title">Fait par un trader, <span class="title-accent">pour les traders</span></h2>
+    <div style="max-width:680px;margin:34px auto 0;background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:34px 32px">
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.75;color:var(--text2)" data-i18n-html="about.p1">Je trade sur compte prop firm, et j'ai longtemps journalisé mes trades à la main dans des tableurs. Le souci : aucun outil ne comprenait vraiment <strong>les règles d'une prop firm</strong> — drawdown trailing, daily loss, calcul EOD — et tout me prenait un temps fou.</p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.75;color:var(--text2)" data-i18n-html="about.p2">ZeldTrade, c'est le journal que je voulais utiliser. Tu colles ton screenshot TradingView, <strong>l'IA remplit le trade en quelques secondes</strong>, et l'app suit tes règles prop firm automatiquement. Pas d'usine à gaz : juste ce qu'il faut pour progresser.</p>
+      <p style="margin:0;font-size:15px;line-height:1.75;color:var(--text2)" data-i18n-html="about.p3">C'est un projet <strong>indépendant, hébergé en Europe</strong>, sans pub et sans revente de tes données. Chaque retour que tu m'envoies façonne directement les prochaines mises à jour.</p>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:26px;padding-top:22px;border-top:1px solid var(--border)">
+        <span style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-d));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px;flex-shrink:0">Z</span>
+        <div>
+          <div style="font-weight:600;color:var(--text);font-size:14.5px" data-i18n="about.sign.name">Le fondateur de ZeldTrade</div>
+          <div style="font-size:13px;color:var(--text2)" data-i18n="about.sign.role">Trader & créateur indépendant</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ─── Pricing (v0.9.198 — 3 cartes + toggle annuel + trust + Founding) ─ -->
   <section class="section" id="pricing">
     <div class="section-eyebrow" data-i18n="pr.eyebrow">Tarifs</div>
@@ -3733,6 +3751,7 @@
       <a href="/legal" class="footer-link" data-i18n="footer.legal">Mentions légales</a>
       <a href="/cgu" class="footer-link" data-i18n="footer.cgu">CGU</a>
       <a href="/privacy" class="footer-link" data-i18n="footer.privacy">Confidentialité</a>
+      <a href="#about" class="footer-link" data-i18n="footer.about">À propos</a>
       <a href="#contact" class="footer-link" data-i18n="footer.contact">Contact</a>
       <a href="https://discord.gg/w4khB67hSa" target="_blank" rel="noopener noreferrer" class="footer-link discord" aria-label="Rejoindre le serveur Discord ZeldTrade HQ">
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.74 19.74 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03ZM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.334.956-2.419 2.157-2.419 1.21 0 2.176 1.094 2.157 2.42 0 1.333-.956 2.418-2.157 2.418Zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.334.955-2.419 2.157-2.419 1.21 0 2.176 1.094 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
@@ -3762,7 +3781,7 @@
   <script src="js/landing-pricing.js?v=0.9.198"></script>
   <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.272" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.348" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.349" defer></script>
   <script src="js/landing-testimonials.js?v=0.9.333" defer></script>
 
 </body>

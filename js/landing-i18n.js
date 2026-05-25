@@ -104,6 +104,7 @@
     'footer.legal':   { fr: 'Mentions légales', en: 'Legal notice' },
     'footer.cgu':     { fr: 'CGU',             en: 'Terms' },
     'footer.privacy': { fr: 'Confidentialité', en: 'Privacy' },
+    'footer.about':   { fr: 'À propos',        en: 'About' },
     'footer.contact': { fr: 'Contact',         en: 'Contact' },
 
     // Cookie banner
@@ -366,6 +367,15 @@
     'pr.trust.2':        { fr: '✓ Garantie 30 jours satisfait ou remboursé', en: '✓ 30-day money-back guarantee' },
     'pr.trust.3':        { fr: '✓ Export complet RGPD à tout moment', en: '✓ Full GDPR export at any time' },
     'pr.trust.4':        { fr: '✓ Aucune CB requise pour démarrer', en: '✓ No card required to start' },
+
+    // À propos / fondateur (v0.9.349)
+    'about.eyebrow':   { fr: 'À propos', en: 'About' },
+    'about.title':     { fr: 'Fait par un trader, <span class="title-accent">pour les traders</span>', en: 'Built by a trader, <span class="title-accent">for traders</span>' },
+    'about.p1':        { fr: 'Je trade sur compte prop firm, et j\'ai longtemps journalisé mes trades à la main dans des tableurs. Le souci : aucun outil ne comprenait vraiment <strong>les règles d\'une prop firm</strong> — drawdown trailing, daily loss, calcul EOD — et tout me prenait un temps fou.', en: 'I trade on prop firm accounts, and for a long time I journaled my trades by hand in spreadsheets. The problem: no tool really understood <strong>prop firm rules</strong> — trailing drawdown, daily loss, EOD calculation — and everything took forever.' },
+    'about.p2':        { fr: 'ZeldTrade, c\'est le journal que je voulais utiliser. Tu colles ton screenshot TradingView, <strong>l\'IA remplit le trade en quelques secondes</strong>, et l\'app suit tes règles prop firm automatiquement. Pas d\'usine à gaz : juste ce qu\'il faut pour progresser.', en: 'ZeldTrade is the journal I wanted to use. Paste your TradingView screenshot, <strong>the AI fills the trade in seconds</strong>, and the app tracks your prop firm rules automatically. No bloat — just what you need to improve.' },
+    'about.p3':        { fr: 'C\'est un projet <strong>indépendant, hébergé en Europe</strong>, sans pub et sans revente de tes données. Chaque retour que tu m\'envoies façonne directement les prochaines mises à jour.', en: 'It\'s an <strong>independent project, hosted in Europe</strong>, with no ads and no reselling of your data. Every piece of feedback you send directly shapes the next updates.' },
+    'about.sign.name': { fr: 'Le fondateur de ZeldTrade', en: 'The founder of ZeldTrade' },
+    'about.sign.role': { fr: 'Trader & créateur indépendant', en: 'Independent trader & maker' },
 
     // FAQ
     'faq.eyebrow':     { fr: 'Questions fréquentes', en: 'Frequently asked questions' },
