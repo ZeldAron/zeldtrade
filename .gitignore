@@ -5,7 +5,16 @@
 .firebase/
 firebase-debug.log
 firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+
+# Exports émulateur (générés par --export-on-exit, jetables)
+firebase-export-*/
 
 # Dépendances scripts/ (nodemailer, etc.) — installées via npm install dans scripts/
 scripts/node_modules/
 scripts/package-lock.json
+
+# Env de test local — émulateurs Firebase (v0.9.348), ne JAMAIS commit
+.emulator-data/
+functions/.secret.local
