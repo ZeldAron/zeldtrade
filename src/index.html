@@ -2663,10 +2663,10 @@
       <a href="/app?signup=1" class="btn btn-primary" data-i18n="hero.cta.signup">Créer un compte gratuit</a>
       <a href="#demo" class="btn btn-ghost" data-i18n="hero.cta.preview">Voir l'aperçu</a>
     </div>
-    <!-- v0.9.255 : compteur d'inscrits dynamique (rempli par landing-contact.js) -->
-    <div class="hero-usercount" id="heroUserCount" style="display:none">
+    <!-- v0.9.349 : badge « bêta privée » (remplace le compteur d'inscrits — trop faible tant que < 200) -->
+    <div class="hero-usercount" id="heroUserCount">
       <span class="hero-usercount-dot"></span>
-      <strong id="heroUserCountNum">0</strong>&nbsp;<span data-i18n="hero.usercount">traders nous font déjà confiance</span>
+      <span data-i18n="hero.beta">Bêta privée — accès limité</span>
     </div>
     <div class="hero-chips">
       <span class="hero-chip" data-i18n="hero.chip.1">100 % gratuit pour démarrer</span>
@@ -3511,7 +3511,8 @@
   </section>
 
   <!-- ─── Témoignages (v0.9.274) ─── -->
-  <section class="section" id="testimonials">
+  <!-- v0.9.349 : témoignages masqués (trop faibles tant qu'on n'a pas de vrais avis vérifiables — décision user) -->
+  <section class="section" id="testimonials" style="display:none">
     <div class="section-eyebrow" data-i18n="test.eyebrow">Ils l'utilisent</div>
     <h2 class="section-title" data-i18n-html="test.title">Ce qu'en disent <span class="title-accent">les traders</span></h2>
     <style>
@@ -3781,7 +3782,7 @@
   <script src="js/landing-pricing.js?v=0.9.198"></script>
   <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.272" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.349" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.350" defer></script>
   <script src="js/landing-testimonials.js?v=0.9.333" defer></script>
 
 </body>

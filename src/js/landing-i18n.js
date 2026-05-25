@@ -41,6 +41,7 @@
     'hero.cta.signup':  { fr: 'Créer un compte gratuit', en: 'Create a free account' },
     'hero.cta.preview': { fr: "Voir l'aperçu",           en: 'See the preview' },
     'hero.usercount':   { fr: 'traders nous font déjà confiance', en: 'traders already trust us' },
+    'hero.beta':        { fr: 'Bêta privée — accès limité', en: 'Private beta — limited access' },
     'hero.chip.1':  { fr: '100 % gratuit pour démarrer',          en: '100% free to start' },
     'hero.chip.2':  { fr: "L'IA lit tes screenshots TradingView", en: 'AI reads your TradingView screenshots' },
     'hero.chip.3':  { fr: 'Made in France · RGPD natif',          en: 'Made in France · GDPR-native' },
@@ -67,7 +68,7 @@
     'how.2.title':  { fr: "L'IA fait le boulot", en: 'AI does the work' },
     'how.2.desc':   { fr: "L'IA Vision détecte automatiquement entry, stop-loss et take-profit sur ton graphique. Les niveaux sont pré-remplis en 2 secondes.", en: 'AI Vision automatically detects entry, stop-loss and take-profit on your chart. Levels are pre-filled in 2 seconds.' },
     'how.3.title':  { fr: 'Stats temps réel', en: 'Real-time stats' },
-    'how.3.desc':   { fr: 'R:R, risque %, P&amp;L net (fees/spreads inclus), drawdown prop firm. Tout calculé en live, multi-comptes synchronisés.', en: 'R:R, risk %, net P&amp;L (fees/spreads included), prop firm drawdown. All computed live, multi-account synced.' },
+    'how.3.desc':   { fr: 'R:R, risque %, P&L net (fees/spreads inclus), drawdown prop firm. Tout calculé en live, multi-comptes synchronisés.', en: 'R:R, risk %, net P&L (fees/spreads included), prop firm drawdown. All computed live, multi-account synced.' },
 
     // Features — 3 piliers
     'feat.eyebrow': { fr: '3 piliers', en: '3 pillars' },
@@ -96,7 +97,7 @@
     'feat.mini.5':  { fr: '<strong>Analytics profond</strong><br><span>Par setup, instrument, session, jour</span>', en: '<strong>Deep analytics</strong><br><span>By setup, instrument, session, day</span>' },
     'feat.mini.6':  { fr: '<strong>Export PDF + CSV</strong><br><span>1 page/trade pour coach ou funded app</span>', en: '<strong>PDF + CSV export</strong><br><span>1 page/trade for a coach or funded app</span>' },
     'feat.mini.7':  { fr: '<strong>Calculateur fiscal FR</strong><br><span>Micro-BNC, URSSAF, ACRE intégrés</span>', en: '<strong>French tax calculator</strong><br><span>Micro-BNC, URSSAF, ACRE built in</span>' },
-    'feat.mini.8':  { fr: '<strong>Bilingue FR / EN</strong><br><span>Switch dynamique sans reload</span>', en: '<strong>Bilingual FR / EN</strong><br><span>Dynamic switch, no reload</span>' },
+    'feat.mini.8':  { fr: '<strong>Bilingue FR / EN</strong><br><span>Tout le site bascule en 1 clic</span>', en: '<strong>Bilingual FR / EN</strong><br><span>Whole site switches in 1 click</span>' },
     'feat.mini.9':  { fr: '<strong>RGPD natif</strong><br><span>Export JSON complet, suppression 1-clic</span>', en: '<strong>GDPR-native</strong><br><span>Full JSON export, 1-click deletion</span>' },
 
     // Footer
@@ -321,7 +322,7 @@
     'pr.eyebrow':      { fr: 'Tarifs', en: 'Pricing' },
     'pr.title':        { fr: 'Simple et honnête', en: 'Simple and honest' },
     'pr.sub':          { fr: 'Aucune carte requise pour démarrer. Trader est gratuit pour toujours. Funded et Elite débloquent les outils sérieux.', en: 'No card required to start. Trader is free forever. Funded and Elite unlock the serious tools.' },
-    'pr.founding.title': { fr: '5 dernières places Founding', en: 'Last 5 Founding spots' },
+    'pr.founding.title': { fr: 'Offre Founding — jusqu\'au 30 juin', en: 'Founding offer — until June 30' },
     'pr.founding.sub':   { fr: 'Accès Funded à vie en échange de feedback honnête.', en: 'Lifetime Funded access in exchange for honest feedback.' },
     'pr.founding.cta':   { fr: 'Candidater →', en: 'Apply →' },
     'pr.billing.aria':    { fr: 'Période de facturation', en: 'Billing period' },
@@ -351,7 +352,7 @@
     'pr.funded.f5':      { fr: 'Trailing drawdown EOD précis — jamais surpris par un breach', en: 'Accurate EOD trailing drawdown — never surprised by a breach' },
     'pr.funded.f6':      { fr: 'Support prioritaire (canal direct)', en: 'Priority support (direct channel)' },
     'pr.funded.f7':      { fr: 'Tout le plan Trader inclus', en: 'Everything in the Trader plan included' },
-    'pr.funded.cta':     { fr: 'Rejoindre la bêta gratuitement →', en: 'Join the beta for free →' },
+    'pr.funded.cta':     { fr: 'Gratuit en bêta · puis 14,99 €/mois →', en: 'Free in beta · then €14.99/mo →' },
     'pr.elite.badge':    { fr: '✦ Premium', en: '✦ Premium' },
     'pr.elite.tagline':  { fr: 'Pour les power users multi-comptes ou les coachs.', en: 'For multi-account power users or coaches.' },
     'pr.elite.perday.m': { fr: 'soit 1 €/jour', en: 'that\'s €1/day' },
@@ -362,7 +363,7 @@
     'pr.elite.f4':       { fr: 'Support 24h via canal direct', en: '24h support via direct channel' },
     'pr.elite.f5':       { fr: 'Votes décisifs sur la roadmap — ta voix compte 5× plus', en: 'Decisive roadmap votes — your voice counts 5× more' },
     'pr.elite.f6':       { fr: 'Tout le plan Funded inclus', en: 'Everything in the Funded plan included' },
-    'pr.elite.cta':      { fr: 'Rejoindre la bêta gratuitement →', en: 'Join the beta for free →' },
+    'pr.elite.cta':      { fr: 'Gratuit en bêta · puis 29,99 €/mois →', en: 'Free in beta · then €29.99/mo →' },
     'pr.trust.1':        { fr: '✓ Annulation 1-clic', en: '✓ 1-click cancellation' },
     'pr.trust.2':        { fr: '✓ Garantie 30 jours satisfait ou remboursé', en: '✓ 30-day money-back guarantee' },
     'pr.trust.3':        { fr: '✓ Export complet RGPD à tout moment', en: '✓ Full GDPR export at any time' },
