@@ -259,7 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function start(username) {
       bar = $('ztLoaderBar'); pctEl = $('ztLoaderPct'); statusEl = $('ztLoaderStatus');
-      try { const v = window.Changelog && Changelog.getEntries && Changelog.getEntries()[0]; const ve = $('ztLoaderVer'); if (v && ve) ve.textContent = 'v' + v.version; } catch (e) {}
+      try {
+        const v = window.Changelog && Changelog.getEntries && Changelog.getEntries()[0];
+        if (v) {
+          const ve = $('ztLoaderVer');     if (ve) ve.textContent = 'v' + v.version;
+          const av = $('appVersionLabel'); if (av) av.textContent = v.version;   // v0.9.355 : footer Réglages = même source (plus de version codée en dur)
+        }
+      } catch (e) {}
       const eb = $('ztLoaderEyebrow'); if (eb && username) eb.textContent = tr('Bon retour, ', 'Welcome back, ') + username;
       // v0.9.319 : lancé une 1ʳᵉ fois au boot (avant l'auth) pour couvrir l'app shell ;
       // les appels suivants (showLoader après login) ne réinitialisent PAS la barre.
