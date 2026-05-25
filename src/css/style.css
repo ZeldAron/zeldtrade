@@ -3218,10 +3218,13 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .cdt-pnl-val { font-family: 'Geist Mono', monospace; font-weight: 700; }
 .cdt-rr      { color: var(--muted2); font-size: 11px; margin-left: auto; }
 
-/* v0.9.358 (fix B-04) : marge basse pour que la dernière ligne du récap (colonne
-   P&L à droite) puisse défiler au-dessus de la bulle support flottante (#contactWidget,
-   fixée bottom-right ~76px) au lieu d'être masquée par elle. */
-#calContent { padding-bottom: 96px; }
+/* v0.9.358 / v0.9.359 (fix B-04b) : la bulle support (#contactWidget, fixée bottom-right,
+   ~76px de la droite) masquait la colonne P&L NET du récap. Deux mesures :
+   1) marge basse robuste (!important pour survivre aux media-queries qui forcent padding:8px)
+      → la dernière ligne peut défiler AU-DESSUS de la bulle.
+   2) padding-droit sur les lignes du récap → la colonne P&L (la plus à droite) sort de
+      la zone horizontale de la bulle, même quand une ligne est pile à sa hauteur. */
+#calContent { padding-bottom: 100px !important; }
 
 /* Calendar summary (monthly recap list) */
 .cal-summary {
@@ -3256,7 +3259,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .cal-sum-head {
   display: grid;
   grid-template-columns: 140px 80px 1fr 70px 90px;
-  padding: 6px 16px;
+  padding: 6px 64px 6px 16px;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -3268,7 +3271,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   display: grid;
   grid-template-columns: 140px 80px 1fr 70px 90px;
   align-items: center;
-  padding: 10px 16px;
+  padding: 10px 64px 10px 16px;
   border-bottom: 1px solid var(--border);
   font-size: 12px;
   cursor: pointer;
