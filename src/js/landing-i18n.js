@@ -120,7 +120,7 @@
     'demo.step1':   { fr: 'Capture', en: 'Capture' },
     'demo.step2':   { fr: 'IA fill', en: 'AI fill' },
     'demo.step3':   { fr: 'Sauvegarde', en: 'Save' },
-    'demo.paste':   { fr: 'Drag &amp; drop ou Ctrl+V ton screenshot TradingView', en: 'Drag &amp; drop or Ctrl+V your TradingView screenshot' },
+    'demo.paste':   { fr: 'Drag & drop ou Ctrl+V ton screenshot TradingView', en: 'Drag & drop or Ctrl+V your TradingView screenshot' },
     'demo.aitext':  { fr: 'L\'IA Vision analyse ton chart…', en: 'AI Vision is analyzing your chart…' },
     'demo.save':    { fr: '✓ Sauvegarder le trade', en: '✓ Save the trade' },
     'demo.toast':   { fr: '✓ Trade ajouté à ton journal &amp; dashboard mis à jour', en: '✓ Trade added to your journal &amp; dashboard updated' },

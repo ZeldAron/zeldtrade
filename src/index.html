@@ -1567,7 +1567,7 @@
       .demo-main { padding: 18px 16px; }
       .demo-stage { top: 64px; left: 16px; right: 16px; bottom: 16px; }
       .demo-stepdot { font-size: 10.5px; padding: 4px 9px; }
-      .demo-stepdot span { width: 14px; height: 14px; font-size: 9px; }
+      .demo-stepdot span:first-child { width: 14px; height: 14px; font-size: 9px; }
       .demo-fields { grid-template-columns: 1fr 1fr; gap: 8px; }
       .demo-field { padding: 8px 10px; }
       .demo-field-value { font-size: 13px; }
@@ -1627,7 +1627,7 @@
       gap: 6px;
       transition: all 0.5s;
     }
-    .demo-stepdot span {
+    .demo-stepdot span:first-child {
       width: 16px; height: 16px;
       border-radius: 50%;
       background: rgba(255,255,255,0.08);
@@ -1641,7 +1641,7 @@
       background: rgba(124, 58, 237,0.14);
       border-color: rgba(124, 58, 237,0.4);
     }
-    .demo-stepdot.active span {
+    .demo-stepdot.active span:first-child {
       background: linear-gradient(135deg, #7c3aed, #5b21b6);
       color: #fff;
     }
@@ -1649,7 +1649,7 @@
       color: #4ade80;
       border-color: rgba(63,185,80,0.4);
     }
-    .demo-stepdot.done span {
+    .demo-stepdot.done span:first-child {
       background: rgba(63,185,80,0.25);
       color: #4ade80;
     }
@@ -3762,7 +3762,7 @@
   <script src="js/landing-pricing.js?v=0.9.198"></script>
   <script src="js/landing-animations.js?v=0.9.213" defer></script>
   <script src="js/landing-nav.js?v=0.9.272" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.342" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.348" defer></script>
   <script src="js/landing-testimonials.js?v=0.9.333" defer></script>
 
 </body>
