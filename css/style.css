@@ -2836,6 +2836,8 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .grr-val     { font-family: 'Geist Mono', monospace; font-size: 11px; }
 .grr-ok      { color: var(--green); }
 .grr-warn    { color: var(--amber); }
+/* v0.9.358 (fix B-11) : violation prop firm = badge rouge plein, pas un ✗ discret. */
+.grr-breach  { color: #fff; background: var(--red); padding: 2px 8px; border-radius: 6px; font-weight: 700; letter-spacing: .02em; }
 .grr-pending { color: var(--muted); }
 
 /* Section label inside card */
@@ -3215,6 +3217,11 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .cdt-setup   { flex: 2; color: var(--muted); font-size: 11px; }
 .cdt-pnl-val { font-family: 'Geist Mono', monospace; font-weight: 700; }
 .cdt-rr      { color: var(--muted2); font-size: 11px; margin-left: auto; }
+
+/* v0.9.358 (fix B-04) : marge basse pour que la dernière ligne du récap (colonne
+   P&L à droite) puisse défiler au-dessus de la bulle support flottante (#contactWidget,
+   fixée bottom-right ~76px) au lieu d'être masquée par elle. */
+#calContent { padding-bottom: 96px; }
 
 /* Calendar summary (monthly recap list) */
 .cal-summary {

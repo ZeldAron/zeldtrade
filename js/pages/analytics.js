@@ -90,12 +90,13 @@
       const c      = Calc.trade(tr);
       const netPnl = c.netPnl !== null ? c.netPnl : 0;
 
-      if (tr.setup) {
-        if (!setups[tr.setup]) setups[tr.setup] = { wins:0, total:0, pnl:0 };
-        setups[tr.setup].total++;
-        if (tr.outcome === 'win') setups[tr.setup].wins++;
-        setups[tr.setup].pnl += netPnl;
-      }
+      // v0.9.358 (fix B-07) : les trades sans setup ne sont plus ignorés en silence,
+      // ils sont regroupés sous une ligne « (Aucun setup) » pour ne pas fausser le total.
+      const setupKey = tr.setup ? tr.setup : '__nosetup__';
+      if (!setups[setupKey]) setups[setupKey] = { wins:0, total:0, pnl:0 };
+      setups[setupKey].total++;
+      if (tr.outcome === 'win') setups[setupKey].wins++;
+      setups[setupKey].pnl += netPnl;
 
       if (!instrs[tr.instrument]) instrs[tr.instrument] = { wins:0, total:0, pnl:0 };
       instrs[tr.instrument].total++;
@@ -107,8 +108,11 @@
       .sort((a, b) => b[1].total - a[1].total)
       .map(([name, v]) => {
         const wr = v.total ? v.wins / v.total * 100 : 0;
+        const nameCell = name === '__nosetup__'
+          ? `<span style="color:var(--muted);font-style:italic">${t('analytics.setup.none') || '(Aucun setup)'}</span>`
+          : UI.escHtml(name);
         return `<tr>
-          <td>${UI.escHtml(name)}</td>
+          <td>${nameCell}</td>
           <td>${v.total}</td>
           <td>
             <div class="wr-bar-wrap">

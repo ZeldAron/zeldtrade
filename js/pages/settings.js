@@ -1241,6 +1241,20 @@
     }
   }
 
+  // v0.9.358 (fix B-05) : masque l'email affiché (anti shoulder-surfing / screenshots).
+  // pltn.aaronpro@free.fr → p••••@f••••.fr
+  function _maskEmail(email) {
+    const e = String(email || '');
+    const at = e.indexOf('@');
+    if (at < 1) return e;
+    const local  = e.slice(0, at);
+    const domain = e.slice(at + 1);
+    const dot = domain.lastIndexOf('.');
+    const maskedLocal = local[0] + '••••';
+    if (dot < 1) return maskedLocal + '@' + (domain[0] || '') + '••••';
+    return maskedLocal + '@' + domain[0] + '••••' + domain.slice(dot);
+  }
+
   // v0.9.142 : vérification email — refresh statut + handlers via event delegation
   function _refreshEmailVerifyStatus() {
     try {
@@ -1255,7 +1269,7 @@
         btnCheck.style.display = 'none';
         return;
       }
-      const email = user.email || '';
+      const email = _maskEmail(user.email || '');
       if (user.emailVerified) {
         // v0.9.148 fix : l'emoji ✅ est déjà dans la clé i18n, ne pas le doubler.
         // Et il faut interpoler {email} aussi dans ce cas (bug v0.9.142).
