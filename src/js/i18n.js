@@ -337,6 +337,7 @@ const i18n = (() => {
       'auth.back.login':  '← Retour à la connexion',
       // Modal
       'modal.ai.active':    '● IA active',
+      'modal.ai.exhausted': '● IA — quota du jour épuisé',
       'modal.ai.nokey':     '⚠ Analyse IA non disponible — clé non configurée',
       'modal.ai.missing':   '⚠ Clé IA manquante',
       'modal.ai.configure': 'Configure ta clé IA dans Réglages → Intelligence Artificielle',
@@ -693,7 +694,7 @@ const i18n = (() => {
       'off.trust.export':      'Export complet RGPD à tout moment',
       'off.trust.nocb':        'Aucune CB requise pour démarrer',
       // Founding scarcity banner
-      'off.founding.title':    '5 dernières places Founding',
+      'off.founding.title':    'Offre Founding — jusqu\'au 30 juin',
       'off.founding.sub':      'Accès Funded à vie en échange de feedback honnête.',
       'off.founding.cta':      'Candidater',
       // FAQ Lot 4
@@ -1089,6 +1090,7 @@ const i18n = (() => {
       'auth.back.login':  '← Back to login',
       // Modal
       'modal.ai.active':    '● AI active',
+      'modal.ai.exhausted': '● AI — daily quota reached',
       'modal.ai.nokey':     '⚠ AI analysis unavailable — key not configured',
       'modal.ai.missing':   '⚠ AI key missing',
       'modal.ai.configure': 'Set up your AI key in Settings → AI Analysis',
@@ -1445,7 +1447,7 @@ const i18n = (() => {
       'off.trust.export':      'Full GDPR export anytime',
       'off.trust.nocb':        'No credit card needed to start',
       // Founding scarcity banner
-      'off.founding.title':    'Last 5 Founding seats',
+      'off.founding.title':    'Founding offer — until June 30',
       'off.founding.sub':      'Lifetime Funded access in exchange for honest feedback.',
       'off.founding.cta':      'Apply',
       // FAQ Lot 4
