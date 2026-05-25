@@ -5,6 +5,20 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.355',
+      date: '2026-05-25',
+      time: '21:00',
+      tags: ['feat', 'fix'],
+      title: 'Plans plus clairs, Funded à 3 comptes, IA qui ne gaspille plus ton analyse',
+      titleEn: 'Clearer plans, Funded with 3 accounts, AI that no longer wastes your analysis',
+      items: [
+        { type: 'feat', text: 'IA Vision : l\'analyse ne part plus toute seule. Tu colles ta capture, un bouton « ✨ Analyser cette capture » apparaît, et l\'analyse ne se lance qu\'au clic. Et si l\'IA ne détecte aucun niveau, ton analyse du jour n\'est PAS décomptée.', textEn: 'AI Vision: analysis no longer fires on its own. You paste your screenshot, an "Analyze this screenshot" button appears, and analysis runs only on click. And if the AI detects no levels, your daily analysis is NOT counted.' },
+        { type: 'feat', text: 'Plan Funded : 3 comptes de trading (groupables) au lieu de 2.', textEn: 'Funded plan: 3 trading accounts (groupable) instead of 2.' },
+        { type: 'ui', text: 'Noms de plans unifiés partout : Trader, Funded, Elite (fini les « Basic »/« Pro » qui prêtaient à confusion), page Offres et badges plus cohérents.', textEn: 'Plan names unified everywhere: Trader, Funded, Elite (no more confusing "Basic"/"Pro"), cleaner Plans page and badges.' },
+        { type: 'ui', text: 'Page d\'accueil : nouvelle section « À propos », textes et visuels peaufinés, plusieurs correctifs d\'affichage.', textEn: 'Landing: new "About" section, polished copy and visuals, several display fixes.' },
+      ],
+    },
+    {
       version: '0.9.339',
       date: '2026-05-24',
       time: '20:45',
