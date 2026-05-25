@@ -51,6 +51,52 @@
   });
 })();
 
+// ─── NAV AUTO-HIDE / REVEAL (v0.9.361) ──────────────────────────────────────
+// Au scroll vers le bas, la barre de nav se rétracte (plus d'espace de lecture).
+// Elle réapparaît : au scroll vers le haut, OU quand la souris touche le haut de
+// l'écran, OU quand on est près du haut de page, OU au focus clavier (a11y).
+(function () {
+  'use strict';
+  const nav = document.querySelector('.nav');
+  if (!nav) return;
+
+  const navToggle = document.getElementById('navToggle');
+  const HIDE_AFTER = 240;   // ne jamais cacher tant qu'on est dans les 240 1ers px
+  const TOP_ZONE   = 90;    // souris à ≤90px du haut → réaffiche
+  const DELTA      = 5;     // seuil anti-jitter
+  let lastY  = window.scrollY || 0;
+  let ticking = false;
+
+  function show() { nav.classList.remove('nav--hidden'); }
+  function hide() { nav.classList.add('nav--hidden'); }
+
+  function onScroll() {
+    const y = window.scrollY || 0;
+    const menuOpen = navToggle && navToggle.getAttribute('aria-expanded') === 'true';
+    if (y <= HIDE_AFTER || menuOpen) {
+      show();                              // haut de page / menu mobile ouvert
+    } else if (y > lastY + DELTA) {
+      hide();                              // scroll vers le bas
+    } else if (y < lastY - DELTA) {
+      show();                              // scroll vers le haut
+    }
+    lastY = y;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) { window.requestAnimationFrame(onScroll); ticking = true; }
+  }, { passive: true });
+
+  // Souris collée en haut de l'écran → on rappelle la nav
+  window.addEventListener('mousemove', function (e) {
+    if (e.clientY <= TOP_ZONE) show();
+  }, { passive: true });
+
+  // Accessibilité : tabuler vers un lien de la nav la réaffiche
+  nav.addEventListener('focusin', show);
+})();
+
 // ─── CONFIRMATION SUPPRESSION DE COMPTE (v0.9.263) ──────────────────────────
 // Après suppression du compte côté app, redirection vers /?deleted=1 → bannière
 // de confirmation (sinon l'user était silencieusement renvoyé à l'accueil).
