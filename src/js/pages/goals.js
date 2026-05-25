@@ -16,7 +16,9 @@
   }
 
   function goalRuleRow(label, value, state) {
-    const cls = state === 'ok' ? 'grr-ok' : state === 'warn' ? 'grr-warn' : 'grr-pending';
+    // v0.9.358 (fix B-11) : état « breach » = badge rouge bien visible (une violation
+    // de daily loss / drawdown sur prop firm est critique, pas un simple ✗ discret).
+    const cls = state === 'ok' ? 'grr-ok' : state === 'breach' ? 'grr-breach' : state === 'warn' ? 'grr-warn' : 'grr-pending';
     return `<div class="goal-rule-row">
       <span class="grr-label">${label}</span>
       <span class="grr-val ${cls}">${value}</span>
@@ -73,8 +75,8 @@
       <div class="goal-rules">
         ${goalRuleRow(t('goals.days.min'), `${days} / ${minDays} ${t('ui.days')}`, daysOk ? 'ok' : 'pending')}
         ${maxDay > 0 ? goalRuleRow(t('goals.consistency'), `+$${bestDay.toFixed(0)} best`, consOk ? 'ok' : 'warn') : ''}
-        ${goalRuleRow(t('goals.drawdown.ok'), ddOk ? '✓ OK' : `✗ -$${ddUsed.toFixed(0)}`, ddOk ? 'ok' : 'warn')}
-        ${goalRuleRow(t('goals.daily.ok'),   dailyOk ? '✓ OK' : `✗ $${todayLoss.toFixed(0)}`, dailyOk ? 'ok' : 'warn')}
+        ${goalRuleRow(t('goals.drawdown.ok'), ddOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${ddUsed.toFixed(0)}`, ddOk ? 'ok' : 'breach')}
+        ${goalRuleRow(t('goals.daily.ok'),   dailyOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${todayLoss.toFixed(0)}`, dailyOk ? 'ok' : 'breach')}
       </div>
       ${statusHtml}
     </div>`;
@@ -219,7 +221,7 @@
 
       <div class="goal-section-label">${t('goals.protection')}</div>
       <div class="goal-rules">
-        ${goalRuleRow(t('goals.daily.limit.ok'), dailyOk ? '✓ OK' : '✗', dailyOk ? 'ok' : 'warn')}
+        ${goalRuleRow(t('goals.daily.limit.ok'), dailyOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${todayLoss.toFixed(0)}`, dailyOk ? 'ok' : 'breach')}
         ${goalRuleRow(t('goals.payout'), payoutReady ? '✓' : `${totalDays}/5 ${t('ui.days')} · Safety Net ${safetyReached ? '✓' : '✗'}`, payoutReady ? 'ok' : 'pending')}
       </div>
       ${payoutReady ? `<div class="goal-status goal-status--pass">${t('goals.payout.eligible')}</div>` : ''}

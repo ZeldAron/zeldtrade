@@ -37,6 +37,18 @@ const Modal = (() => {
     return sp[instr] != null ? sp[instr] : 0;
   }
 
+  // v0.9.358 (fix B-12) : grise le bouton « Analyser cette capture » quand le quota
+  // du jour est épuisé (sinon l'user clique un CTA violet plein pour rien).
+  function _refreshAnalyzeBtnState() {
+    const ab = document.getElementById('wBtnAnalyze');
+    if (!ab) return;
+    const exhausted = typeof Store !== 'undefined' && Store.canAnalyzeToday && !Store.canAnalyzeToday();
+    ab.disabled        = !!exhausted;
+    ab.style.opacity   = exhausted ? '0.45' : '';
+    ab.style.cursor    = exhausted ? 'not-allowed' : '';
+    ab.title           = exhausted ? (i18n.t('err.limit.ai') || 'Quota du jour épuisé — réessaie demain.') : '';
+  }
+
   const $ = id => document.getElementById(id);
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   const STATUS_LABEL = { evaluation: 'EVAL', funded: 'PA' };
@@ -123,6 +135,7 @@ const Modal = (() => {
           // v0.9.353 : on n'analyse PLUS automatiquement → on affiche le bouton de
           // confirmation (évite de cramer le quota IA sur un drop accidentel/mauvais fichier).
           { const ab = $('wBtnAnalyze'); if (ab) ab.style.display = ''; }
+          _refreshAnalyzeBtnState();   // v0.9.358 : grise le bouton si quota épuisé
         } catch (e) {
           console.error('[wizard] onload handler crashed', e);
           UI.toast('Erreur après lecture du fichier — réessaie.', true);
@@ -1759,7 +1772,11 @@ const Modal = (() => {
       apex:       $('wApex').value,
       feePerSide,
       feeTakerPct,  // v0.9.190 : pour crypto, sinon null
-      spreadCost,
+      // v0.9.358 (fix B-06) : en CRÉATION, on recalcule toujours le spread depuis
+      // l'instrument+firm sélectionnés — sinon un trade saisi sans changer l'instrument
+      // par défaut gardait spreadCost=0 (le spread n'était subi que par hasard, ex.
+      // après un change event). En ÉDITION, on préserve la valeur historique du trade.
+      spreadCost: editingId ? spreadCost : getSpreadForInstrument(firmKey, safeInstr),
       entry, sl, tp1,
       tp2:        parseFloat($('wTP2').value)  || null,
       tp3:        parseFloat($('wTP3').value)  || null,
@@ -1872,7 +1889,13 @@ const Modal = (() => {
       analyzeImage();
     });
     // v0.9.353 — l'analyse ne part qu'au clic explicite (1ʳᵉ analyse) → protège le quota IA.
-    $('wBtnAnalyze').addEventListener('click', () => { analyzeImage(); });
+    $('wBtnAnalyze').addEventListener('click', () => {
+      if (typeof Store !== 'undefined' && Store.canAnalyzeToday && !Store.canAnalyzeToday()) {
+        _refreshAnalyzeBtnState();
+        return;   // garde-fou : quota épuisé → ne lance pas l'analyse
+      }
+      analyzeImage();
+    });
     $('wTextHint').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); analyzeImage(); }
     });
@@ -1883,6 +1906,13 @@ const Modal = (() => {
       }
       if (parsedTrade) fillStep3FromParsed();
       populateInstrumentSelect(firmKey, parsedTrade?.instrument);
+      // v0.9.358 (fix B-06) : en saisie MANUELLE (pas d'IA), fillStep3FromParsed n'est
+      // pas appelé → spreadCost resterait à 0. On l'initialise ici depuis l'instrument
+      // par défaut pour que le preview live ET le P&L sauvegardé incluent le spread.
+      if (!editingId && !parsedTrade) {
+        spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
+        updateSpreadDisplay();
+      }
       // v0.9.176 (H3 fix) : préserver le compte déjà pré-sélectionné au step 1
       // (lecture du select courant avant re-render). Évite de re-demander à l'user
       // de choisir son compte 50x par jour quand il est déjà sélectionné par défaut.

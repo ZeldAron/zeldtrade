@@ -3,6 +3,14 @@
   const $ = id => document.getElementById(id);
   const t = k => i18n.t(k);
 
+  // v0.9.358 (fix B-04) : montant signé. Le `-` manquait sur les pertes
+  // (`Math.abs` + `>=0?'+':''` → un montant rouge sans signe est ambigu sur capture).
+  function fmtSigned(v, approx) {
+    const n = Number(v) || 0;
+    const sign = n < 0 ? '-' : (approx ? '' : '+');
+    return (approx ? '~' : '') + sign + '$' + Math.abs(n).toFixed(0);
+  }
+
   let calYear         = new Date().getFullYear();
   let calMonth        = new Date().getMonth();
   let calSelectedDate = null;
@@ -70,7 +78,7 @@
         const hasClosed = data.wins + data.losses + data.be > 0;
         const pnlColor  = data.pnl > 0 ? 'var(--green)' : data.pnl < 0 ? 'var(--red)' : 'var(--muted)';
         if (hasClosed) {
-          inner += `<div class="cal-pnl" style="color:${pnlColor}">${data.pnl >= 0 ? '+' : ''}$${Math.abs(data.pnl).toFixed(0)}</div>`;
+          inner += `<div class="cal-pnl" style="color:${pnlColor}">${fmtSigned(data.pnl)}</div>`;
         } else if (data.open) {
           inner += `<div class="cal-pnl" style="color:var(--muted)">${t('cal.open')}</div>`;
         }
@@ -115,7 +123,7 @@
       const hasClosed = data.wins + data.losses + data.be > 0;
       const pnl       = data.pnl;
       const pc        = pnl > 0 ? 'var(--green)' : pnl < 0 ? 'var(--red)' : 'var(--muted)';
-      const pnlStr    = hasClosed ? `${pnl >= 0 ? '+' : ''}$${Math.abs(pnl).toFixed(0)}` : '—';
+      const pnlStr    = hasClosed ? fmtSigned(pnl) : '—';
 
       const avgRR = data.trades.length
         ? (data.trades.reduce((s, tr) => s + Calc.trade(tr).rr, 0) / data.trades.length).toFixed(2) + 'R'
@@ -146,7 +154,7 @@
           <span class="cal-summary-title">${t('cal.recap')}</span>
           <div class="cal-summary-meta">
             <span>${tradingDays.length} ${dayLabel} · ${monthTotal} ${t('ui.trades')} · ${monthWins}W ${monthLoss}L</span>
-            <span style="font-family:'Geist Mono',monospace;font-weight:700;font-size:14px;color:${pnlColor}">${monthPnL >= 0 ? '+' : ''}$${Math.abs(monthPnL).toFixed(0)}</span>
+            <span style="font-family:'Geist Mono',monospace;font-weight:700;font-size:14px;color:${pnlColor}">${fmtSigned(monthPnL)}</span>
           </div>
         </div>
         <div class="cal-sum-head">
@@ -167,9 +175,7 @@
 
     const tradeRows = data.trades.map(tr => {
       const c      = Calc.trade(tr);
-      const pnlTxt = c.estimated
-        ? `~$${Math.abs(c.netPnl || 0).toFixed(0)}`
-        : `${(c.netPnl || 0) >= 0 ? '+' : ''}$${Math.abs(c.netPnl || 0).toFixed(0)}`;
+      const pnlTxt = fmtSigned(c.netPnl || 0, c.estimated);
       const safeOutcome = ['win','loss','be','open'].includes(tr.outcome) ? tr.outcome : 'open';
       return `<div class="cdt-row">
         <span class="ob ob-${safeOutcome} ob-sm">${i18n.t('ob.' + safeOutcome)}</span>
@@ -186,7 +192,7 @@
         <div class="cdt-header">
           <span class="cdt-date">${dateLabel}</span>
           <span class="cdt-pnl" style="color:${pc}">
-            ${data.pnl >= 0 ? '+' : ''}$${Math.abs(data.pnl).toFixed(0)} net · ${data.trades.length} ${tradeLabel}
+            ${fmtSigned(data.pnl)} net · ${data.trades.length} ${tradeLabel}
           </span>
         </div>
         ${tradeRows}
