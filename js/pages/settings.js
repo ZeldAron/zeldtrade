@@ -91,7 +91,7 @@
             <div style="display:flex;align-items:center;gap:8px">
               <h3 style="margin:0">${t('set.accounts')}</h3>
               ${!Store.isPro()
-                ? `<span class="plan-badge plan-basic" style="font-size:9px">Basic · 1 max</span>`
+                ? `<span class="plan-badge plan-basic" style="font-size:9px">Trader · 1 max</span>`
                 : `<span style="font-size:11px;color:var(--muted);font-weight:500" title="${t('set.accounts')}">${myAccs.length}/${Store.getLimits().maxAccounts === Infinity ? '∞' : Store.getLimits().maxAccounts}</span>`}
             </div>
             <button class="btn-ghost" id="btnAddMyAccount">${t('set.acc.add')}</button>
@@ -173,15 +173,15 @@
               : `<div class="form-field" style="margin-bottom:12px">
                   <label class="form-label" style="display:flex;align-items:center;gap:6px">
                     ${t('set.acc.type')}
-                    <span class="plan-badge plan-pro">PRO</span>
+                    <span class="plan-badge plan-pro">FUNDED</span>
                   </label>
                   <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1.5px solid rgba(124, 58, 237,0.2);border-radius:8px;cursor:pointer" id="btnUnlockPreset">
                     <span style="display:inline-flex;color:var(--accent-l)">${Icons.svg('lock',15)}</span>
                     <span style="font-size:12px;color:var(--muted);flex:1">${i18n.getLang()==='en'
-                      ? 'Apex, Topstep, FTMO, Lucid presets — Pro only. Fill manually below.'
-                      : 'Presets Apex, Topstep, FTMO, Lucid — Pro uniquement. Remplissez manuellement ci-dessous.'
+                      ? 'Apex, Topstep, FTMO, Lucid presets — Funded / Elite only. Fill manually below.'
+                      : 'Presets Apex, Topstep, FTMO, Lucid — réservés aux plans Funded / Elite. Remplissez manuellement ci-dessous.'
                     }</span>
-                    <span style="font-size:10px;font-weight:700;color:#a78bfa;white-space:nowrap">Passer PRO →</span>
+                    <span style="font-size:10px;font-weight:700;color:#a78bfa;white-space:nowrap">${i18n.getLang()==='en' ? 'See plans →' : 'Voir les offres →'}</span>
                   </div>
                   <input type="hidden" id="maTypeId" value="">
                 </div>`
@@ -919,24 +919,24 @@
     const el = $('settingsGroups');
     if (!el) return;
 
-    // Gate: Groups are a Pro feature
+    // Gate: Groups are a Funded / Elite feature
     if (!Store.isPro()) {
       const isEn = i18n.getLang() === 'en';
       el.innerHTML = `
         <div class="settings-section settings-section--wide">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
             <h3 style="margin:0">${t('set.groups')}</h3>
-            <span class="plan-badge plan-pro">PRO</span>
+            <span class="plan-badge plan-pro">FUNDED</span>
           </div>
           <div class="upgrade-inline">
             <div class="upgrade-inline-icon">⬡</div>
             <div class="upgrade-inline-body">
-              <div class="upgrade-inline-title">${isEn ? 'Account groups — Pro feature' : 'Groupes de comptes — Fonctionnalité Pro'}</div>
+              <div class="upgrade-inline-title">${isEn ? 'Account groups — Funded / Elite feature' : 'Groupes de comptes — fonctionnalité Funded / Elite'}</div>
               <div class="upgrade-inline-sub">${isEn
                 ? 'Group multiple accounts to analyze their combined performance on the Dashboard.'
                 : 'Regroupez plusieurs comptes pour analyser leurs performances combinées sur le Dashboard.'}</div>
             </div>
-            <button class="upgrade-inline-btn" id="btnUpgradeGroups">${isEn ? 'Upgrade →' : 'Passer PRO →'}</button>
+            <button class="upgrade-inline-btn" id="btnUpgradeGroups">${isEn ? 'See plans →' : 'Voir les offres →'}</button>
           </div>
         </div>`;
       $('btnUpgradeGroups').addEventListener('click', () => {
@@ -1491,8 +1491,14 @@
       // v0.9.229 : la clé IA est gérée côté serveur (Firebase Secret Manager).
       // L'IA est toujours active pour tous les users, indépendamment du tier
       // (le quota par tier est appliqué côté Cloud Function).
-      statusEl.textContent = t('set.ai.ok') || '✓ IA active';
-      statusEl.style.color = 'var(--green)';
+      // v0.9.357 : reflète le quota du jour (rouge si épuisé).
+      if (typeof Store !== 'undefined' && Store.canAnalyzeToday && !Store.canAnalyzeToday()) {
+        statusEl.textContent = t('modal.ai.exhausted') || '● IA — quota du jour épuisé';
+        statusEl.style.color = 'var(--red)';
+      } else {
+        statusEl.textContent = t('set.ai.ok') || '✓ IA active';
+        statusEl.style.color = 'var(--green)';
+      }
     }
     updateAIStatus();
     window.addEventListener('store:aiReady', updateAIStatus);
@@ -1513,7 +1519,7 @@
         e.preventDefault();
         // Double check Pro côté client (sécurité — anti DevTools bypass)
         if (!Store.isPro || !Store.isPro()) {
-          UI.toast(t('set.export.pdf.pro.only') || 'Export PDF réservé aux utilisateurs Pro.', true);
+          UI.toast(t('set.export.pdf.pro.only') || 'Export PDF réservé aux plans Funded / Elite.', true);
           return;
         }
         try {

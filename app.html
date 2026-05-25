@@ -287,7 +287,7 @@
     <div class="corners">
       <div class="corner corner-tl"><span class="dot"></span> SYSTÈME EN LIGNE</div>
       <div class="corner corner-tr">CHIFFREMENT TLS · UE-WEST</div>
-      <div class="corner corner-bl" id="ztLoaderVer">v0.9.355</div>
+      <div class="corner corner-bl" id="ztLoaderVer">v0.9.357</div>
     </div>
   </div>
 
@@ -730,7 +730,7 @@
             </div>
             <div class="settings-row" id="rowExportPdf">
               <div>
-                <label data-i18n="set.export.pdf">Exporter en PDF <span class="plan-badge plan-pro" style="font-size:9px;margin-left:6px">PRO</span></label>
+                <label data-i18n="set.export.pdf">Exporter en PDF</label>
                 <p style="font-size:11px;color:var(--muted);margin-top:3px" data-i18n="set.export.pdf.desc">Rapport complet sur une période donnée (stats globales + chaque trade détaillé). Idéal pour comptabilité prop firm.</p>
               </div>
               <button class="btn-ghost" id="btnExportPdf" data-i18n="set.export.pdf.btn">Exporter PDF</button>
@@ -777,7 +777,7 @@
 
           <div class="settings-section">
             <h3 data-i18n="set.about">À propos</h3>
-            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px" id="appVersionLabel">0.9.355</span></div>
+            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px" id="appVersionLabel">0.9.357</span></div>
             <div class="settings-row"><label data-i18n="set.stack">Stack</label><span style="color:var(--muted);font-size:12px">HTML · CSS · JS vanilla</span></div>
           </div>
         </div>
@@ -967,7 +967,7 @@
             <!-- Banner Pro upsell pour Trader (gratuit) -->
             <div id="wPartialLockedBanner" style="display:none;text-align:center;padding:6px 4px">
               <div style="margin-bottom:4px;color:var(--accent-l)"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-              <p style="margin:0 0 4px;font-size:13px;color:var(--text)"><strong data-i18n="wiz.partials.locked.title">Sorties partielles — plan Pro</strong></p>
+              <p style="margin:0 0 4px;font-size:13px;color:var(--text)"><strong data-i18n="wiz.partials.locked.title">Sorties partielles — Funded / Elite</strong></p>
               <p style="margin:0 0 10px;font-size:12px;color:var(--muted);line-height:1.5" data-i18n="wiz.partials.locked.hint">Enregistre des prises de profit partielles (retirer des lots à différents prix) en passant Funded ou Elite.</p>
               <a href="#offers" class="btn-primary" style="display:inline-block;padding:6px 14px;font-size:12px;text-decoration:none" data-i18n="wiz.shots.locked.cta">Voir les plans →</a>
             </div>
@@ -1013,7 +1013,7 @@
             <!-- Banner Pro upsell visible pour Trader (max=0) -->
             <div id="wShotsLockedBanner" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
               <div style="margin-bottom:6px;color:var(--accent-l)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
-              <p style="margin:0 0 6px;font-size:13px;color:var(--text)" data-i18n="wiz.shots.locked.title"><strong>Captures réservées au plan Pro</strong></p>
+              <p style="margin:0 0 6px;font-size:13px;color:var(--text)" data-i18n="wiz.shots.locked.title"><strong>Captures réservées aux plans Funded / Elite</strong></p>
               <p style="margin:0 0 12px;font-size:12px;color:var(--muted);line-height:1.5" data-i18n="wiz.shots.locked.hint">Conserve jusqu'à <strong>3 captures par trade</strong> (preuve setup, gestion, exit) en passant Funded ou Elite.</p>
               <a href="#offers" class="btn-primary" style="display:inline-block;padding:7px 16px;font-size:12.5px;text-decoration:none" data-i18n="wiz.shots.locked.cta">Voir les plans →</a>
             </div>
@@ -1066,19 +1066,19 @@
   <script src="js/firebase.js?v=0.9.342"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" defer></script>
-  <script src="js/i18n.js?v=0.9.355"></script>
+  <script src="js/i18n.js?v=0.9.357"></script>
   <script src="js/icons.js?v=0.9.342"></script>
   <script src="js/analytics.js?v=0.9.352"></script>
   <script src="js/lib/jspdf.umd.min.js?v=3.0.1" defer></script>
   <script src="js/auth.js?v=0.9.342"></script>
-  <script src="js/store.js?v=0.9.353"></script>
+  <script src="js/store.js?v=0.9.357"></script>
   <script src="js/calc.js?v=0.9.342"></script>
-  <script src="js/modal.js?v=0.9.354"></script>
+  <script src="js/modal.js?v=0.9.357"></script>
   <script src="js/ui.js?v=0.9.342"></script>
-  <script src="js/pages/dashboard.js?v=0.9.342"></script>
+  <script src="js/pages/dashboard.js?v=0.9.357"></script>
   <script src="js/pages/analytics.js?v=0.9.352"></script>
-  <script src="js/pages/export-pdf.js?v=0.9.342"></script>
-  <script src="js/pages/settings.js?v=0.9.353"></script>
+  <script src="js/pages/export-pdf.js?v=0.9.357"></script>
+  <script src="js/pages/settings.js?v=0.9.357"></script>
   <script src="js/pages/goals.js?v=0.9.342"></script>
   <script src="js/pages/calendar.js?v=0.9.342"></script>
   <script src="js/pages/micro.js?v=0.9.342"></script>

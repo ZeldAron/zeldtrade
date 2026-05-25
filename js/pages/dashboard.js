@@ -421,15 +421,15 @@
       body += recentTradesBlock(all);
     }
 
-    // Upgrade nudge for Basic users with 1 account
+    // Upgrade nudge for Trader (free) users with 1 account
     const upgradeBanner = !isPro
       ? `<div class="upgrade-inline" id="dashUpgradeBanner" style="margin-bottom:20px">
           <div class="upgrade-inline-icon">✦</div>
           <div class="upgrade-inline-body">
-            <div class="upgrade-inline-title">${i18n.getLang() === 'en' ? 'Pro: unlimited accounts & advanced analytics' : 'Pro : comptes illimités & analytics avancées'}</div>
+            <div class="upgrade-inline-title">${i18n.getLang() === 'en' ? 'Funded & Elite: more accounts & advanced analytics' : 'Funded & Elite : plus de comptes & analytics avancées'}</div>
             <div class="upgrade-inline-sub">${i18n.getLang() === 'en'
-              ? 'Basic plan · 1 account · Session analytics locked'
-              : 'Plan Basic · 1 compte · Analytics par session verrouillées'}</div>
+              ? 'Trader plan · 1 account · Session analytics locked'
+              : 'Plan Trader · 1 compte · Analytics par session verrouillées'}</div>
           </div>
           <button class="upgrade-inline-btn" id="btnDashUpgrade">${i18n.getLang() === 'en' ? 'See plans →' : 'Voir les offres →'}</button>
         </div>`

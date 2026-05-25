@@ -901,7 +901,7 @@ const Store = (() => {
   function addMyAccount(data) {
     // Enforce quota Pro côté Store (l'UI le check aussi, et Firestore en backup)
     if (!canAddAccount()) {
-      throw new Error('Quota atteint : passe en Pro pour ajouter plus d\'un compte.');
+      throw new Error('Quota atteint : passe en Funded ou Elite pour ajouter plus de comptes.');
     }
     const sanitized = _sanitizeAccount(data);
     if (_isAccountNameTaken(sanitized.name)) {
