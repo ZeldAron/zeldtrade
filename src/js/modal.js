@@ -115,7 +115,9 @@ const Modal = (() => {
           $('wDropPrompt').style.display   = 'none';
           $('wImagePreview').style.display = '';
           $('wDropZone').classList.add('has-image');
-          analyzeImage();
+          // v0.9.353 : on n'analyse PLUS automatiquement → on affiche le bouton de
+          // confirmation (évite de cramer le quota IA sur un drop accidentel/mauvais fichier).
+          { const ab = $('wBtnAnalyze'); if (ab) ab.style.display = ''; }
         } catch (e) {
           console.error('[wizard] onload handler crashed', e);
           UI.toast('Erreur après lecture du fichier — réessaie.', true);
@@ -148,6 +150,7 @@ const Modal = (() => {
     $('wPreviewImg').src             = '';
     $('wAnalysisStatus').style.display = 'none';
     $('wAnalysisResult').style.display = 'none';
+    { const ab = $('wBtnAnalyze'); if (ab) ab.style.display = 'none'; }  // v0.9.353
   }
 
   function parseTextHint(text) {
@@ -500,6 +503,7 @@ const Modal = (() => {
     $('wBtnNext2').disabled = true;
     $('wAnalysisResult').style.display = 'none';
     retryBtn.style.display  = 'none';
+    { const ab = $('wBtnAnalyze'); if (ab) ab.style.display = 'none'; }  // v0.9.353 : cache le bouton « Analyser » pendant l'analyse
 
     try {
 
@@ -1854,6 +1858,8 @@ const Modal = (() => {
       if (_canUseClaudeFallback()) _forceClaude = true;
       analyzeImage();
     });
+    // v0.9.353 — l'analyse ne part qu'au clic explicite (1ʳᵉ analyse) → protège le quota IA.
+    $('wBtnAnalyze').addEventListener('click', () => { analyzeImage(); });
     $('wTextHint').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); analyzeImage(); }
     });
