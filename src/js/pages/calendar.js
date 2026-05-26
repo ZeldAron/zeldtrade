@@ -153,7 +153,7 @@
         <div class="cal-summary-header">
           <span class="cal-summary-title">${t('cal.recap')}</span>
           <div class="cal-summary-meta">
-            <span>${tradingDays.length} ${dayLabel} · ${monthTotal} ${t('ui.trades')} · ${monthWins}W ${monthLoss}L</span>
+            <span>${tradingDays.length} ${dayLabel} · ${monthTotal} ${monthTotal > 1 ? t('ui.trades') : t('ui.trade')} · ${monthWins}W ${monthLoss}L</span>
             <span style="font-family:'Geist Mono',monospace;font-weight:700;font-size:14px;color:${pnlColor}">${fmtSigned(monthPnL)}</span>
           </div>
         </div>

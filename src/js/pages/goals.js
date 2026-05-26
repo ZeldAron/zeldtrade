@@ -61,13 +61,19 @@
     // passage de l'éval (et le seuil 30% codé en dur est faux selon les firms) → ne bloque plus
     // le bouton « Passer en financé ». Elle reste affichée en info dans la carte.
     const allOk     = targetMet && ddOk && dailyOk && daysOk;
+    // v0.9.369 (fix P1/P6) : un compte en breach (DD ou daily dépassé) est invalidé →
+    // non éligible au passage en financé. On l'explique explicitement plutôt que de ne
+    // rien afficher (avant : ni bouton, ni message → l'user croyait à un bug).
+    const breached  = (ddSet && !ddOk) || (dailySet && !dailyOk);
 
     const statusHtml = allOk
       ? `<div class="goal-status goal-status--pass">${t('goals.pass')}</div>
          <button class="goal-convert-btn" data-convert-eval="${acc.id}">${t('goals.convert.cta') || '🎉 Passer en compte financé →'}</button>`
-      : targetMet
-        ? `<div class="goal-status goal-status--almost">${t('goals.almost')}</div>`
-        : `<div class="goal-status goal-status--eval">${t('goals.eval.status')}</div>`;
+      : breached
+        ? `<div class="goal-status goal-status--breach">${t('goals.breached') || '⚠ Compte invalidé (breach) — non éligible au passage en financé'}</div>`
+        : targetMet
+          ? `<div class="goal-status goal-status--almost">${t('goals.almost')}</div>`
+          : `<div class="goal-status goal-status--eval">${t('goals.eval.status')}</div>`;
 
     const daysLabel  = days > 1 ? t('ui.days') : t('ui.day');
     const mDaysLabel = minDays > 1 ? t('ui.days') : t('ui.day');
