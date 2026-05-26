@@ -63,7 +63,7 @@
   const navToggle = document.getElementById('navToggle');
   const HIDE_AFTER = 240;   // ne jamais cacher tant qu'on est dans les 240 1ers px
   const TOP_ZONE   = 90;    // souris à ≤90px du haut → réaffiche
-  const DELTA      = 5;     // seuil anti-jitter
+  const HIDE_DELTA = 6;     // il faut descendre franchement (>6px) pour cacher (anti-jitter)
   let lastY  = window.scrollY || 0;
   let ticking = false;
 
@@ -71,14 +71,12 @@
   function hide() { nav.classList.add('nav--hidden'); }
 
   function onScroll() {
-    const y = window.scrollY || 0;
+    const y = Math.max(0, window.scrollY || 0);
     const menuOpen = navToggle && navToggle.getAttribute('aria-expanded') === 'true';
-    if (y <= HIDE_AFTER || menuOpen) {
-      show();                              // haut de page / menu mobile ouvert
-    } else if (y > lastY + DELTA) {
-      hide();                              // scroll vers le bas
-    } else if (y < lastY - DELTA) {
-      show();                              // scroll vers le haut
+    if (y <= HIDE_AFTER || menuOpen || y < lastY) {
+      show();                              // haut de page, menu ouvert, OU on remonte (dès 1px) → visible
+    } else if (y > lastY + HIDE_DELTA) {
+      hide();                              // on descend franchement → caché
     }
     lastY = y;
     ticking = false;
