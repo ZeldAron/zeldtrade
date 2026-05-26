@@ -51,7 +51,11 @@
     const dailyOk   = !acc.dailyLossLimit || todayLoss < acc.dailyLossLimit;
     const targetMet = acc.profitTarget    && profit   >= acc.profitTarget;
     const daysOk    = days >= minDays;
-    const allOk     = targetMet && ddOk && dailyOk && daysOk && consOk;
+    // v0.9.367 : le PASSAGE de l'éval = profit target + jours min + aucun breach drawdown/daily.
+    // La consistance (consOk) est une règle de PAYOUT du compte financé, PAS une condition de
+    // passage de l'éval (et le seuil 30% codé en dur est faux selon les firms) → ne bloque plus
+    // le bouton « Passer en financé ». Elle reste affichée en info dans la carte.
+    const allOk     = targetMet && ddOk && dailyOk && daysOk;
 
     const statusHtml = allOk
       ? `<div class="goal-status goal-status--pass">${t('goals.pass')}</div>
