@@ -47,8 +47,13 @@
     const maxDay  = profit > 0 ? profit * 0.30 : 0;
     const consOk  = maxDay === 0 || bestDay <= maxDay;
 
-    const ddOk      = !acc.maxDrawdown    || ddUsed   <  acc.maxDrawdown;
-    const dailyOk   = !acc.dailyLossLimit || todayLoss < acc.dailyLossLimit;
+    // v0.9.368 (fix P1) : si la règle n'est pas définie sur le compte, on affiche
+    // « — non défini » plutôt qu'un « ✓ OK » trompeur (le compte n'a aucune limite à
+    // breacher). `ddSet`/`dailySet` distinguent « règle absente » de « règle respectée ».
+    const ddSet     = acc.maxDrawdown    > 0;
+    const dailySet  = acc.dailyLossLimit > 0;
+    const ddOk      = !ddSet    || ddUsed    <  acc.maxDrawdown;
+    const dailyOk   = !dailySet || todayLoss <  acc.dailyLossLimit;
     const targetMet = acc.profitTarget    && profit   >= acc.profitTarget;
     const daysOk    = days >= minDays;
     // v0.9.367 : le PASSAGE de l'éval = profit target + jours min + aucun breach drawdown/daily.
@@ -80,8 +85,8 @@
       <div class="goal-rules">
         ${goalRuleRow(t('goals.days.min'), `${days} / ${minDays} ${t('ui.days')}`, daysOk ? 'ok' : 'pending')}
         ${maxDay > 0 ? goalRuleRow(t('goals.consistency'), `+$${bestDay.toFixed(0)} best`, consOk ? 'ok' : 'warn') : ''}
-        ${goalRuleRow(t('goals.drawdown.ok'), ddOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${ddUsed.toFixed(0)}`, ddOk ? 'ok' : 'breach')}
-        ${goalRuleRow(t('goals.daily.ok'),   dailyOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${todayLoss.toFixed(0)}`, dailyOk ? 'ok' : 'breach')}
+        ${goalRuleRow(t('goals.drawdown.ok'), !ddSet ? (t('goals.notset') || '— non défini') : ddOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${ddUsed.toFixed(0)}`, !ddSet ? 'pending' : ddOk ? 'ok' : 'breach')}
+        ${goalRuleRow(t('goals.daily.ok'),   !dailySet ? (t('goals.notset') || '— non défini') : dailyOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${todayLoss.toFixed(0)}`, !dailySet ? 'pending' : dailyOk ? 'ok' : 'breach')}
       </div>
       ${statusHtml}
     </div>`;
@@ -156,7 +161,8 @@
 
     const totalDays   = new Set(accTrades.map(tr => UI.localDay(tr.date))).size;
     const payoutReady = totalDays >= 5 && profit > 0 && safetyReached;
-    const dailyOk     = !acc.dailyLossLimit || todayLoss < acc.dailyLossLimit;
+    const dailySet    = acc.dailyLossLimit > 0;
+    const dailyOk     = !dailySet || todayLoss < acc.dailyLossLimit;
 
     const ddBarW   = Math.min(100, drawdownUsedPct);
     const ddBarCol = drawdownUsedPct >= 75 ? 'var(--red)' : drawdownUsedPct >= 50 ? 'var(--amber)' : 'var(--green)';
@@ -226,7 +232,7 @@
 
       <div class="goal-section-label">${t('goals.protection')}</div>
       <div class="goal-rules">
-        ${goalRuleRow(t('goals.daily.limit.ok'), dailyOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${todayLoss.toFixed(0)}`, dailyOk ? 'ok' : 'breach')}
+        ${goalRuleRow(t('goals.daily.limit.ok'), !dailySet ? (t('goals.notset') || '— non défini') : dailyOk ? '✓ OK' : `⚠ ${t('goals.breach')} -$${todayLoss.toFixed(0)}`, !dailySet ? 'pending' : dailyOk ? 'ok' : 'breach')}
         ${goalRuleRow(t('goals.payout'), payoutReady ? '✓' : `${totalDays}/5 ${t('ui.days')} · Safety Net ${safetyReached ? '✓' : '✗'}`, payoutReady ? 'ok' : 'pending')}
       </div>
       ${payoutReady ? `<div class="goal-status goal-status--pass">${t('goals.payout.eligible')}</div>` : ''}

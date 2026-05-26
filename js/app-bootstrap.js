@@ -263,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const v = window.Changelog && Changelog.getEntries && Changelog.getEntries()[0];
         if (v) {
           const ve = $('ztLoaderVer');     if (ve) ve.textContent = 'v' + v.version;
-          const av = $('appVersionLabel'); if (av) av.textContent = v.version;   // v0.9.355 : footer Réglages = même source (plus de version codée en dur)
+          const av = $('appVersionLabel'); if (av) av.textContent = 'v' + v.version;   // v0.9.355 : footer Réglages = même source. v0.9.368 : préfixe « v » pour cohérence avec loader/footer.
         }
       } catch (e) {}
       const eb = $('ztLoaderEyebrow'); if (eb && username) eb.textContent = tr('Bon retour, ', 'Welcome back, ') + username;
