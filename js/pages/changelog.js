@@ -5,6 +5,22 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.372',
+      date: '2026-05-26',
+      time: '23:30',
+      tags: ['feat', 'fix'],
+      title: 'Passage éval → financé en 1 clic, objectifs plus clairs, et du polish',
+      titleEn: 'One-click eval → funded, clearer goals, and polish',
+      items: [
+        { type: 'feat', text: 'Passage compte éval → compte financé : quand ton compte d\'évaluation valide toutes ses règles, un bouton « 🎉 Passer en compte financé » apparaît. Ton éval part dans tes « comptes passés » (historique conservé) et un nouveau compte financé démarre à 0, avec les bonnes règles (contrats PA réduits, plus d\'objectif de profit).', textEn: 'Eval → funded conversion: when your evaluation account passes all its rules, a "🎉 Switch to funded account" button appears. Your eval moves to your "passed accounts" (history kept) and a new funded account starts at 0, with the right rules (reduced PA contracts, no profit target).' },
+        { type: 'ui', text: 'Objectifs plus clairs : un compte qui dépasse son drawdown ou sa perte du jour affiche un badge rouge « ⚠ DÉPASSÉE » et un message « compte invalidé ». Les règles non renseignées affichent « — non défini » au lieu d\'un faux « ✓ OK ».', textEn: 'Clearer goals: an account that breaches its drawdown or daily loss shows a red "⚠ BREACH" badge and an "account invalidated" message. Rules left blank show "— not set" instead of a misleading "✓ OK".' },
+        { type: 'ui', text: 'Calendrier plus lisible : les pertes affichent enfin le signe − (ex. −$2 515), et la colonne P&L n\'est plus masquée par la bulle de support.', textEn: 'More readable calendar: losses finally show the − sign (e.g. −$2,515), and the P&L column is no longer hidden by the support bubble.' },
+        { type: 'ui', text: 'Page d\'accueil : la barre de navigation se rétracte quand tu descends et réapparaît dès que tu remontes (ou que tu mets la souris en haut).', textEn: 'Landing: the nav bar retracts as you scroll down and comes back as soon as you scroll up (or move your mouse to the top).' },
+        { type: 'fix', text: 'App 100 % bilingue : tout le contenu débloqué par le plan Funded (règles prop firm, courtiers, crypto, fiscalité) est désormais traduit en anglais.', textEn: 'Fully bilingual app: all content unlocked by the Funded plan (prop firm rules, brokers, crypto, taxation) is now translated to English.' },
+        { type: 'fix', text: 'Polish : e-mail masqué dans les réglages, calcul du P&L affiné (spread appliqué à tous les trades), pluriels corrigés et divers correctifs.', textEn: 'Polish: email masked in settings, refined P&L calculation (spread applied to all trades), fixed plurals and various bug fixes.' },
+      ],
+    },
+    {
       version: '0.9.355',
       date: '2026-05-25',
       time: '21:00',
