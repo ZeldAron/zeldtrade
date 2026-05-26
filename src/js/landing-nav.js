@@ -60,6 +60,17 @@
   const nav = document.querySelector('.nav');
   if (!nav) return;
 
+  // La nav est en position:fixed → on réserve sa hauteur en padding-top sur le body
+  // (layout identique à l'ancien sticky) + scroll-padding pour les ancres #section.
+  function syncNavSpace() {
+    const h = nav.offsetHeight;
+    document.body.style.paddingTop = h + 'px';
+    document.documentElement.style.scrollPaddingTop = h + 'px';
+  }
+  syncNavSpace();
+  window.addEventListener('load', syncNavSpace);
+  window.addEventListener('resize', syncNavSpace, { passive: true });
+
   const navToggle = document.getElementById('navToggle');
   const HIDE_AFTER = 240;   // ne jamais cacher tant qu'on est dans les 240 1ers px
   const TOP_ZONE   = 90;    // souris à ≤90px du haut → réaffiche
