@@ -181,7 +181,7 @@
               ${isBest ? `<div style="position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;color:${s.color};letter-spacing:0.08em;text-transform:uppercase">Meilleure</div>` : ''}
               <div style="font-size:15px;margin-bottom:8px">${s.label()}</div>
               ${d.total === 0
-                ? `<div style="color:var(--muted);font-size:11px">Aucun trade</div>`
+                ? `<div style="color:var(--muted);font-size:11px">${t('analytics.notrades') || 'Aucun trade'}</div>`
                 : `<div style="font-size:22px;font-weight:700;font-family:'Geist Mono';color:${wr >= 50 ? 'var(--green)' : 'var(--red)'}">${wr.toFixed(0)}%</div>
                    <div style="font-size:10px;color:var(--muted);margin-bottom:8px">${d.total} trade${d.total > 1 ? 's' : ''} · ${d.wins}W ${d.losses}L</div>
                    <div style="height:4px;background:var(--border);border-radius:2px;margin-bottom:8px;overflow:hidden">
@@ -267,7 +267,7 @@
         ? `<div class="page-section">
             <div class="page-section-hd">
               <span class="page-section-ttl">${t('analytics.sessions.title')}</span>
-              ${timedTrades.length ? `<span class="page-section-count">${timedTrades.length} / ${all.length} chronométrés</span>` : ''}
+              ${timedTrades.length ? `<span class="page-section-count">${(t('analytics.timed') || '%n / %t chronométrés').replace('%n', timedTrades.length).replace('%t', all.length)}</span>` : ''}
             </div>
             <div class="chart-card">
               <div style="font-size:11px;color:var(--muted);margin-bottom:12px">${t('analytics.sessions.hint')}</div>
