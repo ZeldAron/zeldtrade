@@ -20,6 +20,69 @@
   const STATUS_LABEL = { evaluation: 'EVAL', funded: 'PA' };
   const STATUS_BADGE = { evaluation: 'ma-eval', funded: 'ma-funded' };
 
+  // v0.9.370 — Traduction EN des données de référence (onglets « Règles & marchés » +
+  // « Fonds propres »). Ces chaînes vivent dans des objets de données (DEFAULT_PROP_FIRMS,
+  // BROKERS, crypto) → map FR→EN appliquée au rendu via tR(). En FR, renvoie la chaîne telle quelle.
+  const DATA_EN = {
+    // drawdownType
+    'Statique (2-Step)': 'Static (2-Step)',
+    'Trailing (1-Step)': 'Trailing (1-Step)',
+    'Trailing (se fige à PT)': 'Trailing (locks at PT)',
+    'Trailing EOD (se fige à PT)': 'Trailing EOD (locks at PT)',
+    'Trailing EOD': 'Trailing EOD',
+    // consistency
+    'Aucune': 'None',
+    'Best day ≤50% des profits totaux': 'Best day ≤50% of total profits',
+    'Best day ≤50% profits totaux': 'Best day ≤50% of total profits',
+    '≤20% best day par cycle': '≤20% best day per cycle',
+    '≤40% best day (funded)': '≤40% best day (funded)',
+    '≤50% best day (éval only, none funded)': '≤50% best day (eval only, none funded)',
+    '≤50% meilleure journée (PA)': '≤50% best day (PA)',
+    // payoutConditions
+    '80% split (90% après scaling) — fee remboursé au 1er payout': '80% split (90% after scaling) — fee refunded on 1st payout',
+    '80% split — délai 14j': '80% split — 14-day delay',
+    '90% split dès le départ — fee remboursé au 1er payout': '90% split from the start — fee refunded on 1st payout',
+    '90/10 split — instant funded, min $500/cycle, pas de 8j wait': '90/10 split — instant funded, min $500/cycle, no 8-day wait',
+    '90/10 split — min 5 profitable days/cycle, min $500 payout, processing 2j': '90/10 split — min 5 profitable days/cycle, min $500 payout, 2-day processing',
+    '90/10 split — payout tous les 3 jours possible, one-day pass potential': '90/10 split — payout every 3 days possible, one-day pass potential',
+    "Combine $49/mois — Live Funded DLL $2K — 50% premiers profits jusqu'à 30j, puis 100% (max $5K), 5j gagnants min": 'Combine $49/mo — Live Funded DLL $2K — 50% of first profits up to 30 days, then 100% (max $5K), 5 winning days min',
+    "Combine $99/mois — Live Funded DLL $3K — 50% premiers profits jusqu'à 30j, puis 100% (max $10K), 5j gagnants min": 'Combine $99/mo — Live Funded DLL $3K — 50% of first profits up to 30 days, then 100% (max $10K), 5 winning days min',
+    "Combine $149/mois — Live Funded DLL $4.5K — 50% premiers profits jusqu'à 30j, puis 100% (max $15K), 5j gagnants min": 'Combine $149/mo — Live Funded DLL $4.5K — 50% of first profits up to 30 days, then 100% (max $15K), 5 winning days min',
+    'PA $119 — 5 trading days, max 20 comptes': 'PA $119 — 5 trading days, max 20 accounts',
+    'PA $129 — 5 trading days, max 20 comptes': 'PA $129 — 5 trading days, max 20 accounts',
+    'PA $149 — 5 trading days, max 20 comptes': 'PA $149 — 5 trading days, max 20 accounts',
+    'PA $169 — 5 trading days, max 20 comptes': 'PA $169 — 5 trading days, max 20 accounts',
+    // brokers — speciality / pros / cons / bestFor
+    'Futures + Actions + Options': 'Futures + Stocks + Options',
+    'Le plus complet, accès direct CME/CBOE, marges institutionnelles': 'The most complete, direct CME/CBOE access, institutional margins',
+    'Interface complexe au début, frais data $10/mois': 'Complex interface at first, $10/mo data fees',
+    'Traders sérieux multi-actifs': 'Serious multi-asset traders',
+    'CFD + Actions fractionnées': 'CFD + Fractional shares',
+    'Commissions 0€, interface mobile-first, ISA/CTO': '0€ commissions, mobile-first interface, ISA/CTO',
+    'Pas de futures CME, CFD only (réglementation ESMA)': 'No CME futures, CFD only (ESMA regulation)',
+    'Débutants, swing trading, investissement long terme': 'Beginners, swing trading, long-term investing',
+    'Multi-actifs (Futures, FX, Actions)': 'Multi-asset (Futures, FX, Stocks)',
+    'Réglementation FR/EU stricte, plateforme SaxoTraderGO solide': 'Strict FR/EU regulation, solid SaxoTraderGO platform',
+    'Frais data + commissions plus élevés que IB': 'Higher data fees + commissions than IB',
+    'Traders EU qui veulent un broker régulé localement': 'EU traders wanting a locally-regulated broker',
+    'Actions + ETF (pas de futures CME)': 'Stocks + ETF (no CME futures)',
+    'Frais très bas, populaire en France, FR/NL régulé': 'Very low fees, popular in France, FR/NL regulated',
+    'Pas de futures américains, pas idéal pour day trading': 'No US futures, not ideal for day trading',
+    'Investisseurs long terme en actions/ETF': 'Long-term stock/ETF investors',
+    // crypto
+    '1× à 125× selon la paire': '1× to 125× depending on pair',
+    'Auto à -100% margin maintenance': 'Auto at -100% maintenance margin',
+    'Withdrawal direct, frais réseau selon coin': 'Direct withdrawal, network fees per coin',
+    'Tarif Regular (sans BNB discount, sans niveau VIP)': 'Regular tier (no BNB discount, no VIP level)',
+    'Tarif Coinbase Advanced (Coinbase One = 0%/0.6%)': 'Coinbase Advanced tier (Coinbase One = 0%/0.6%)',
+    '1× (spot uniquement — pas de leverage)': '1× (spot only — no leverage)',
+    'N/A (spot)': 'N/A (spot)',
+    'Withdrawal SEPA (gratuit) ou wire ($25), 1-3j': 'SEPA withdrawal (free) or wire ($25), 1-3 days',
+    'KYC niveau 1 minimum (passport + selfie)': 'KYC level 1 minimum (passport + selfie)',
+    'KYC complet obligatoire (ID + adresse + selfie)': 'Full KYC required (ID + address + selfie)',
+  };
+  function tR(s) { return (i18n.getLang() === 'en' && DATA_EN[s]) ? DATA_EN[s] : s; }
+
   function renderMyAccountsSettings() {
     const el = $('settingsMyAccounts');
 
@@ -105,7 +168,7 @@
 
             <!-- v0.9.189 (Phase 1) + v0.9.190 (Phase 3 : crypto activé) -->
             <div class="form-field" style="margin-bottom:12px">
-              <label class="form-label">Type de compte</label>
+              <label class="form-label">${t('set.acc.typefield')}</label>
               <select class="form-input" id="maAccountType">
                 ${_accTypeOptionsHtml}
               </select>
@@ -117,14 +180,14 @@
               <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-l);margin-bottom:10px;font-weight:600">Paramètres crypto</div>
               <div class="form-grid" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
                 <div class="form-field">
-                  <label class="form-label">Plateforme</label>
+                  <label class="form-label">${t('set.acc.platform')}</label>
                   <select class="form-input" id="maCryptoPlatform">
                     <option value="binance">Binance</option>
                     <option value="coinbase">Coinbase</option>
                   </select>
                 </div>
                 <div class="form-field">
-                  <label class="form-label">Mode</label>
+                  <label class="form-label">${t('set.acc.mode')}</label>
                   <select class="form-input" id="maCryptoMode">
                     <option value="spot">Spot</option>
                     <option value="perpetual">Perpetual (futures)</option>
@@ -571,7 +634,7 @@
           </div>
           <div class="ac-field">
             <span class="ac-label">${t('set.pf.dd.type')}</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${UI.escHtml(a.drawdownType)}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${UI.escHtml(tR(a.drawdownType))}</span>
           </div>
           <div class="ac-field">
             <span class="ac-label">${t('set.pf.min.days')}</span>
@@ -579,11 +642,11 @@
           </div>
           <div class="ac-field">
             <span class="ac-label">${t('set.pf.consistency')}</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${UI.escHtml(a.consistency)}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:55%;line-height:1.3">${UI.escHtml(tR(a.consistency))}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
             <span class="ac-label" style="padding-top:2px">${t('set.pf.payout')}</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:58%;line-height:1.4">${UI.escHtml(a.payoutConditions)}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:58%;line-height:1.4">${UI.escHtml(tR(a.payoutConditions))}</span>
           </div>
         </div>
       `;
@@ -685,21 +748,21 @@
           <div class="ac-header" style="margin-bottom:12px">
             <div>
               <div class="ac-name" style="font-weight:700;font-size:14px;color:${b.color}">${UI.escHtml(b.name)}</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">${UI.escHtml(b.speciality)}</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">${UI.escHtml(tR(b.speciality))}</div>
             </div>
-            <a href="${b.url}" target="_blank" rel="noopener" class="ac-badge" style="background:${b.color}1f;color:${b.color};text-decoration:none">Site officiel ↗</a>
+            <a href="${b.url}" target="_blank" rel="noopener" class="ac-badge" style="background:${b.color}1f;color:${b.color};text-decoration:none">${t('set.cx.official')}</a>
           </div>
           <div class="ac-field" style="align-items:flex-start">
             <span class="ac-label" style="padding-top:2px;color:var(--green)">✓ Pour</span>
-            <span style="font-size:11px;color:var(--text2);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(b.pros)}</span>
+            <span style="font-size:11px;color:var(--text2);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(tR(b.pros))}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
             <span class="ac-label" style="padding-top:2px;color:var(--red)">✗ Contre</span>
-            <span style="font-size:11px;color:var(--text2);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(b.cons)}</span>
+            <span style="font-size:11px;color:var(--text2);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(tR(b.cons))}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
             <span class="ac-label" style="padding-top:2px">Idéal pour</span>
-            <span style="font-size:11px;color:var(--accent-l);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(b.bestFor)}</span>
+            <span style="font-size:11px;color:var(--accent-l);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(tR(b.bestFor))}</span>
           </div>
         </div>`;
     }
@@ -707,15 +770,15 @@
     el.innerHTML = `
       <div class="settings-section settings-section--wide">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <h3 style="margin:0">Trading en fonds propres</h3>
-          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Mode libre</span>
+          <h3 style="margin:0">${t('set.pf.ownfunds.title')}</h3>
+          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">${t('set.pf.freemode')}</span>
         </div>
         <p style="font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:18px">Trader avec ton propre capital, sans règles prop firm imposées. Tu gardes 100% des gains, mais tu risques aussi 100% du capital — c'est ton choix de risk management qui prime.</p>
 
         <!-- Bloc avantages/inconvénients -->
         <div class="form-grid form-grid-2" style="margin-bottom:18px">
           <div style="background:rgba(63,185,80,0.08);border:1px solid rgba(63,185,80,0.25);border-radius:8px;padding:14px 16px">
-            <div style="font-size:11px;color:var(--green);font-weight:700;letter-spacing:0.4px;margin-bottom:8px">✓ AVANTAGES</div>
+            <div style="font-size:11px;color:var(--green);font-weight:700;letter-spacing:0.4px;margin-bottom:8px">${t('set.pf.pros')}</div>
             <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.6">
               <li>100% des gains à toi (pas de payout split)</li>
               <li>Aucune règle externe (drawdown, daily loss, time-in-trade)</li>
@@ -725,7 +788,7 @@
             </ul>
           </div>
           <div style="background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);border-radius:8px;padding:14px 16px">
-            <div style="font-size:11px;color:var(--red);font-weight:700;letter-spacing:0.4px;margin-bottom:8px">✗ INCONVÉNIENTS</div>
+            <div style="font-size:11px;color:var(--red);font-weight:700;letter-spacing:0.4px;margin-bottom:8px">${t('set.pf.cons')}</div>
             <ul style="margin:0;padding-left:18px;font-size:12px;color:var(--text2);line-height:1.6">
               <li>Tu risques ton propre capital (pas de "compte 50K" prêté)</li>
               <li>Levier limité selon régulation (ESMA = 1:30 max retail FX)</li>
@@ -809,7 +872,7 @@
               <div class="ac-name" style="font-weight:700;font-size:15px;color:${p.color}">${p.name}</div>
               <div style="font-size:11px;color:var(--muted);margin-top:2px">${p.mode}</div>
             </div>
-            <a href="${p.url}" target="_blank" rel="noopener" class="ac-badge" style="background:${p.color}1f;color:${p.color};text-decoration:none">Site officiel ↗</a>
+            <a href="${p.url}" target="_blank" rel="noopener" class="ac-badge" style="background:${p.color}1f;color:${p.color};text-decoration:none">${t('set.cx.official')}</a>
           </div>
           <div class="ac-field">
             <span class="ac-label">Fee maker</span>
@@ -820,24 +883,24 @@
             <span style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--amber)">${p.feeTaker.toFixed(3)}%</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
-            <span class="ac-label" style="padding-top:2px">Tarification</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:60%;line-height:1.4">${p.feeNote}</span>
+            <span class="ac-label" style="padding-top:2px">${t('set.cx.pricing')}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:60%;line-height:1.4">${UI.escHtml(tR(p.feeNote))}</span>
           </div>
           <div class="ac-field">
             <span class="ac-label">Leverage</span>
-            <span style="font-size:11px;color:var(--text)">${p.leverage}</span>
+            <span style="font-size:11px;color:var(--text)">${UI.escHtml(tR(p.leverage))}</span>
           </div>
           <div class="ac-field">
             <span class="ac-label">Liquidation</span>
-            <span style="font-size:11px;color:var(--text)">${p.liquidation}</span>
+            <span style="font-size:11px;color:var(--text)">${UI.escHtml(tR(p.liquidation))}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
             <span class="ac-label" style="padding-top:2px">Payouts</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:60%;line-height:1.4">${p.payouts}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:60%;line-height:1.4">${UI.escHtml(tR(p.payouts))}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
             <span class="ac-label" style="padding-top:2px">KYC</span>
-            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:60%;line-height:1.4">${p.kyc}</span>
+            <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:60%;line-height:1.4">${UI.escHtml(tR(p.kyc))}</span>
           </div>
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
             <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);font-weight:600;margin-bottom:8px">Paires supportées (${p.pairs.length})</div>

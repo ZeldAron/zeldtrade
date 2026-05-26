@@ -24,9 +24,9 @@
   <meta http-equiv="Pragma" content="no-cache">
 
   <title>ZeldTrade — Journal de trading pour traders en prop firm</title>
-  <link rel="icon" href="/assets/favicon.ico?v=0.9.369" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.369">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.369">
+  <link rel="icon" href="/assets/favicon.ico?v=0.9.370" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.370">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.370">
   <meta name="description" content="Journal de trading pensé pour les traders en prop firm. Suivi de performance, gestion des règles d'évaluation Apex, Topstep, FTMO, Lucid, calculatrice de position. Sans Excel.">
   <meta name="keywords" content="journal de trading, prop firm, Apex, Topstep, FTMO, Lucid, day trading, S&P 500, performance trading, calculatrice position">
   <meta name="author" content="ZeldTrade">
@@ -47,10 +47,10 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=0.9.369">
+  <link rel="stylesheet" href="css/style.css?v=0.9.370">
   <!-- v0.9.255 : theme manager en TÊTE du head — applique data-theme="light"
        AVANT le parsing du body pour éviter le FOUC (flash dark → light). -->
-  <script src="js/theme.js?v=0.9.369"></script>
+  <script src="js/theme.js?v=0.9.370"></script>
 </head>
 <body>
 
@@ -287,7 +287,7 @@
     <div class="corners">
       <div class="corner corner-tl"><span class="dot"></span> SYSTÈME EN LIGNE</div>
       <div class="corner corner-tr">CHIFFREMENT TLS · UE-WEST</div>
-      <div class="corner corner-bl" id="ztLoaderVer">v0.9.369</div>
+      <div class="corner corner-bl" id="ztLoaderVer">v0.9.370</div>
     </div>
   </div>
 
@@ -777,7 +777,7 @@
 
           <div class="settings-section">
             <h3 data-i18n="set.about">À propos</h3>
-            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px" id="appVersionLabel">v0.9.369</span></div>
+            <div class="settings-row"><label data-i18n="set.version">Version</label><span style="color:var(--muted);font-size:12px" id="appVersionLabel">v0.9.370</span></div>
             <div class="settings-row"><label data-i18n="set.stack">Stack</label><span style="color:var(--muted);font-size:12px">HTML · CSS · JS vanilla</span></div>
           </div>
         </div>
@@ -848,7 +848,7 @@
         <!-- Complément texte si la lecture IA est imprécise -->
         <div class="wiz-text-supplement">
           <input class="form-input" type="text" id="wTextHint" maxlength="500"
-            placeholder="Optionnel : Entry 6804.5  SL 6808.50  TP 6795  60 lots">
+            placeholder="Optionnel : Entry 6804.5  SL 6808.50  TP 6795  60 lots" data-i18n-ph="wiz.texthint.ph">
         </div>
         <p class="wiz-skip-hint" data-i18n="wiz.shot.optional">Pas de capture ? Clique « Continuer » pour saisir à la main.</p>
 
@@ -996,9 +996,9 @@
           <!-- P&L manuel optionnel — override le P&L calculé -->
           <div class="form-grid form-grid-2">
             <div class="form-field">
-              <label class="form-label">P&L net réel ($) <span style="color:var(--muted);font-weight:400;font-size:11px">— optionnel</span></label>
+              <label class="form-label"><span data-i18n="wiz.manualpnl">P&L net réel ($)</span> <span data-i18n="wiz.manualpnl.opt" style="color:var(--muted);font-weight:400;font-size:11px">— optionnel</span></label>
               <input class="form-input mono" type="number" step="0.01" id="wManualPnl" placeholder="ex : -125.50" autocomplete="off" lang="en" inputmode="decimal">
-              <div style="font-size:11px;color:var(--muted);margin-top:4px">Si rempli, remplace tous les calculs (y compris partial).</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px" data-i18n="wiz.manualpnl.hint">Si rempli, remplace tous les calculs (y compris partial).</div>
             </div>
             <div class="form-field"></div>
           </div>
@@ -1025,7 +1025,7 @@
                 <div id="wShotPlaceholder" style="color:var(--muted);font-size:13px">
                   <div style="margin-bottom:6px;color:var(--accent-l)"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.2"/></svg></div>
                   <span data-i18n="wiz.shots.slot1.hint" data-i18n-html="1">Clique ici puis <strong>Ctrl+V</strong> pour coller un screenshot</span><br>
-                  <span style="font-size:11px">ou <a href="#" id="wShotFileLink" style="color:var(--accent-l);text-decoration:underline">choisir un fichier</a> (max 2 MB, JPG/PNG/WebP)</span>
+                  <span style="font-size:11px"><span data-i18n="wiz.shots.or">ou</span> <a href="#" id="wShotFileLink" style="color:var(--accent-l);text-decoration:underline" data-i18n="wiz.shots.orfile">choisir un fichier</a> (max 2 MB, JPG/PNG/WebP)</span>
                 </div>
                 <div id="wShotPreview" style="display:none">
                   <img id="wShotImg" alt="Screenshot" style="max-width:100%;max-height:200px;border-radius:6px;display:block;margin:0 auto 8px">
@@ -1063,32 +1063,32 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js" integrity="sha384-oFrOL1TiREYNET0lsYF3LjQuyi2gL7vhjH1X8vFr+umcmzAdPELopeSgbcrv4uRm" crossorigin="anonymous"></script>
-  <script src="js/firebase.js?v=0.9.369"></script>
+  <script src="js/firebase.js?v=0.9.370"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha384-bs/nf9FbdNouRbMiFcrcZfLXYPKiPaGVGplVbv7dLGECccEXDW+S3zjqSKR5ZEaD" crossorigin="anonymous" defer></script>
-  <script src="js/i18n.js?v=0.9.369"></script>
-  <script src="js/icons.js?v=0.9.369"></script>
-  <script src="js/analytics.js?v=0.9.369"></script>
-  <script src="js/lib/jspdf.umd.min.js?v=0.9.369" defer></script>
-  <script src="js/auth.js?v=0.9.369"></script>
-  <script src="js/store.js?v=0.9.369"></script>
-  <script src="js/calc.js?v=0.9.369"></script>
-  <script src="js/modal.js?v=0.9.369"></script>
-  <script src="js/ui.js?v=0.9.369"></script>
-  <script src="js/pages/dashboard.js?v=0.9.369"></script>
-  <script src="js/pages/analytics.js?v=0.9.369"></script>
-  <script src="js/pages/export-pdf.js?v=0.9.369"></script>
-  <script src="js/pages/settings.js?v=0.9.369"></script>
-  <script src="js/pages/goals.js?v=0.9.369"></script>
-  <script src="js/pages/calendar.js?v=0.9.369"></script>
-  <script src="js/pages/micro.js?v=0.9.369"></script>
-  <script src="js/pages/outils.js?v=0.9.369"></script>
-  <script src="js/pages/offers.js?v=0.9.369"></script>
-  <script src="js/contact.js?v=0.9.369"></script>
-  <script src="js/app.js?v=0.9.369"></script>
-  <script src="js/tour.js?v=0.9.369"></script>
+  <script src="js/i18n.js?v=0.9.370"></script>
+  <script src="js/icons.js?v=0.9.370"></script>
+  <script src="js/analytics.js?v=0.9.370"></script>
+  <script src="js/lib/jspdf.umd.min.js?v=0.9.370" defer></script>
+  <script src="js/auth.js?v=0.9.370"></script>
+  <script src="js/store.js?v=0.9.370"></script>
+  <script src="js/calc.js?v=0.9.370"></script>
+  <script src="js/modal.js?v=0.9.370"></script>
+  <script src="js/ui.js?v=0.9.370"></script>
+  <script src="js/pages/dashboard.js?v=0.9.370"></script>
+  <script src="js/pages/analytics.js?v=0.9.370"></script>
+  <script src="js/pages/export-pdf.js?v=0.9.370"></script>
+  <script src="js/pages/settings.js?v=0.9.370"></script>
+  <script src="js/pages/goals.js?v=0.9.370"></script>
+  <script src="js/pages/calendar.js?v=0.9.370"></script>
+  <script src="js/pages/micro.js?v=0.9.370"></script>
+  <script src="js/pages/outils.js?v=0.9.370"></script>
+  <script src="js/pages/offers.js?v=0.9.370"></script>
+  <script src="js/contact.js?v=0.9.370"></script>
+  <script src="js/app.js?v=0.9.370"></script>
+  <script src="js/tour.js?v=0.9.370"></script>
 
-  <script src="js/app-bootstrap.js?v=0.9.369"></script>
+  <script src="js/app-bootstrap.js?v=0.9.370"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent

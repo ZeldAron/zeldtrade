@@ -381,7 +381,7 @@
     } else if (dashFilter && dashFilter.startsWith('grp:')) {
       const grp = Store.getGroupById(dashFilter.slice(4));
       if (grp && grp.accountIds && grp.accountIds.length) {
-        body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.accounts.grp')}</span><span class="page-section-count">${grp.accountIds.length} compte${grp.accountIds.length > 1 ? 's' : ''}</span></div><div class="dash-group-accounts">`;
+        body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.accounts.grp')}</span><span class="page-section-count">${grp.accountIds.length} ${grp.accountIds.length > 1 ? t('ui.accounts') : t('ui.account')}</span></div><div class="dash-group-accounts">`;
         grp.accountIds.forEach(accId => {
           const acc = Store.getMyAccountById(accId);
           if (!acc) return;
