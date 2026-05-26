@@ -2923,6 +2923,8 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .goal-status--pass   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(45,212,160,0.3); }
 .goal-status--almost { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(245,166,35,0.3); }
 .goal-status--eval   { background: var(--bg3);        color: var(--muted); border: 1px solid var(--border); }
+/* v0.9.369 : compte éval invalidé par un breach → non éligible au passage en financé */
+.goal-status--breach { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.35); }
 /* v0.9.366 : bouton de passage éval → financé (apparaît quand l'objectif est validé) */
 .goal-convert-btn {
   display: block; width: 100%; margin-top: 8px;

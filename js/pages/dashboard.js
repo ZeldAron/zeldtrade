@@ -391,7 +391,7 @@
       }
       body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.pnl.cumul')}</span></div>
         <div class="kpi-grid">
-          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' trades', s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
+          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' '+(s.total > 1 ? t('ui.trades') : t('ui.trade')), s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
           ${kpiCard(t('dash.win.rate'), s.winRate!==null ? s.winRate.toFixed(0)+'%' : '—', s.wins+'W · '+s.losses+'L', (s.winRate||0)>=50?'var(--green)':'var(--red)')}
           ${kpiCard(t('dash.avg.rr'), s.avgRR.toFixed(2)+'R', t('dash.group'), s.avgRR>=1.5?'var(--green)':'var(--amber)')}
           ${kpiCard(t('dash.open'), s.open.toString(), t('dash.in.progress'), 'var(--blue)')}
@@ -411,7 +411,7 @@
       }
       body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.pnl.cumul')}</span></div>
         <div class="kpi-grid">
-          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' trades', s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
+          ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' '+(s.total > 1 ? t('ui.trades') : t('ui.trade')), s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
           ${kpiCard(t('dash.win.rate'), s.winRate!==null ? s.winRate.toFixed(0)+'%' : '—', s.wins+'W · '+s.losses+'L', (s.winRate||0)>=50?'var(--green)':'var(--red)')}
           ${kpiCard(t('dash.avg.rr'), s.avgRR.toFixed(2)+'R', t('dash.all.trades'), s.avgRR>=1.5?'var(--green)':'var(--amber)')}
           ${kpiCard(t('dash.open'), s.open.toString(), t('dash.in.progress'), 'var(--blue)')}
