@@ -84,7 +84,7 @@
         <span class="goal-pnl" style="color:${adjustedPnL>=0?'var(--green)':'var(--red)'}">${adjustedPnL>=0?'+':'-'}$${Math.abs(adjustedPnL).toFixed(0)}</span>
       </div>
       <div class="goal-rules">
-        ${acc.profitTarget   ? goalBar(t('goals.profit.target'),   profit,    acc.profitTarget,   'var(--green)') : ''}
+        ${acc.profitTarget   ? goalBar(t('goals.profit.target'),   profit,    acc.profitTarget,   'var(--green)') : goalRuleRow(t('goals.profit.target'), t('goals.notset') || '— non défini', 'pending')}
         ${acc.maxDrawdown    ? goalBar(t('goals.drawdown.used'),   ddUsed,    acc.maxDrawdown,    'var(--amber)') : ''}
         ${acc.dailyLossLimit ? goalBar(t('goals.daily.loss'),      todayLoss, acc.dailyLossLimit, 'var(--red)')   : ''}
       </div>
@@ -322,7 +322,7 @@
     let html = `<div class="page-title">${t('page.goals')}</div>`;
 
     if (evalAccs.length) {
-      html += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('goals.eval.accounts')}</span><span class="page-section-count">${evalAccs.length} compte${evalAccs.length > 1 ? 's' : ''}</span></div>`;
+      html += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('goals.eval.accounts')}</span><span class="page-section-count">${evalAccs.length} ${evalAccs.length > 1 ? t('ui.accounts') : t('ui.account')}</span></div>`;
       html += `<div class="goals-grid">`;
       evalAccs.forEach(acc => {
         html += evalCard(acc, trades.filter(tr => tr.apex === acc.name), today);
@@ -331,7 +331,7 @@
     }
 
     if (fundedAccs.length) {
-      html += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('goals.funded.accounts')}</span><span class="page-section-count">${fundedAccs.length} compte${fundedAccs.length > 1 ? 's' : ''}</span></div>`;
+      html += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('goals.funded.accounts')}</span><span class="page-section-count">${fundedAccs.length} ${fundedAccs.length > 1 ? t('ui.accounts') : t('ui.account')}</span></div>`;
       html += `<div class="goals-grid">`;
       fundedAccs.forEach(acc => {
         html += fundedCard(acc, trades.filter(tr => tr.apex === acc.name), today);

@@ -26,8 +26,8 @@ UI.renderOffers = function () {
     ? `<div class="pro-active-banner">
         <div class="pro-active-icon">${isBeta ? Icons.svg('sparkle',24) : '✦'}</div>
         <div>
-          <div class="pro-active-title">Plan ${tierLabel} actif</div>
-          <div class="pro-active-sub">${activatedDate ? tv('off.pro.active.sub', { date: activatedDate }) : 'Accès complet à toutes les fonctionnalités'}</div>
+          <div class="pro-active-title">${(t('off.plan.active') || 'Plan %s actif').replace('%s', tierLabel)}</div>
+          <div class="pro-active-sub">${activatedDate ? tv('off.pro.active.sub', { date: activatedDate }) : (t('off.pro.active.full') || 'Accès complet à toutes les fonctionnalités')}</div>
         </div>
       </div>`
     : '';

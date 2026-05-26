@@ -178,7 +178,7 @@
           const isBest = bestSession?.key === s.key && d.total > 0;
           return `
             <div style="background:var(--surface2);border:1px solid ${isBest ? s.color : 'var(--border)'};border-radius:10px;padding:14px;position:relative;${isBest ? 'box-shadow:0 0 0 1px ' + s.color + '22' : ''}">
-              ${isBest ? `<div style="position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;color:${s.color};letter-spacing:0.08em;text-transform:uppercase">Meilleure</div>` : ''}
+              ${isBest ? `<div style="position:absolute;top:8px;right:10px;font-size:9px;font-weight:700;color:${s.color};letter-spacing:0.08em;text-transform:uppercase">${t('analytics.best') || 'Meilleure'}</div>` : ''}
               <div style="font-size:15px;margin-bottom:8px">${s.label()}</div>
               ${d.total === 0
                 ? `<div style="color:var(--muted);font-size:11px">${t('analytics.notrades') || 'Aucun trade'}</div>`
