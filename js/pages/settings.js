@@ -280,7 +280,7 @@
 
             <div style="background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.2);border-radius:8px;padding:12px 14px;margin-bottom:14px">
               <div class="form-field">
-                <label class="form-label" style="color:var(--indigo,#6366f1)">${t('set.acc.pnloffset')} <span style="font-weight:400;color:var(--muted);font-size:10px">(optionnel)</span></label>
+                <label class="form-label" style="color:var(--indigo,#6366f1)">${t('set.acc.pnloffset')} <span style="font-weight:400;color:var(--muted);font-size:10px">${t('set.acc.optional')}</span></label>
                 <input class="form-input mono" type="number" step="1" id="maPnlOffset" placeholder="0" style="max-width:160px">
                 <p style="font-size:11px;color:var(--muted);margin-top:5px">${t('set.acc.pnloffset.desc')}</p>
               </div>
@@ -753,15 +753,15 @@
             <a href="${b.url}" target="_blank" rel="noopener" class="ac-badge" style="background:${b.color}1f;color:${b.color};text-decoration:none">${t('set.cx.official')}</a>
           </div>
           <div class="ac-field" style="align-items:flex-start">
-            <span class="ac-label" style="padding-top:2px;color:var(--green)">✓ Pour</span>
+            <span class="ac-label" style="padding-top:2px;color:var(--green)">${t('set.br.pros')}</span>
             <span style="font-size:11px;color:var(--text2);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(tR(b.pros))}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
-            <span class="ac-label" style="padding-top:2px;color:var(--red)">✗ Contre</span>
+            <span class="ac-label" style="padding-top:2px;color:var(--red)">${t('set.br.cons')}</span>
             <span style="font-size:11px;color:var(--text2);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(tR(b.cons))}</span>
           </div>
           <div class="ac-field" style="align-items:flex-start">
-            <span class="ac-label" style="padding-top:2px">Idéal pour</span>
+            <span class="ac-label" style="padding-top:2px">${t('set.br.bestfor')}</span>
             <span style="font-size:11px;color:var(--accent-l);text-align:right;max-width:65%;line-height:1.4">${UI.escHtml(tR(b.bestFor))}</span>
           </div>
         </div>`;
@@ -903,7 +903,7 @@
             <span style="font-size:10px;color:var(--muted2);text-align:right;max-width:60%;line-height:1.4">${UI.escHtml(tR(p.kyc))}</span>
           </div>
           <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);font-weight:600;margin-bottom:8px">Paires supportées (${p.pairs.length})</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);font-weight:600;margin-bottom:8px">${t('set.cx.pairs')} (${p.pairs.length})</div>
             <div style="display:flex;flex-wrap:wrap;gap:6px">
               ${p.pairs.map(pair => `<span style="font-family:'Geist Mono',monospace;font-size:10.5px;padding:3px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text)">${pair}</span>`).join('')}
             </div>
@@ -914,15 +914,15 @@
     el.innerHTML = `
       <div class="settings-section settings-section--wide">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <h3 style="margin:0">Référentiel Crypto</h3>
-          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">Paramètres officiels — verrouillés</span>
+          <h3 style="margin:0">${t('set.cx.title')}</h3>
+          <span style="font-size:10px;background:var(--bg3);padding:3px 10px;border-radius:6px;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px">${t('set.cx.locked')}</span>
         </div>
-        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:18px">Plateformes crypto supportées et leurs frais types. Ces valeurs sont indicatives — ajuste les fees maker/taker dans tes comptes selon ton niveau VIP / Coinbase One / discounts BNB.</p>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:18px">${t('set.cx.desc')}</p>
         ${Object.entries(PLATFORMS).map(([k, p]) => renderPlatformCard(k, p)).join('')}
         <div style="background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:14px 16px;margin-top:6px">
           <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">ROADMAP</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.55">
-            Plateformes prévues : Bybit, Hyperliquid, OKX. Mode marge croisée pour Binance. Suivi des positions multi-paires depuis l'API exchange (autoimport).
+            ${t('set.cx.roadmap')}
           </div>
         </div>
       </div>`;
