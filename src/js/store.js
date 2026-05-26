@@ -853,7 +853,11 @@ const Store = (() => {
   function getPropFirmByKey(key) { return DEFAULT_PROP_FIRMS[key] || null; }
 
   // ── Mes comptes ───────────────────────────────────────────────────────────────
-  function getMyAccounts()          { return myAccounts.map(a => ({ ...a })); }
+  // v0.9.366 : getMyAccounts() ne renvoie QUE les comptes actifs (non archivés).
+  // Les comptes éval « passés » sont archivés → getArchivedAccounts(). getMyAccountById/
+  // ByName cherchent dans TOUS les comptes (résolution des trades historiques incluse).
+  function getMyAccounts()          { return myAccounts.filter(a => !a.archived).map(a => ({ ...a })); }
+  function getArchivedAccounts()    { return myAccounts.filter(a => a.archived).map(a => ({ ...a })); }
   function getMyAccountById(id)     { return myAccounts.find(a => a.id === id) || null; }
   function getMyAccountByName(name) { return myAccounts.find(a => a.name === name) || null; }
 
@@ -891,6 +895,13 @@ const Store = (() => {
     if (data.leverage       !== undefined) s.leverage       = _safeNum(data.leverage,       1, 125, 1);
     if (data.feeMakerPct    !== undefined) s.feeMakerPct    = _safeNum(data.feeMakerPct,    0,   5, 0.02);  // % en valeur (0.02 = 0.02%)
     if (data.feeTakerPct    !== undefined) s.feeTakerPct    = _safeNum(data.feeTakerPct,    0,   5, 0.05);
+    // v0.9.366 — cycle de vie éval → financé : un compte éval validé est archivé
+    // (`archived`/`passed`) et un compte financé est créé. Champs whitelistés ici pour
+    // survivre au re-sanitize au chargement localStorage.
+    if (data.archived       !== undefined) s.archived       = !!data.archived;
+    if (data.archivedAt     !== undefined) s.archivedAt     = _safeNum(data.archivedAt, 0, 1e15, 0);
+    if (data.passed         !== undefined) s.passed         = !!data.passed;
+    if (data.fundedFrom     !== undefined) s.fundedFrom     = _sanitizeAccountName(data.fundedFrom);
     return s;
   }
   function _isAccountNameTaken(name, excludeId) {
@@ -928,6 +939,57 @@ const Store = (() => {
     return myAccounts[i];
   }
   function deleteMyAccount(id) { myAccounts = myAccounts.filter(a => a.id !== id); _saveMyAccounts(); }
+
+  // ── Passage éval → financé (v0.9.366) ───────────────────────────────────────
+  // Quand un compte d'éval prop firm valide son objectif : on ARCHIVE l'éval (il garde
+  // son nom → ses trades restent attachés pour l'historique) et on crée le compte
+  // FINANCÉ correspondant (règles PA dérivées de la table prop firm), à 0 P&L (nom neuf
+  // = aucun trade lié), placé en tête (principal) et pré-sélectionné par défaut.
+  function convertEvalToFunded(id) {
+    const acc = myAccounts.find(a => a.id === id);
+    if (!acc)                  throw new Error('Compte introuvable.');
+    if (acc.archived)          throw new Error('Ce compte est déjà archivé.');
+    if (acc.status === 'funded') throw new Error('Ce compte est déjà financé.');
+
+    // Dérive les règles du compte financé (PA) depuis DEFAULT_PROP_FIRMS (match par capital).
+    const firm   = DEFAULT_PROP_FIRMS[acc.firmKey];
+    const preset = (firm && firm.accounts) ? firm.accounts.find(p => p.capital === acc.capital) : null;
+    const paContracts = (preset && preset.maxContractsPA) ? preset.maxContractsPA : acc.maxContracts;
+
+    // 1. Archive l'éval (nom conservé → trades historiques restent rattachés).
+    acc.archived   = true;
+    acc.archivedAt = Date.now();
+    acc.passed     = true;
+
+    // 2. Crée le compte financé — nom unique pour démarrer à 0 trade / 0 P&L.
+    //    Suffixe whitelist-safe (_sanitizeAccountName retire —, $, accents) → « - Funded ».
+    const base = _sanitizeAccountName((acc.name || 'Compte') + ' - Funded');
+    let name = base, n = 2;
+    while (_isAccountNameTaken(name)) { name = _sanitizeAccountName(base + ' ' + n); n++; }
+
+    const sanitized = _sanitizeAccount({
+      name,
+      accountType: acc.accountType || 'prop',
+      firmKey:     acc.firmKey,
+      status:      'funded',
+      capital:     acc.capital,
+      profitTarget: 0,                  // financé : plus d'objectif à passer
+      maxDrawdown:  acc.maxDrawdown,    // conservé (se fige côté prop firm)
+      dailyLossLimit: acc.dailyLossLimit,
+      maxContracts: paContracts,        // PA : souvent réduit (ex. Apex 50k : 6 → 4)
+      feePerSide:   acc.feePerSide,
+      pnlOffset:    0,                  // démarre à 0
+      fundedFrom:   acc.name,
+    });
+    const funded = { ...sanitized, id: 'acc-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6) };
+    myAccounts.unshift(funded);         // en tête = principal
+    _saveMyAccounts();
+
+    // 3. Devient le compte par défaut (pré-sélectionné dans le wizard / dashboard).
+    try { setLastWizardPrefs({ apex: funded.name }); } catch (e) {}
+    if (window.Analytics) Analytics.track('eval_converted_funded', { label: acc.firmKey || 'prop' });
+    return funded;
+  }
 
   // ── Spreads ───────────────────────────────────────────────────────────────────
   function getSpreads()          { return { ...spreads }; }
@@ -1090,7 +1152,9 @@ const Store = (() => {
 
   function canAddAccount() {
     const max = getLimits().maxAccounts;
-    return max === Infinity || myAccounts.length < max;
+    // v0.9.366 : seuls les comptes ACTIFS comptent dans le quota (un éval archivé/passé ne compte plus).
+    const activeCount = myAccounts.filter(a => !a.archived).length;
+    return max === Infinity || activeCount < max;
   }
 
   // ── Stats ─────────────────────────────────────────────────────────────────────
@@ -1190,7 +1254,7 @@ const Store = (() => {
     getSettings, getTradingTypes, updateSettings,
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,
-    getMyAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount,
+    getMyAccounts, getArchivedAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount, convertEvalToFunded,
     getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm,
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
     getPlanInfo, isPro, getTier, getTierBadge, getLimits, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,

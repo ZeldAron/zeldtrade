@@ -54,7 +54,8 @@
     const allOk     = targetMet && ddOk && dailyOk && daysOk && consOk;
 
     const statusHtml = allOk
-      ? `<div class="goal-status goal-status--pass">${t('goals.pass')}</div>`
+      ? `<div class="goal-status goal-status--pass">${t('goals.pass')}</div>
+         <button class="goal-convert-btn" data-convert-eval="${acc.id}">${t('goals.convert.cta') || '🎉 Passer en compte financé →'}</button>`
       : targetMet
         ? `<div class="goal-status goal-status--almost">${t('goals.almost')}</div>`
         : `<div class="goal-status goal-status--eval">${t('goals.eval.status')}</div>`;
@@ -324,5 +325,28 @@
 
     html += `<div class="page-section">` + achievementsCard(trades) + `</div>`;
     el.innerHTML = html;
+
+    // v0.9.366 — passage éval → financé (bouton de confirmation)
+    el.querySelectorAll('[data-convert-eval]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id  = btn.dataset.convertEval;
+        const acc = Store.getMyAccountById(id);
+        if (!acc) return;
+        const ok = await UI.confirmModal({
+          title:       t('goals.convert.title') || 'Passer en compte financé',
+          message:     (t('goals.convert.confirm') ||
+            'Objectif validé ! « %a » sera archivé dans tes comptes passés, et un nouveau compte financé démarrera à 0 P&L avec les règles du compte financé. Continuer ?').replace('%a', acc.name),
+          confirmText: t('goals.convert.ok') || 'Passer en financé',
+        });
+        if (!ok) return;
+        try {
+          const funded = Store.convertEvalToFunded(id);
+          UI.toast((t('goals.convert.done') || '🎉 Compte financé créé : %a').replace('%a', funded.name));
+          UI.renderGoals();
+        } catch (e) {
+          UI.toast((e && e.message) || 'Échec du passage en financé.', true);
+        }
+      });
+    });
   };
 })();

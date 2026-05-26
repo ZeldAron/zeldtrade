@@ -230,6 +230,33 @@
           </div>
         </div>`;
 
+      // v0.9.366 — section « Comptes passés » (évals validées, archivées, lecture seule).
+      // Leurs trades restent dans l'historique ; le P&L final est recalculé depuis ces trades.
+      const _archived = (Store.getArchivedAccounts && Store.getArchivedAccounts()) || [];
+      if (_archived.length) {
+        const _allTrades = Store.getTrades();
+        const _rows = _archived
+          .sort((a, b) => (b.archivedAt || 0) - (a.archivedAt || 0))
+          .map(a => {
+            const accTrades = _allTrades.filter(tr => tr.apex === a.name);
+            const st  = UI.statsForTrades ? UI.statsForTrades(accTrades) : { totalPnl: 0 };
+            const pnl = (st.totalPnl || 0) + (a.pnlOffset || 0);
+            const dt  = a.archivedAt ? new Date(a.archivedAt).toLocaleDateString('fr-FR') : '';
+            return `<div class="ma-row" style="opacity:.9">
+              <span class="ma-badge" style="background:var(--green-dim);color:var(--green)">✓ ${t('set.acc.passed.badge') || 'PASSÉ'}</span>
+              <span class="ma-name">${UI.escHtml(a.name)}</span>
+              <span class="ma-stat" style="color:var(--muted)">${dt}</span>
+              <span class="ma-stat" title="${t('set.acc.passed.pnl') || 'P&L final'}" style="color:${pnl >= 0 ? 'var(--green)' : 'var(--red)'}">${pnl >= 0 ? '+' : '-'}$${Math.abs(pnl).toLocaleString('fr-FR', { maximumFractionDigits: 0 })}</span>
+            </div>`;
+          }).join('');
+        el.insertAdjacentHTML('beforeend', `
+          <div class="settings-section settings-section--wide" style="margin-top:16px">
+            <h3 style="margin:0 0 4px">${t('set.acc.passed') || 'Comptes passés'}</h3>
+            <p style="font-size:11px;color:var(--muted);margin:0 0 12px">${t('set.acc.passed.hint') || 'Comptes d\'évaluation validés et archivés. Leurs trades restent dans ton historique.'}</p>
+            ${_rows}
+          </div>`);
+      }
+
       $('btnAddMyAccount').addEventListener('click', () => {
         if (!Store.canAddAccount()) {
           const isEn = i18n.getLang() === 'en';
