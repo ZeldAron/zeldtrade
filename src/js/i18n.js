@@ -9,6 +9,8 @@ const i18n = (() => {
       'nav.dashboard': 'Dashboard',
       'nav.analytics': 'Analytics',
       'nav.goals':     'Objectifs',
+      'nav.upgrade':   '✦ Voir les offres',
+      'search.ph':     'Rechercher...',
       'nav.calendar':  'Calendrier',
       'nav.outils':    'Outils',
       'nav.group.analysis': 'Analyse',
@@ -380,7 +382,7 @@ const i18n = (() => {
       'wiz.shots.extra.cta':        'Clique ou glisse une image',
       'wiz.shots.locked.title':     'Captures réservées aux plans Funded / Elite',
       'wiz.shots.locked.hint':      'Conserve jusqu\'à 3 captures par trade (preuve setup, gestion, exit) en passant Funded ou Elite.',
-      'wiz.shots.locked.cta':       'Voir les plans →',
+      'wiz.shots.locked.cta':       'Voir les offres →',
       'wiz.partials.title':         'Sorties partielles',
       'wiz.partials.hint':          '— retire des lots à différents prix',
       'wiz.partials.lots':          'Lots sortis',
@@ -510,6 +512,7 @@ const i18n = (() => {
       'goals.convert.confirm':  'Objectif validé ! « %a » sera archivé dans tes comptes passés, et un nouveau compte financé démarrera à 0 P&L avec les règles du compte financé (contrats réduits, drawdown figé, plus de profit target). Continuer ?',
       'goals.convert.ok':       'Passer en financé',
       'goals.convert.done':     '🎉 Compte financé créé : %a — il est maintenant ton compte principal.',
+      'goals.notset':           '— non défini',
       'goals.achievements':     'Récompenses',
       'goals.obtained':         'obtenus',
       'goals.floor.current':    'Plancher actuel',
@@ -774,6 +777,8 @@ const i18n = (() => {
       'nav.dashboard': 'Dashboard',
       'nav.analytics': 'Analytics',
       'nav.goals':     'Goals',
+      'nav.upgrade':   '✦ See plans',
+      'search.ph':     'Search...',
       'nav.calendar':  'Calendar',
       'nav.outils':    'Tools',
       'nav.group.analysis': 'Analysis',
@@ -1274,6 +1279,7 @@ const i18n = (() => {
       'goals.convert.confirm':  'Objective passed! "%a" will be archived in your past accounts, and a new funded account will start at 0 P&L with funded rules (reduced contracts, frozen drawdown, no profit target). Continue?',
       'goals.convert.ok':       'Switch to funded',
       'goals.convert.done':     '🎉 Funded account created: %a — it is now your main account.',
+      'goals.notset':           '— not set',
       'goals.achievements':     'Achievements',
       'goals.obtained':         'achieved',
       'goals.floor.current':    'Current floor',
@@ -1578,6 +1584,10 @@ const i18n = (() => {
         el.textContent = t(key);
       }
     });
+    // v0.9.368 : placeholders + aria-labels traduits aussi (avant : texte seulement
+    // → le placeholder « Rechercher… » et certains aria restaient figés en FR).
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.setAttribute('placeholder', t(el.dataset.i18nPh)); });
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
     // v0.9.179 (M10 fix) : adapter les raccourcis clavier à l'OS de l'user.
     // ⌘ (Mac) → Ctrl (Windows/Linux). Re-exécute après chaque apply pour
     // couvrir les contenus rendus par data-i18n + ceux du HTML statique.
