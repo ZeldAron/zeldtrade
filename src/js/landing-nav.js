@@ -64,14 +64,25 @@
   const HIDE_AFTER = 240;   // ne jamais cacher tant qu'on est dans les 240 1ers px
   const TOP_ZONE   = 90;    // souris à ≤90px du haut → réaffiche
   const HIDE_DELTA = 6;     // il faut descendre franchement (>6px) pour cacher (anti-jitter)
-  let lastY  = window.scrollY || 0;
+
+  // Lecture robuste de la position de scroll : selon le navigateur / le overflow-x:hidden
+  // sur <html>, le scroll peut être porté par documentElement OU body → on prend le max.
+  function getY() {
+    return Math.max(
+      window.pageYOffset || 0,
+      document.documentElement ? document.documentElement.scrollTop : 0,
+      document.body ? document.body.scrollTop : 0
+    );
+  }
+
+  let lastY  = getY();
   let ticking = false;
 
   function show() { nav.classList.remove('nav--hidden'); }
   function hide() { nav.classList.add('nav--hidden'); }
 
   function onScroll() {
-    const y = Math.max(0, window.scrollY || 0);
+    const y = Math.max(0, getY());
     const menuOpen = navToggle && navToggle.getAttribute('aria-expanded') === 'true';
     if (y <= HIDE_AFTER || menuOpen || y < lastY) {
       show();                              // haut de page, menu ouvert, OU on remonte (dès 1px) → visible
