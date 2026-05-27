@@ -117,6 +117,23 @@
   nav.addEventListener('focusin', show);
 })();
 
+// ─── BANDEAU CODE PROMO — copie au clic (v0.9.375) ──────────────────────────
+(function () {
+  'use strict';
+  const btn = document.getElementById('lpPromoCode');
+  if (!btn) return;
+  const label = btn.querySelector('.lp-promo-copy');
+  btn.addEventListener('click', async function () {
+    const code = btn.dataset.code || '';
+    try { await navigator.clipboard.writeText(code); } catch (e) { /* clipboard indispo — fail-soft */ }
+    if (!label) return;
+    const lang = localStorage.getItem('zt_lang') || (navigator.language || '').slice(0, 2) || 'fr';
+    const orig = label.textContent;
+    label.textContent = lang === 'en' ? 'copied ✓' : 'copié ✓';
+    setTimeout(function () { label.textContent = orig; }, 1600);
+  });
+})();
+
 // ─── CONFIRMATION SUPPRESSION DE COMPTE (v0.9.263) ──────────────────────────
 // Après suppression du compte côté app, redirection vers /?deleted=1 → bannière
 // de confirmation (sinon l'user était silencieusement renvoyé à l'accueil).

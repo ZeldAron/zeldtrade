@@ -8,9 +8,9 @@
 
   <!-- Favicon (v0.9.337) : .ico = repli raster que Google Search/anciens navigateurs
        indexent (sinon ils affichent le globe générique) ; SVG pour le moderne ; PNG iOS -->
-  <link rel="icon" href="/assets/favicon.ico?v=0.9.374" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.374">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.374">
+  <link rel="icon" href="/assets/favicon.ico?v=0.9.375" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.375">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.375">
 
   <!-- Google Search Console verification -->
   <meta name="google-site-verification" content="IATcfjbZzBPV-3C6XqrgB860ldwwGT5tHFV_L9-z_q4">
@@ -26,7 +26,7 @@
   <meta property="og:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta property="og:description" content="Journal de trading français spécialisé prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips) + crypto (Binance, Coinbase) et fonds propres. IA Vision, multi-comptes, RGPD natif.">
   <meta property="og:url" content="https://zeldtrade.com/">
-  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.374">
+  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.375">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -34,7 +34,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta name="twitter:description" content="Spécialisé prop firms (Apex, FTMO, Topstep, Lucid, FP) + crypto et fonds propres. IA Vision, multi-comptes.">
-  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.374">
+  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.375">
   <meta name="twitter:image:alt" content="ZeldTrade — Journal de trading prop firm avec IA Vision">
 
   <!-- SEO -->
@@ -259,6 +259,30 @@
        et réapparaît au scroll vers le haut OU quand la souris touche le haut de l'écran. */
     .nav.nav--hidden { transform: translateY(-100%); }
     @media (prefers-reduced-motion: reduce) { .nav { transition: none; } }
+    /* v0.9.375 : bandeau offre de lancement (code promo) */
+    .lp-promo-bar {
+      display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+      gap: 6px 10px; text-align: center;
+      padding: 10px 18px;
+      background: linear-gradient(90deg, rgba(124,58,237,0.18), rgba(244,114,182,0.18));
+      border-bottom: 1px solid rgba(244,114,182,0.30);
+      font-size: 13.5px; font-weight: 600; color: var(--text);
+    }
+    .lp-promo-code {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: 'Geist Mono', ui-monospace, monospace; font-weight: 800; letter-spacing: 0.06em;
+      background: rgba(255,255,255,0.06); color: #f472b6;
+      border: 1px dashed rgba(244,114,182,0.6); border-radius: 8px;
+      padding: 4px 12px; cursor: pointer; transition: background .15s, transform .1s;
+    }
+    .lp-promo-code:hover { background: rgba(244,114,182,0.14); }
+    .lp-promo-code:active { transform: scale(0.97); }
+    .lp-promo-copy {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--muted); border-left: 1px solid rgba(255,255,255,0.12); padding-left: 8px;
+    }
+    @media (max-width: 560px) { .lp-promo-bar { font-size: 12px; padding: 9px 12px; } }
     .nav-inner {
       max-width: 920px;           /* v0.9.326 : alignée sur la largeur du hero (920px) → plus de nav décalée à droite en EN. Le FR tient grâce au gap resserré + nowrap. */
       margin: 0 auto;
@@ -2682,6 +2706,12 @@
     </div>
   </nav>
 
+  <!-- Bandeau offre de lancement (code promo) -->
+  <div class="lp-promo-bar">
+    <span data-i18n="promo.text">🔥 Lancement : −40% sur Funded &amp; Elite + 1 semaine d'essai —</span>
+    <button class="lp-promo-code" id="lpPromoCode" type="button" data-code="ZELD40" title="Copier le code">ZELD40 <span class="lp-promo-copy" data-i18n="promo.copy">copier</span></button>
+  </div>
+
   <!-- ─── Hero v2 (v0.9.204) ──────────────────────────────────────────── -->
   <header class="hero">
     <div class="hero-badge"><span class="hero-badge-dot"></span> <span data-i18n="hero.badge">Bêta ouverte</span></div>
@@ -3794,7 +3824,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span id="ztFooterVer" style="color: var(--accent-l)">v0.9.374</span>
+      © 2026 ZeldTrade — <span id="ztFooterVer" style="color: var(--accent-l)">v0.9.375</span>
     </div>
   </footer>
 
@@ -3812,12 +3842,12 @@
   <!-- Script externe car la CSP server-side bloque les scripts inline. -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
-  <script src="js/landing-contact.js?v=0.9.374"></script>
-  <script src="js/landing-pricing.js?v=0.9.374"></script>
-  <script src="js/landing-animations.js?v=0.9.374" defer></script>
-  <script src="js/landing-nav.js?v=0.9.374" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.374" defer></script>
-  <script src="js/landing-testimonials.js?v=0.9.374" defer></script>
+  <script src="js/landing-contact.js?v=0.9.375"></script>
+  <script src="js/landing-pricing.js?v=0.9.375"></script>
+  <script src="js/landing-animations.js?v=0.9.375" defer></script>
+  <script src="js/landing-nav.js?v=0.9.375" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.375" defer></script>
+  <script src="js/landing-testimonials.js?v=0.9.375" defer></script>
 
 </body>
 </html>
