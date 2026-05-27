@@ -394,6 +394,8 @@
           ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' '+(s.total > 1 ? t('ui.trades') : t('ui.trade')), s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
           ${kpiCard(t('dash.win.rate'), s.winRate!==null ? s.winRate.toFixed(0)+'%' : '—', s.wins+'W · '+s.losses+'L', (s.winRate||0)>=50?'var(--green)':'var(--red)')}
           ${kpiCard(t('dash.avg.rr'), s.avgRR.toFixed(2)+'R', t('dash.group'), s.avgRR>=1.5?'var(--green)':'var(--amber)')}
+          ${kpiCard(t('dash.avg.win'), '+$'+s.avgWin.toFixed(0), s.winN+' W', 'var(--green)')}
+          ${kpiCard(t('dash.avg.loss'), '-$'+s.avgLoss.toFixed(0), s.lossN+' L', 'var(--red)')}
           ${kpiCard(t('dash.open'), s.open.toString(), t('dash.in.progress'), 'var(--blue)')}
         </div>
         <div class="chart-card"><div class="chart-area"><canvas id="pnlChart"></canvas></div><div id="pnlStats"></div></div>
@@ -403,7 +405,7 @@
     } else {
       // Vue globale : comptes d'abord, puis courbe
       if (accs.length) {
-        body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.accounts.grp')}</span><span class="page-section-count">${accs.length} compte${accs.length > 1 ? 's' : ''}</span></div><div class="dash-group-accounts">`;
+        body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.accounts.grp')}</span><span class="page-section-count">${accs.length} ${accs.length > 1 ? t('ui.accounts') : t('ui.account')}</span></div><div class="dash-group-accounts">`;
         accs.forEach(acc => {
           body += accountCard(acc, all.filter(tr => tr.apex === acc.name));
         });
@@ -414,6 +416,8 @@
           ${kpiCard(t('ui.pnl.net'), (s.totalPnL>=0?'+':'-')+'$'+Math.abs(s.totalPnL).toFixed(0), s.total+' '+(s.total > 1 ? t('ui.trades') : t('ui.trade')), s.totalPnL>=0?'var(--green)':'var(--red)', _sparkline(_cumPnlSeries(trades), s.totalPnL>=0?'var(--green)':'var(--red)'))}
           ${kpiCard(t('dash.win.rate'), s.winRate!==null ? s.winRate.toFixed(0)+'%' : '—', s.wins+'W · '+s.losses+'L', (s.winRate||0)>=50?'var(--green)':'var(--red)')}
           ${kpiCard(t('dash.avg.rr'), s.avgRR.toFixed(2)+'R', t('dash.all.trades'), s.avgRR>=1.5?'var(--green)':'var(--amber)')}
+          ${kpiCard(t('dash.avg.win'), '+$'+s.avgWin.toFixed(0), s.winN+' W', 'var(--green)')}
+          ${kpiCard(t('dash.avg.loss'), '-$'+s.avgLoss.toFixed(0), s.lossN+' L', 'var(--red)')}
           ${kpiCard(t('dash.open'), s.open.toString(), t('dash.in.progress'), 'var(--blue)')}
         </div>
         <div class="chart-card"><div class="chart-area"><canvas id="pnlChart"></canvas></div><div id="pnlStats"></div></div>

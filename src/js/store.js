@@ -1070,6 +1070,27 @@ const Store = (() => {
   };
   function getTierBadge() { return TIER_BADGE[getTier()] || TIER_BADGE.trader; }
   function getLimits()   { return TIER_LIMITS[getTier()] || TIER_LIMITS.trader; }
+  // v0.9.376 (TIER-RECAP) : diff des limites + features entre 2 paliers → liste de ce
+  // qu'on gagne / perd au changement de palier. Données seulement (l'UI localise via i18n).
+  function getTierRecap(from, to) {
+    const lf = TIER_LIMITS[from] || TIER_LIMITS.trader;
+    const lt = TIER_LIMITS[to]   || TIER_LIMITS.trader;
+    const rank = { trader: 0, funded: 1, elite: 2, beta: 2 };
+    const upgrade = (rank[to] || 0) >= (rank[from] || 0);
+    const gained = [], lost = [];
+    const fmt = n => n === Infinity ? '∞' : String(n);
+    const limit = (k, vf, vt) => { if (vt !== vf) (vt > vf ? gained : lost).push({ k, from: fmt(vf), to: fmt(vt) }); };
+    limit('accounts', lf.maxAccounts,    lt.maxAccounts);
+    limit('ai',       lf.maxAiPerDay,    lt.maxAiPerDay);
+    limit('shots',    lf.maxScreenshots, lt.maxScreenshots);
+    Object.keys(TIER_FEATURES).forEach(feat => {
+      const had = TIER_FEATURES[feat].includes(from);
+      const has = TIER_FEATURES[feat].includes(to);
+      if (has && !had) gained.push({ k: feat });
+      if (!has && had) lost.push({ k: feat });
+    });
+    return { upgrade, gained, lost };
+  }
   // canUseFeature('groups') → true/false selon le tier de l'user
   function canUseFeature(feat) {
     const allowed = TIER_FEATURES[feat];
@@ -1257,7 +1278,7 @@ const Store = (() => {
     getMyAccounts, getArchivedAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount, convertEvalToFunded,
     getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm,
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
-    getPlanInfo, isPro, getTier, getTierBadge, getLimits, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,
+    getPlanInfo, isPro, getTier, getTierBadge, getLimits, getTierRecap, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,
     isPlanLoaded: () => _planLoaded,
     activatePro, canAnalyzeToday, refreshAiUsage, canAddAccount,
     getLastWizardPrefs, setLastWizardPrefs,
