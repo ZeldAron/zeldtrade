@@ -614,10 +614,10 @@ const Changelog = (() => {
       date: '2026-05-20',
       time: '16:30',
       tags: ['privacy'],
-      title: 'CGU / CGV mises à jour (abonnements + garantie 30 jours)',
-      titleEn: 'Terms updated (subscriptions + 30-day guarantee)',
+      title: 'CGU / CGV mises à jour (abonnements)',
+      titleEn: 'Terms updated (subscriptions)',
       items: [
-        { type: 'privacy', text: 'Les Conditions Générales (CGU/CGV) ont été mises à jour : offres actuelles (Trader / Funded / Elite), paiement par abonnement Stripe, renouvellement & résiliation en 1 clic, et **garantie 30 jours satisfait ou remboursé** sur la première souscription Pro.', textEn: 'Terms updated: current plans (Trader / Funded / Elite), Stripe subscription billing, renewal & 1-click cancellation, and **30-day money-back guarantee** on first Pro subscription.' },
+        { type: 'privacy', text: 'Les Conditions Générales (CGU/CGV) ont été mises à jour : offres actuelles (Trader / Funded / Elite), paiement par abonnement Stripe, et renouvellement & résiliation en 1 clic.', textEn: 'Terms updated: current plans (Trader / Funded / Elite), Stripe subscription billing, and renewal & 1-click cancellation.' },
       ],
     },
     {
@@ -859,7 +859,7 @@ const Changelog = (() => {
         { type: 'ux', text: 'Features reformulées en **bénéfices** plutôt qu\'en listes plates : "1 trade saisi → répliqué sur tes 10 comptes en 1 sauvegarde", "IA détecte entry/SL/TP depuis ton screenshot TradingView", "Trailing drawdown EOD précis — jamais surpris par un breach", etc.', textEn: 'Features rewritten as **benefits** instead of flat lists.' },
         { type: 'feature', text: 'Nouveau **toggle Mensuel / Annuel** sur la page Offres et la section Tarifs landing : Funded à 149 €/an (économie 30 €), Elite à 299 €/an (économie 61 €).', textEn: 'New **Monthly / Yearly toggle**: Funded €149/year (save €30), Elite €299/year (save €61).' },
         { type: 'feature', text: 'Bandeau **5 dernières places Founding** sur la page Offres et la section Tarifs landing avec CTA "Candidater" → ouvre le formulaire de contact.', textEn: 'Banner **Last 5 Founding seats** with "Apply" CTA opening the contact form.' },
-        { type: 'feature', text: 'Bandeau de confiance sous les 3 cartes : "Annulation 1-clic · Garantie 30 jours satisfait ou remboursé · Export complet RGPD · Aucune CB requise".', textEn: 'Trust banner under the 3 cards: "1-click cancellation · 30-day money-back guarantee · Full GDPR export · No credit card needed".' },
+        { type: 'feature', text: 'Bandeau de confiance sous les 3 cartes : "Annulation 1-clic · 7 jours d\'essai gratuit · Export complet RGPD · Aucune CB requise".', textEn: 'Trust banner under the 3 cards: "1-click cancellation · 7-day free trial · Full GDPR export · No credit card needed".' },
         { type: 'ux', text: 'Tagline "pour qui" sous chaque plan + prix per-day affiché ("soit 0,50 €/jour" sous Funded, "soit 1 €/jour" sous Elite).', textEn: 'Tagline "for who" under each plan + per-day price displayed.' },
         { type: 'ux', text: 'CTAs orientés action : "Commencer gratuitement" / "Tester Funded 14 jours" / "Booster avec Elite".', textEn: 'Action-oriented CTAs.' },
         { type: 'ux', text: '3 nouvelles FAQ sur la page Offres : "Et si je veux arrêter ?", "Funded vs Elite ?", "Comment passer de Funded à Elite ?".', textEn: '3 new FAQ items on the Offers page.' },
