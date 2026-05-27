@@ -777,7 +777,7 @@ const i18n = (() => {
       'off.year':              'an',
       // Lot 4 — Trust & risk reversal
       'off.trust.cancel':      'Annulation 1-clic',
-      'off.trust.guarantee':   'Garantie 30 jours satisfait ou remboursé',
+      'off.trust.trial':       '7 jours d\'essai gratuit',
       'off.trust.export':      'Export complet RGPD à tout moment',
       'off.trust.nocb':        'Aucune CB requise pour démarrer',
       // Founding scarcity banner
@@ -1617,7 +1617,7 @@ const i18n = (() => {
       'off.year':              'year',
       // Lot 4 — Trust & risk reversal
       'off.trust.cancel':      '1-click cancellation',
-      'off.trust.guarantee':   '30-day money-back guarantee',
+      'off.trust.trial':       '7-day free trial',
       'off.trust.export':      'Full GDPR export anytime',
       'off.trust.nocb':        'No credit card needed to start',
       // Founding scarcity banner

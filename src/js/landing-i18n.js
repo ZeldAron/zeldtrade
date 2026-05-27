@@ -370,7 +370,7 @@
     'pr.elite.f6':       { fr: 'Tout le plan Funded inclus', en: 'Everything in the Funded plan included' },
     'pr.elite.cta':      { fr: 'Gratuit en bêta · puis 29,99 €/mois →', en: 'Free in beta · then €29.99/mo →' },
     'pr.trust.1':        { fr: '✓ Annulation 1-clic', en: '✓ 1-click cancellation' },
-    'pr.trust.2':        { fr: '✓ Garantie 30 jours satisfait ou remboursé', en: '✓ 30-day money-back guarantee' },
+    'pr.trust.2':        { fr: '✓ 7 jours d\'essai gratuit', en: '✓ 7-day free trial' },
     'pr.trust.3':        { fr: '✓ Export complet RGPD à tout moment', en: '✓ Full GDPR export at any time' },
     'pr.trust.4':        { fr: '✓ Aucune CB requise pour démarrer', en: '✓ No card required to start' },
 

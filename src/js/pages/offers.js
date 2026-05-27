@@ -184,7 +184,7 @@ UI.renderOffers = function () {
   const trustBanner = `
     <div class="trust-banner">
       <span class="trust-item">✓ ${t('off.trust.cancel')}</span>
-      <span class="trust-item">✓ ${t('off.trust.guarantee')}</span>
+      <span class="trust-item">✓ ${t('off.trust.trial')}</span>
       <span class="trust-item">✓ ${t('off.trust.export')}</span>
       <span class="trust-item">✓ ${t('off.trust.nocb')}</span>
     </div>`;
