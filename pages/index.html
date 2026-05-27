@@ -8,9 +8,9 @@
 
   <!-- Favicon (v0.9.337) : .ico = repli raster que Google Search/anciens navigateurs
        indexent (sinon ils affichent le globe générique) ; SVG pour le moderne ; PNG iOS -->
-  <link rel="icon" href="/assets/favicon.ico?v=0.9.373" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.373">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.373">
+  <link rel="icon" href="/assets/favicon.ico?v=0.9.374" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.374">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.374">
 
   <!-- Google Search Console verification -->
   <meta name="google-site-verification" content="IATcfjbZzBPV-3C6XqrgB860ldwwGT5tHFV_L9-z_q4">
@@ -26,7 +26,7 @@
   <meta property="og:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta property="og:description" content="Journal de trading français spécialisé prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips) + crypto (Binance, Coinbase) et fonds propres. IA Vision, multi-comptes, RGPD natif.">
   <meta property="og:url" content="https://zeldtrade.com/">
-  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.373">
+  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.374">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -34,7 +34,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta name="twitter:description" content="Spécialisé prop firms (Apex, FTMO, Topstep, Lucid, FP) + crypto et fonds propres. IA Vision, multi-comptes.">
-  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.373">
+  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.374">
   <meta name="twitter:image:alt" content="ZeldTrade — Journal de trading prop firm avec IA Vision">
 
   <!-- SEO -->
@@ -2208,6 +2208,27 @@
       margin-bottom: 14px;
       min-height: 18px;
     }
+    /* v0.9.374 : offre de lancement (−40% + essai) */
+    .pricing-launch {
+      display: inline-block;
+      background: rgba(244,114,182,0.12);
+      color: #f472b6;
+      border: 1px solid rgba(244,114,182,0.35);
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      padding: 3px 11px;
+      margin-bottom: 10px;
+    }
+    .price-old {
+      color: var(--muted);
+      text-decoration: line-through;
+      font-weight: 500;
+      font-size: 0.62em;
+      margin-right: 6px;
+    }
+    .pricing-card-perday [data-i18n="pr.trial"] { color: #4ade80; font-weight: 600; }
     /* Push CTA to bottom of each card so they align horizontally */
     .pricing-cta { margin-top: auto; }
     .pricing-features { margin-bottom: 16px; }
@@ -3638,13 +3659,13 @@
         <div class="pricing-badge-row"><span class="pricing-badge" data-i18n="pr.funded.badge">✦ Le plus populaire</span></div>
         <div class="pricing-card-name">Funded</div>
         <p class="pricing-card-tagline" data-i18n="pr.funded.tagline">Pour le trader qui pilote ses 2 comptes groupés.</p>
+        <div class="pricing-launch" data-i18n="pr.launch">🔥 Offre de lancement · −40%</div>
         <div class="pricing-card-price">
-          <span data-lp-price-monthly>14,99 €<span class="price-suffix" data-i18n="pr.suffix.month">/ mois</span></span>
-          <span data-lp-price-yearly style="display:none">149 €<span class="price-suffix" data-i18n="pr.suffix.year">/ an</span></span>
+          <span data-lp-price-monthly><s class="price-old">14,99 €</s> 8,99 €<span class="price-suffix" data-i18n="pr.suffix.month">/ mois</span></span>
+          <span data-lp-price-yearly style="display:none"><s class="price-old">149 €</s> 89 €<span class="price-suffix" data-i18n="pr.suffix.year">/ an</span></span>
         </div>
         <div class="pricing-card-perday">
-          <span data-lp-price-monthly data-i18n-html="pr.funded.perday.m">soit 0,50 €/jour <strong style="color:#4ade80">— 50 % moins cher que Tradervue</strong></span>
-          <span data-lp-price-yearly style="display:none;color:#4ade80;font-weight:600" data-i18n="pr.funded.perday.y">12,42 €/mois — économie 30 €</span>
+          <span data-i18n="pr.trial">🎁 1 semaine d'essai gratuite</span>
         </div>
         <ul class="pricing-features">
           <li data-i18n="pr.funded.f1">2 comptes (prop / crypto / personnel), groupables</li>
@@ -3663,13 +3684,13 @@
         <div class="pricing-badge-row"><span class="pricing-badge-elite" data-i18n="pr.elite.badge">✦ Premium</span></div>
         <div class="pricing-card-name">Elite</div>
         <p class="pricing-card-tagline" data-i18n="pr.elite.tagline">Pour les power users multi-comptes ou les coachs.</p>
+        <div class="pricing-launch" data-i18n="pr.launch">🔥 Offre de lancement · −40%</div>
         <div class="pricing-card-price">
-          <span data-lp-price-monthly>29,99 €<span class="price-suffix" data-i18n="pr.suffix.month">/ mois</span></span>
-          <span data-lp-price-yearly style="display:none">299 €<span class="price-suffix" data-i18n="pr.suffix.year">/ an</span></span>
+          <span data-lp-price-monthly><s class="price-old">29,99 €</s> 17,99 €<span class="price-suffix" data-i18n="pr.suffix.month">/ mois</span></span>
+          <span data-lp-price-yearly style="display:none"><s class="price-old">299 €</s> 179 €<span class="price-suffix" data-i18n="pr.suffix.year">/ an</span></span>
         </div>
         <div class="pricing-card-perday">
-          <span data-lp-price-monthly data-i18n="pr.elite.perday.m">soit 1 €/jour</span>
-          <span data-lp-price-yearly style="display:none;color:#4ade80;font-weight:600" data-i18n="pr.elite.perday.y">24,92 €/mois — économie 61 €</span>
+          <span data-i18n="pr.trial">🎁 1 semaine d'essai gratuite</span>
         </div>
         <ul class="pricing-features">
           <li data-i18n="pr.elite.f1">Comptes illimités — multi-funded ou portefeuille coach</li>
@@ -3773,7 +3794,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span id="ztFooterVer" style="color: var(--accent-l)">v0.9.373</span>
+      © 2026 ZeldTrade — <span id="ztFooterVer" style="color: var(--accent-l)">v0.9.374</span>
     </div>
   </footer>
 
@@ -3791,12 +3812,12 @@
   <!-- Script externe car la CSP server-side bloque les scripts inline. -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
-  <script src="js/landing-contact.js?v=0.9.373"></script>
-  <script src="js/landing-pricing.js?v=0.9.373"></script>
-  <script src="js/landing-animations.js?v=0.9.373" defer></script>
-  <script src="js/landing-nav.js?v=0.9.373" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.373" defer></script>
-  <script src="js/landing-testimonials.js?v=0.9.373" defer></script>
+  <script src="js/landing-contact.js?v=0.9.374"></script>
+  <script src="js/landing-pricing.js?v=0.9.374"></script>
+  <script src="js/landing-animations.js?v=0.9.374" defer></script>
+  <script src="js/landing-nav.js?v=0.9.374" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.374" defer></script>
+  <script src="js/landing-testimonials.js?v=0.9.374" defer></script>
 
 </body>
 </html>

@@ -330,6 +330,8 @@
     'pr.billing.yearly':  { fr: 'Annuel <span class="lp-billing-save">−2 mois</span>', en: 'Yearly <span class="lp-billing-save">−2 months</span>' },
     'pr.suffix.month':  { fr: '/ mois', en: '/ month' },
     'pr.suffix.year':   { fr: '/ an', en: '/ year' },
+    'pr.launch':        { fr: '🔥 Offre de lancement · −40%', en: '🔥 Launch offer · −40%' },
+    'pr.trial':         { fr: '🎁 1 semaine d\'essai gratuite', en: '🎁 1-week free trial' },
     'pr.trader.badge':   { fr: '✓ Gratuit à vie', en: '✓ Free for life' },
     'pr.trader.tagline': { fr: 'Pour découvrir sans engagement.', en: 'To explore with no commitment.' },
     'pr.trader.suffix':  { fr: '/ pour toujours', en: '/ forever' },
