@@ -134,13 +134,13 @@ UI.renderOffers = function () {
       <div class="pricing-badge-row"><span class="pricing-badge">✦ ${isBeta ? 'Bêta' : t('off.popular')}</span></div>
       <div class="pricing-card-name">Funded</div>
       <p class="pricing-card-tagline">${t('off.funded.tag')}</p>
+      <div class="pricing-launch">${t('off.launch')}</div>
       <div class="pricing-card-price">
-        <span data-price-monthly>14,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
+        <span data-price-monthly><s class="price-old">14,99 €</s> 8,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
         <span data-price-yearly style="display:none">${t('off.funded.yearly')}</span>
       </div>
       <div class="pricing-card-perday">
-        <span data-price-monthly>${t('off.funded.perday')}</span>
-        <span data-price-yearly style="display:none;color:#4ade80;font-weight:600">${t('off.funded.yearly.save')}</span>
+        <span style="color:#4ade80;font-weight:600">${t('off.trial')}</span>
       </div>
       <ul class="pricing-features">
         <li>${t('off.funded.f1')}</li>
@@ -161,13 +161,13 @@ UI.renderOffers = function () {
       <div class="pricing-badge-row"><span class="pricing-badge-elite">✦ Premium</span></div>
       <div class="pricing-card-name">Elite</div>
       <p class="pricing-card-tagline">${t('off.elite.tag')}</p>
+      <div class="pricing-launch">${t('off.launch')}</div>
       <div class="pricing-card-price">
-        <span data-price-monthly>29,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
+        <span data-price-monthly><s class="price-old">29,99 €</s> 17,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
         <span data-price-yearly style="display:none">${t('off.elite.yearly')}</span>
       </div>
       <div class="pricing-card-perday">
-        <span data-price-monthly>${t('off.elite.perday')}</span>
-        <span data-price-yearly style="display:none;color:#4ade80;font-weight:600">${t('off.elite.yearly.save')}</span>
+        <span style="color:#4ade80;font-weight:600">${t('off.trial')}</span>
       </div>
       <ul class="pricing-features">
         <li>${t('off.elite.f1')}</li>
