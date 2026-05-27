@@ -54,6 +54,8 @@ const UI = (() => {
     // compte comme un gain. Cohérent avec ce que voit le user dans son P&L réel.
     // Trades `open` exclus (résultat non final). manualPnl override pris en compte.
     let closedCount = 0, winsCount = 0, totalPnL = 0, rrSum = 0;
+    // v0.9.376 : gain moyen (avg win) + risque moyen (avg loss) sur les trades clôturés.
+    let winSum = 0, winN = 0, lossSum = 0, lossN = 0;
     trades.forEach(t => {
       const c = Calc.trade(t);
       if (c.invalid) return;
@@ -62,7 +64,8 @@ const UI = (() => {
       if (t.outcome === 'win' || t.outcome === 'loss' || t.outcome === 'be') {
         if (!c.estimated) {
           closedCount++;
-          if (Number.isFinite(c.netPnl) && c.netPnl > 0) winsCount++;
+          if (Number.isFinite(c.netPnl) && c.netPnl > 0)      { winsCount++; winSum += c.netPnl; winN++; }
+          else if (Number.isFinite(c.netPnl) && c.netPnl < 0) { lossSum += Math.abs(c.netPnl); lossN++; }
         }
       }
     });
@@ -70,6 +73,9 @@ const UI = (() => {
       totalPnL,
       winRate: closedCount ? (winsCount / closedCount) * 100 : null,
       avgRR:   trades.length ? rrSum / trades.length : 0,
+      avgWin:  winN  ? winSum  / winN  : 0,
+      avgLoss: lossN ? lossSum / lossN : 0,
+      winN, lossN,
       total:   trades.length,
       open:    trades.filter(t => t.outcome === 'open').length,
       wins:    winsCount,

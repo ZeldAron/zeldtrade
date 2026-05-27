@@ -296,6 +296,57 @@ function initApp() {
     if (currentPage === 'settings')  UI.initSettings();
   });
 
+  // ── TIER-RECAP (v0.9.376) — récap features gagnées/perdues à un VRAI changement de palier ──
+  // Déclenché sur store:synced (palier confirmé, pas le défaut transitoire) en comparant au
+  // dernier palier vu (localStorage par-uid). Couvre l'upgrade Stripe (resync → synced).
+  (function () {
+    const TIER_NAME = { trader: 'Trader', funded: 'Funded', elite: 'Elite', beta: 'Bêta Testeur' };
+    const FEAT_KEY = {
+      accounts: 'tier.feat.accounts', ai: 'tier.feat.ai', shots: 'tier.feat.shots',
+      groups: 'tier.feat.groups', exportPdf: 'tier.feat.exportPdf', exportCsv: 'tier.feat.exportCsv',
+      prioritySupport: 'tier.feat.prioritySupport', betaFeatures: 'tier.feat.betaFeatures',
+      decisiveVote: 'tier.feat.decisiveVote', partials: 'tier.feat.partials',
+    };
+    function lbl(x) {
+      let s = i18n.t(FEAT_KEY[x.k] || x.k);
+      if (x.to !== undefined) s = s.replace('%v', x.to);
+      return s;
+    }
+    function showRecap(from, to) {
+      const r = Store.getTierRecap(from, to);
+      if (!r.gained.length && !r.lost.length) return;
+      const title = (r.upgrade ? i18n.t('tier.recap.up') : i18n.t('tier.recap.down')).replace('%p', TIER_NAME[to] || to);
+      const li = (arr, color, sym) => arr.map(x => `<li style="color:${color}">${sym} ${UI.escHtml(lbl(x))}</li>`).join('');
+      const ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:10001;display:flex;align-items:center;justify-content:center;padding:24px';
+      const card = document.createElement('div');
+      card.style.cssText = 'background:var(--surface,#161b22);border:1px solid var(--border,#30363d);border-radius:14px;padding:26px;max-width:460px;width:100%;color:var(--text,#e6edf3);box-shadow:0 20px 50px rgba(0,0,0,0.5)';
+      card.innerHTML =
+        `<h3 style="margin:0 0 16px;font-size:18px;font-weight:700">${UI.escHtml(title)}</h3>` +
+        (r.gained.length ? `<div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--green);font-weight:700;margin-bottom:6px">${i18n.t('tier.recap.gain')}</div><ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.7">${li(r.gained, 'var(--green)', '✓')}</ul>` : '') +
+        (r.lost.length ? `<div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--red);font-weight:700;margin-bottom:6px">${i18n.t('tier.recap.lost')}</div><ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.7">${li(r.lost, 'var(--red)', '✗')}</ul>` : '') +
+        `<button id="tierRecapOk" class="btn-primary" style="width:100%">${i18n.t('tier.recap.ok')}</button>`;
+      ov.appendChild(card);
+      document.body.appendChild(ov);
+      const close = () => ov.remove();
+      card.querySelector('#tierRecapOk').addEventListener('click', close);
+      ov.addEventListener('click', e => { if (e.target === ov) close(); });
+    }
+    window.addEventListener('store:synced', () => {
+      try {
+        if (Store.isPlanLoaded && !Store.isPlanLoaded()) return;
+        const uid = (firebase.auth().currentUser || {}).uid;
+        if (!uid) return;
+        const key = 'zt_tier_' + uid;
+        const cur = Store.getTier();
+        let prev = null;
+        try { prev = localStorage.getItem(key); } catch {}
+        try { localStorage.setItem(key, cur); } catch {}
+        if (prev && prev !== cur) showRecap(prev, cur);
+      } catch (e) { /* fail-soft */ }
+    });
+  })();
+
   Modal.init();
   UI.initSettings();
   UI.renderList();
