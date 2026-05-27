@@ -5,6 +5,28 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '0.9.379',
+      date: '2026-05-27',
+      time: '20:30',
+      tags: ['feat'],
+      title: 'Nouvelles stats de perf, récap de plan & offre de lancement −40%',
+      titleEn: 'New performance stats, plan recap & −40% launch offer',
+      items: [
+        { type: 'feat', text: 'Trois nouveaux indicateurs sur ton **Dashboard** : ton **gain moyen**, ton **risque moyen** (perte moyenne) et ton **ratio R:R moyen** — pour voir d\'un coup d\'œil si tes gains compensent tes pertes.', textEn: 'Three new metrics on your **Dashboard**: your **average win**, your **average risk** (average loss) and your **average R:R ratio** — to see at a glance whether your wins outweigh your losses.' },
+        { type: 'feat', text: 'Quand tu changes de plan, une fenêtre **récapitule tout ce que tu débloques** (comptes, analyses IA, captures conservées…) — tu sais exactement ce que tu gagnes.', textEn: 'When you change plan, a window **recaps everything you unlock** (accounts, AI analyses, saved screenshots…) — you know exactly what you gain.' },
+        { type: 'feat', text: '🔥 **Offre de lancement** : **−40%** sur les plans Funded & Elite + **1 semaine d\'essai gratuite**. Utilise le code **ZELD40**.', textEn: '🔥 **Launch offer**: **−40%** on the Funded & Elite plans + **1 week free trial**. Use code **ZELD40**.' },
+        { type: 'ui', text: 'La page des **nouveautés** est désormais disponible en français et en anglais.', textEn: 'The **updates** page is now available in both French and English.' },
+      ],
+      user: {
+        title: 'Nouvelles stats de perf + offre de lancement −40%',
+        items: [
+          { type: 'feat', text: 'Trois nouveaux indicateurs sur ton Dashboard : ton gain moyen, ton risque moyen et ton ratio R:R moyen — pour voir d\'un coup d\'œil si tes gains compensent tes pertes.' },
+          { type: 'feat', text: 'Quand tu changes de plan, un récap te montre tout ce que tu débloques (comptes, analyses IA, captures…).' },
+          { type: 'feat', text: '🔥 Offre de lancement : −40% sur Funded & Elite + 1 semaine d\'essai gratuite — code ZELD40.' },
+        ],
+      },
+    },
+    {
       version: '0.9.372',
       date: '2026-05-26',
       time: '23:30',
