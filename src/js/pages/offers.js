@@ -74,9 +74,13 @@ UI.renderOffers = function () {
   // d'upgrade si le palier est déjà couvert (Elite max, ou bêta = accès complet).
   const ctaCheckout = (cardTier) => {
     if (isBeta)               return `<div class="pricing-cta included">${isEn ? 'Included' : 'Inclus'}</div>`;
-    if (cardTier === 'trader')return `<div class="pricing-cta included">${isEn ? 'Included' : 'Inclus'}</div>`;
+    // Trader : « Inclus » par défaut ; pour un abonné payant → bouton de retour au gratuit (résiliation).
+    if (cardTier === 'trader')return isPayingOwned
+      ? `<button type="button" class="pricing-cta ghost" data-cancel-sub>${t('off.cta.downgrade.free')}</button>`
+      : `<div class="pricing-cta included">${isEn ? 'Included' : 'Inclus'}</div>`;
+    // Funded : abonné Elite → bouton de rétrogradation ; sinon checkout Funded.
     if (cardTier === 'funded')return isElite
-      ? `<div class="pricing-cta included">${isEn ? 'Included in Elite' : 'Inclus dans Elite'}</div>`
+      ? `<button type="button" class="pricing-cta ghost" data-checkout-tier="funded">${t('off.cta.downgrade.funded')}</button>`
       : `<button type="button" class="pricing-cta primary" data-checkout-tier="funded">${t('off.cta.funded.btn')}</button>`;
     return `<button type="button" class="pricing-cta ghost-elite" data-checkout-tier="elite">${t('off.cta.elite.btn')}</button>`;
   };
@@ -373,6 +377,25 @@ UI.renderOffers = function () {
         btn.disabled = false;
         btn.textContent = original;
       }
+    });
+  });
+
+  // ── Retour au gratuit (résiliation) → portail Stripe, flow d'annulation ──────
+  el.querySelectorAll('[data-cancel-sub]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (typeof _fbFunctions === 'undefined' || !_fbFunctions) {
+        UI.toast(t('off.checkout.err') || 'Service indisponible — recharge la page.', true);
+        return;
+      }
+      const o0 = btn.textContent;
+      btn.disabled = true; btn.textContent = '…';
+      try {
+        const res = await _fbFunctions.httpsCallable('createBillingPortalSession')({ flow: 'cancel' });
+        if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+        UI.toast(t('off.changeplan') || 'Pour résilier, gère ton abonnement (Réglages → Gérer mon abonnement).', true);
+      } catch (e) {
+        UI.toast(t('off.changeplan') || 'Pour résilier, va dans Réglages → Gérer mon abonnement.', true);
+      } finally { btn.disabled = false; btn.textContent = o0; }
     });
   });
 
