@@ -331,6 +331,15 @@ UI.renderOffers = function () {
         UI.toast(t('off.checkout.err') || 'Service de paiement indisponible — recharge la page.', true);
         return;
       }
+      // v0.9.381 : force-refresh du token Auth avant l'appel — sinon un user qui vient
+      // de vérifier son email garde un token en cache avec email_verified=false et le
+      // checkout est refusé alors que la vérification est réellement faite côté serveur.
+      try {
+        if (typeof _fbAuth !== 'undefined' && _fbAuth && _fbAuth.currentUser) {
+          await _fbAuth.currentUser.reload();
+          await _fbAuth.currentUser.getIdToken(true);
+        }
+      } catch (e) { /* non bloquant — on laisse le serveur trancher */ }
       // v0.9.297 (#bug upgrade) : si l'utilisateur a DÉJÀ un abonnement Stripe actif,
       // on NE crée PAS un nouveau checkout (ça créerait une 2e souscription / double
       // facturation, d'où le 503). Un changement de plan (Funded ↔ Elite) passe par
