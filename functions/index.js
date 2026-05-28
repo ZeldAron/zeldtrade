@@ -941,6 +941,17 @@ exports.notifyNewSignup = onCall(
     // Si l'user n'a pas de displayName, on prend la partie locale de l'email
     // (avant `@`) plutôt que l'email complet — évite de leaker l'adresse.
     const rawEmail   = String(request.auth.token.email || '');
+    const localPart  = rawEmail.split('@')[0] || 'Anonyme';
+    const rawName    = request.auth.token.name || localPart;
+    const name       = _sanitizeText(rawName, 100);
+
+    // v0.9.381 : QA filter — comptes dont le pseudo commence par "test" (case-insensitive)
+    // ne déclenchent NI la notif Discord NI l'incrément du compteur public. Évite de
+    // polluer #new-users et la landing avec les comptes de test du dev pendant les QA.
+    if (name.toLowerCase().startsWith('test')) {
+      console.log('[notifyNewSignup] skipping (test pseudo):', name);
+      return { ok: true, skipped: 'test-pseudo' };
+    }
 
     // v0.9.252/253 : incrémente le compteur public d'inscrits (affiché sur la landing).
     // Posé APRÈS le flag idempotence → garanti 1× par utilisateur, pas de double-count.
@@ -950,9 +961,6 @@ exports.notifyNewSignup = onCall(
         .set({ userCount: admin.firestore.FieldValue.increment(1), updatedAt: Date.now() }, { merge: true })
         .catch((err) => console.warn('[notifyNewSignup] publicStats increment failed', err && err.message));
     }
-    const localPart  = rawEmail.split('@')[0] || 'Anonyme';
-    const rawName    = request.auth.token.name || localPart;
-    const name       = _sanitizeText(rawName, 100);
     // v0.9.232 : check hCaptcha retiré ici. Le hCaptcha widget reste sur le
     // register form (bloque les bots AVANT Firebase Auth). Une fois Firebase
     // Auth a créé le compte, cette CF est appelée par un user déjà
@@ -1751,8 +1759,11 @@ exports.createCheckoutSession = onCall(
       client_reference_id: uid,
       // metadata sur la session ET la subscription (le webhook lit subscription.metadata)
       metadata: { uid, tier: conf.tier, cycle: conf.cycle },
-      subscription_data: { metadata: { uid, tier: conf.tier, cycle: conf.cycle } },
-      allow_promotion_codes: true,   // coupons Stripe (LAUNCH40, 100% partenaires…)
+      subscription_data: {
+        metadata: { uid, tier: conf.tier, cycle: conf.cycle },
+        trial_period_days: 7,        // v0.9.379 : essai 7 jours annoncé (carte collectée, prélèvement à J+7)
+      },
+      allow_promotion_codes: true,   // coupons Stripe (ZELD40 −40%, 100% partenaires…)
       locale: 'fr',
       success_url: PUBLIC_SITE_URL + '/app?payment=success',
       cancel_url:  PUBLIC_SITE_URL + '/app?payment=cancel',
@@ -1802,30 +1813,44 @@ exports.createBillingPortalSession = onCall(
 
     const stripe = new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: '2024-06-20' });
 
-    // ── Changement de plan en deep-link (flow_data) ───────────────────────────
+    // ── Changement de plan / retour au gratuit en deep-link (flow_data) ────────
     const flowToTier = String(request.data?.flowToTier || '').trim();
+    const flowAction = String(request.data?.flow || '').trim();   // 'cancel' = retour au gratuit
     let flowData;
-    if (flowToTier === 'funded' || flowToTier === 'elite') {
+    if (flowToTier === 'funded' || flowToTier === 'elite' || flowAction === 'cancel') {
       const subs = await stripe.subscriptions.list({ customer: customerId, limit: 10 });
       const sub = subs.data.find(s => ['active', 'trialing', 'past_due'].includes(s.status));
-      if (sub && sub.items && sub.items.data[0]) {
-        const item = sub.items.data[0];
-        const interval = item.price && item.price.recurring && item.price.recurring.interval;
-        const cycle = interval === 'year' ? 'yearly' : 'monthly';   // garde le cycle courant
-        const conf = PLAN_TO_PRICE[`${flowToTier}_${cycle}`];
-        const priceId = conf && conf.secret.value();
-        if (priceId && priceId.startsWith('price_')) {
+      if (sub) {
+        if (flowAction === 'cancel') {
+          // Retour au gratuit (Trader) = résiliation. Stripe applique la politique
+          // d'annulation configurée dans le portail (par défaut : fin de période).
           flowData = {
-            type: 'subscription_update_confirm',
-            subscription_update_confirm: {
-              subscription: sub.id,
-              items: [{ id: item.id, price: priceId, quantity: 1 }],
-            },
+            type: 'subscription_cancel',
+            subscription_cancel: { subscription: sub.id },
             after_completion: {
               type: 'redirect',
-              redirect: { return_url: PUBLIC_SITE_URL + '/app?payment=success' },
+              redirect: { return_url: PUBLIC_SITE_URL + '/app' },
             },
           };
+        } else if (sub.items && sub.items.data[0]) {
+          const item = sub.items.data[0];
+          const interval = item.price && item.price.recurring && item.price.recurring.interval;
+          const cycle = interval === 'year' ? 'yearly' : 'monthly';   // garde le cycle courant
+          const conf = PLAN_TO_PRICE[`${flowToTier}_${cycle}`];
+          const priceId = conf && conf.secret.value();
+          if (priceId && priceId.startsWith('price_')) {
+            flowData = {
+              type: 'subscription_update_confirm',
+              subscription_update_confirm: {
+                subscription: sub.id,
+                items: [{ id: item.id, price: priceId, quantity: 1 }],
+              },
+              after_completion: {
+                type: 'redirect',
+                redirect: { return_url: PUBLIC_SITE_URL + '/app?payment=success' },
+              },
+            };
+          }
         }
       }
       // Si aucun abonnement modifiable / prix non configuré → fallback portail simple.
