@@ -8,9 +8,9 @@
 
   <!-- Favicon (v0.9.337) : .ico = repli raster que Google Search/anciens navigateurs
        indexent (sinon ils affichent le globe générique) ; SVG pour le moderne ; PNG iOS -->
-  <link rel="icon" href="/assets/favicon.ico?v=0.9.382" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.382">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.382">
+  <link rel="icon" href="/assets/favicon.ico?v=0.9.383" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.383">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.383">
 
   <!-- Google Search Console verification -->
   <meta name="google-site-verification" content="IATcfjbZzBPV-3C6XqrgB860ldwwGT5tHFV_L9-z_q4">
@@ -26,7 +26,7 @@
   <meta property="og:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta property="og:description" content="Journal de trading français pour tous tes comptes : prop firm (Apex, FTMO, Topstep, Lucid, Funding Pips), crypto (Binance, Coinbase) et fonds propres. IA Vision, multi-comptes, RGPD natif.">
   <meta property="og:url" content="https://zeldtrade.com/">
-  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.382">
+  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.383">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -34,7 +34,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta name="twitter:description" content="Pour tous tes comptes : prop firm (Apex, FTMO, Topstep, Lucid, FP), crypto et fonds propres. IA Vision, multi-comptes.">
-  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.382">
+  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.383">
   <meta name="twitter:image:alt" content="ZeldTrade — Journal de trading prop firm, crypto et fonds propres avec IA Vision">
 
   <!-- SEO -->
@@ -1609,11 +1609,21 @@
       .demo-field { padding: 8px 10px; }
       .demo-field-value { font-size: 13px; }
       .demo-summary-row { font-size: 11.5px; }
-      .demo-toast { font-size: 11px; padding: 7px 14px; }
+      .demo-toast {
+        font-size: 11px;
+        padding: 8px 14px;
+        background: rgba(13, 17, 23, 0.95);
+        backdrop-filter: blur(4px);
+        white-space: normal;
+        max-width: calc(100% - 24px);
+        text-align: center;
+        line-height: 1.3;
+      }
     }
     @media (max-width: 420px) {
       .demo-fields { grid-template-columns: 1fr; }
-      .demo-app { min-height: 540px; }
+      .demo-app { min-height: 580px; }
+      .demo-toast { font-size: 10.5px; padding: 7px 12px; }
     }
     .demo-sidebar {
       background: #0d1117;
@@ -3824,7 +3834,7 @@
       </a>
     </div>
     <div>
-      © 2026 ZeldTrade — <span id="ztFooterVer" style="color: var(--accent-l)">v0.9.382</span>
+      © 2026 ZeldTrade — <span id="ztFooterVer" style="color: var(--accent-l)">v0.9.383</span>
     </div>
   </footer>
 
@@ -3842,12 +3852,12 @@
   <!-- Script externe car la CSP server-side bloque les scripts inline. -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
-  <script src="js/landing-contact.js?v=0.9.382"></script>
-  <script src="js/landing-pricing.js?v=0.9.382"></script>
-  <script src="js/landing-animations.js?v=0.9.382" defer></script>
-  <script src="js/landing-nav.js?v=0.9.382" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.382" defer></script>
-  <script src="js/landing-testimonials.js?v=0.9.382" defer></script>
+  <script src="js/landing-contact.js?v=0.9.383"></script>
+  <script src="js/landing-pricing.js?v=0.9.383"></script>
+  <script src="js/landing-animations.js?v=0.9.383" defer></script>
+  <script src="js/landing-nav.js?v=0.9.383" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.383" defer></script>
+  <script src="js/landing-testimonials.js?v=0.9.383" defer></script>
 
 </body>
 </html>
