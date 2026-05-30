@@ -214,7 +214,7 @@ const Admin = (() => {
           <div class="cell-dates-seen">Vu ${lastSeenRel}</div>
         </td>
         <td class="cell-actions">
-          <button class="ico-btn ico-btn-violet" data-action="gen"    data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Générer un code Bêta Testeur (accès complet)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1-2 2H6a2 2 0 0 1-2-2 2 2 0 0 0 0-4z"/><line x1="10" y1="6" x2="10" y2="16" stroke-dasharray="1.5 2"/></svg></button>
+          <button class="ico-btn ico-btn-violet" data-action="grant-elite" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Activer Elite gratuit (accès complet à vie)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
           <button class="ico-btn ico-btn-blue"   data-action="verify" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Forcer email_verified=true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><polyline points="4 7 12 13 20 7"/></svg></button>
           ${deleteBtn}
         </td>
@@ -305,13 +305,32 @@ const Admin = (() => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const uid = btn.dataset.uid, email = btn.dataset.email;
-        if (action === 'gen')         openGenModal(uid, email);
+        if (action === 'grant-elite') grantEliteToUser(uid, email, btn);
         else if (action === 'verify') markUserVerified(uid, email, btn);
         else if (action === 'delete') openDeleteModal(uid, email);
       });
     });
     // Clic sur une ligne → drawer détail utilisateur
     wrap.querySelectorAll('tr.urow').forEach(tr => tr.addEventListener('click', () => openUserDrawer(tr.dataset.rowuid)));
+  }
+
+  // ── Activer Elite gratuit pour un user (v0.9.385) ───────────────────────────
+  // Remplace le système de code Pro Bêta Testeur : l'admin grant Elite en 1 clic.
+  async function grantEliteToUser(uid, email, btn) {
+    if (!confirm(`Activer Elite GRATUIT pour ${email} ?\n\nLe user obtient un accès complet à vie (comptes illimités, IA illimitée, support 24h). Pas de prélèvement, géré côté admin uniquement.`)) return;
+    if (!_fbFunctions) { toast('SDK Functions non chargé.', true); return; }
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    try {
+      const callable = _fbFunctions.httpsCallable('adminGrantElite');
+      await callable({ uid });
+      toast(`Elite activé pour ${email}`);
+      // Refresh la liste pour voir le nouveau badge
+      await renderUsers();
+    } catch (e) {
+      console.warn('[Admin] adminGrantElite failed', e);
+      toast((e && e.message) || 'Erreur lors de l\'activation Elite.', true);
+      if (btn) { btn.disabled = false; }
+    }
   }
 
   // ── Forcer email_verified=true sur un compte (v0.9.144) ─────────────────────
@@ -1149,13 +1168,13 @@ const Admin = (() => {
       <div class="dr-sec"><div class="dr-sec-h">Délivrabilité email</div>${emHtml}</div>
       <div class="dr-sec"><div class="dr-sec-h">Historique admin</div>${audHtml}</div>
       <div class="dr-actions">
-        <button class="btn-secondary" data-dr="gen">Code bêta</button>
+        <button class="btn-secondary" data-dr="grant-elite">★ Activer Elite gratuit</button>
         <button class="btn-secondary" data-dr="verify">Forcer vérif</button>
         <button class="btn-danger" data-dr="delete">Supprimer</button>
       </div>`;
     $('drawerBody').querySelectorAll('[data-dr]').forEach(b => b.addEventListener('click', () => {
       const a = b.dataset.dr;
-      if (a === 'gen') openGenModal(uid, u.email);
+      if (a === 'grant-elite') grantEliteToUser(uid, u.email, b);
       else if (a === 'verify') markUserVerified(uid, u.email, b);
       else if (a === 'delete') { closeDrawer(); openDeleteModal(uid, u.email); }
     }));
