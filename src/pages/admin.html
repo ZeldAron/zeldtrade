@@ -22,9 +22,9 @@
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>ZeldTrade Admin</title>
-  <link rel="icon" href="/assets/favicon.ico?v=0.9.391" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.391">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.391">
+  <link rel="icon" href="/assets/favicon.ico?v=0.9.392" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.392">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.392">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -697,6 +697,16 @@
       </div>
       <div class="login-error" id="loginError"></div>
       <button class="btn-primary" id="btnLogin">Se connecter</button>
+
+      <!-- v0.9.392 : étape 2FA au login (affichée si le compte est enrôlé TOTP) -->
+      <div id="mfaLoginSection" style="display:none;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)">
+        <div class="login-field">
+          <label>Code 2FA (Authenticator)</label>
+          <input type="text" id="mfaLoginCode" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="6" style="letter-spacing:4px;text-align:center;font-size:18px">
+        </div>
+        <div class="login-error" id="mfaLoginError"></div>
+        <button class="btn-primary" id="btnMfaVerify">Vérifier le code</button>
+      </div>
     </div>
   </div>
 
@@ -719,6 +729,16 @@
     </header>
 
     <main class="admin-content">
+
+      <!-- v0.9.392 : bannière 2FA — affichée si l'admin n'est PAS encore enrôlé TOTP -->
+      <div id="mfaBanner" style="display:none;margin-bottom:20px;padding:14px 18px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.5);border-radius:10px;display:none;align-items:center;gap:14px;flex-wrap:wrap">
+        <span style="font-size:20px">🛡️</span>
+        <div style="flex:1;min-width:200px">
+          <div style="font-weight:700;color:var(--amber)">Authentification à deux facteurs désactivée</div>
+          <div style="font-size:12.5px;color:var(--muted);margin-top:2px">Active la 2FA TOTP pour protéger ton accès admin contre le vol de mot de passe.</div>
+        </div>
+        <button class="btn-primary" id="btnOpenMfaEnroll" style="width:auto;padding:9px 18px">Activer la 2FA</button>
+      </div>
 
       <div class="admin-tabs">
         <button class="admin-tab tab-active" id="tab-overview">Vue d'ensemble</button>
@@ -784,6 +804,39 @@
     </div>
   </div>
 
+  <!-- ── Modale enrôlement 2FA TOTP (v0.9.392) ──────────────────────────────── -->
+  <div id="mfaEnrollModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:100">
+    <div class="modal-card" style="max-width:440px">
+      <h3>🛡️ Activer la 2FA (TOTP)</h3>
+
+      <!-- Étape 1 : afficher la clé -->
+      <div id="mfaStep1">
+        <p style="font-size:13px;line-height:1.6">Ouvre ton app d'authentification (<strong>Google Authenticator</strong>, Authy, 1Password…) puis ajoute un compte avec cette clé&nbsp;:</p>
+        <div id="mfaSecretKey" style="font-family:monospace;font-size:16px;letter-spacing:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;word-break:break-all;margin:12px 0;color:var(--purple-l)">…</div>
+        <button class="btn-secondary" id="btnCopyMfaSecret" style="width:100%;margin-bottom:8px">Copier la clé</button>
+        <p style="font-size:12px;color:var(--muted);line-height:1.5">Sur mobile&nbsp;: <a id="mfaOtpauthLink" href="#" style="color:var(--purple-l)">ouvrir directement dans l'app</a>. Émetteur&nbsp;: <strong>ZeldTrade Admin</strong>.</p>
+        <div class="login-field" style="margin-top:14px">
+          <label>Saisis le code à 6 chiffres généré</label>
+          <input type="text" id="mfaEnrollCode" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="6" style="letter-spacing:4px;text-align:center;font-size:18px">
+        </div>
+        <div class="gen-error" id="mfaEnrollError"></div>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="btnCloseMfaEnroll">Annuler</button>
+          <button class="btn-primary" id="btnDoMfaEnroll" style="flex:2">Activer</button>
+        </div>
+      </div>
+
+      <!-- Étape 2 : succès -->
+      <div id="mfaStep2" style="display:none">
+        <p style="font-size:14px;line-height:1.6;color:var(--green)">✓ 2FA activée. À ta prochaine connexion, un code te sera demandé.</p>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-top:10px"><strong>Important</strong>&nbsp;: garde l'accès à ton app d'authentification. Si tu la perds, seul le support Firebase pourra te débloquer.</p>
+        <div class="modal-actions">
+          <button class="btn-primary" id="btnCloseMfaEnrollDone" style="flex:1">Compris</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Drawer détail utilisateur (v0.9.340) ───────────────────────────────── -->
   <div class="drawer-overlay" id="drawerOverlay"></div>
   <aside class="user-drawer" id="userDrawer" aria-label="Détail utilisateur">
@@ -798,13 +851,14 @@
   <div class="admin-toast" id="adminToast"></div>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" integrity="sha384-ajMUFBUFMCyjh8uxJg6bkGcKe9RTolyjwbxB3yES0QQMenP3Oztj/W9vA2SJPcIh" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-check-compat.js" integrity="sha384-HTm9DHQcJ0avSI5BWVmeKtm3+YULHbl/wgtLQaMGgYEZLQ8cINY+UF+ZsliUaBvK" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js" integrity="sha384-xD1t9dGSVKobUztxDkv6xUI0H4AnFz0NxwlgDJJ7FDlblG9xxr1Z9iauCZuJYj6p" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js" integrity="sha384-XMIl1b2Ez9tKAM0R5q67/iLdfnlLBl9kfo40X5WMtCPb+3OLplrjnOxZTYCg1SKY" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js" integrity="sha384-Cn425IPPqYFT0+lUg71+39dOh8zj/Ebpl97FkjUqrd+P37HLlysOYDvdw+N7tPuj" crossorigin="anonymous"></script>
+  <!-- v0.9.392 : SDK Firebase bumpé 9.23.0 → 10.12.4 (aligné sur l'app) pour le support TOTP MFA (dispo depuis 10.5.0). SRI recalculés. -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-check-compat.js" integrity="sha384-GVRtWgN2ICoB9DSoSw9tjp+aCfNieDq0/v6fyqB+GjtdHFyt8KMbCofLQchq6u9b" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js" integrity="sha384-0XZ5KNFIdql5AX5c/lralakclJ21oLuWvtJHP7641njokCRuIcWkNEhPFSnEVXvS" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js" integrity="sha384-Uy1o+z1584joCeP4MOpVMevssoJbIsDLGksMxY/kSvz08FG2yWW3yXQJq00jDY/B" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
   <script src="js/firebase.js"></script>
-  <script src="js/admin.js?v=0.9.391"></script>
+  <script src="js/admin.js?v=0.9.392"></script>
 
 </body>
 </html>

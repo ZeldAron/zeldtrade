@@ -1158,6 +1158,14 @@ const Admin = (() => {
         user = cred.user;
       }
     } catch (e) {
+      // v0.9.392 : compte enrôlé en 2FA → Firebase demande le 2nd facteur.
+      if (e && e.code === 'auth/multi-factor-auth-required') {
+        const elapsed0 = Date.now() - start;
+        if (elapsed0 < minDelay) await new Promise(r => setTimeout(r, minDelay - elapsed0));
+        btn.disabled = false;
+        _mfaBeginLogin(e);   // bascule sur l'écran code 2FA
+        return;
+      }
       // Identifiants invalides ou erreur réseau — traité comme un échec uniforme
     }
 
@@ -1183,6 +1191,142 @@ const Admin = (() => {
     show('dashboard', 'block');
     $('adminUserEmail').textContent = user.email;
     switchTab('overview');
+    // v0.9.392 : si l'admin n'est pas enrôlé en 2FA → bannière d'incitation.
+    _mfaUpdateBanner(user);
+  }
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // 2FA (TOTP) — v0.9.392
+  //  - Login : si auth/multi-factor-auth-required → resolver → code → resolveSignIn
+  //  - Enrôlement : getSession → generateSecret → QR/clé → enroll
+  //  Le durcissement backend (exiger sign_in_second_factor dans _assertAdmin +
+  //  rules) se fait SÉPARÉMENT, APRÈS validation de 2 logins MFA réussis.
+  // ════════════════════════════════════════════════════════════════════════════
+  let _mfaResolver  = null;   // resolver Firebase pendant un login MFA
+  let _mfaSecret    = null;   // TotpSecret pendant un enrôlement
+
+  function _mfaIsEnrolled(user) {
+    try {
+      const factors = (user && user.multiFactor && user.multiFactor.enrolledFactors) || [];
+      return factors.length > 0;
+    } catch { return false; }
+  }
+
+  function _mfaUpdateBanner(user) {
+    const banner = $('mfaBanner');
+    if (!banner) return;
+    banner.style.display = _mfaIsEnrolled(user) ? 'none' : 'flex';
+  }
+
+  // ── Login : 2nd facteur ──────────────────────────────────────────────────────
+  function _mfaBeginLogin(err) {
+    // En SDK compat, le resolver est exposé directement sur l'erreur. Fallback
+    // sur getMultiFactorResolver() pour robustesse inter-versions.
+    try {
+      _mfaResolver = err.resolver
+        || (firebase.auth().getMultiFactorResolver && firebase.auth().getMultiFactorResolver(err))
+        || null;
+    } catch {
+      _mfaResolver = err.resolver || null;
+    }
+    if (!_mfaResolver) {
+      $('loginError').textContent = 'Erreur 2FA — recharge la page.';
+      return;
+    }
+    show('mfaLoginSection', 'block');
+    $('btnLogin').style.display = 'none';
+    $('mfaLoginError').textContent = '';
+    $('mfaLoginCode').value = '';
+    $('mfaLoginCode').focus();
+  }
+
+  async function mfaVerifyLogin() {
+    const code = ($('mfaLoginCode').value || '').replace(/\D/g, '').slice(0, 6);
+    const errEl = $('mfaLoginError');
+    const btn = $('btnMfaVerify');
+    errEl.textContent = '';
+    if (code.length !== 6) { errEl.textContent = 'Code à 6 chiffres requis.'; return; }
+    if (!_mfaResolver) { errEl.textContent = 'Session expirée — recharge la page.'; return; }
+    btn.disabled = true;
+    try {
+      // Le 1er facteur enrôlé (TOTP)
+      const hint = _mfaResolver.hints[0];
+      const assertion = firebase.auth.TotpMultiFactorGenerator.assertionForSignIn(hint.uid, code);
+      const cred = await _mfaResolver.resolveSignIn(assertion);
+      if (cred.user.email !== ADMIN_EMAIL) { await _fbAuth.signOut(); throw new Error('not admin'); }
+      _mfaResolver = null;
+      // onAuthStateChanged prendra le relais et affichera le dashboard
+    } catch (e) {
+      btn.disabled = false;
+      errEl.textContent = (e && e.code === 'auth/invalid-verification-code')
+        ? 'Code invalide. Réessaie.'
+        : 'Échec de la vérification 2FA.';
+      return;
+    }
+    btn.disabled = false;
+  }
+
+  // ── Enrôlement ─────────────────────────────────────────────────────────────
+  async function mfaOpenEnroll() {
+    const user = _fbAuth.currentUser;
+    if (!user) { toast('Reconnecte-toi avant d\'activer la 2FA.', true); return; }
+    $('mfaStep1').style.display = 'block';
+    $('mfaStep2').style.display = 'none';
+    $('mfaEnrollError').textContent = '';
+    $('mfaEnrollCode').value = '';
+    $('mfaSecretKey').textContent = 'Génération…';
+    show('mfaEnrollModal', 'flex');
+    try {
+      const session = await user.multiFactor.getSession();
+      _mfaSecret = await firebase.auth.TotpMultiFactorGenerator.generateSecret(session);
+      const key = _mfaSecret.secretKey || '';
+      // Formatage par groupes de 4 pour lisibilité
+      $('mfaSecretKey').textContent = key.replace(/(.{4})/g, '$1 ').trim();
+      const url = _mfaSecret.generateQrCodeUrl
+        ? _mfaSecret.generateQrCodeUrl(user.email || 'admin', 'ZeldTrade Admin')
+        : '';
+      const link = $('mfaOtpauthLink');
+      if (url) { link.href = url; } else { link.style.display = 'none'; }
+    } catch (e) {
+      $('mfaEnrollError').textContent = 'Impossible de générer la clé 2FA. ' + ((e && e.message) || '');
+      $('mfaSecretKey').textContent = '—';
+    }
+  }
+
+  async function mfaDoEnroll() {
+    const user = _fbAuth.currentUser;
+    const code = ($('mfaEnrollCode').value || '').replace(/\D/g, '').slice(0, 6);
+    const errEl = $('mfaEnrollError');
+    const btn = $('btnDoMfaEnroll');
+    errEl.textContent = '';
+    if (!user || !_mfaSecret) { errEl.textContent = 'Session expirée — rouvre la fenêtre.'; return; }
+    if (code.length !== 6) { errEl.textContent = 'Code à 6 chiffres requis.'; return; }
+    btn.disabled = true;
+    try {
+      const assertion = firebase.auth.TotpMultiFactorGenerator.assertionForEnrollment(_mfaSecret, code);
+      await user.multiFactor.enroll(assertion, 'Authenticator TOTP');
+      _mfaSecret = null;
+      $('mfaStep1').style.display = 'none';
+      $('mfaStep2').style.display = 'block';
+      _mfaUpdateBanner(user);
+    } catch (e) {
+      btn.disabled = false;
+      errEl.textContent = (e && e.code === 'auth/invalid-verification-code')
+        ? 'Code invalide — vérifie l\'heure de ton téléphone et réessaie.'
+        : 'Échec de l\'activation. ' + ((e && e.message) || '');
+      return;
+    }
+    btn.disabled = false;
+  }
+
+  function mfaCloseEnroll() { hide('mfaEnrollModal'); _mfaSecret = null; }
+
+  async function mfaCopySecret() {
+    try {
+      const txt = ($('mfaSecretKey').textContent || '').replace(/\s/g, '');
+      await navigator.clipboard.writeText(txt);
+      toast('Clé copiée ✓');
+    } catch { toast('Copie impossible — sélectionne manuellement.', true); }
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
@@ -1193,12 +1337,26 @@ const Admin = (() => {
       } else {
         show('loginScreen', 'flex');
         hide('dashboard');
+        // v0.9.392 : reset de l'écran login (cas retour après logout/échec MFA)
+        const ms = $('mfaLoginSection'); if (ms) ms.style.display = 'none';
+        const bl = $('btnLogin'); if (bl) bl.style.display = '';
+        _mfaResolver = null;
       }
     });
 
     $('btnLogin').addEventListener('click', login);
     $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
     $('btnLogout').addEventListener('click', () => _fbAuth.signOut());
+    // v0.9.392 : 2FA — login + enrôlement
+    $('btnMfaVerify').addEventListener('click', mfaVerifyLogin);
+    $('mfaLoginCode').addEventListener('keydown', e => { if (e.key === 'Enter') mfaVerifyLogin(); });
+    $('btnOpenMfaEnroll').addEventListener('click', mfaOpenEnroll);
+    $('btnDoMfaEnroll').addEventListener('click', mfaDoEnroll);
+    $('mfaEnrollCode').addEventListener('keydown', e => { if (e.key === 'Enter') mfaDoEnroll(); });
+    $('btnCloseMfaEnroll').addEventListener('click', mfaCloseEnroll);
+    $('btnCloseMfaEnrollDone').addEventListener('click', mfaCloseEnroll);
+    $('btnCopyMfaSecret').addEventListener('click', mfaCopySecret);
+    $('mfaEnrollModal').addEventListener('click', e => { if (e.target === $('mfaEnrollModal')) mfaCloseEnroll(); });
     ['overview', 'users', 'revenue', 'activity', 'audit', 'config'].forEach(t => {
       const b = $('tab-' + t); if (b) b.addEventListener('click', () => switchTab(t));
     });
