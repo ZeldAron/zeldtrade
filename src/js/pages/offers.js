@@ -33,14 +33,7 @@ UI.renderOffers = function () {
     : '';
 
   // ── Founding scarcity banner (uniquement Trader — déjà cible) ──────────────
-  const foundingBanner = !isTrader ? '' : `
-    <div class="founding-banner">
-      <div class="founding-banner-text">
-        <div class="founding-banner-title">${t('off.founding.title')}</div>
-        <div class="founding-banner-sub">${t('off.founding.sub')}</div>
-      </div>
-      <button type="button" class="founding-banner-cta" id="btnFoundingApply">${t('off.founding.cta')} →</button>
-    </div>`;
+  const foundingBanner = '';
 
   // ── Billing toggle (Monthly / Yearly) ──────────────────────────────────────
   const billingToggle = `
@@ -224,25 +217,10 @@ UI.renderOffers = function () {
       <span class="offer-compare-lt"    style="color:${colColor(r.el, true)}">${r.el}</span>
     </div>`).join('');
 
-  // ── Promo code section (Founding Members) ────────────────────────────────
-  const promoSection = pro
-    ? `<div class="offer-promo-section">
-        <div class="offer-promo-active">✦ &nbsp;${t('off.pro.active.title')} &nbsp;—&nbsp; ${t('off.cta.act')}</div>
-      </div>`
-    : `<div class="offer-promo-section">
-        <div class="offer-promo-title">${t('off.beta.title')}</div>
-        <div class="offer-promo-sub">${t('off.beta.sub')}</div>
-        <div class="offer-promo-row">
-          <input type="text" id="proCodeInput" class="pro-code-input"
-            placeholder="${t('off.ph')}" autocomplete="off" spellcheck="false" />
-          <button class="offer-cta offer-cta-link offer-cta-pro" id="btnActivatePro">${t('off.activate')}</button>
-        </div>
-        <div class="pro-code-error" id="proCodeError"></div>
-        <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">
-          ${t('off.no.code')}
-          <span style="color:#a78bfa;cursor:pointer;font-weight:600" id="btnGoContact">${t('off.contact.us')}</span>
-        </div>
-      </div>`;
+  // v0.9.384 : section d'activation de code retirée de l'UI publique.
+  // Le backend Store.activatePro reste actif pour usage admin via URL `?activatePro=CODE`
+  // (handler dans app.js). Permet de filer un accès à un influenceur sans champ public.
+  const promoSection = '';
 
   // ── Render ────────────────────────────────────────────────────────────────
   el.innerHTML = `
@@ -408,50 +386,8 @@ UI.renderOffers = function () {
     });
   });
 
-  // ── Founding apply button → contact bubble ─────────────────────────────────
-  const foundingBtn = document.getElementById('btnFoundingApply');
-  if (foundingBtn) {
-    foundingBtn.addEventListener('click', () => {
-      const bubble = document.getElementById('contactBubble');
-      if (bubble) bubble.click();
-    });
-  }
+  // v0.9.384 : handler `btnFoundingApply` retiré (bannière Founding supprimée).
 
-  // ── Activation logic (non-Pro only) ────────────────────────────────────────
-  if (!pro) {
-    const btn   = document.getElementById('btnActivatePro');
-    const input = document.getElementById('proCodeInput');
-    const error = document.getElementById('proCodeError');
-
-    btn.addEventListener('click', async () => {
-      const code = input.value.trim();
-      if (!code) { error.textContent = t('off.err.empty'); return; }
-      btn.disabled    = true;
-      btn.textContent = '…';
-      error.textContent = '';
-      const result = await Store.activatePro(code);
-      if (result === true) {
-        UI.toast(t('off.ok'));
-        setTimeout(() => location.reload(), 1200);
-      } else if (result === 'throttled') {
-        error.textContent = t('off.code.throttled');
-        btn.disabled    = false;
-        btn.textContent = t('off.activate');
-      } else {
-        error.textContent = t('off.err.inv');
-        btn.disabled    = false;
-        btn.textContent = t('off.activate');
-      }
-    });
-
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
-
-    const goContact = document.getElementById('btnGoContact');
-    if (goContact) {
-      goContact.addEventListener('click', () => {
-        const bubble = document.getElementById('contactBubble');
-        if (bubble) bubble.click();
-      });
-    }
-  }
+  // v0.9.384 : handler d'activation retiré (le champ UI n'existe plus). L'activation
+  // se fait désormais via le param URL `?activatePro=CODE` géré dans app.js.
 };
