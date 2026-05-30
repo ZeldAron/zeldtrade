@@ -739,10 +739,9 @@ const i18n = (() => {
       'off.cta.elite.btn':  'Choisir Elite →',
       'off.cta.downgrade.funded': 'Rétrograder vers Funded',
       'off.cta.downgrade.free':   'Revenir au gratuit',
-      'off.beta.title':   'Code bêta / Code promo',
-      'off.beta.sub':     'Tu as un code d\'accès ? Entre-le ici pour activer ton compte.',
-      'off.no.code':      'Pas encore de code ?',
-      'off.contact.us':   'Contactez-nous',
+      // v0.9.384 : 'off.beta.title' / 'off.beta.sub' retirées (UI d'activation supprimée).
+      // Backend activatePro toujours dispo via URL `?activatePro=CODE` géré dans app.js.
+      // v0.9.384 : 'off.no.code' / 'off.contact.us' retirées (lien sous le champ d'activation, plus de champ).
       'off.compare.full': 'Comparaison complète',
       'off.compare.feat': 'Fonctionnalité',
       // Comparison rows
@@ -782,10 +781,7 @@ const i18n = (() => {
       'off.trust.trial':       '7 jours d\'essai gratuit',
       'off.trust.export':      'Export complet RGPD à tout moment',
       'off.trust.nocb':        'Aucune CB requise pour démarrer',
-      // Founding scarcity banner
-      'off.founding.title':    'Offre Founding — jusqu\'au 30 juin',
-      'off.founding.sub':      'Accès Funded à vie en échange de feedback honnête.',
-      'off.founding.cta':      'Candidater',
+      // v0.9.384 : bannière Founding retirée (mention « Accès Funded à vie en échange de feedback »).
       // FAQ Lot 4
       'off.faq.4q':    'Et si je veux arrêter ?',
       'off.faq.4a':    'Annulation 1-clic depuis tes Réglages. Aucun engagement. Tu gardes l\'export JSON complet de tes données (RGPD).',
@@ -819,8 +815,7 @@ const i18n = (() => {
       'off.faq.1a':    'Vos données sont synchronisées dans le cloud via Firebase (Google). Elles sont accessibles sur tous vos appareils dès que vous êtes connecté.',
       'off.faq.2q':    'Mes données sont-elles liées à un appareil ?',
       'off.faq.2a':    'Non, votre compte ZeldTrade est lié à votre adresse e-mail. Connectez-vous depuis n\'importe quel appareil pour retrouver toutes vos données.',
-      'off.faq.3q':    'Comment obtenir un code d\'activation ?',
-      'off.faq.3a':    'Les 5 dernières places Founding offrent un accès Funded à vie en échange de ton feedback. Contacte-nous via le formulaire pour candidater.',
+      // v0.9.384 : 'off.faq.3q' / '3a' retirées (question « Comment obtenir un code d'activation »).
       // Contact
       'contact.intro':    'Bonjour ! Une question ? Un bug ? On vous répond rapidement.',
       'contact.name':     'Votre nom',
@@ -1581,10 +1576,8 @@ const i18n = (() => {
       'off.cta.elite.btn':  'Get Elite →',
       'off.cta.downgrade.funded': 'Downgrade to Funded',
       'off.cta.downgrade.free':   'Back to free',
-      'off.beta.title':   'Beta / Promo code',
-      'off.beta.sub':     'Got an access code? Enter it here to activate your account.',
-      'off.no.code':      'No code yet?',
-      'off.contact.us':   'Contact us',
+      // v0.9.384 : 'off.beta.title' / 'off.beta.sub' removed (activation UI dropped).
+      // v0.9.384 : 'off.no.code' / 'off.contact.us' removed (link under activation field, no field anymore).
       'off.compare.full': 'Full comparison',
       'off.compare.feat': 'Feature',
       // Comparison rows
@@ -1625,9 +1618,7 @@ const i18n = (() => {
       'off.trust.export':      'Full GDPR export anytime',
       'off.trust.nocb':        'No credit card needed to start',
       // Founding scarcity banner
-      'off.founding.title':    'Founding offer — until June 30',
-      'off.founding.sub':      'Lifetime Funded access in exchange for honest feedback.',
-      'off.founding.cta':      'Apply',
+      // v0.9.384 : Founding scarcity banner removed.
       // FAQ Lot 4
       'off.faq.4q':    'What if I want to stop?',
       'off.faq.4a':    '1-click cancellation from your Settings. No commitment. You keep the full JSON export of your data (GDPR).',
@@ -1661,8 +1652,7 @@ const i18n = (() => {
       'off.faq.1a':    'Your data is synced to the cloud via Firebase (Google) and accessible on all your devices when signed in.',
       'off.faq.2q':    'Is my data tied to one device?',
       'off.faq.2a':    'No, your ZeldTrade account is linked to your email address. Sign in from any device to access all your data.',
-      'off.faq.3q':    'How do I get an activation code?',
-      'off.faq.3a':    'The last 5 Founding seats offer lifetime Funded access in exchange for your feedback. Contact us via the form to apply.',
+      // v0.9.384 : 'off.faq.3q' / '3a' removed (« How do I get an activation code »).
       // Contact
       'contact.intro':    'Hello! Got a question or found a bug? We reply fast.',
       'contact.name':     'Your name',

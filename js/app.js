@@ -347,6 +347,35 @@ function initApp() {
     });
   })();
 
+  // v0.9.384 : activation silencieuse d'un code Pro depuis le param URL
+  // `?activatePro=ZELD-XXXX-XXXX-XXXX`. Permet à l'admin d'envoyer un lien direct
+  // à un influenceur sans champ UI public visible.
+  (function autoActivateProFromUrl() {
+    try {
+      const url = new URL(location.href);
+      const code = (url.searchParams.get('activatePro') || '').trim();
+      if (!code) return;
+      // Attend que l'auth + le store soient prêts (1 store:synced après login)
+      const onReady = async () => {
+        window.removeEventListener('store:synced', onReady);
+        if (!firebase.auth().currentUser) return;
+        try {
+          const result = await Store.activatePro(code);
+          if (result === true) {
+            try { UI.toast('Accès activé ✓'); } catch {}
+            // Nettoie l'URL pour ne pas relancer l'activation au refresh
+            url.searchParams.delete('activatePro');
+            history.replaceState(null, '', url.toString());
+            setTimeout(() => location.reload(), 1200);
+          } else {
+            console.warn('[activatePro] échec:', result);
+          }
+        } catch (e) { console.warn('[activatePro] error', e && e.message); }
+      };
+      window.addEventListener('store:synced', onReady);
+    } catch (e) { /* fail-soft */ }
+  })();
+
   Modal.init();
   UI.initSettings();
   UI.renderList();
