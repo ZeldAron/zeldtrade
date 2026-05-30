@@ -30,7 +30,7 @@
     'nav.signup':   { fr: 'Créer un compte', en: 'Sign up' },
 
     // Hero
-    'hero.badge':   { fr: 'Bêta ouverte',    en: 'Open beta' },
+    // v0.9.387 : 'hero.badge' retirée (badge « Bêta ouverte » supprimé).
     'hero.title.1': { fr: 'Journalise.',     en: 'Journal it.' },
     'hero.title.2': { fr: 'Analyse.',        en: 'Analyze.' },
     'hero.title.3': { fr: 'Performe.',       en: 'Perform.' },
