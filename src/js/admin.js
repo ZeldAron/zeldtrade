@@ -367,6 +367,32 @@ const Admin = (() => {
     { k: 'all', lbl: 'Tout',     ms: Infinity,      days: Infinity },
   ];
   let _actCache = null;
+  // v0.9.390 : filtre par utilisateur (un seul à la fois). Quand un user est
+  // sélectionné, on fetch all-time ses events depuis Firestore (au-delà du cap
+  // de 1500). Fallback in-memory si l'index uid+ts manque encore.
+  let _actUserFilter = '';
+  let _actUserEvents = null; // { uid, events, indexMissing? }
+  let _actUserLoading = false;
+
+  async function _loadUserEvents(uid) {
+    _actUserLoading = true;
+    _renderActivityView();
+    try {
+      const snap = await _fbDb.collection('analyticsEvents')
+        .where('uid', '==', uid).orderBy('ts', 'desc').limit(5000).get();
+      _actUserEvents = { uid, events: snap.docs.map(d => d.data()) };
+    } catch (e) {
+      // Index composite uid+ts manquant → fallback sur le cache en mémoire.
+      _actUserEvents = {
+        uid,
+        events: ((_actCache && _actCache.events) || []).filter(ev => ev.uid === uid),
+        indexMissing: true,
+      };
+    } finally {
+      _actUserLoading = false;
+      _renderActivityView();
+    }
+  }
 
   async function renderActivity() {
     const wrap = $('tabActivity');
@@ -406,7 +432,14 @@ const Admin = (() => {
     const range = _ACT_RANGES.find(r => r.k === _actRange) || _ACT_RANGES[0];
     const now = Date.now();
     const evMs = e => (e.ts && e.ts.toMillis) ? e.ts.toMillis() : null;
-    const ev = range.ms === Infinity ? events : events.filter(e => { const ms = evMs(e); return ms && now - ms <= range.ms; });
+
+    // v0.9.390 : si un user est sélectionné, on bosse sur SES events all-time
+    // (chargés depuis Firestore au-delà du cap 1500). Sinon on prend le cache global.
+    const userFilterActive = !!_actUserFilter && _actUserEvents && _actUserEvents.uid === _actUserFilter;
+    const sourceEvents = userFilterActive ? _actUserEvents.events : events;
+    const ev = range.ms === Infinity
+      ? sourceEvents
+      : sourceEvents.filter(e => { const ms = evMs(e); return ms && now - ms <= range.ms; });
 
     const emailByUid = {};
     users.forEach(u => { emailByUid[u.uid] = u.email || u.username || u.uid; });
@@ -433,11 +466,29 @@ const Admin = (() => {
     const selector = '<div class="act-range">' + _ACT_RANGES.map(r =>
       `<button class="act-range-btn${r.k === _actRange ? ' active' : ''}" data-range="${r.k}">${r.lbl}</button>`).join('') + '</div>';
 
+    // v0.9.390 : sélecteur d'utilisateur (tri par dernière activité desc).
+    const sortedUsers = users.slice().sort((a, b) => (b.lastSeen || 0) - (a.lastSeen || 0));
+    const userOptions = sortedUsers.map(u => {
+      const label = u.email || u.username || u.uid;
+      return `<option value="${esc(u.uid)}"${u.uid === _actUserFilter ? ' selected' : ''}>${esc(label)}</option>`;
+    }).join('');
+    const userFilterHtml = `
+      <div class="act-userfilter">
+        <label for="actUserFilter">Filtrer par utilisateur</label>
+        <select id="actUserFilter">
+          <option value="">— Tous les utilisateurs —</option>
+          ${userOptions}
+        </select>
+        ${_actUserFilter ? '<button class="act-userclear" id="actUserClear">Réinitialiser</button>' : ''}
+        ${userFilterActive ? `<span class="act-usertag">Historique complet · ${_actUserEvents.events.length} événements${_actUserEvents.indexMissing ? ' (cache local)' : ''}</span>` : ''}
+        ${_actUserLoading ? '<span style="color:var(--muted);font-size:12px">Chargement…</span>' : ''}
+      </div>`;
+
     const chips = `
       <div class="admin-stats">
         <div class="stat-chip stat-chip-pro"><span class="stat-val">${activeOnRange}</span><span class="stat-lbl">Actifs (${range.lbl})</span></div>
         <div class="stat-chip"><span class="stat-val">${sids.size}</span><span class="stat-lbl">Sessions</span></div>
-        <div class="stat-chip"><span class="stat-val">${ev.length}</span><span class="stat-lbl">Événements</span></div>
+        <div class="stat-chip"><span class="stat-val">${ev.length}</span><span class="stat-lbl">Événements${userFilterActive ? ' (user)' : ''}</span></div>
       </div>`;
 
     const pages = Object.entries(byPage).sort((a, b) => b[1] - a[1]);
@@ -453,7 +504,10 @@ const Admin = (() => {
     const actionsHtml = actions.map(a => `
       <div class="stat-chip" style="flex:1"><span class="stat-val">${byType[a] || 0}</span><span class="stat-lbl">${_ACT_LABELS[a]}</span></div>`).join('');
 
-    const recent = ev.slice(0, 40);
+    // v0.9.390 : quand un user est sélectionné, on montre TOUT son historique
+    // (jusqu'à 500 lignes), sinon on garde le résumé 40 lignes globales.
+    const recentCap = userFilterActive ? 500 : 40;
+    const recent = ev.slice(0, recentCap);
     const recentRows = recent.map(e => {
       const ms    = evMs(e);
       const label = e.type === 'page_view' ? (_PAGE_LABELS[e.page] || e.page || '?') : (_ACT_LABELS[e.type] || e.type);
@@ -474,18 +528,34 @@ const Admin = (() => {
       </div>
       <p class="ov-note" style="margin:0 0 16px">Trafic global (compteur cookieless, landing incluse). L'activité détaillée ci-dessous ne concerne que les comptes connectés.</p>`;
 
-    const cappedNote = (capped && range.ms === Infinity)
-      ? '<p class="ov-note">Affichage limité aux 1500 événements les plus récents.</p>' : '';
+    const cappedNote = (capped && range.ms === Infinity && !userFilterActive)
+      ? '<p class="ov-note">Affichage limité aux 1500 événements les plus récents (vue globale). Sélectionne un utilisateur ci-dessous pour son historique complet.</p>' : '';
+    const userIndexNote = (userFilterActive && _actUserEvents.indexMissing)
+      ? '<p class="ov-note">L\'index Firestore <code>uid + ts</code> n\'existe pas encore — affichage limité au cache global. Crée l\'index dans la console Firebase pour avoir l\'historique complet.</p>' : '';
+    const fluxTitle = userFilterActive
+      ? `Historique de l'utilisateur <span style="color:var(--muted);font-weight:400">· ${range.lbl} · ${recent.length}${ev.length > recent.length ? '/' + ev.length : ''} lignes</span>`
+      : `Flux récent <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span>`;
 
-    wrap.innerHTML = selector + visitorsBlock + chips +
+    wrap.innerHTML = selector + visitorsBlock + chips + userFilterHtml +
       `<h3 style="font-size:13px;margin:20px 0 10px;color:var(--text)">Pages visitées <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3>${pagesHtml}` +
       `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Actions clés <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3><div class="admin-stats">${actionsHtml}</div>` +
-      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">Flux récent <span style="color:var(--muted);font-weight:400">· ${range.lbl}</span></h3>` +
+      `<h3 style="font-size:13px;margin:24px 0 10px;color:var(--text)">${fluxTitle}</h3>` +
       (recent.length
         ? `<table class="admin-table"><thead><tr><th>Utilisateur</th><th>Type</th><th>Détail</th><th>Quand</th></tr></thead><tbody>${recentRows}</tbody></table>`
-        : '<p class="admin-empty">Aucun événement sur cette période.</p>') + cappedNote;
+        : '<p class="admin-empty">Aucun événement sur cette période.</p>') + cappedNote + userIndexNote;
 
     wrap.querySelectorAll('.act-range-btn').forEach(b => b.addEventListener('click', () => { _actRange = b.dataset.range; _renderActivityView(); }));
+    const sel = $('actUserFilter');
+    if (sel) sel.addEventListener('change', () => {
+      const v = sel.value;
+      _actUserFilter = v;
+      if (v) _loadUserEvents(v);
+      else { _actUserEvents = null; _renderActivityView(); }
+    });
+    const clr = $('actUserClear');
+    if (clr) clr.addEventListener('click', () => {
+      _actUserFilter = ''; _actUserEvents = null; _renderActivityView();
+    });
   }
 
   // v0.9.386 : onglet Codes + modale génération + fonctions associées retirées.
