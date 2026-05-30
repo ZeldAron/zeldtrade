@@ -11,14 +11,7 @@ const Admin = (() => {
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  // ── Génération de code unique ────────────────────────────────────────────────
-  function generateCode() {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // sans 0/O/1/I/L ambigus
-    const bytes = new Uint8Array(12);
-    crypto.getRandomValues(bytes);
-    const raw = Array.from(bytes).map(b => chars[b % chars.length]).join('');
-    return `ZELD-${raw.slice(0,4)}-${raw.slice(4,8)}-${raw.slice(8,12)}`;
-  }
+  // v0.9.386 : `generateCode` retiré (génération de code Pro supprimée de l'UI).
 
   // ── UI helpers ───────────────────────────────────────────────────────────────
   function $(id) { return document.getElementById(id); }
@@ -495,155 +488,10 @@ const Admin = (() => {
     wrap.querySelectorAll('.act-range-btn').forEach(b => b.addEventListener('click', () => { _actRange = b.dataset.range; _renderActivityView(); }));
   }
 
-  // ── Rendu onglet Codes (v0.9.179 : unifié avec design Users — stats + search + actions icônes) ──
-  let _cachedCodes      = [];
-  let _codeSearchQuery  = '';
-
-  async function renderCodes() {
-    const wrap = $('tabCodes');
-    wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
-    const codes = await loadCodes();
-    if (!codes.length) {
-      wrap.innerHTML = '<p class="admin-empty">Aucun code généré.</p>';
-      return;
-    }
-    _cachedCodes = codes;
-    _renderCodesTable();
-  }
-
-  function _renderCodesTable() {
-    const wrap  = $('tabCodes');
-    const codes = _cachedCodes;
-
-    // Stats globales
-    const total       = codes.length;
-    const activeCount = codes.filter(c => c.isActive).length;
-    const inactiveCount = total - activeCount;
-    const uniqueUsers = new Set(codes.map(c => c.uid)).size;
-
-    // Filtre live (email)
-    const q = (_codeSearchQuery || '').toLowerCase().trim();
-    const filtered = codes.filter(c =>
-      !q
-      || (c.email || '').toLowerCase().includes(q)
-      || (c.id    || '').toLowerCase().includes(q));
-
-    const rows = filtered.map(c => {
-      const statusTag = c.isActive
-        ? '<span class="plan-tag plan-tag-pro">✦ Abonnement actif</span>'
-        : '<span class="plan-tag plan-tag-basic">Non activé</span>';
-      return `<tr>
-        <td>
-          <div class="cell-user-name">${esc(c.email || '?')}</div>
-          <div class="cell-user-email" style="font-family:monospace">${esc(c.id.slice(0, 16))}…</div>
-        </td>
-        <td>${statusTag}</td>
-        <td>
-          <div class="cell-dates-act">Créé ${formatDateShort(c.createdAt)}</div>
-          <div class="cell-dates-seen">${formatRelative(c.createdAt)}</div>
-        </td>
-        <td class="cell-actions">
-          <button class="ico-btn ico-btn-red" data-action="revoke" data-id="${esc(c.id)}" data-uid="${esc(c.uid)}" data-email="${esc(c.email || '?')}" data-active="${c.isActive}" title="Révoquer ce code"></button>
-        </td>
-      </tr>`;
-    }).join('');
-
-    const emptyRow = filtered.length === 0
-      ? '<tr><td colspan="4" class="admin-empty-row">Aucun résultat pour ce filtre.</td></tr>'
-      : '';
-
-    wrap.innerHTML = `
-      <div class="admin-stats">
-        <div class="stat-chip"><span class="stat-val">${total}</span><span class="stat-lbl">Total codes</span></div>
-        <div class="stat-chip stat-chip-pro"><span class="stat-val">${activeCount}</span><span class="stat-lbl">Actifs</span></div>
-        <div class="stat-chip"><span class="stat-val">${inactiveCount}</span><span class="stat-lbl">Non activés</span></div>
-        <div class="stat-chip"><span class="stat-val">${uniqueUsers}</span><span class="stat-lbl">Users uniques</span></div>
-      </div>
-      <div class="admin-search">
-        <input type="text" id="codeSearch" placeholder="Rechercher par email ou hash…" value="${esc(q)}" autocomplete="off" spellcheck="false" />
-      </div>
-      <table class="admin-table">
-        <thead><tr><th>Bénéficiaire / Hash</th><th>Statut</th><th>Création</th><th class="th-actions">Action</th></tr></thead>
-        <tbody>${rows || emptyRow}</tbody>
-      </table>`;
-
-    const searchEl = $('codeSearch');
-    searchEl.addEventListener('input', (e) => {
-      _codeSearchQuery = e.target.value;
-      _renderCodesTable();
-      setTimeout(() => {
-        const s = $('codeSearch');
-        if (!s) return;
-        s.focus();
-        s.setSelectionRange(s.value.length, s.value.length);
-      }, 0);
-    });
-
-    wrap.querySelectorAll('[data-action="revoke"]').forEach(btn => {
-      btn.addEventListener('click', () =>
-        revokeCode(btn.dataset.id, btn.dataset.uid, btn.dataset.email, btn.dataset.active === 'true')
-      );
-    });
-  }
-
-  // ── Modale génération de code ─────────────────────────────────────────────────
-  function openGenModal(uid, email) {
-    $('genModalTitle').textContent = `Générer un code pour ${email}`;
-    $('genResult').style.display   = 'none';
-    $('genError').textContent      = '';
-    $('genCode').textContent       = '';
-    $('genTargetUid').value        = uid;
-    $('genTargetEmail').value      = email;
-    $('adminModal').style.display  = 'flex';
-  }
-
-  function closeGenModal() {
-    $('adminModal').style.display = 'none';
-  }
-
-  async function doGenerate() {
-    const uid   = $('genTargetUid').value;
-    const email = $('genTargetEmail').value;
-    const btn   = $('btnDoGen');
-    btn.disabled    = true;
-    btn.textContent = '…';
-    $('genError').textContent = '';
-    if (!_fbFunctions) {
-      $('genError').textContent = 'SDK Functions non chargé.';
-      btn.disabled = false; btn.textContent = 'Générer';
-      return;
-    }
-    try {
-      const code       = generateCode();
-      const normalized = code.replace(/[-\s]/g, '').toUpperCase();
-      const hash       = await sha256(normalized);
-
-      // Passe par Cloud Function : audit log + rate-limit + cap par user
-      const callable = _fbFunctions.httpsCallable('generateProCode');
-      await callable({ codeHash: hash, uid, email });
-
-      $('genCode').textContent    = code;
-      $('genResult').style.display = 'block';
-      toast('Code généré avec succès !');
-      renderCodes();
-    } catch (e) {
-      console.warn('[Admin] generateProCode failed', e);
-      $('genError').textContent = (e && e.message) || 'Erreur lors de la génération — réessaie.';
-    } finally {
-      btn.disabled    = false;
-      btn.textContent = 'Générer';
-    }
-  }
-
-  async function copyCode() {
-    const code = $('genCode').textContent;
-    try {
-      await navigator.clipboard.writeText(code);
-      toast('Code copié !');
-    } catch {
-      toast('Sélectionne le code manuellement.', true);
-    }
-  }
+  // v0.9.386 : onglet Codes + modale génération + fonctions associées retirées.
+  // Activation Elite gratuite directe via bouton ★ sur chaque user (grantEliteToUser).
+  // Les CFs `generateProCode` / `revokeProCode` restent en backend pour les 3 users
+  // Lifetime historiques (avant v0.9.385), mais ne sont plus exposées dans l'UI.
 
   // ── Modale « créer un compte de test » (v0.9.347) ───────────────────────────
   // Propose le prochain pseudo testN libre + un email/mot de passe par défaut
@@ -1195,7 +1043,7 @@ const Admin = (() => {
 
   function switchTab(name) {
     _currentTab = name;
-    ['overview', 'users', 'revenue', 'activity', 'audit', 'codes', 'config'].forEach(t => {
+    ['overview', 'users', 'revenue', 'activity', 'audit', 'config'].forEach(t => {
       const btn = $('tab-' + t); if (btn) btn.classList.toggle('tab-active', t === name);
       const div = $('tab' + t.charAt(0).toUpperCase() + t.slice(1)); if (div) div.style.display = t === name ? '' : 'none';
     });
@@ -1204,7 +1052,6 @@ const Admin = (() => {
     if (name === 'revenue')  renderRevenue();
     if (name === 'activity') renderActivity();
     if (name === 'audit')    renderAudit();
-    if (name === 'codes')    renderCodes();
     if (name === 'config')   renderConfig();
   }
 
@@ -1282,13 +1129,10 @@ const Admin = (() => {
     $('btnLogin').addEventListener('click', login);
     $('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
     $('btnLogout').addEventListener('click', () => _fbAuth.signOut());
-    ['overview', 'users', 'revenue', 'activity', 'audit', 'codes', 'config'].forEach(t => {
+    ['overview', 'users', 'revenue', 'activity', 'audit', 'config'].forEach(t => {
       const b = $('tab-' + t); if (b) b.addEventListener('click', () => switchTab(t));
     });
-    $('btnDoGen').addEventListener('click', doGenerate);
-    $('btnCopyCode').addEventListener('click', copyCode);
-    $('btnCloseModal').addEventListener('click', closeGenModal);
-    $('adminModal').addEventListener('click', e => { if (e.target === $('adminModal')) closeGenModal(); });
+    // v0.9.386 : bindings de la modale génération de code retirés.
     $('btnCloseDelete').addEventListener('click', closeDeleteModal);
     $('btnDoDelete').addEventListener('click', doDeleteUser);
     $('delConfirmInput').addEventListener('input', onConfirmInputChange);
