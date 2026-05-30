@@ -41,7 +41,7 @@
     'hero.cta.signup':  { fr: 'Créer un compte gratuit', en: 'Create a free account' },
     'hero.cta.preview': { fr: "Voir l'aperçu",           en: 'See the preview' },
     'hero.usercount':   { fr: 'traders nous font déjà confiance', en: 'traders already trust us' },
-    'hero.beta':        { fr: 'Bêta privée · accès limité', en: 'Private beta · limited access' },
+    // v0.9.388 : 'hero.beta' retirée (badge « Bêta privée » supprimé).
     'hero.chip.1':  { fr: '100 % gratuit pour démarrer',          en: '100% free to start' },
     'hero.chip.2':  { fr: "L'IA lit tes screenshots TradingView", en: 'AI reads your TradingView screenshots' },
     'hero.chip.3':  { fr: 'Made in France · RGPD natif',          en: 'Made in France · GDPR-native' },
@@ -50,7 +50,7 @@
     'stats.firms':  { fr: 'Prop firms supportées', en: 'Supported prop firms' },
     'stats.trades': { fr: 'Trades illimités',      en: 'Unlimited trades' },
     'stats.data':   { fr: 'Données en Europe',     en: 'Data stored in Europe' },
-    'stats.free':   { fr: 'Pendant la beta',       en: 'During the beta' },
+    'stats.free':   { fr: 'Pour démarrer',         en: 'To get started' },
 
     // Firms strip
     'firms.label':      { fr: 'Compatible avec les principales prop firms', en: 'Compatible with the major prop firms' },
