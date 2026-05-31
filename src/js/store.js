@@ -72,15 +72,17 @@ const Store = (() => {
   ];
 
   const DEFAULT_PROP_FIRMS = {
-    // ─── Apex Trader Funding 2026 — refonte v0.9.186, simplifié v0.9.187 ───
-    // Source : captures officielles apextraderfunding.com (user, 2026-05-17).
-    // Drawdown EOD (se fige quand le profit target est atteint). Min Days To Pass : 1.
-    // Consistency Rule : 50% (PA). Max 20 comptes PA. Payouts toutes les 5 trading days.
+    // ─── Apex Trader Funding — vérifié 2026-05-31 (nouveaux produits post-mars 2026) ───
+    // Source : apextraderfunding.com. 2 types de drawdown : EOD (avec Daily Loss) ou Intraday
+    // Trailing (sans Daily Loss) ; chiffres identiques sinon. Se fige à Start + Max DD + $100.
+    // Consistency 50% sur les PAYOUTS (aucun jour ≥50% du profit depuis le dernier payout) ; aucune en éval.
+    // 100% trader · 5 jours qualifiants/payout · min $500 · max 6 payouts/PA · activation 7j · coupon SAVENOW −90%.
+    // Futures CME uniquement (pas de CFD/forex spot). Reset impossible (racheter une éval). Fees = EOD one-time.
     apex: { name: 'Apex Trader Funding', accounts: [
-      { id:'apex-25k',  size:'25K',  capital:25000,  profitTarget:1500, maxDrawdown:1000, dailyLossLimit:500,  maxContractsEval:4,  maxContractsPA:2,  evalFee:34.90, activationFeePA:119, drawdownType:'Trailing EOD (se fige à PT)', consistency:'≤50% meilleure journée (PA)', minTradingDays:1, payoutConditions:'PA $119 — 5 trading days, max 20 comptes' },
-      { id:'apex-50k',  size:'50K',  capital:50000,  profitTarget:3000, maxDrawdown:2000, dailyLossLimit:1000, maxContractsEval:6,  maxContractsPA:4,  evalFee:39.90, activationFeePA:129, drawdownType:'Trailing EOD (se fige à PT)', consistency:'≤50% meilleure journée (PA)', minTradingDays:1, payoutConditions:'PA $129 — 5 trading days, max 20 comptes' },
-      { id:'apex-100k', size:'100K', capital:100000, profitTarget:6000, maxDrawdown:3000, dailyLossLimit:1500, maxContractsEval:8,  maxContractsPA:6,  evalFee:59.90, activationFeePA:149, drawdownType:'Trailing EOD (se fige à PT)', consistency:'≤50% meilleure journée (PA)', minTradingDays:1, payoutConditions:'PA $149 — 5 trading days, max 20 comptes' },
-      { id:'apex-150k', size:'150K', capital:150000, profitTarget:9000, maxDrawdown:4000, dailyLossLimit:2000, maxContractsEval:12, maxContractsPA:10, evalFee:89.90, activationFeePA:169, drawdownType:'Trailing EOD (se fige à PT)', consistency:'≤50% meilleure journée (PA)', minTradingDays:1, payoutConditions:'PA $169 — 5 trading days, max 20 comptes' },
+      { id:'apex-25k',  size:'25K',  capital:25000,  profitTarget:1500, maxDrawdown:1000, dailyLossLimit:500,  maxContractsEval:4,  maxContractsPA:2,  evalFee:390,  drawdownType:'EOD ou Intraday Trailing (se fige à Start + Max DD + $100)', consistency:'≤50% (payouts) — aucune en éval', minTradingDays:1, payoutConditions:'100% trader · 5 jours qualifiants · min payout $500 · max 6 payouts/PA' },
+      { id:'apex-50k',  size:'50K',  capital:50000,  profitTarget:3000, maxDrawdown:2000, dailyLossLimit:1000, maxContractsEval:6,  maxContractsPA:4,  evalFee:450,  drawdownType:'EOD ou Intraday Trailing (se fige à Start + Max DD + $100)', consistency:'≤50% (payouts) — aucune en éval', minTradingDays:1, payoutConditions:'100% trader · 5 jours qualifiants · min payout $500 · max 6 payouts/PA' },
+      { id:'apex-100k', size:'100K', capital:100000, profitTarget:6000, maxDrawdown:3000, dailyLossLimit:1500, maxContractsEval:8,  maxContractsPA:6,  evalFee:590,  drawdownType:'EOD ou Intraday Trailing (se fige à Start + Max DD + $100)', consistency:'≤50% (payouts) — aucune en éval', minTradingDays:1, payoutConditions:'100% trader · 5 jours qualifiants · min payout $500 · max 6 payouts/PA' },
+      { id:'apex-150k', size:'150K', capital:150000, profitTarget:9000, maxDrawdown:4000, dailyLossLimit:2000, maxContractsEval:12, maxContractsPA:10, evalFee:1090, drawdownType:'EOD ou Intraday Trailing (se fige à Start + Max DD + $100)', consistency:'≤50% (payouts) — aucune en éval', minTradingDays:1, payoutConditions:'100% trader · 5 jours qualifiants · min payout $500 · max 6 payouts/PA' },
     ]},
     // ─── Topstep 2026 — refonte v0.9.188 ───
     // Source : help.topstep.com (Trading Combine Parameters + Max Loss Limit + Live Funded).
@@ -154,15 +156,24 @@ const Store = (() => {
     XAUUSD:0.35,EURUSD:1.00,GBPUSD:1.20,USDJPY:0.80,USOIL:3.00,
   };
   const DEFAULT_SPREADS_BY_FIRM = {
-    apex:    { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID, ..._CFD_FOREX_SPREADS },
+    // v0.9.417 : Apex = futures CME UNIQUEMENT (pas de CFD/forex spot). Catalogue complet + valeur du tick ($).
+    apex: {
+      ES1:12.50, MES1:1.25, NQ1:5.00, MNQ1:0.50, YM1:5.00, MYM1:0.50, RTY1:5.00, M2K1:0.50, EMD1:10.00, NKD1:25.00,
+      '6E1':6.25, M6E1:1.25, '6B1':6.25, '6J1':6.25, '6A1':5.00, '6C1':5.00, '6S1':12.50, '6N1':5.00, M6A1:1.00,
+      GC1:10.00, MGC1:1.00, SI1:25.00, SIL1:2.50, HG1:12.50, PL1:5.00, PA1:50.00,
+      CL1:10.00, QM1:12.50, MCL1:1.00, NG1:10.00, QG1:12.50, HO1:4.20, RB1:4.20,
+      ZC1:12.50, ZW1:12.50, ZS1:12.50, ZM1:10.00, ZL1:6.00, HE1:10.00, LE1:10.00, GF1:12.50,
+      MBT1:0.50, MET1:0.05,
+    },
     // v0.9.416 : Topstep = futures CME UNIQUEMENT (pas de CFD/forex spot). Catalogue complet + valeur du tick ($).
     topstep: {
       ES1:12.50, MES1:1.25, NQ1:5.00, MNQ1:0.50, YM1:5.00, MYM1:0.50, RTY1:5.00, M2K1:0.50, NKD1:25.00,
       GC1:10.00, MGC1:1.00, SI1:25.00, SIL1:2.50, HG1:12.50, MHG1:1.25, PL1:5.00,
-      '6E1':6.25, M6E1:1.25, '6B1':6.25, M6B1:0.625, '6J1':6.25, '6A1':10.00, M6A1:1.00, '6C1':5.00, '6S1':12.50, '6N1':10.00, E71:6.25, '6M1':10.00,
+      '6E1':6.25, M6E1:1.25, '6B1':6.25, M6B1:0.625, '6J1':6.25, '6A1':5.00, M6A1:1.00, '6C1':5.00, '6S1':12.50, '6N1':5.00, E71:6.25, '6M1':10.00,
       CL1:10.00, MCL1:1.00, QM1:12.50, NG1:10.00, QG1:12.50, MNG1:1.00, RB1:4.20, HO1:4.20,
       ZN1:15.625, ZB1:31.25, ZF1:7.8125, ZT1:7.8125, UB1:31.25, TN1:15.625,
       ZC1:12.50, ZW1:12.50, ZS1:12.50, ZM1:10.00, ZL1:6.00, HE1:10.00, LE1:10.00,
+      MBT1:0.50, MET1:0.05,
     },
     ftmo:      { ..._CFD_FOREX_SPREADS },
     ftmo1step: { ..._CFD_FOREX_SPREADS },
@@ -172,7 +183,7 @@ const Store = (() => {
       ES1:12.50, MES1:1.25, NQ1:5.00, MNQ1:0.50, YM1:5.00, MYM1:0.50, RTY1:5.00, M2K1:0.50, NKD1:25.00,
       GC1:10.00, MGC1:1.00, SI1:25.00, SIL1:2.50, PL1:5.00, HG1:12.50,
       CL1:10.00, MCL1:1.00, QM1:12.50, NG1:10.00, QG1:12.50,
-      '6E1':6.25, '6B1':6.25, '6J1':6.25, '6C1':5.00, '6A1':10.00, '6S1':12.50, '6N1':10.00,
+      '6E1':6.25, '6B1':6.25, '6J1':6.25, '6C1':5.00, '6A1':5.00, '6S1':12.50, '6N1':5.00,
       ZS1:12.50, ZC1:12.50, ZW1:12.50, ZL1:6.00, ZM1:10.00, HE1:10.00, LE1:10.00,
     },
     fpips:   { US500:0.40,US100:1.20,US30:2.00,GER40:1.20,UK100:0.80,XAUUSD:0.25,EURUSD:0.80,GBPUSD:1.00,USDJPY:0.70,USOIL:2.50 },
@@ -211,6 +222,17 @@ const Store = (() => {
       CL1:2.02, MCL1:0.77, QM1:1.72, NG1:2.10, QG1:1.02, MNG1:0.87, RB1:2.02, HO1:2.02,
       ZN1:1.30, ZB1:1.39, ZF1:1.17, ZT1:1.17, UB1:1.47, TN1:1.32,
       ZC1:2.65, ZW1:2.65, ZS1:2.65, ZM1:2.65, ZL1:2.65, HE1:2.62, LE1:2.62,
+      MBT1:1.42, MET1:0.42,
+    },
+    // Apex Trader Funding — commissions per side (Rithmic), vérifié 2026-05-31.
+    apex: {
+      ES1:1.99, NQ1:1.99, YM1:1.99, RTY1:1.99, EMD1:1.99, NKD1:1.99,
+      MES1:0.51, MNQ1:0.51, MYM1:0.51, M2K1:0.51,
+      '6E1':2.36, '6B1':2.36, '6A1':2.36, '6C1':2.36, '6S1':2.36, '6J1':2.36, '6N1':2.36, M6A1:0.42, M6E1:0.42,
+      GC1:2.31, SI1:2.31, HG1:2.31, PL1:2.31, PA1:2.31, SIL1:0.76, MGC1:0.76,
+      CL1:1.98, QM1:1.96, MCL1:0.51, NG1:1.98, QG1:1.26, HO1:1.98, RB1:1.98,
+      ZC1:2.79, ZW1:2.79, ZS1:2.79, ZM1:2.79, ZL1:2.79, HE1:2.79, LE1:2.79, GF1:2.79,
+      MBT1:2.76, MET1:0.46,
     },
   };
   // Renvoie la commission per-side pour (firm, instrument), ou null si non répertoriée.

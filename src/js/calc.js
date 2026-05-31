@@ -20,6 +20,9 @@ const Calc = (() => {
     M6E1: 12500, M6B1: 6250, M6A1: 10000, E71: 62500, '6M1': 1000000,  // µFX + e-mini EUR + Peso
     MNG1: 1000, RB1: 42000, HO1: 42000,          // µNatGas, RBOB, Heating Oil
     ZB1: 1000, ZF1: 1000, ZT1: 2000, UB1: 1000, TN1: 1000,  // taux/obligations
+    // v0.9.417 — instruments Apex supplémentaires (specs CME)
+    EMD1: 100, PA1: 100, GF1: 500,               // e-mini Midcap 400, Palladium, Feeder Cattle
+    MBT1: 0.1, MET1: 0.1,                         // µBitcoin (0.1 BTC), µEther (0.1 ETH)
     // CFD Indices MT4/MT5 ($ par lot par point d'index — contract size 1 chez FTMO → $1/pt)
     US30: 1, US100: 1, US500: 1, GER40: 1, UK100: 1,   // v0.9.416 : US30 5→1 (contract size FTMO = 1)
     // Métaux CFD ($ par lot par $ de prix — XAUUSD : 100 oz/lot)
@@ -46,13 +49,14 @@ const Calc = (() => {
     NKD1: 5,
     SI1: 0.005, SIL1: 0.005, PL1: 0.1, HG1: 0.0005,
     QM1: 0.025, NG1: 0.001, QG1: 0.005,
-    '6E1': 0.00005, '6B1': 0.0001, '6J1': 0.0000005, '6C1': 0.00005, '6A1': 0.0001, '6S1': 0.0001, '6N1': 0.0001,
+    '6E1': 0.00005, '6B1': 0.0001, '6J1': 0.0000005, '6C1': 0.00005, '6A1': 0.00005, '6S1': 0.0001, '6N1': 0.00005,  // 6A/6N : tick mini CME 0.00005 = $5 (corrigé v0.9.417)
     ZS1: 0.25, ZC1: 0.25, ZW1: 0.25, ZL1: 0.01, ZM1: 0.1, HE1: 0.025, LE1: 0.025,
     // v0.9.416 — instruments Topstep supplémentaires (specs CME)
     MHG1: 0.0005,
     M6E1: 0.0001, M6B1: 0.0001, M6A1: 0.0001, E71: 0.0001, '6M1': 0.00001,
     MNG1: 0.001, RB1: 0.0001, HO1: 0.0001,
     ZB1: 0.03125, ZF1: 0.0078125, ZT1: 0.00390625, UB1: 0.03125, TN1: 0.015625,
+    EMD1: 0.1, PA1: 0.5, GF1: 0.025, MBT1: 5, MET1: 0.5,
   };
   function tickSize(instrument) { return TICK_SIZES[instrument] != null ? TICK_SIZES[instrument] : TICK_SIZE; }
   // Valeur d'un tick en $ pour l'instrument (= tickSize × $/point).
