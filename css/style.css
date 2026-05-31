@@ -5490,7 +5490,9 @@ img { -webkit-user-drag: none; }
 .instr-pill.on { color: var(--on-accent); }
 
 /* Logo « Z » : était blanc sur violet ; sur vert vif → tracé sombre (comme la landing) */
-.logo-mark svg path, .login-logo-mark svg path, .zt-loader .logo-tile svg path { stroke: var(--on-accent); }
+.logo-mark svg, .logo-mark svg path, .logo-mark svg polyline,
+.login-logo-mark svg, .login-logo-mark svg path,
+.zt-loader .logo-tile svg path { stroke: var(--on-accent); }
 /* Badge « POPULAR » des cartes pricing (texte sur fond accent) */
 .pricing-card.featured::before { color: var(--on-accent); }
 
