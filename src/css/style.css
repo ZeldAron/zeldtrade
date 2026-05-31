@@ -5505,9 +5505,31 @@ img { -webkit-user-drag: none; }
   font-family: var(--font-mono);
 }
 
-/* boutons primaires : fond accent plein (noir en clair / blanc en sombre), texte = on-accent */
-.btn-primary, .new-trade-btn, .login-btn { background: var(--accent); color: var(--on-accent); }
-.btn-primary:hover, .new-trade-btn:hover, .login-btn:hover { background: var(--accent-d); }
-
 /* nav active : liseré accent neutre, pas de préfixe */
 .nav-item.active { background: var(--active-bg); border-left: 2px solid var(--accent); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v0.9.402 — BOUTONS OUTLINE (au lieu de blocs noirs pleins). Bordure + texte
+   accent, fond transparent ; se remplit (accent) au survol. Bloc final.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.btn-primary, .new-trade-btn, .login-btn,
+.price-cta.primary, .pricing-cta.primary, .zt-tour-next,
+.tuto-replay-btn, .sidebar-upgrade-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  box-shadow: none;
+}
+.btn-primary:hover, .new-trade-btn:hover, .login-btn:hover,
+.price-cta.primary:hover, .pricing-cta.primary:hover, .zt-tour-next:hover,
+.tuto-replay-btn:hover, .sidebar-upgrade-btn:hover {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+/* filtres / chips actifs : outline aussi (plus de pavé noir) */
+.chip.active, .lp-billing-btn.active, .dash-filter-btn.active, .pill.active {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
