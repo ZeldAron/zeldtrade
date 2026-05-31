@@ -1,412 +1,182 @@
-// ─── LANDING I18N (FR/EN) ──────────────────────────────────────────────────
-// v0.9.321 (LANDING-EN) : bilingue FR/EN pour la landing. Externalisé (CSP
-// script-src 'self'). La VF reste dans le HTML (défaut + SEO) ; l'anglais vit
-// dans le dictionnaire ci-dessous. Une clé absente => on garde le texte FR du
-// HTML (dégradation gracieuse : la page n'est jamais cassée pendant le build).
-//
-// Marquage dans le HTML :
-//   data-i18n="cle"        -> remplace textContent
-//   data-i18n-html="cle"   -> remplace innerHTML (texte avec <strong>, <br>…)
-//   data-i18n-ph="cle"     -> attribut placeholder
-//   data-i18n-aria="cle"   -> attribut aria-label
-//
-// Toggle : bouton #langToggle (haut droite). Persistance : ?lang= + localStorage.
-// À la bascule : overlay #langLoader (écran de chargement) le temps de la transition.
-
+// ─── LANDING I18N (FR/EN) — v0.9.397 (refonte design "zeldaron") ────────────
+// Bilingue FR/EN. Le FR est dans le HTML (défaut + SEO) ; le dictionnaire fournit
+// l'EN (et le FR pour restaurer après une bascule). Une clé absente => texte HTML
+// conservé (dégradation gracieuse).
+//   data-i18n="cle"      -> textContent
+//   data-i18n-html="cle" -> innerHTML
+//   data-i18n-ph="cle"   -> placeholder
+//   data-i18n-aria="cle" -> aria-label
+// Toggle : boutons .lang-btn[data-lang]. Persistance ?lang= + localStorage.
 (function () {
   'use strict';
 
-  // ── Dictionnaire { cle : { fr, en } } ───────────────────────────────────────
-  // (rempli section par section ; voir aussi META plus bas pour <title>/description)
   const DICT = {
     // Nav
-    'nav.demo':     { fr: 'Aperçu',          en: 'Preview' },
-    'nav.features': { fr: 'Fonctionnalités', en: 'Features' },
-    'nav.vs':       { fr: 'Comparer',        en: 'Compare' },
-    'nav.value':    { fr: 'ROI',             en: 'ROI' },
-    'nav.pricing':  { fr: 'Tarifs',          en: 'Pricing' },
-    'nav.updates':  { fr: 'Nouveautés',      en: "What's new" },
-    'nav.login':    { fr: 'Connexion',       en: 'Log in' },
-    'nav.signup':   { fr: 'Créer un compte', en: 'Sign up' },
+    'nav.firms':   { fr: 'Prop firms', en: 'Prop firms' },
+    'nav.demo':    { fr: 'Démo',       en: 'Demo' },
+    'nav.calc':    { fr: 'Calc EOD',   en: 'EOD calc' },
+    'nav.about':   { fr: 'À propos',   en: 'About' },
+    'nav.pricing': { fr: 'Tarifs',     en: 'Pricing' },
+    'nav.updates': { fr: 'Nouveautés', en: "What's new" },
+    'nav.login':   { fr: 'Connexion',  en: 'Log in' },
+    'nav.signup':  { fr: "Lancer l'app →", en: 'Launch the app →' },
+
+    // Status bar + promo
+    'sb.launch':   { fr: 'EN LIGNE · MADE IN FRANCE 🇫🇷', en: 'ONLINE · MADE IN FRANCE 🇫🇷' },
+    'promo.text':  { fr: "🔥 Lancement : −40% sur Funded & Elite + 1 semaine d'essai", en: '🔥 Launch: −40% on Funded & Elite + 1-week trial' },
+    'promo.copy':  { fr: 'copier', en: 'copy' },
 
     // Hero
-    // v0.9.387 : 'hero.badge' retirée (badge « Bêta ouverte » supprimé).
-    'hero.title.1': { fr: 'Journalise.',     en: 'Journal it.' },
-    'hero.title.2': { fr: 'Analyse.',        en: 'Analyze.' },
-    'hero.title.3': { fr: 'Performe.',       en: 'Perform.' },
-    'hero.sub':     {
-      fr: 'Le journal de trading complet pour tous tes comptes : <strong>prop firm, crypto, fonds propres</strong>. L\'IA lit tes screenshots TradingView, le drawdown trailing est précis au tick près sur les prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips), et tout est multi-comptes. Dans un seul outil.',
-      en: 'The complete trading journal for every account you have: <strong>prop firm, crypto, personal funds</strong>. The AI reads your TradingView screenshots, trailing drawdown is tick-accurate on prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips), and everything is multi-account. All in one tool.',
+    'hero.eyebrow': { fr: 'POUR LES TRADERS PROP FIRM · CRYPTO · FONDS PROPRES', en: 'FOR PROP FIRM · CRYPTO · PERSONAL FUNDS TRADERS' },
+    'hero.headline': {
+      fr: '<span class="word-reveal"><span>Arrête</span></span> <span class="word-reveal"><span>de</span></span> <span class="word-reveal"><span>cramer</span></span><br><span class="word-reveal"><span>tes</span></span> <span class="word-reveal"><span>comptes</span></span> <span class="word-reveal"><span class="accent">funded.</span></span>',
+      en: '<span class="word-reveal"><span>Stop</span></span> <span class="word-reveal"><span>blowing</span></span><br><span class="word-reveal"><span>your</span></span> <span class="word-reveal"><span>funded</span></span> <span class="word-reveal"><span class="accent">accounts.</span></span>',
     },
-    'hero.cta.signup':  { fr: 'Créer un compte gratuit', en: 'Create a free account' },
-    'hero.cta.preview': { fr: "Voir l'aperçu",           en: 'See the preview' },
-    'hero.usercount':   { fr: 'traders nous font déjà confiance', en: 'traders already trust us' },
-    // v0.9.388 : 'hero.beta' retirée (badge « Bêta privée » supprimé).
-    'hero.chip.1':  { fr: '100 % gratuit pour démarrer',          en: '100% free to start' },
-    'hero.chip.2':  { fr: "L'IA lit tes screenshots TradingView", en: 'AI reads your TradingView screenshots' },
-    'hero.chip.3':  { fr: 'Made in France · RGPD natif',          en: 'Made in France · GDPR-native' },
-
-    // Stats strip
-    'stats.firms':  { fr: 'Prop firms supportées', en: 'Supported prop firms' },
-    'stats.trades': { fr: 'Trades illimités',      en: 'Unlimited trades' },
-    'stats.data':   { fr: 'Données en Europe',     en: 'Data stored in Europe' },
-    'stats.free':   { fr: 'Pour démarrer',         en: 'To get started' },
-
-    // Firms strip
-    'firms.label':      { fr: 'Compatible avec les principales prop firms', en: 'Compatible with the major prop firms' },
-    'firms.disclaimer': {
-      fr: 'Les marques mentionnées (Apex Trader Funding, FTMO, Topstep, Lucid Trading, Funding Pips) appartiennent à leurs propriétaires respectifs. ZeldTrade n\'est ni affilié, ni sponsorisé, ni approuvé par ces sociétés.',
-      en: 'The brands mentioned (Apex Trader Funding, FTMO, Topstep, Lucid Trading, Funding Pips) belong to their respective owners. ZeldTrade is not affiliated with, sponsored by, or endorsed by these companies.',
+    'hero.lead': {
+      fr: "Journal de trading avec <b>IA Vision</b> qui détecte entry, SL et TP depuis tes screenshots TradingView. Drawdown trailing EOD précis pour les 5 prop firms majeures — et tout aussi à l'aise en <b>crypto</b> et en <b>fonds propres</b>. Multi-comptes : un trade saisi, tout se réplique.",
+      en: 'Trading journal with <b>AI Vision</b> that detects entry, SL and TP from your TradingView screenshots. Tick-accurate EOD trailing drawdown for the 5 major prop firms — and just as comfortable with <b>crypto</b> and <b>personal funds</b>. Multi-account: log one trade, it replicates everywhere.',
     },
+    'hero.cta.signup': { fr: 'Commencer gratuitement', en: 'Start for free' },
+    'hero.cta.demo':   { fr: 'Voir la démo', en: 'See the demo' },
+    'hero.cta.nocard': { fr: 'Sans carte bancaire', en: 'No credit card' },
+    'hero.usercount':  { fr: 'traders nous font déjà confiance', en: 'traders already trust us' },
+    'hero.live':       { fr: '· en direct', en: '· live' },
+    'dash.dd':         { fr: 'EOD Trailing Drawdown', en: 'EOD Trailing Drawdown' },
 
-    // How it works
-    'how.eyebrow':  { fr: 'Comment ça marche',                en: 'How it works' },
-    'how.title':    { fr: 'Journaliser un trade en 30 secondes', en: 'Log a trade in 30 seconds' },
-    'how.sub':      { fr: 'Le flow le plus rapide du marché. Pas d\'Excel, pas de saisie manuelle, pas de copie-collage interminable.', en: 'The fastest flow on the market. No Excel, no manual entry, no endless copy-pasting.' },
-    'how.1.title':  { fr: 'Capture ton chart', en: 'Capture your chart' },
-    'how.1.desc':   { fr: 'Screenshot ton setup sur TradingView puis <kbd>Ctrl</kbd>+<kbd>V</kbd> directement dans ZeldTrade. Drag &amp; drop ou paste, comme tu veux.', en: 'Screenshot your setup on TradingView then <kbd>Ctrl</kbd>+<kbd>V</kbd> straight into ZeldTrade. Drag &amp; drop or paste, your call.' },
-    'how.2.title':  { fr: "L'IA fait le boulot", en: 'AI does the work' },
-    'how.2.desc':   { fr: "L'IA Vision détecte automatiquement entry, stop-loss et take-profit sur ton graphique. Les niveaux sont pré-remplis en 2 secondes.", en: 'AI Vision automatically detects entry, stop-loss and take-profit on your chart. Levels are pre-filled in 2 seconds.' },
-    'how.3.title':  { fr: 'Stats temps réel', en: 'Real-time stats' },
-    'how.3.desc':   { fr: 'R:R, risque %, P&L net (fees/spreads inclus), drawdown prop firm. Tout calculé en live, multi-comptes synchronisés.', en: 'R:R, risk %, net P&L (fees/spreads included), prop firm drawdown. All computed live, multi-account synced.' },
+    // Split
+    'split.title': { fr: 'Deux trajectoires de compte funded. <span class="accent">Une seule survit.</span>', en: 'Two funded-account paths. <span class="accent">Only one survives.</span>' },
+    'split.sub':   { fr: "Le trailing drawdown EOD ne pardonne aucune approximation. La différence n'est pas dans ton edge — elle est dans ton tracking.", en: 'EOD trailing drawdown forgives nothing. The difference isn\'t your edge — it\'s your tracking.' },
+    'split.before.tag':  { fr: 'SANS OUTIL · J+14', en: 'NO TOOL · DAY 14' },
+    'split.before.head': { fr: 'Compte Apex 150K · cramé', en: 'Apex 150K account · blown' },
+    'split.before.sub':  { fr: 'Trailing dépassé de $87 sur un trade gagnant non clôturé en EOD.', en: 'Trailing breached by $87 on a winning trade left open at EOD.' },
+    'split.before.1': { fr: 'Calcul EOD approximatif → breach surprise', en: 'Rough EOD math → surprise breach' },
+    'split.before.2': { fr: 'Trades notés sur papier ou Excel', en: 'Trades logged on paper or Excel' },
+    'split.before.3': { fr: 'Aucun signal avant le coup fatal', en: 'No signal before the fatal trade' },
+    'split.after.tag':  { fr: 'AVEC ZELDTRADE · J+90', en: 'WITH ZELDTRADE · DAY 90' },
+    'split.after.head': { fr: 'Compte Apex 150K · payé', en: 'Apex 150K account · paid out' },
+    'split.after.sub':  { fr: 'Buffer EOD remonté en temps réel après chaque trade. Aucun breach.', en: 'EOD buffer recomputed in real time after each trade. No breach.' },
+    'split.after.1': { fr: 'EOD précis, signal avant chaque trade risqué', en: 'Precise EOD, alert before every risky trade' },
+    'split.after.2': { fr: 'IA Vision lit entry/SL/TP en 1 screenshot', en: 'AI Vision reads entry/SL/TP from 1 screenshot' },
+    'split.after.3': { fr: 'Multi-comptes synchronisés en temps réel', en: 'Multi-account synced in real time' },
 
-    // Features — 3 piliers
-    'feat.eyebrow': { fr: '3 piliers', en: '3 pillars' },
-    'feat.title':   { fr: 'Ce que ZeldTrade fait <span class="title-accent">mieux que tous les autres</span>', en: 'What ZeldTrade does <span class="title-accent">better than everyone else</span>' },
-    'feat.sub':     { fr: 'Pas une liste de 50 features. 3 choses bien faites qui te font économiser 1h par jour et éviter des breaches.', en: 'Not a list of 50 features. 3 things done well that save you an hour a day and keep you from breaching.' },
-    'feat.1.title': { fr: 'IA Vision qui lit tes charts', en: 'AI Vision that reads your charts' },
-    'feat.1.desc':  { fr: '<strong>Ctrl+V</strong> ton screenshot TradingView → l\'IA détecte entry, SL et TP en <strong>2 secondes</strong>. Modèle <strong>IA standard</strong> en cascade pour Trader, et <strong>IA avancée</strong> en fallback automatique sur les charts complexes pour Funded et Elite.', en: '<strong>Ctrl+V</strong> your TradingView screenshot → AI detects entry, SL and TP in <strong>2 seconds</strong>. <strong>Standard AI</strong> for Trader, with <strong>advanced AI</strong> auto-falling back on complex charts for Funded and Elite.' },
-    'feat.1.b1':    { fr: 'Trader : 1 analyse / jour (IA)', en: 'Trader: 1 analysis / day (AI)' },
-    'feat.1.b2':    { fr: 'Funded : 5 / jour (IA + IA avancée)', en: 'Funded: 5 / day (AI + advanced AI)' },
-    'feat.1.b3':    { fr: 'Elite : illimité (IA + IA avancée)', en: 'Elite: unlimited (AI + advanced AI)' },
-    'feat.2.title': { fr: 'Règles prop firms calculées au tick', en: 'Prop firm rules computed to the tick' },
-    'feat.2.desc':  { fr: '<strong>Trailing drawdown EOD précis</strong> pour Apex, Topstep, Lucid (Flex/Pro/Direct), Funding Pips. Static pour FTMO 2-Step. Safety net, daily loss limit, max contracts intégrés. Tu vois le risque <strong>en temps réel</strong> dans le dashboard.', en: '<strong>Accurate EOD trailing drawdown</strong> for Apex, Topstep, Lucid (Flex/Pro/Direct), Funding Pips. Static for FTMO 2-Step. Safety net, daily loss limit and max contracts built in. You see your risk <strong>in real time</strong> on the dashboard.' },
-    'feat.2.b1':    { fr: '5 prop firms supportées (12+ presets)', en: '5 prop firms supported (12+ presets)' },
-    'feat.2.b2':    { fr: 'Distance to floor + Apex risk bar', en: 'Distance to floor + Apex risk bar' },
-    'feat.2.b3':    { fr: 'Comptes Crypto (Binance / Coinbase) &amp; Fonds propres', en: 'Crypto accounts (Binance / Coinbase) &amp; personal funds' },
-    'feat.3.title': { fr: 'Multi-comptes + groupes en 1 clic', en: 'Multi-account + groups in 1 click' },
-    'feat.3.desc':  { fr: '<strong>Comptes illimités sur Elite</strong> (prop / crypto / fonds propres). Crée un groupe, saisis ton trade une fois, il se réplique automatiquement sur tous les comptes du groupe avec la bonne taille / bon levier.', en: '<strong>Unlimited accounts on Elite</strong> (prop / crypto / personal funds). Create a group, enter your trade once, and it replicates automatically across every account in the group with the right size / leverage.' },
-    'feat.3.b1':    { fr: '3 comptes (Funded) · illimité (Elite)', en: '3 accounts (Funded) · unlimited (Elite)' },
-    'feat.3.b2':    { fr: '50 groupes max, 100 comptes / groupe', en: '50 groups max, 100 accounts / group' },
-    'feat.3.b3':    { fr: 'Filtres dashboard par compte ou groupe', en: 'Dashboard filters by account or group' },
-    // Features — mini-features (avec <strong>/<br>/<span>)
-    'feat.mini.1':  { fr: '<strong>Screenshots à vie</strong><br><span>Stockés chiffrés EU, compression auto</span>', en: '<strong>Screenshots for life</strong><br><span>Encrypted EU storage, auto-compression</span>' },
-    'feat.mini.2':  { fr: '<strong>P&amp;L net précis</strong><br><span>Fees, spreads, partial close, scale-out</span>', en: '<strong>Accurate net P&amp;L</strong><br><span>Fees, spreads, partial close, scale-out</span>' },
-    'feat.mini.3':  { fr: '<strong>Calendrier coloré</strong><br><span>Par jour, par mois, drawer cliquable</span>', en: '<strong>Color-coded calendar</strong><br><span>By day, by month, clickable drawer</span>' },
-    'feat.mini.4':  { fr: '<strong>Goals personnels</strong><br><span>P&amp;L mensuel, winrate, streak, # trades</span>', en: '<strong>Personal goals</strong><br><span>Monthly P&amp;L, win rate, streak, # trades</span>' },
-    'feat.mini.5':  { fr: '<strong>Analytics profond</strong><br><span>Par setup, instrument, session, jour</span>', en: '<strong>Deep analytics</strong><br><span>By setup, instrument, session, day</span>' },
-    'feat.mini.6':  { fr: '<strong>Export PDF + CSV</strong><br><span>1 page/trade pour coach ou funded app</span>', en: '<strong>PDF + CSV export</strong><br><span>1 page/trade for a coach or funded app</span>' },
-    'feat.mini.7':  { fr: '<strong>Calculateur fiscal FR</strong><br><span>Micro-BNC, URSSAF, ACRE intégrés</span>', en: '<strong>French tax calculator</strong><br><span>Micro-BNC, URSSAF, ACRE built in</span>' },
-    'feat.mini.8':  { fr: '<strong>Bilingue FR / EN</strong><br><span>Tout le site bascule en 1 clic</span>', en: '<strong>Bilingual FR / EN</strong><br><span>Whole site switches in 1 click</span>' },
-    'feat.mini.9':  { fr: '<strong>RGPD natif</strong><br><span>Export JSON complet, suppression 1-clic</span>', en: '<strong>GDPR-native</strong><br><span>Full JSON export, 1-click deletion</span>' },
+    // Firms
+    'firms.title': { fr: 'Les 5 prop firms majeures. <span class="accent">Leurs règles exactes.</span>', en: 'The 5 major prop firms. <span class="accent">Their exact rules.</span>' },
+    'firms.sub':   { fr: "Pas une moyenne. Pas une approximation. Chaque firm a son propre moteur de règles, codé à la main et vérifié par les bêta testeurs.", en: 'No average. No approximation. Each firm has its own rules engine, hand-coded and verified by beta testers.' },
+    'firms.none':   { fr: 'Aucune', en: 'None' },
+    'firms.mindays':{ fr: 'Min trading days', en: 'Min trading days' },
+    'firms.apex.split': { fr: "100% jusqu'à $25k", en: '100% up to $25k' },
+    'firms.static': { fr: 'Statique · 10%', en: 'Static · 10%' },
+    'firms.staticshort': { fr: 'Statique', en: 'Static' },
+    'firms.yes':    { fr: 'Oui', en: 'Yes' },
+    'firms.upto90': { fr: "Jusqu'à 90%", en: 'Up to 90%' },
+    'firms.disclaimer': { fr: "Les marques mentionnées (Apex Trader Funding, FTMO, Topstep, Lucid Trading, Funding Pips) appartiennent à leurs propriétaires respectifs. ZeldTrade n'est ni affilié, ni sponsorisé, ni approuvé par ces sociétés.", en: 'The brands mentioned (Apex Trader Funding, FTMO, Topstep, Lucid Trading, Funding Pips) belong to their respective owners. ZeldTrade is not affiliated with, sponsored by, or endorsed by these companies.' },
 
-    // Footer
-    'footer.updates': { fr: 'Nouveautés',      en: "What's new" },
-    'footer.legal':   { fr: 'Mentions légales', en: 'Legal notice' },
-    'footer.cgu':     { fr: 'CGU',             en: 'Terms' },
-    'footer.privacy': { fr: 'Confidentialité', en: 'Privacy' },
-    'footer.about':   { fr: 'À propos',        en: 'About' },
-    'footer.contact': { fr: 'Contact',         en: 'Contact' },
+    // Demo
+    'demo.title': { fr: 'Un trade saisi. <span class="accent">Tout réplique.</span>', en: 'One trade logged. <span class="accent">Everything replicates.</span>' },
+    'demo.sub':   { fr: "Drop un screen TradingView, l'IA Vision détecte entry, SL, TP et taille. Le trade se propage sur tous tes comptes groupés avec les bons ratios. Le journal s'écrit tout seul — prop firm, crypto ou fonds propres.", en: 'Drop a TradingView screenshot, AI Vision detects entry, SL, TP and size. The trade propagates to all your grouped accounts with the right ratios. The journal writes itself — prop firm, crypto or personal funds.' },
+    'demo.today':   { fr: "Journal · Aujourd'hui", en: 'Journal · Today' },
+    'demo.price':   { fr: 'Évolution prix · 1m', en: 'Price action · 1m' },
+    'demo.winrate': { fr: 'Win rate', en: 'Win rate' },
 
-    // Cookie banner
-    'cookie.text': {
-      fr: 'ZeldTrade utilise uniquement des cookies <strong style="color:#e6edf3">essentiels</strong> : connexion (Firebase Auth), sécurité anti-bot (Cloudflare Turnstile / hCaptcha) et stockage local de tes données. <strong style="color:#e6edf3">Aucun cookie publicitaire, aucun tracking.</strong> <a href="/privacy" style="color:#a78bfa;text-decoration:none">Politique de confidentialité</a>',
-      en: 'ZeldTrade uses only <strong style="color:#e6edf3">essential</strong> cookies: login (Firebase Auth), anti-bot security (Cloudflare Turnstile / hCaptcha) and local storage of your data. <strong style="color:#e6edf3">No advertising cookies, no tracking.</strong> <a href="/privacy" style="color:#a78bfa;text-decoration:none">Privacy policy</a>',
-    },
-    'cookie.btn': { fr: 'J\'ai compris', en: 'Got it' },
+    // Calc
+    'calc.title': { fr: 'Calc. EOD drawdown. <span class="accent">Essaye-la.</span>', en: 'EOD drawdown calc. <span class="accent">Try it.</span>' },
+    'calc.sub':   { fr: "Le même moteur que celui qui tourne dans l'app. Joue avec les curseurs et regarde le buffer évoluer en temps réel.", en: 'The same engine that runs inside the app. Play with the sliders and watch the buffer move in real time.' },
+    'calc.params':     { fr: 'Paramètres compte', en: 'Account parameters' },
+    'calc.params.sub': { fr: 'Ajuste les valeurs · le buffer réagit en live.', en: 'Adjust the values · the buffer reacts live.' },
+    'calc.firm':    { fr: 'Prop firm', en: 'Prop firm' },
+    'calc.size':    { fr: 'Taille compte initial', en: 'Initial account size' },
+    'calc.hwm':     { fr: 'Equity au plus haut (HWM)', en: 'High water mark (HWM)' },
+    'calc.openpnl': { fr: 'P&L ouvert', en: 'Open P&L' },
+    'calc.risk':    { fr: 'Risque trade prévu', en: 'Planned trade risk' },
+    'calc.safe':    { fr: 'SAFE · trade autorisé', en: 'SAFE · trade allowed' },
+    'calc.bufafter':{ fr: '// buffer EOD après ce trade', en: '// EOD buffer after this trade' },
+    'calc.floor':   { fr: 'EOD floor', en: 'EOD floor' },
+    'calc.equity':  { fr: 'Equity actuelle', en: 'Current equity' },
+    'calc.buffer':  { fr: 'Buffer actuel', en: 'Current buffer' },
+    'calc.dist':    { fr: 'Distance breach', en: 'Distance to breach' },
 
-    // Démo live
-    'demo.eyebrow': { fr: 'Démo live', en: 'Live demo' },
-    'demo.title':   { fr: 'Crée ton premier trade en <span class="title-accent">30 secondes</span>', en: 'Create your first trade in <span class="title-accent">30 seconds</span>' },
-    'demo.sub':     { fr: 'Aucune saisie manuelle. Capture ton chart TradingView, l\'IA fait le reste.', en: 'No manual entry. Screenshot your TradingView chart, AI does the rest.' },
-    'demo.step1':   { fr: 'Capture', en: 'Capture' },
-    'demo.step2':   { fr: 'IA fill', en: 'AI fill' },
-    'demo.step3':   { fr: 'Sauvegarde', en: 'Save' },
-    'demo.paste':   { fr: 'Drag & drop ou Ctrl+V ton screenshot TradingView', en: 'Drag & drop or Ctrl+V your TradingView screenshot' },
-    'demo.aitext':  { fr: 'L\'IA Vision analyse ton chart…', en: 'AI Vision is analyzing your chart…' },
-    'demo.save':    { fr: '✓ Sauvegarder le trade', en: '✓ Save the trade' },
-    'demo.toast':   { fr: '✓ Trade ajouté à ton journal &amp; dashboard mis à jour', en: '✓ Trade added to your journal &amp; dashboard updated' },
-    'demo.caption': { fr: 'Animation simplifiée. La vraie app est plus complète (multi-comptes, groupes, partial close, etc.)', en: 'Simplified animation. The real app is more complete (multi-account, groups, partial close, etc.)' },
-    'demo.nav.new':      { fr: 'Nouveau trade', en: 'New trade' },
-    'demo.nav.goals':    { fr: 'Objectifs', en: 'Goals' },
-    'demo.nav.settings': { fr: 'Réglages', en: 'Settings' },
-
-    // Avant / Après
-    'ba.eyebrow':      { fr: 'Avant / Après', en: 'Before / After' },
-    'ba.title':        { fr: 'Pourquoi tu vas changer d\'outil ce mois-ci', en: 'Why you\'ll switch tools this month' },
-    'ba.sub':          { fr: 'Si tu trades en prop firm avec un Excel ou un journal générique, voici ce que tu rates chaque jour.', en: 'If you trade with a prop firm using Excel or a generic journal, here\'s what you miss every day.' },
-    'ba.before.title': { fr: 'Sans ZeldTrade', en: 'Without ZeldTrade' },
-    'ba.before.1':     { fr: '<span class="ba-x">✗</span> Excel chaotique avec 12 onglets pour 5 comptes différents', en: '<span class="ba-x">✗</span> Chaotic Excel with 12 tabs for 5 different accounts' },
-    'ba.before.2':     { fr: '<span class="ba-x">✗</span> Trailing drawdown calculé à la main → erreurs &amp; breach surprise', en: '<span class="ba-x">✗</span> Trailing drawdown computed by hand → errors &amp; surprise breaches' },
-    'ba.before.3':     { fr: '<span class="ba-x">✗</span> Screenshots TradingView éparpillés dans 8 dossiers', en: '<span class="ba-x">✗</span> TradingView screenshots scattered across 8 folders' },
-    'ba.before.4':     { fr: '<span class="ba-x">✗</span> Saisie manuelle de chaque trade (3-5 min × 20 trades/jour = 1h perdue)', en: '<span class="ba-x">✗</span> Manual entry of every trade (3-5 min × 20 trades/day = 1h lost)' },
-    'ba.before.5':     { fr: '<span class="ba-x">✗</span> Calculs P&amp;L approximatifs, frais oubliés', en: '<span class="ba-x">✗</span> Rough P&amp;L calculations, forgotten fees' },
-    'ba.before.6':     { fr: '<span class="ba-x">✗</span> Aucune analytics par setup, par session, par instrument', en: '<span class="ba-x">✗</span> No analytics by setup, session or instrument' },
-    'ba.before.7':     { fr: '<span class="ba-x">✗</span> Outils anglo-saxons à 30-40 $/mois pas adaptés aux prop firms', en: '<span class="ba-x">✗</span> English-only tools at $30-40/mo not built for prop firms' },
-    'ba.after.title':  { fr: 'Avec ZeldTrade', en: 'With ZeldTrade' },
-    'ba.after.1':      { fr: '<span class="ba-check">✓</span> <strong>1 journal centralisé</strong> pour tous tes comptes prop / crypto / personnels', en: '<span class="ba-check">✓</span> <strong>1 centralized journal</strong> for all your prop / crypto / personal accounts' },
-    'ba.after.2':      { fr: '<span class="ba-check">✓</span> <strong>Trailing drawdown EOD précis</strong> calculé au tick près (Apex/Topstep/Lucid/FP)', en: '<span class="ba-check">✓</span> <strong>Accurate EOD trailing drawdown</strong> computed to the tick (Apex/Topstep/Lucid/FP)' },
-    'ba.after.3':      { fr: '<span class="ba-check">✓</span> <strong>Screenshots persistants</strong> stockés à vie dans le cloud (chiffrés EU)', en: '<span class="ba-check">✓</span> <strong>Persistent screenshots</strong> stored for life in the cloud (EU-encrypted)' },
-    'ba.after.4':      { fr: '<span class="ba-check">✓</span> <strong>IA Vision</strong> détecte entry/SL/TP en 2 sec (gain de 50 min/jour)', en: '<span class="ba-check">✓</span> <strong>AI Vision</strong> detects entry/SL/TP in 2 sec (saves 50 min/day)' },
-    'ba.after.5':      { fr: '<span class="ba-check">✓</span> <strong>P&amp;L net</strong> calculé avec fees + spreads par instrument', en: '<span class="ba-check">✓</span> <strong>Net P&amp;L</strong> computed with fees + spreads per instrument' },
-    'ba.after.6':      { fr: '<span class="ba-check">✓</span> <strong>Analytics</strong> par setup, session, instrument, jour, mois', en: '<span class="ba-check">✓</span> <strong>Analytics</strong> by setup, session, instrument, day, month' },
-    'ba.after.7':      { fr: '<span class="ba-check">✓</span> <strong>Made in France</strong> à 14,99 €/mois, soit 50% moins cher que les US', en: '<span class="ba-check">✓</span> <strong>Made in France</strong> at €14.99/mo, 50% cheaper than US tools' },
-
-    // Mockup app preview (aperçu interactif)
-    'mk.bartitle':     { fr: 'zeldtrade.app · Aperçu interactif', en: 'zeldtrade.app · Interactive preview' },
-    'mk.nav.calendar': { fr: 'Calendrier', en: 'Calendar' },
-    'mk.nav.goals':    { fr: 'Objectifs', en: 'Goals' },
-    'mk.equity':       { fr: 'Équité (30 j)', en: 'Equity (30d)' },
-    'mk.tradestotal':  { fr: 'Trades total', en: 'Total trades' },
-    'mk.avgrr':        { fr: 'R:R moyen', en: 'Avg R:R' },
-    'mk.perfinstr':    { fr: 'Perf par instrument', en: 'Perf by instrument' },
-    'mk.may':          { fr: 'Mai 2026', en: 'May 2026' },
-    'mk.activedays':   { fr: '14 j actifs', en: '14 active days' },
-    'mk.thisweek':     { fr: 'Cette semaine', en: 'This week' },
-    'mk.recenttrades': { fr: 'Trades récents', en: 'Recent trades' },
-    'mk.active':       { fr: 'Actifs', en: 'Active' },
-    'mk.reached':      { fr: 'Atteints', en: 'Reached' },
-    'mk.inprogress':   { fr: 'En cours', en: 'In progress' },
-    'mk.monthlyprofit':{ fr: 'Profit mensuel', en: 'Monthly profit' },
-    'mk.tradesmonth':  { fr: 'Trades / mois', en: 'Trades / month' },
-    'mk.targetwr':     { fr: 'Win rate cible', en: 'Target win rate' },
-    'mk.goalreached':  { fr: '✓ Atteint', en: '✓ Reached' },
-    'demo.curl':       { fr: 'zeldtrade.com/app · Nouveau trade', en: 'zeldtrade.com/app · New trade' },
-    // Mini-calendrier (initiales jours Lun→Dim) + dates du mockup
-    'mk.cal.1': { fr: 'L', en: 'M' },
-    'mk.cal.2': { fr: 'M', en: 'T' },
-    'mk.cal.3': { fr: 'M', en: 'W' },
-    'mk.cal.4': { fr: 'J', en: 'T' },
-    'mk.cal.5': { fr: 'V', en: 'F' },
-    'mk.cal.6': { fr: 'S', en: 'S' },
-    'mk.cal.7': { fr: 'D', en: 'S' },
-    'mk.date.may14': { fr: '14 mai', en: 'May 14' },
-    'mk.date.may13': { fr: '13 mai', en: 'May 13' },
-    'mk.date.may12': { fr: '12 mai', en: 'May 12' },
-
-    // Use cases — quelle prop firm ?
-    'uc.title':        { fr: 'Tu trades sur <span class="title-accent">quels comptes</span> ?', en: 'Which <span class="title-accent">accounts</span> do you trade?' },
-    'uc.sub':          { fr: 'Prop firm, crypto, fonds propres : chaque type de compte a ses règles. ZeldTrade les connaît toutes, choisis ton compte et configure en 30 secondes.', en: 'Prop firm, crypto, personal funds: each account type has its own rules. ZeldTrade knows them all, pick your account and set it up in 30 seconds.' },
-    'uc.apex.pain':    { fr: 'Trailing drawdown EOD complexe, 4 tailles (25K/50K/100K/150K), eval fees + activation fees PA, max contracts.', en: 'Complex EOD trailing drawdown, 4 sizes (25K/50K/100K/150K), eval fees + PA activation fees, max contracts.' },
-    'uc.apex.fix':     { fr: '<strong>ZeldTrade :</strong> 4 presets EOD officiels intégrés, calcul du trailing au tick près, alerte distance to floor, breakdown fees activation.', en: '<strong>ZeldTrade:</strong> 4 official EOD presets built in, tick-accurate trailing calculation, distance-to-floor alert, activation fee breakdown.' },
-    'uc.topstep.pain': { fr: 'Trailing drawdown jusqu\'au passage en funded, eval fee mensuel à intégrer au break-even, max contracts par phase.', en: 'Trailing drawdown until you go funded, monthly eval fee to factor into break-even, max contracts per phase.' },
-    'uc.topstep.fix':  { fr: '<strong>ZeldTrade :</strong> 3 presets Topstep avec eval fees mensuels, switch automatique funded → trailing fige, dashboard adapté.', en: '<strong>ZeldTrade:</strong> 3 Topstep presets with monthly eval fees, automatic funded switch → trailing freezes, dashboard adapts.' },
-    'uc.ftmo.pain':    { fr: 'Static drawdown sur 2-Step (différent du trailing), consistency rule sur certains comptes, profit targets phase 1 vs phase 2.', en: 'Static drawdown on 2-Step (different from trailing), consistency rule on some accounts, phase 1 vs phase 2 profit targets.' },
-    'uc.ftmo.fix':     { fr: '<strong>ZeldTrade :</strong> Presets FTMO 1-Step et 2-Step distincts, static drawdown calculé correctement, suivi consistency.', en: '<strong>ZeldTrade:</strong> Distinct FTMO 1-Step and 2-Step presets, static drawdown computed correctly, consistency tracking.' },
-    'uc.lucid.pain':   { fr: '3 produits distincts (Flex / Pro / Direct), 4 tailles chacun = 12 configurations. Chacune avec ses propres drawdown, profit target, max contracts.', en: '3 distinct products (Flex / Pro / Direct), 4 sizes each = 12 configurations. Each with its own drawdown, profit target and max contracts.' },
-    'uc.lucid.fix':    { fr: '<strong>ZeldTrade :</strong> <strong>12 presets Lucid</strong> ready-to-use, le seul SaaS à les avoir tous distingués correctement.', en: '<strong>ZeldTrade:</strong> <strong>12 ready-to-use Lucid presets</strong>, the only SaaS to tell them all apart correctly.' },
-    'uc.fp.pain':      { fr: 'Static drawdown, multi-step evaluation, profit target par phase, payout conditions spécifiques.', en: 'Static drawdown, multi-step evaluation, profit target per phase, specific payout conditions.' },
-    'uc.fp.fix':       { fr: '<strong>ZeldTrade :</strong> Preset Funding Pips configurable, static drawdown précis, suivi profit target en temps réel.', en: '<strong>ZeldTrade:</strong> Configurable Funding Pips preset, accurate static drawdown, real-time profit target tracking.' },
-    'uc.other.title':  { fr: 'Autre / Fonds propres / Crypto', en: 'Other / Personal funds / Crypto' },
-    'uc.other.pain':   { fr: 'Tu trades avec ton propre capital ou sur Binance / Coinbase ? Pas de règles imposées mais besoin d\'un journal aussi rigoureux.', en: 'Trading with your own capital or on Binance / Coinbase? No imposed rules, but you still need an equally rigorous journal.' },
-    'uc.other.fix':    { fr: '<strong>ZeldTrade :</strong> Comptes <strong>Personnel</strong> sans règles + comptes <strong>Crypto</strong> (Binance Futures + Coinbase Spot) avec calcul des fees adapté.', en: '<strong>ZeldTrade:</strong> <strong>Personal</strong> accounts with no rules + <strong>Crypto</strong> accounts (Binance Futures + Coinbase Spot) with tailored fee calculation.' },
-
-    // Comparaison (vs)
-    'vs.eyebrow':      { fr: 'Comparaison', en: 'Comparison' },
-    'vs.title':        { fr: 'Pourquoi pas <span class="title-accent">Edgyx, Tradervue ou Excel</span> ?', en: 'Why not <span class="title-accent">Edgyx, Tradervue or Excel</span>?' },
-    'vs.sub':          { fr: 'Les outils généralistes (Edgyx, Tradervue, TradeZella) sont bien faits mais ignorent les contraintes spécifiques des prop firms. Excel demande 30 min de paramétrage par compte.', en: 'Generalist tools (Edgyx, Tradervue, TradeZella) are well built but ignore the specific constraints of prop firms. Excel takes 30 min of setup per account.' },
-    'vs.th.criteria':  { fr: 'Critère', en: 'Criteria' },
-    'vs.th.edgyx':     { fr: 'Généraliste FR', en: 'Generalist (FR)' },
-    'vs.th.excel':     { fr: 'Gratuit', en: 'Free' },
-    'vs.r1.crit':      { fr: 'Spécialisation prop firms (Apex, FTMO, Topstep, Lucid, FP)', en: 'Prop firm specialization (Apex, FTMO, Topstep, Lucid, FP)' },
-    'vs.r1.us':        { fr: '✓ 20+ presets précis', en: '✓ 20+ precise presets' },
-    'vs.r1.edgyx':     { fr: '⚠ Generic prop rules', en: '⚠ Generic prop rules' },
-    'vs.r1.zella':     { fr: '⚠ Partiel', en: '⚠ Partial' },
-    'vs.r1.excel':     { fr: '✗ Manuel', en: '✗ Manual' },
-    'vs.r2.crit':      { fr: 'Trailing drawdown EOD calculé au tick', en: 'Tick-accurate EOD trailing drawdown' },
-    'vs.r3.crit':      { fr: 'IA Vision sur screenshot TradingView', en: 'AI Vision on TradingView screenshots' },
-    'vs.r3.us':        { fr: '✓ IA + IA avancée (Funded+)', en: '✓ AI + advanced AI (Funded+)' },
-    'vs.r3.edgyx':     { fr: '✗ (IA psychologie)', en: '✗ (psychology AI)' },
-    'vs.r3.zella':     { fr: '⚠ Add-on payant', en: '⚠ Paid add-on' },
-    'vs.r4.crit':      { fr: 'Groupes multi-comptes (1 trade → N comptes)', en: 'Multi-account groups (1 trade → N accounts)' },
-    'vs.r4.edgyx':     { fr: '⚠ Manuel', en: '⚠ Manual' },
-    'vs.r4.tradervue': { fr: '⚠ Manuel', en: '⚠ Manual' },
-    'vs.r4.zella':     { fr: '⚠ Manuel', en: '⚠ Manual' },
-    'vs.r5.crit':      { fr: 'Comptes Crypto (Binance + Coinbase)', en: 'Crypto accounts (Binance + Coinbase)' },
-    'vs.r5.us':        { fr: '✓ Fees % notional', en: '✓ Notional % fees' },
-    'vs.r5.edgyx':     { fr: '⚠ Basique', en: '⚠ Basic' },
-    'vs.r5.zella':     { fr: '⚠ Limité', en: '⚠ Limited' },
-    'vs.r6.crit':      { fr: 'Interface française', en: 'French interface' },
-    'vs.r6.us':        { fr: '✓ FR natif', en: '✓ Native FR' },
-    'vs.r6.edgyx':     { fr: '✓ FR natif', en: '✓ Native FR' },
-    'vs.r6.tradervue': { fr: '✗ EN only', en: '✗ EN only' },
-    'vs.r6.zella':     { fr: '✗ EN only', en: '✗ EN only' },
-    'vs.r6.excel':     { fr: '✓ Manuel', en: '✓ Manual' },
-    'vs.r7.crit':      { fr: 'Calculateur fiscal FR (micro-BNC)', en: 'French tax calculator (micro-BNC)' },
-    'vs.r7.us':        { fr: '✓ Intégré', en: '✓ Built in' },
-    'vs.r8.crit':      { fr: 'RGPD natif (export, suppression 1-clic)', en: 'GDPR-native (export, 1-click deletion)' },
-    'vs.r8.edgyx':     { fr: '⚠ Partiel', en: '⚠ Partial' },
-    'vs.r8.tradervue': { fr: '⚠ Partiel', en: '⚠ Partial' },
-    'vs.r8.zella':     { fr: '⚠ Partiel', en: '⚠ Partial' },
-    'vs.r9.crit':      { fr: 'Hébergement UE', en: 'EU hosting' },
-    'vs.r9.us':        { fr: '✓ Firebase EU', en: '✓ Firebase EU' },
-    'vs.r9.edgyx':     { fr: '✓ FR', en: '✓ FR' },
-    'vs.r9.tradervue': { fr: '✗ US', en: '✗ US' },
-    'vs.r9.zella':     { fr: '✗ US', en: '✗ US' },
-    'vs.r9.excel':     { fr: '✓ Local', en: '✓ Local' },
-    'vs.r10.crit':     { fr: 'Auto-import MT4 / MT5', en: 'MT4 / MT5 auto-import' },
-    'vs.r10.us':       { fr: '✗ <small>(roadmap)</small>', en: '✗ <small>(roadmap)</small>' },
-    'vs.r11.crit':     { fr: 'Mobile app native', en: 'Native mobile app' },
-    'vs.r11.us':       { fr: '✗ <small>(roadmap)</small>', en: '✗ <small>(roadmap)</small>' },
-    'vs.r11.tradervue':{ fr: '⚠ Web only', en: '⚠ Web only' },
-    'vs.hint':         { fr: '← Glisse horizontalement pour voir tout le tableau →', en: '← Swipe horizontally to see the whole table →' },
-    'vs.conclusion':   { fr: '<strong>ZeldTrade est le seul à calculer ton trailing drawdown EOD prop firm au tick près</strong>, et le seul à intégrer l\'IA Vision sur tes screenshots TradingView pour pré-remplir entry/SL/TP automatiquement.', en: '<strong>ZeldTrade is the only one that computes your prop firm EOD trailing drawdown to the tick</strong>, and the only one that builds AI Vision into your TradingView screenshots to auto-fill entry/SL/TP.' },
-
-    // Roadmap publique
-    'rm.eyebrow':      { fr: 'Roadmap publique', en: 'Public roadmap' },
-    'rm.title':        { fr: 'Ce qu\'on construit, <span class="title-accent">au grand jour</span>', en: 'What we\'re building, <span class="title-accent">out in the open</span>' },
-    'rm.sub':          { fr: 'Transparence totale. Voici ce qui est livré, ce qu\'on bosse, et ce qui arrive. Les utilisateurs Funded et Elite votent sur les priorités.', en: 'Full transparency. Here\'s what\'s shipped, what we\'re working on, and what\'s coming. Funded and Elite users vote on priorities.' },
-    'rm.done.title':   { fr: 'Livré', en: 'Shipped' },
-    'rm.done.1':       { fr: 'Journal multi-comptes + groupes', en: 'Multi-account journal + groups' },
-    'rm.done.2':       { fr: 'IA Vision (standard + IA avancée en fallback)', en: 'AI Vision (standard + advanced AI fallback)' },
-    'rm.done.3':       { fr: 'Trailing drawdown EOD précis 5 firms', en: 'Accurate EOD trailing drawdown, 5 firms' },
-    'rm.done.4':       { fr: 'Comptes Crypto (Binance + Coinbase)', en: 'Crypto accounts (Binance + Coinbase)' },
-    'rm.done.5':       { fr: 'Comptes Fonds propres', en: 'Personal funds accounts' },
-    'rm.done.6':       { fr: 'Export PDF / CSV / JSON RGPD', en: 'PDF / CSV / GDPR JSON export' },
-    'rm.done.7':       { fr: 'Calculateur fiscal micro-BNC', en: 'Micro-BNC tax calculator' },
-    'rm.done.8':       { fr: 'Bilingue FR / EN', en: 'Bilingual FR / EN' },
-    'rm.done.9':       { fr: 'Désinscription newsletter 1-clic (RFC 8058)', en: '1-click newsletter unsubscribe (RFC 8058)' },
-    'rm.done.10':      { fr: 'Expérience mobile responsive', en: 'Responsive mobile experience' },
-    'rm.doing.title':  { fr: 'En cours', en: 'In progress' },
-    'rm.doing.1':      { fr: 'Stripe Checkout (Funded / Elite)', en: 'Stripe Checkout (Funded / Elite)' },
-    'rm.doing.2':      { fr: 'Onboarding Pro multi-select préférences', en: 'Pro onboarding with multi-select preferences' },
-    'rm.next.title':   { fr: 'Planifié', en: 'Planned' },
-    'rm.next.1':       { fr: 'Auto-import MT4 / MT5 / cTrader', en: 'MT4 / MT5 / cTrader auto-import' },
-    'rm.next.2':       { fr: 'Mobile app (iOS / Android)', en: 'Mobile app (iOS / Android)' },
-    'rm.next.3':       { fr: 'Dashboard coach (multi-élèves) · Elite', en: 'Coach dashboard (multi-student) · Elite' },
-    'rm.next.4':       { fr: 'Accès API public · Elite', en: 'Public API access · Elite' },
-    'rm.next.5':       { fr: 'Backup automatique quotidien', en: 'Automatic daily backup' },
-    'rm.next.6':       { fr: 'Export Excel avec formules natives', en: 'Excel export with native formulas' },
-
-    // Le calcul (value / ROI)
-    'val.eyebrow':     { fr: 'Le calcul', en: 'The math' },
-    'val.title':       { fr: 'Pour <span class="title-accent">0,50 € par jour</span>', en: 'For <span class="title-accent">€0.50 a day</span>' },
-    'val.sub':         { fr: 'Moins qu\'un café. Si tu évites <strong>un seul breach</strong> grâce à ZeldTrade, tu rentabilises ton abonnement pour <strong>plusieurs années</strong>.', en: 'Less than a coffee. Avoid <strong>a single breach</strong> thanks to ZeldTrade and your subscription pays for itself for <strong>years</strong>.' },
-    'val.daily.head':  { fr: 'Au quotidien', en: 'Everyday spending' },
-    'val.daily.1':     { fr: 'Croissant boulangerie', en: 'Bakery croissant' },
-    'val.daily.2':     { fr: 'Café à emporter', en: 'Takeaway coffee' },
-    'val.daily.3':     { fr: 'Bière au bar', en: 'Beer at the bar' },
-    'val.vs.head':     { fr: 'Vs concurrence', en: 'Vs competitors' },
-    'val.vs.footnote': { fr: '…et avec les seules règles prop firms FR vraiment intégrées', en: '…and with the only truly built-in FR prop firm rules' },
-    'val.roi.head':    { fr: 'ROI d\'un seul breach évité', en: 'ROI of a single avoided breach' },
-    'val.roi.num':     { fr: '36 mois', en: '36 months' },
-    'val.roi.label':   { fr: 'd\'abonnement Funded payés<br>= 1 breach Apex 50K évité (540 $)', en: 'of Funded subscription paid for<br>= 1 avoided Apex 50K breach ($540)' },
-    'val.roi.mini':    { fr: 'Trailing drawdown calculé au tick + alerte distance to floor en temps réel = tu ne te fais plus surprendre.', en: 'Tick-accurate trailing drawdown + real-time distance-to-floor alert = you never get caught off guard again.' },
-    'val.bundle.title':{ fr: 'Ce que tu obtiens pour 14,99 €/mois', en: 'What you get for €14.99/mo' },
-    'val.bundle.sub':  { fr: 'Si tu devais acheter chaque feature séparément ailleurs…', en: 'If you had to buy each feature separately elsewhere…' },
-    'val.bundle.r1.feat':  { fr: 'IA Vision (analyse charts TradingView)', en: 'AI Vision (TradingView chart analysis)' },
-    'val.bundle.r1.price': { fr: '~ 20 €/mois ailleurs', en: '~ €20/mo elsewhere' },
-    'val.bundle.r2.feat':  { fr: 'Calcul trailing drawdown EOD précis 5 firms', en: 'Accurate EOD trailing drawdown for 5 firms' },
-    'val.bundle.r2.price': { fr: 'N\'existe nulle part', en: 'Doesn\'t exist anywhere' },
-    'val.bundle.r3.feat':  { fr: 'Journal multi-comptes + groupes', en: 'Multi-account journal + groups' },
-    'val.bundle.r3.price': { fr: '~ 15 €/mois', en: '~ €15/mo' },
-    'val.bundle.r4.feat':  { fr: 'Export PDF + JSON RGPD + CSV', en: 'PDF + GDPR JSON + CSV export' },
-    'val.bundle.r4.price': { fr: '~ 8 €/mois', en: '~ €8/mo' },
-    'val.bundle.r5.feat':  { fr: 'Calculateur fiscal micro-entrepreneur FR', en: 'French micro-entrepreneur tax calculator' },
-    'val.bundle.r5.price': { fr: '~ 5 €/mois', en: '~ €5/mo' },
-    'val.bundle.total.feat':  { fr: '<strong>Total équivalent ailleurs</strong>', en: '<strong>Equivalent total elsewhere</strong>' },
-    'val.bundle.total.price': { fr: '<strong>~ 48 €/mois</strong>', en: '<strong>~ €48/mo</strong>' },
-    'val.bundle.us.feat':     { fr: '<strong>Tu payes ZeldTrade Funded</strong>', en: '<strong>You pay ZeldTrade Funded</strong>' },
-    'val.bundle.us.price':    { fr: '<strong>14,99 €/mois</strong>', en: '<strong>€14.99/mo</strong>' },
-    'val.bundle.savings':     { fr: 'Tu économises ~33 €/mois, soit <strong>396 €/an</strong>', en: 'You save ~€33/mo, that\'s <strong>€396/year</strong>' },
-
-    // Témoignages
-    'test.eyebrow':    { fr: 'Ils l\'utilisent', en: 'They use it' },
-    'test.title':      { fr: 'Ce qu\'en disent <span class="title-accent">les traders</span>', en: 'What <span class="title-accent">traders</span> say' },
-    'test.stars':      { fr: '5 étoiles sur 5', en: '5 stars out of 5' },
-    'test.q1':         { fr: '« Après plus d\'un an de trading, c\'est clairement le meilleur site que j\'ai utilisé pour tenir un journal de trading. L\'interface est claire, soignée, rapide et surtout efficace. Je n\'ai jamais autant apprécié analyser et journaliser mes trades. »', en: '"After more than a year of trading, this is clearly the best site I\'ve used to keep a trading journal. The interface is clean, polished, fast and, above all, effective. I\'ve never enjoyed analyzing and journaling my trades this much."' },
-    'test.q2':         { fr: '« Je trouve le site très complet, une belle interface et facile de compréhension. »', en: '"I find the site really complete, with a great interface that\'s easy to understand."' },
-    'test.q3':         { fr: '« Après 3 ans de trading à journaliser sur Notion, ce site est incroyable : il donne envie de journaliser ses trades. L\'interface est propre et rapide. »', en: '"After 3 years of trading and journaling on Notion, this site is incredible: it makes you want to journal your trades. The interface is clean and fast."' },
-
-    // Tarifs (pricing)
-    'pr.eyebrow':      { fr: 'Tarifs', en: 'Pricing' },
-    'pr.title':        { fr: 'Simple et honnête', en: 'Simple and honest' },
-    'pr.sub':          { fr: 'Aucune carte requise pour démarrer. Trader est gratuit pour toujours. Funded et Elite débloquent les outils sérieux.', en: 'No card required to start. Trader is free forever. Funded and Elite unlock the serious tools.' },
-    // v0.9.384 : clés 'pr.founding.*' retirées (bannière scarcity « Founding » supprimée de la landing).
-    'pr.billing.aria':    { fr: 'Période de facturation', en: 'Billing period' },
-    'pr.billing.monthly': { fr: 'Mensuel', en: 'Monthly' },
-    'pr.billing.yearly':  { fr: 'Annuel <span class="lp-billing-save">−2 mois</span>', en: 'Yearly <span class="lp-billing-save">−2 months</span>' },
-    'pr.suffix.month':  { fr: '/ mois', en: '/ month' },
-    'pr.suffix.year':   { fr: '/ an', en: '/ year' },
-    'pr.launch':        { fr: '🔥 Offre de lancement · −40%', en: '🔥 Launch offer · −40%' },
-    'pr.trial':         { fr: '🎁 1 semaine d\'essai gratuite', en: '🎁 1-week free trial' },
-    'promo.text':       { fr: '🔥 Lancement : −40% sur Funded & Elite + 1 semaine d\'essai →', en: '🔥 Launch: −40% on Funded & Elite + 1-week trial →' },
-    'promo.copy':       { fr: 'copier', en: 'copy' },
-    'promo.copied':     { fr: 'copié ✓', en: 'copied ✓' },
-    'pr.trader.badge':   { fr: '✓ Gratuit à vie', en: '✓ Free for life' },
-    'pr.trader.tagline': { fr: 'Pour découvrir sans engagement.', en: 'To explore with no commitment.' },
-    'pr.trader.suffix':  { fr: '/ pour toujours', en: '/ forever' },
-    'pr.trader.f1':      { fr: '1 compte (prop / crypto / personnel)', en: '1 account (prop / crypto / personal)' },
-    'pr.trader.f2':      { fr: '1 analyse IA par jour', en: '1 AI analysis per day' },
-    'pr.trader.f3':      { fr: 'Journal complet · chaque trade documenté', en: 'Full journal · every trade documented' },
-    'pr.trader.f4':      { fr: 'Dashboard, Analytics, Goals, Calendrier', en: 'Dashboard, Analytics, Goals, Calendar' },
-    'pr.trader.f5':      { fr: 'Calculateurs intégrés (position, R:R, fiscal micro)', en: 'Built-in calculators (position, R:R, micro tax)' },
-    'pr.trader.f6':      { fr: 'Export JSON RGPD à tout moment', en: 'GDPR JSON export at any time' },
-    'pr.trader.f7':      { fr: 'Bilingue FR / EN', en: 'Bilingual FR / EN' },
-    'pr.trader.cta':     { fr: 'Commencer gratuitement →', en: 'Start for free →' },
-    'pr.funded.badge':   { fr: '✦ Le plus populaire', en: '✦ Most popular' },
-    'pr.funded.tagline': { fr: 'Pour le trader qui pilote ses 3 comptes groupés.', en: 'For the trader running their 3 grouped accounts.' },
-    'pr.funded.perday.m':{ fr: 'soit 0,50 €/jour <strong style="color:#4ade80">· 50 % moins cher que Tradervue</strong>', en: 'that\'s €0.50/day <strong style="color:#4ade80">· 50% cheaper than Tradervue</strong>' },
-    'pr.funded.perday.y':{ fr: '12,42 €/mois · économie 30 €', en: '€12.42/mo · save €30' },
-    'pr.funded.f1':      { fr: '3 comptes (prop / crypto / personnel), groupables', en: '3 accounts (prop / crypto / personal), groupable' },
-    'pr.funded.f2':      { fr: 'IA détecte entry/SL/TP depuis ton screenshot TradingView (5×/jour)', en: 'AI detects entry/SL/TP from your TradingView screenshot (5×/day)' },
-    'pr.funded.f3':      { fr: '1 trade saisi → répliqué sur tes comptes groupés en 1 sauvegarde', en: '1 trade entered → replicated across your grouped accounts in 1 save' },
-    'pr.funded.f4':      { fr: 'Archive PDF 1 page/trade pour coaching ou candidature funded', en: '1-page PDF archive per trade for coaching or funded application' },
-    'pr.funded.f5':      { fr: 'Trailing drawdown EOD précis, jamais surpris par un breach', en: 'Accurate EOD trailing drawdown, never surprised by a breach' },
-    'pr.funded.f6':      { fr: 'Support prioritaire (canal direct)', en: 'Priority support (direct channel)' },
-    'pr.funded.f7':      { fr: 'Tout le plan Trader inclus', en: 'Everything in the Trader plan included' },
-    'pr.funded.cta':     { fr: "7 jours d'essai gratuits →",          en: '7-day free trial →' },
-    'pr.elite.badge':    { fr: '✦ Premium', en: '✦ Premium' },
-    'pr.elite.tagline':  { fr: 'Pour les power users multi-comptes ou les coachs.', en: 'For multi-account power users or coaches.' },
-    'pr.elite.perday.m': { fr: 'soit 1 €/jour', en: 'that\'s €1/day' },
-    'pr.elite.perday.y': { fr: '24,92 €/mois · économie 61 €', en: '€24.92/mo · save €61' },
-    'pr.elite.f1':       { fr: 'Comptes illimités, multi-funded ou portefeuille coach', en: 'Unlimited accounts, multi-funded or coach portfolio' },
-    'pr.elite.f2':       { fr: 'IA illimitée, valide chaque trade', en: 'Unlimited AI, validate every trade' },
-    'pr.elite.f3':       { fr: 'Accès anticipé aux features beta', en: 'Early access to beta features' },
-    'pr.elite.f4':       { fr: 'Support 24h via canal direct', en: '24h support via direct channel' },
-    'pr.elite.f5':       { fr: 'Votes décisifs sur la roadmap, ta voix compte 5× plus', en: 'Decisive roadmap votes, your voice counts 5× more' },
-    'pr.elite.f6':       { fr: 'Tout le plan Funded inclus', en: 'Everything in the Funded plan included' },
-    'pr.elite.cta':      { fr: "7 jours d'essai gratuits →",          en: '7-day free trial →' },
-    'pr.trust.1':        { fr: '✓ Annulation 1-clic', en: '✓ 1-click cancellation' },
-    'pr.trust.2':        { fr: '✓ 7 jours d\'essai gratuit', en: '✓ 7-day free trial' },
-    'pr.trust.3':        { fr: '✓ Export complet RGPD à tout moment', en: '✓ Full GDPR export at any time' },
-    'pr.trust.4':        { fr: '✓ Aucune CB requise pour démarrer', en: '✓ No card required to start' },
-
-    // À propos / fondateur (v0.9.349)
-    'about.eyebrow':   { fr: 'À propos', en: 'About' },
-    'about.title':     { fr: 'Fait par un trader, <span class="title-accent">pour les traders</span>', en: 'Built by a trader, <span class="title-accent">for traders</span>' },
-    'about.p1':        { fr: 'Un journal de trading codé par un trader, pour des traders. Que tu sois sur prop firm, crypto, ou tes fonds propres : tout passe dans le même outil. Pas une boîte. Pas une équipe marketing. Une seule personne derrière le clavier.', en: 'A trading journal coded by a trader, for traders. Whether you\'re on prop firm, crypto, or your own funds: everything fits into the same tool. Not a company. Not a marketing team. Just one person behind the keyboard.' },
-    'about.p2':        { fr: 'Aucun outil existant ne traitait correctement <strong>tous les types de comptes en même temps</strong> : les règles précises des prop firms (drawdown trailing, daily loss, calcul EOD), les particularités de la crypto, les calculs sur fonds propres. Du coup il a fallu coder celui qui aurait dû exister depuis le début. Tu colles ton screenshot TradingView, l\'IA remplit le trade en quelques secondes, et l\'app suit les règles de chaque compte automatiquement.', en: 'No existing tool correctly handled <strong>every account type in the same place</strong>: prop firm rules (trailing drawdown, daily loss, EOD calc), crypto quirks, personal funds calculations. So I built the one that should\'ve existed all along. You paste your TradingView screenshot, the AI fills the trade in seconds, and the app tracks each account\'s rules automatically.' },
-    'about.p3':        { fr: '2 mois de dev en solo, 8 premiers utilisateurs qui ont fait des retours brutaux, zéro pub, zéro investisseur. Projet <strong>indépendant et hébergé en Europe</strong>. Quand tu écris au support, c\'est une vraie personne qui te répond, pas un bot.', en: '2 months of solo dev, 8 early users who gave brutal feedback, no ads, no investors. <strong>Independent project, hosted in Europe</strong>. When you contact support, a real person replies, not a bot.' },
-    'about.sign.name': { fr: 'Projet indépendant', en: 'Independent project' },
-    'about.sign.role': { fr: 'Solo · Hébergé en Europe', en: 'Solo · Hosted in Europe' },
+    // About
+    'about.title': { fr: 'Fait par un trader, <span class="accent">pour les traders.</span>', en: 'Built by a trader, <span class="accent">for traders.</span>' },
+    'about.sub':   { fr: "Pas d'équipe. Pas d'investisseur. Juste un dev qui trade et qui code.", en: 'No team. No investor. Just a dev who trades and codes.' },
+    'about.photo': { fr: '[ Photo ]<br>indé · France', en: '[ Photo ]<br>indie · France' },
+    'about.p1': { fr: "Salut, c'est <strong>l'équipe ZeldTrade</strong> (enfin… surtout une personne). Dev qui trade sur prop firm depuis 2023.", en: "Hi, this is the <strong>ZeldTrade team</strong> (well… mostly one person). A dev trading prop firms since 2023." },
+    'about.p2': { fr: "La première année, deux comptes Apex cramés faute d'avoir compris le trailing drawdown EOD. Aucun outil ne traitait vraiment les règles d'une prop firm. Du coup, celui que j'aurais voulu utiliser dès le début a été codé — et élargi à la crypto et aux fonds propres.", en: 'The first year, two Apex accounts blown for not understanding EOD trailing drawdown. No tool truly handled a prop firm\'s rules. So the one I wished I\'d had got built — then extended to crypto and personal funds.' },
+    'about.p3': { fr: "Dev solo, bêta testeurs, zéro pub, zéro investisseur. <strong>Si tu écris, c'est une vraie personne qui répond.</strong>", en: 'Solo dev, beta testers, zero ads, zero investors. <strong>If you write, a real person answers.</strong>' },
+    'about.loc': { fr: 'France 🇫🇷 · <b>indé · hébergé en Europe</b>', en: 'France 🇫🇷 · <b>indie · hosted in Europe</b>' },
+    'about.changelog': { fr: 'Nouveautés', en: "What's new" },
 
     // FAQ
-    'faq.eyebrow':     { fr: 'Questions fréquentes', en: 'Frequently asked questions' },
-    'faq.title':       { fr: 'Tout ce qu\'on me demande', en: 'Everything people ask me' },
-    'faq.q1':          { fr: 'C\'est gratuit ?', en: 'Is it free?' },
-    'faq.a1':          { fr: 'Le plan <strong>Trader</strong> est gratuit pour toujours (1 compte, 1 analyse IA/jour). Le plan <strong>Funded</strong> à 14,99 €/mois débloque 3 comptes, 5 analyses IA/jour, groupes multi-comptes, export PDF, calcul EOD précis. Le plan <strong>Elite</strong> à 29,99 €/mois passe à des comptes illimités, une IA illimitée, accès anticipé aux features beta.', en: 'The <strong>Trader</strong> plan is free forever (1 account, 1 AI analysis/day). The <strong>Funded</strong> plan at €14.99/mo unlocks 3 accounts, 5 AI analyses/day, multi-account groups, PDF export and accurate EOD calculation. The <strong>Elite</strong> plan at €29.99/mo goes up to unlimited accounts, unlimited AI and early access to beta features.' },
-    'faq.q2':          { fr: 'Mes données sont sécurisées ?', en: 'Is my data secure?' },
-    'faq.a2':          { fr: 'Oui. Données chiffrées at-rest (Firestore Google EU), accès par règles strictes (chaque user voit uniquement ses propres trades), MFA admin, audit logs immuables. Aucun tracking, aucun cookie tiers, RGPD compliant.', en: 'Yes. Data encrypted at rest (Firestore Google EU), strict access rules (each user only sees their own trades), admin MFA, immutable audit logs. No tracking, no third-party cookies, GDPR compliant.' },
-    'faq.q3':          { fr: 'Ça marche avec quelle prop firm ?', en: 'Which prop firms does it work with?' },
-    'faq.a3':          { fr: 'Apex Trader Funding, FTMO (1-Step + 2-Step), Topstep, Lucid Trading, Funding Pips. Les règles spécifiques (trailing EOD vs static, safety net, daily loss, max contracts) sont intégrées et configurables par compte.', en: 'Apex Trader Funding, FTMO (1-Step + 2-Step), Topstep, Lucid Trading, Funding Pips. The specific rules (EOD trailing vs static, safety net, daily loss, max contracts) are built in and configurable per account.' },
-    'faq.q4':          { fr: 'Combien de comptes je peux gérer ?', en: 'How many accounts can I manage?' },
-    'faq.a4':          { fr: '1 compte sur le plan Trader, 3 comptes sur Funded, comptes illimités sur Elite. Les plans Funded et Elite débloquent les <strong>groupes multi-comptes</strong> : 1 trade saisi peut être répliqué sur plusieurs comptes en une seule sauvegarde.', en: '1 account on the Trader plan, 3 accounts on Funded, unlimited accounts on Elite. The Funded and Elite plans unlock <strong>multi-account groups</strong>: one entered trade can be replicated across several accounts in a single save.' },
-    'faq.q5':          { fr: 'Je peux récupérer mes données si je quitte ?', en: 'Can I get my data back if I leave?' },
-    'faq.a5':          { fr: 'Oui, droit à la portabilité RGPD. Export JSON complet (trades + comptes + groupes + settings) disponible dans les Réglages. Tu peux aussi supprimer ton compte à tout moment (toutes les données sont alors effacées).', en: 'Yes, GDPR right to portability. A full JSON export (trades + accounts + groups + settings) is available in Settings. You can also delete your account at any time (all data is then erased).' },
-    'faq.q6':          { fr: 'Qui est derrière ZeldTrade ?', en: 'Who is behind ZeldTrade?' },
-    'faq.a6':          { fr: 'Un projet français indépendant, conçu par un trader pour des traders. Couvre prop firm (Apex, FTMO, Topstep, Lucid, Funding Pips), crypto et fonds propres. Né du manque de bons outils français qui traitent correctement tous les types de comptes en un seul endroit. Tout est codé à la main, pas un copier-coller d\'un SaaS US. Pour les détails légaux : voir les <a href="/legal" style="color:var(--accent-l)">mentions légales</a>.', en: 'An independent French project, built by a trader for traders. Covers prop firm (Apex, FTMO, Topstep, Lucid, Funding Pips), crypto and personal funds. Born out of the lack of good French tools handling every account type in one place. Everything is hand-coded, not a copy-paste of a US SaaS. For legal details: see the <a href="/legal" style="color:var(--accent-l)">legal notice</a>.' },
+    'faq.title': { fr: 'Les questions que tu te poses.', en: 'The questions you\'re asking.' },
+    'faq.sub':   { fr: "Réponses honnêtes. Si la tienne n'est pas listée, écris sur Discord ou via le formulaire en bas.", en: 'Honest answers. If yours isn\'t listed, write on Discord or via the form below.' },
+    'faq.q1': { fr: "C'est quoi le « EOD trailing drawdown » et pourquoi c'est piégeux ?", en: 'What is "EOD trailing drawdown" and why is it tricky?' },
+    'faq.a1': { fr: "Sur Apex (et d'autres firms) le drawdown se calcule en fin de journée, pas en intraday. Ton equity ouvert compte. Un trade gagnant non clôturé peut faire monter ton high watermark — et baisser ton trailing floor d'autant. La majorité des breach viennent de là : tu pensais avoir $3 000 de buffer, en réalité $400.", en: 'On Apex (and other firms) drawdown is computed end-of-day, not intraday. Your open equity counts. A winning trade left open can raise your high watermark — and lower your trailing floor by the same amount. Most breaches come from this: you thought you had $3,000 of buffer, you really had $400.' },
+    'faq.q2': { fr: "L'IA Vision lit vraiment mes screens TradingView ?", en: 'Does AI Vision really read my TradingView screenshots?' },
+    'faq.a2': { fr: "Oui — colle l'image (Ctrl+V) ou dépose-la, le moteur extrait entry, SL, TP, taille et symbole en quelques secondes. Tu valides ou corriges en un clic. Marche sur tes captures TradingView, MT4/MT5, crypto…", en: 'Yes — paste the image (Ctrl+V) or drop it, the engine extracts entry, SL, TP, size and symbol in seconds. You confirm or fix in one click. Works on TradingView, MT4/MT5, crypto screenshots…' },
+    'faq.q3': { fr: 'Je peux grouper plusieurs comptes en un seul trade ?', en: 'Can I group several accounts into one trade?' },
+    'faq.a3': { fr: "Oui — tu écris une fois, ZeldTrade dispatche selon la taille de chaque compte (ratios persos possibles). Prop firm, crypto ou fonds propres : tout se synchronise.", en: 'Yes — you write once, ZeldTrade dispatches based on each account\'s size (custom ratios possible). Prop firm, crypto or personal funds: everything syncs.' },
+    'faq.q4': { fr: 'Ça marche aussi pour la crypto et les fonds propres ?', en: 'Does it work for crypto and personal funds too?' },
+    'faq.a4': { fr: "Oui. ZeldTrade gère prop firm, comptes crypto (Binance, Coinbase) et fonds propres dans un seul journal, avec les bons calculs pour chaque type de compte.", en: 'Yes. ZeldTrade handles prop firm, crypto accounts (Binance, Coinbase) and personal funds in one journal, with the right calculations for each account type.' },
+    'faq.q5': { fr: 'Pourquoi c\'est si peu cher ?', en: 'Why is it so cheap?' },
+    'faq.a5': { fr: "Projet indé, déjà développé. Pas de levée, pas de budget marketing. Le prix couvre l'infra (l'IA Vision tape sur des APIs payantes) et un revenu raisonnable.", en: 'Indie project, already built. No funding round, no marketing budget. The price covers infra (AI Vision hits paid APIs) and a reasonable income.' },
+    'faq.q6': { fr: 'Où sont mes données ?', en: 'Where is my data?' },
+    'faq.a6': { fr: 'Hébergées en Europe, RGPD-natif. Export JSON intégral et suppression du compte en un clic. Détails : <a href="/privacy">confidentialité</a> et <a href="/legal">mentions légales</a>.', en: 'Hosted in Europe, GDPR-native. Full JSON export and one-click account deletion. Details: <a href="/privacy">privacy</a> and <a href="/legal">legal notice</a>.' },
+
+    // Pricing
+    'pricing.title': { fr: 'Simple. <span class="accent">Honnête.</span>', en: 'Simple. <span class="accent">Honest.</span>' },
+    'pricing.sub':   { fr: 'Trader gratuit à vie. Aucune carte requise pour démarrer. Si tu pars, tu emportes tes données.', en: 'Trader free forever. No card required to start. If you leave, you take your data.' },
+    'pricing.monthly': { fr: 'Mensuel', en: 'Monthly' },
+    'pricing.yearly':  { fr: 'Annuel <span class="save">−2 mois</span>', en: 'Yearly <span class="save">−2 months</span>' },
+    'pricing.forever': { fr: '/ pour toujours', en: '/ forever' },
+    'pricing.month':   { fr: '/ mois', en: '/ mo' },
+    'pricing.year':    { fr: '/ an', en: '/ yr' },
+    'pricing.discount':{ fr: 'LANCEMENT −40% · CODE ZELD40 · essai 7 jours', en: 'LAUNCH −40% · CODE ZELD40 · 7-day trial' },
+    'pricing.trader.desc': { fr: 'Pour découvrir sans engagement.', en: 'To explore with no commitment.' },
+    'pricing.trader.f1': { fr: '1 compte (prop / crypto / perso)', en: '1 account (prop / crypto / personal)' },
+    'pricing.trader.f2': { fr: '1 analyse IA par jour', en: '1 AI analysis per day' },
+    'pricing.trader.f3': { fr: 'Journal complet · dashboard · analytics', en: 'Full journal · dashboard · analytics' },
+    'pricing.trader.f4': { fr: 'Export RGPD JSON', en: 'GDPR JSON export' },
+    'pricing.trader.cta':{ fr: 'Commencer gratuitement →', en: 'Start for free →' },
+    'pricing.funded.desc': { fr: 'Pour le trader prop firm sérieux.', en: 'For the serious prop firm trader.' },
+    'pricing.funded.f1': { fr: '2 comptes groupables', en: '2 groupable accounts' },
+    'pricing.funded.f2': { fr: '5 analyses IA / jour', en: '5 AI analyses / day' },
+    'pricing.funded.f3': { fr: 'Drawdown EOD précis', en: 'Precise EOD drawdown' },
+    'pricing.funded.f4': { fr: 'Archive PDF par trade', en: 'PDF archive per trade' },
+    'pricing.funded.f5': { fr: 'Support prioritaire', en: 'Priority support' },
+    'pricing.funded.cta':{ fr: 'Essai 7 jours →', en: '7-day trial →' },
+    'pricing.elite.desc': { fr: 'Multi-comptes ou coachs.', en: 'Multi-account or coaches.' },
+    'pricing.elite.f1': { fr: 'Comptes illimités', en: 'Unlimited accounts' },
+    'pricing.elite.f2': { fr: 'IA Vision illimitée', en: 'Unlimited AI Vision' },
+    'pricing.elite.f3': { fr: 'Accès anticipé features', en: 'Early access to features' },
+    'pricing.elite.f4': { fr: 'Support 24h', en: '24h support' },
+    'pricing.elite.cta':{ fr: 'Essai 7 jours →', en: '7-day trial →' },
+
+    // Discord
+    'discord.title': { fr: 'Le Discord. Là où ça parle vraiment trading.', en: 'The Discord. Where trading is actually discussed.' },
+    'discord.sub':   { fr: 'Channels par prop firm, partage de setups, revue de trades, entraide crypto et fonds propres. Pas d\'abonnement requis pour rejoindre.', en: 'Channels per prop firm, setup sharing, trade reviews, crypto and personal-funds help. No subscription required to join.' },
+    'discord.cta':   { fr: 'Rejoindre le Discord', en: 'Join the Discord' },
 
     // Contact
-    'contact.title':   { fr: 'Une question ?', en: 'A question?' },
-    'contact.sub':     { fr: 'Pseudo et message, pas besoin d\'email. Tu reçois une vraie réponse, en général dans la journée.', en: 'Username and message, no email needed. You get a real reply, usually within the day.' },
-    'contact.name':    { fr: 'Pseudo', en: 'Username' },
-    'contact.name.ph': { fr: 'Pseudo Discord (ou autre)', en: 'Discord username (or other)' },
-    'contact.message': { fr: 'Message', en: 'Message' },
-    'contact.message.ph': { fr: 'Ta question ou demande…', en: 'Your question or request…' },
-    'contact.send':    { fr: 'Envoyer →', en: 'Send →' },
-    'contact.success.title': { fr: 'Message envoyé !', en: 'Message sent!' },
-    'contact.success.sub':   { fr: 'L\'équipe ZeldTrade te répondra rapidement.', en: 'The ZeldTrade team will get back to you quickly.' },
+    'contact.title':      { fr: 'Une question ?', en: 'A question?' },
+    'contact.sub':        { fr: 'Écris directement. Anonyme, sans email requis — une vraie personne répond.', en: 'Write directly. Anonymous, no email required — a real person answers.' },
+    'contact.name':       { fr: 'Pseudo', en: 'Name' },
+    'contact.name.ph':    { fr: 'Ton pseudo', en: 'Your name' },
+    'contact.message':    { fr: 'Message', en: 'Message' },
+    'contact.message.ph': { fr: "Une question, une suggestion, une demande d'accès…", en: 'A question, a suggestion, an access request…' },
+    'contact.send':       { fr: 'Envoyer →', en: 'Send →' },
+    'contact.success':    { fr: '✓ Message envoyé. Réponse rapide, promis.', en: '✓ Message sent. Quick reply, promise.' },
+
+    // Footer + cookie
+    'footer.brand':         { fr: 'Journal de trading IA pour prop firm, crypto et fonds propres. Indépendant, hébergé en Europe, RGPD-natif. Made in France.', en: 'AI trading journal for prop firm, crypto and personal funds. Independent, hosted in Europe, GDPR-native. Made in France.' },
+    'footer.product':       { fr: 'Produit', en: 'Product' },
+    'footer.community':     { fr: 'Communauté', en: 'Community' },
+    'footer.contact':       { fr: 'Contact', en: 'Contact' },
+    'footer.legal':         { fr: 'Légal', en: 'Legal' },
+    'footer.legalmentions': { fr: 'Mentions légales', en: 'Legal notice' },
+    'footer.privacy':       { fr: 'Confidentialité', en: 'Privacy' },
+    'footer.cgu':           { fr: 'CGU', en: 'Terms' },
+    'footer.copy':          { fr: '© 2026 ZELDTRADE · INDÉPENDANT · HÉBERGÉ EN EUROPE', en: '© 2026 ZELDTRADE · INDEPENDENT · HOSTED IN EUROPE' },
+    'cookie.text':          { fr: 'Cookies strictement nécessaires uniquement (pas de tracking publicitaire).', en: 'Strictly necessary cookies only (no advertising tracking).' },
+    'cookie.ok':            { fr: 'OK', en: 'OK' },
   };
 
   // ── Méta traduisibles (<title>, description) ────────────────────────────────
@@ -429,16 +199,12 @@
       if (p === 'en' || p === 'fr') return p;
       const ls = localStorage.getItem(LS_KEY);
       if (ls === 'en' || ls === 'fr') return ls;
-      // v0.9.334 : traduction EN complète → détection navigateur activée.
-      // Navigateur francophone → FR ; tout le reste → EN (le visiteur peut toujours
-      // basculer via les drapeaux, choix mémorisé en localStorage + ?lang=).
       return (navigator.language || '').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en';
     } catch (e) { return 'fr'; }
   }
 
   function applyLang(lang) {
     document.documentElement.lang = lang;
-
     document.querySelectorAll('[data-i18n]').forEach(function (el) {
       const t = DICT[el.getAttribute('data-i18n')];
       if (t && t[lang] != null) el.textContent = t[lang];
@@ -463,29 +229,23 @@
       if (d && m.description) d.setAttribute('content', m.description);
     }
 
-    // v0.9.327 : deux boutons drapeaux (FR / EN) côte à côte ; on surligne l'actif.
     document.querySelectorAll('.lang-btn').forEach(function (b) {
-      const on = b.getAttribute('data-lang') === lang;
-      b.style.opacity = on ? '1' : '0.4';
-      b.style.borderColor = on ? 'var(--accent-l)' : 'rgba(255,255,255,0.18)';
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+      b.setAttribute('aria-pressed', b.getAttribute('data-lang') === lang ? 'true' : 'false');
     });
 
     try { localStorage.setItem(LS_KEY, lang); } catch (e) {}
     try { const u = new URL(location.href); u.searchParams.set('lang', lang); history.replaceState(null, '', u); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('zt:langchange', { detail: { lang: lang } })); } catch (e) {}
   }
 
-  // Overlay « écran de chargement » pendant la bascule de langue.
   function switchWithLoader(next) {
     const ov = document.getElementById('langLoader');
     if (!ov) { applyLang(next); return; }
     ov.style.display = 'flex';
     requestAnimationFrame(function () { ov.style.opacity = '1'; });
-    setTimeout(function () { applyLang(next); }, 90);           // applique (caché par l'overlay)
-    setTimeout(function () {                                     // puis fondu de sortie
-      ov.style.opacity = '0';
-      setTimeout(function () { ov.style.display = 'none'; }, 360);
-    }, 780);
+    setTimeout(function () { applyLang(next); }, 90);
+    setTimeout(function () { ov.style.opacity = '0'; setTimeout(function () { ov.style.display = 'none'; }, 360); }, 780);
   }
 
   function init() {
