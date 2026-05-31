@@ -1454,7 +1454,50 @@
     });
   }
 
+  // v0.9.394 — « Mes instruments » : sélection des instruments tradés. Alimente la
+  // liste STRICTE de la modale de trade (favInstruments). Toggle = sauvegarde immédiate.
+  const INSTRUMENT_CATALOG = [
+    { cat: { fr: 'Futures CME — Indices', en: 'CME Futures — Indices' }, items: ['MES1','ES1','MNQ1','NQ1','MYM1','YM1','M2K1','RTY1'] },
+    { cat: { fr: 'Futures CME — Métaux / Énergie / Taux', en: 'CME Futures — Metals / Energy / Rates' }, items: ['MGC1','GC1','MCL1','CL1','ZN1'] },
+    { cat: { fr: 'CFD — Indices', en: 'CFD — Indices' }, items: ['US500','US100','US30','GER40','UK100'] },
+    { cat: { fr: 'Forex', en: 'Forex' }, items: ['EURUSD','GBPUSD','USDJPY'] },
+    { cat: { fr: 'CFD — Métaux / Énergie', en: 'CFD — Metals / Energy' }, items: ['XAUUSD','USOIL'] },
+    { cat: { fr: 'Crypto perp', en: 'Crypto perp' }, items: ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','AVAXUSDT','DOGEUSDT','LINKUSDT','DOTUSDT'] },
+    { cat: { fr: 'Crypto spot', en: 'Crypto spot' }, items: ['BTC-USD','ETH-USD','SOL-USD','XRP-USD','AVAX-USD'] },
+  ];
+  function renderInstrumentsSettings() {
+    const el = $('settingsInstruments');
+    if (!el) return;
+    const en = i18n.getLang() === 'en';
+    function render() {
+      const selected = new Set((Store.getSettings && Store.getSettings().favInstruments) || []);
+      const blocks = INSTRUMENT_CATALOG.map(g => {
+        const pills = g.items.map(sym =>
+          `<button type="button" class="instr-pill${selected.has(sym) ? ' on' : ''}" data-sym="${sym}">${sym}</button>`).join('');
+        return `<div class="instr-cat"><div class="instr-cat-label">${en ? g.cat.en : g.cat.fr}</div><div class="instr-pills">${pills}</div></div>`;
+      }).join('');
+      el.innerHTML = `
+        <div class="settings-section">
+          <h3 style="margin:0 0 4px">${en ? 'My instruments' : 'Mes instruments'}</h3>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5">
+            ${en ? 'Pick the instruments you trade. Only these appear when logging a trade.' : 'Choisis les instruments que tu trades. Seuls ceux-ci apparaissent au moment de saisir un trade.'}
+            &nbsp;<strong style="color:var(--accent-l)">${selected.size}</strong> ${en ? 'selected' : 'sélectionné(s)'}
+          </p>
+          ${blocks}
+        </div>`;
+      el.querySelectorAll('.instr-pill').forEach(b => b.addEventListener('click', () => {
+        const sym = b.dataset.sym;
+        const cur = new Set((Store.getSettings && Store.getSettings().favInstruments) || []);
+        if (cur.has(sym)) cur.delete(sym); else cur.add(sym);
+        Store.updateSettings({ favInstruments: [...cur] });
+        render();
+      }));
+    }
+    render();
+  }
+
   UI.initSettings = function () {
+    try { renderInstrumentsSettings(); } catch(e) { console.error('[Settings] instruments error:', e); }
     try { renderGroupsSettings(); }    catch(e) { console.error('[Settings] groups error:', e); }
     try { renderMyAccountsSettings(); } catch(e) { console.error('[Settings] accounts error:', e); }
     try { renderPropFirmsSettings(); }  catch(e) { console.error('[Settings] propfirms error:', e); }
