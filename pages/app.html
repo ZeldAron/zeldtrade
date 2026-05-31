@@ -57,12 +57,12 @@
 <body>
 
   <!-- ══ BANNIÈRE COOKIES ══════════════════════════════════════════════════════ -->
-  <div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#131929;border-top:1px solid #1e2535;padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-    <p style="margin:0;font-size:13px;color:#9ca3af;max-width:600px">
-      ZeldTrade utilise uniquement des cookies <strong style="color:#e6edf3">essentiels</strong> : session (Firebase Auth), sécurité anti-bot (Turnstile / hCaptcha) et stockage local de tes données. <strong style="color:#e6edf3">Aucun tracking publicitaire.</strong>
-      <a href="/privacy" style="color:#6366f1;text-decoration:none">En savoir plus</a>
+  <div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg3);border-top:1px solid var(--border);padding:16px 24px;z-index:9999;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-pop)">
+    <p style="margin:0;font-size:13px;color:var(--muted);max-width:600px">
+      ZeldTrade utilise uniquement des cookies <strong style="color:var(--text)">essentiels</strong> : session (Firebase Auth), sécurité anti-bot (Turnstile / hCaptcha) et stockage local de tes données. <strong style="color:var(--text)">Aucun tracking publicitaire.</strong>
+      <a href="/privacy" style="color:var(--accent);text-decoration:underline">En savoir plus</a>
     </p>
-    <button id="cookieAcceptBtn" style="background:#6366f1;color:#fff;border:none;border-radius:7px;padding:8px 20px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;flex-shrink:0">J'ai compris</button>
+    <button id="cookieAcceptBtn" style="background:transparent;color:var(--accent);border:1.5px solid var(--accent);border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">J'ai compris</button>
   </div>
   <!-- ══ AUTH MODAL ════════════════════════════════════════════════════════════ -->
   <div id="authModal" class="auth-modal" style="display:none">
