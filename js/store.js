@@ -94,18 +94,18 @@ const Store = (() => {
       { id:'topstep-150k', size:'150K', capital:150000, profitTarget:9000, maxDrawdown:4500, dailyLossLimit:0, maxContractsEval:15, evalFeeMonthly:149, drawdownType:'Trailing (se fige à PT)', consistency:'Best day ≤50% profits totaux', minTradingDays:5, payoutConditions:'Combine $149/mois — Live Funded DLL $4.5K — 50% premiers profits jusqu\'à 30j, puis 100% (max $15K), 5j gagnants min' },
     ]},
     ftmo:    { name: 'FTMO (CFD/Forex)', accounts: [
-      { id:'ftmo-10k',     size:'10K',  capital:10000,  profitTarget:1000,  maxDrawdown:1000,  dailyLossLimit:500,   drawdownType:'Statique (2-Step)', consistency:'Aucune', minTradingDays:4, payoutConditions:'80% split (90% après scaling) — fee remboursé au 1er payout' },
-      { id:'ftmo-25k',     size:'25K',  capital:25000,  profitTarget:2500,  maxDrawdown:2500,  dailyLossLimit:1250,  drawdownType:'Statique (2-Step)', consistency:'Aucune', minTradingDays:4, payoutConditions:'80% split (90% après scaling) — fee remboursé au 1er payout' },
-      { id:'ftmo-50k',     size:'50K',  capital:50000,  profitTarget:5000,  maxDrawdown:5000,  dailyLossLimit:2500,  drawdownType:'Statique (2-Step)', consistency:'Aucune', minTradingDays:4, payoutConditions:'80% split (90% après scaling) — fee remboursé au 1er payout' },
-      { id:'ftmo-100k',    size:'100K', capital:100000, profitTarget:10000, maxDrawdown:10000, dailyLossLimit:5000,  drawdownType:'Statique (2-Step)', consistency:'Aucune', minTradingDays:4, payoutConditions:'80% split (90% après scaling) — fee remboursé au 1er payout' },
-      { id:'ftmo-200k',    size:'200K', capital:200000, profitTarget:20000, maxDrawdown:20000, dailyLossLimit:10000, drawdownType:'Statique (2-Step)', consistency:'Aucune', minTradingDays:4, payoutConditions:'80% split (90% après scaling) — fee remboursé au 1er payout' },
+      { id:'ftmo-10k',     size:'10K',  capital:10000,  profitTarget:1000,  maxDrawdown:1000,  dailyLossLimit:500,   drawdownType:'Max Loss statique 10% · Daily Loss 5% (EOD dynamique, recalc 00:00 CET)', consistency:'Aucune (2-Step)', minTradingDays:4, payoutConditions:'90% split (jusqu\'à 90%) · fee remboursée au 1er payout · Swing dispo (1:30) · Challenge 10% + Vérif 5%' },
+      { id:'ftmo-25k',     size:'25K',  capital:25000,  profitTarget:2500,  maxDrawdown:2500,  dailyLossLimit:1250,  drawdownType:'Max Loss statique 10% · Daily Loss 5% (EOD dynamique, recalc 00:00 CET)', consistency:'Aucune (2-Step)', minTradingDays:4, payoutConditions:'90% split (jusqu\'à 90%) · fee remboursée au 1er payout · Swing dispo (1:30) · Challenge 10% + Vérif 5%' },
+      { id:'ftmo-50k',     size:'50K',  capital:50000,  profitTarget:5000,  maxDrawdown:5000,  dailyLossLimit:2500,  drawdownType:'Max Loss statique 10% · Daily Loss 5% (EOD dynamique, recalc 00:00 CET)', consistency:'Aucune (2-Step)', minTradingDays:4, payoutConditions:'90% split (jusqu\'à 90%) · fee remboursée au 1er payout · Swing dispo (1:30) · Challenge 10% + Vérif 5%' },
+      { id:'ftmo-100k',    size:'100K', capital:100000, profitTarget:10000, maxDrawdown:10000, dailyLossLimit:5000,  drawdownType:'Max Loss statique 10% · Daily Loss 5% (EOD dynamique, recalc 00:00 CET)', consistency:'Aucune (2-Step)', minTradingDays:4, payoutConditions:'90% split (jusqu\'à 90%) · fee remboursée au 1er payout · Swing dispo (1:30) · Challenge 10% + Vérif 5%' },
+      { id:'ftmo-200k',    size:'200K', capital:200000, profitTarget:20000, maxDrawdown:20000, dailyLossLimit:10000, drawdownType:'Max Loss statique 10% · Daily Loss 5% (EOD dynamique, recalc 00:00 CET)', consistency:'Aucune (2-Step)', minTradingDays:4, payoutConditions:'90% split (jusqu\'à 90%) · fee remboursée au 1er payout · Swing dispo (1:30) · Challenge 10% + Vérif 5%' },
     ]},
     ftmo1step: { name: 'FTMO 1-Step', accounts: [
-      { id:'ftmo1-10k',    size:'10K',  capital:10000,  profitTarget:1000,  maxDrawdown:1000,  dailyLossLimit:300,   drawdownType:'Trailing (1-Step)', consistency:'Best day ≤50% des profits totaux', minTradingDays:0, payoutConditions:'90% split dès le départ — fee remboursé au 1er payout' },
-      { id:'ftmo1-25k',    size:'25K',  capital:25000,  profitTarget:2500,  maxDrawdown:2500,  dailyLossLimit:750,   drawdownType:'Trailing (1-Step)', consistency:'Best day ≤50% des profits totaux', minTradingDays:0, payoutConditions:'90% split dès le départ — fee remboursé au 1er payout' },
-      { id:'ftmo1-50k',    size:'50K',  capital:50000,  profitTarget:5000,  maxDrawdown:5000,  dailyLossLimit:1500,  drawdownType:'Trailing (1-Step)', consistency:'Best day ≤50% des profits totaux', minTradingDays:0, payoutConditions:'90% split dès le départ — fee remboursé au 1er payout' },
-      { id:'ftmo1-100k',   size:'100K', capital:100000, profitTarget:10000, maxDrawdown:10000, dailyLossLimit:3000,  drawdownType:'Trailing (1-Step)', consistency:'Best day ≤50% des profits totaux', minTradingDays:0, payoutConditions:'90% split dès le départ — fee remboursé au 1er payout' },
-      { id:'ftmo1-200k',   size:'200K', capital:200000, profitTarget:20000, maxDrawdown:20000, dailyLossLimit:6000,  drawdownType:'Trailing (1-Step)', consistency:'Best day ≤50% des profits totaux', minTradingDays:0, payoutConditions:'90% split dès le départ — fee remboursé au 1er payout' },
+      { id:'ftmo1-10k',    size:'10K',  capital:10000,  profitTarget:1000,  maxDrawdown:1000,  dailyLossLimit:300,   drawdownType:'Max Loss EOD trailing 10% · Daily Loss 3% (EOD dynamique)', consistency:'Best Day ≤50% des jours positifs', minTradingDays:0, payoutConditions:'90% split · fee NON remboursée · Challenge 10% (1 phase)' },
+      { id:'ftmo1-25k',    size:'25K',  capital:25000,  profitTarget:2500,  maxDrawdown:2500,  dailyLossLimit:750,   drawdownType:'Max Loss EOD trailing 10% · Daily Loss 3% (EOD dynamique)', consistency:'Best Day ≤50% des jours positifs', minTradingDays:0, payoutConditions:'90% split · fee NON remboursée · Challenge 10% (1 phase)' },
+      { id:'ftmo1-50k',    size:'50K',  capital:50000,  profitTarget:5000,  maxDrawdown:5000,  dailyLossLimit:1500,  drawdownType:'Max Loss EOD trailing 10% · Daily Loss 3% (EOD dynamique)', consistency:'Best Day ≤50% des jours positifs', minTradingDays:0, payoutConditions:'90% split · fee NON remboursée · Challenge 10% (1 phase)' },
+      { id:'ftmo1-100k',   size:'100K', capital:100000, profitTarget:10000, maxDrawdown:10000, dailyLossLimit:3000,  drawdownType:'Max Loss EOD trailing 10% · Daily Loss 3% (EOD dynamique)', consistency:'Best Day ≤50% des jours positifs', minTradingDays:0, payoutConditions:'90% split · fee NON remboursée · Challenge 10% (1 phase)' },
+      { id:'ftmo1-200k',   size:'200K', capital:200000, profitTarget:20000, maxDrawdown:20000, dailyLossLimit:6000,  drawdownType:'Max Loss EOD trailing 10% · Daily Loss 3% (EOD dynamique)', consistency:'Best Day ≤50% des jours positifs', minTradingDays:0, payoutConditions:'90% split · fee NON remboursée · Challenge 10% (1 phase)' },
     ]},
     // ─── Lucid Trading — vérifié 2026-05-31 (source : support.lucidtrading.com) ───
     // 3 plans actifs : LucidFlex (éval soft + cushion ~4%), LucidPro (éval), LucidDirect (S2F / instant funded).
@@ -182,6 +182,18 @@ const Store = (() => {
       CL1:2.00, MCL1:0.50, QM1:2.00, NG1:2.00, QG1:1.30,
       '6E1':2.40, '6B1':2.40, '6J1':2.40, '6C1':2.40, '6A1':2.40, '6S1':2.40, '6N1':2.40,
       ZS1:2.80, ZC1:2.80, ZW1:2.80, ZL1:2.80, ZM1:2.80, HE1:2.80, LE1:2.80,
+    },
+    // FTMO — vérifié 2026-05-31 (CFD/Forex). Indices CFD = spread seul (0 commission) ;
+    // Forex = $5/lot round-turn (≈ 2.50/side) ; métaux = 0.0014% du notionnel (≈ 2.80/side au cours actuel).
+    ftmo: {
+      US500:0, US100:0, US30:0, GER40:0, UK100:0,
+      EURUSD:2.50, GBPUSD:2.50, USDJPY:2.50,
+      XAUUSD:2.80, USOIL:0,
+    },
+    ftmo1step: {
+      US500:0, US100:0, US30:0, GER40:0, UK100:0,
+      EURUSD:2.50, GBPUSD:2.50, USDJPY:2.50,
+      XAUUSD:2.80, USOIL:0,
     },
   };
   // Renvoie la commission per-side pour (firm, instrument), ou null si non répertoriée.
