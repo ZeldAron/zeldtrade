@@ -22,9 +22,9 @@
   <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>ZeldTrade Admin</title>
-  <link rel="icon" href="/assets/favicon.ico?v=0.9.392" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.392">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.392">
+  <link rel="icon" href="/assets/favicon.ico?v=0.9.393" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.393">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=0.9.393">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -850,15 +850,13 @@
   <!-- ── Toast ──────────────────────────────────────────────────────────────── -->
   <div class="admin-toast" id="adminToast"></div>
 
-  <!-- Firebase SDK -->
-  <!-- v0.9.392 : SDK Firebase bumpé 9.23.0 → 10.12.4 (aligné sur l'app) pour le support TOTP MFA (dispo depuis 10.5.0). SRI recalculés. -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-check-compat.js" integrity="sha384-GVRtWgN2ICoB9DSoSw9tjp+aCfNieDq0/v6fyqB+GjtdHFyt8KMbCofLQchq6u9b" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js" integrity="sha384-0XZ5KNFIdql5AX5c/lralakclJ21oLuWvtJHP7641njokCRuIcWkNEhPFSnEVXvS" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js" integrity="sha384-Uy1o+z1584joCeP4MOpVMevssoJbIsDLGksMxY/kSvz08FG2yWW3yXQJq00jDY/B" crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
-  <script src="js/firebase.js"></script>
-  <script src="js/admin.js?v=0.9.392"></script>
+  <!-- Firebase SDK — v0.9.393 : page admin migrée au SDK MODULAIRE (10.12.4) car
+       le compat n'expose pas TOTP MFA. admin-fb.js (module) initialise Firebase +
+       pose les shims compat _fbAuth/_fbDb/_fbFunctions sur window AVANT que
+       admin.js (classique, init sur DOMContentLoaded) ne les lise.
+       L'app principale (index.html) garde firebase.js compat — non impacté. -->
+  <script type="module" src="js/admin-fb.js?v=0.9.393"></script>
+  <script src="js/admin.js?v=0.9.393"></script>
 
 </body>
 </html>

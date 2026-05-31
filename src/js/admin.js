@@ -1196,18 +1196,19 @@ const Admin = (() => {
   }
 
   // ════════════════════════════════════════════════════════════════════════════
-  // 2FA (TOTP) — v0.9.392
-  //  - Login : si auth/multi-factor-auth-required → resolver → code → resolveSignIn
-  //  - Enrôlement : getSession → generateSecret → QR/clé → enroll
-  //  Le durcissement backend (exiger sign_in_second_factor dans _assertAdmin +
-  //  rules) se fait SÉPARÉMENT, APRÈS validation de 2 logins MFA réussis.
+  // 2FA (TOTP) — v0.9.393 (SDK modulaire via window._mfaApi, cf. admin-fb.js)
+  //  - Login : si auth/multi-factor-auth-required → getMultiFactorResolver → code
+  //  - Enrôlement : multiFactor(user).getSession → generateSecret → enroll
+  //  Le compat n'expose pas TOTP → on passe par les helpers modulaires exposés
+  //  sur window._mfaApi = { multiFactor, TotpMultiFactorGenerator, getMultiFactorResolver }.
+  //  Durcissement backend (sign_in_second_factor) APRÈS 2 logins MFA réussis.
   // ════════════════════════════════════════════════════════════════════════════
   let _mfaResolver  = null;   // resolver Firebase pendant un login MFA
   let _mfaSecret    = null;   // TotpSecret pendant un enrôlement
 
   function _mfaIsEnrolled(user) {
     try {
-      const factors = (user && user.multiFactor && user.multiFactor.enrolledFactors) || [];
+      const factors = user ? (window._mfaApi.multiFactor(user).enrolledFactors || []) : [];
       return factors.length > 0;
     } catch { return false; }
   }
@@ -1220,14 +1221,11 @@ const Admin = (() => {
 
   // ── Login : 2nd facteur ──────────────────────────────────────────────────────
   function _mfaBeginLogin(err) {
-    // En SDK compat, le resolver est exposé directement sur l'erreur. Fallback
-    // sur getMultiFactorResolver() pour robustesse inter-versions.
+    // SDK modulaire : le resolver s'obtient via getMultiFactorResolver(auth, err).
     try {
-      _mfaResolver = err.resolver
-        || (firebase.auth().getMultiFactorResolver && firebase.auth().getMultiFactorResolver(err))
-        || null;
+      _mfaResolver = window._mfaApi.getMultiFactorResolver(err);
     } catch {
-      _mfaResolver = err.resolver || null;
+      _mfaResolver = null;
     }
     if (!_mfaResolver) {
       $('loginError').textContent = 'Erreur 2FA — recharge la page.';
@@ -1251,7 +1249,7 @@ const Admin = (() => {
     try {
       // Le 1er facteur enrôlé (TOTP)
       const hint = _mfaResolver.hints[0];
-      const assertion = firebase.auth.TotpMultiFactorGenerator.assertionForSignIn(hint.uid, code);
+      const assertion = window._mfaApi.TotpMultiFactorGenerator.assertionForSignIn(hint.uid, code);
       const cred = await _mfaResolver.resolveSignIn(assertion);
       if (cred.user.email !== ADMIN_EMAIL) { await _fbAuth.signOut(); throw new Error('not admin'); }
       _mfaResolver = null;
@@ -1277,8 +1275,8 @@ const Admin = (() => {
     $('mfaSecretKey').textContent = 'Génération…';
     show('mfaEnrollModal', 'flex');
     try {
-      const session = await user.multiFactor.getSession();
-      _mfaSecret = await firebase.auth.TotpMultiFactorGenerator.generateSecret(session);
+      const session = await window._mfaApi.multiFactor(user).getSession();
+      _mfaSecret = await window._mfaApi.TotpMultiFactorGenerator.generateSecret(session);
       const key = _mfaSecret.secretKey || '';
       // Formatage par groupes de 4 pour lisibilité
       $('mfaSecretKey').textContent = key.replace(/(.{4})/g, '$1 ').trim();
@@ -1303,8 +1301,8 @@ const Admin = (() => {
     if (code.length !== 6) { errEl.textContent = 'Code à 6 chiffres requis.'; return; }
     btn.disabled = true;
     try {
-      const assertion = firebase.auth.TotpMultiFactorGenerator.assertionForEnrollment(_mfaSecret, code);
-      await user.multiFactor.enroll(assertion, 'Authenticator TOTP');
+      const assertion = window._mfaApi.TotpMultiFactorGenerator.assertionForEnrollment(_mfaSecret, code);
+      await window._mfaApi.multiFactor(user).enroll(assertion, 'Authenticator TOTP');
       _mfaSecret = null;
       $('mfaStep1').style.display = 'none';
       $('mfaStep2').style.display = 'block';
