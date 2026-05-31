@@ -822,7 +822,7 @@ const Modal = (() => {
     if (window.UI && UI.toast) {
       const en = (window.i18n && i18n.getLang && i18n.getLang() === 'en');
       UI.toast(_instrFavOnly
-        ? (en ? 'My instruments ⭐' : 'Mes instruments ⭐')
+        ? (en ? 'My instruments ' : 'Mes instruments ')
         : (en ? 'All instruments' : 'Tous les instruments'));
     }
   }
