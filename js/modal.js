@@ -765,6 +765,8 @@ const Modal = (() => {
     M6E1:'Forex futures', M6B1:'Forex futures', M6A1:'Forex futures', E71:'Forex futures', '6M1':'Forex futures',
     MNG1:'Énergie', RB1:'Énergie', HO1:'Énergie',
     ZB1:'Taux', ZF1:'Taux', ZT1:'Taux', UB1:'Taux', TN1:'Taux',
+    // v0.9.417 — instruments Apex supplémentaires
+    EMD1:'Indices Full', PA1:'Métaux', GF1:'Agricole', MBT1:'Crypto futures', MET1:'Crypto futures',
     US500:'Indices CFD', US100:'Indices CFD', US30:'Indices CFD', GER40:'Indices CFD', UK100:'Indices CFD',
     XAUUSD:'Métaux CFD', EURUSD:'Forex', GBPUSD:'Forex', USDJPY:'Forex', USOIL:'Énergie CFD',
     // Crypto (v0.9.190)
@@ -1679,6 +1681,8 @@ const Modal = (() => {
                                     // v0.9.416 — instruments Topstep supplémentaires
                                     'MHG1','M6E1','M6B1','M6A1','E71','6M1','MNG1','RB1','HO1',
                                     'ZB1','ZF1','ZT1','UB1','TN1',
+                                    // v0.9.417 — instruments Apex supplémentaires
+                                    'EMD1','PA1','GF1','MBT1','MET1',
                                     'US500','US100','US30','GER40','UK100','XAUUSD','EURUSD','GBPUSD','USDJPY','USOIL',
                                     // Crypto (v0.9.190)
                                     'BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','AVAXUSDT','DOGEUSDT','LINKUSDT','DOTUSDT',
