@@ -14,6 +14,9 @@ const Modal = (() => {
   let feeTakerPct   = null;  // v0.9.190 : null = trade non-crypto, sinon % (ex: 0.05)
   let spreadCost    = 0;
   let firmKey       = 'apex';
+  // v0.9.395 : filtre d'affichage de la liste d'instruments. true (défaut) →
+  // « Mes instruments » (favInstruments) ; false → TOUS les instruments.
+  let _instrFavOnly = true;
 
   // Screenshot du trade (persistant — Firebase Storage)
   // shotBlob : Blob compressé en mémoire au paste, uploadé au save (slot 0)
@@ -776,15 +779,16 @@ const Modal = (() => {
       }
     }
 
-    // v0.9.394 : liste STRICTE — uniquement « Mes instruments » (favInstruments,
-    // sélectionnés au setup / dans Réglages), filtrés sur ceux valides pour ce compte.
-    // Si l'user n'a aucun instrument sélectionné valide pour ce compte → fallback sur
-    // tous les dispo (jamais de dropdown vide qui bloquerait le trade). Pour en ajouter :
-    // Réglages → Mes instruments.
+    // v0.9.395 : l'étoile ★ est un FILTRE d'affichage (pas un favori par instrument).
+    //  - _instrFavOnly = true (défaut) → « Mes instruments » : on n'affiche que les
+    //    favInstruments (sélectionnés au setup / dans Réglages) valides pour ce compte.
+    //  - _instrFavOnly = false → on affiche TOUS les instruments dispo pour ce compte.
+    // Si le filtre est actif mais qu'aucun favori n'est valide pour ce compte → fallback
+    // sur tous les dispo (jamais de dropdown vide qui bloquerait le trade).
     const favs = (Store.getSettings && Store.getSettings().favInstruments) || [];
     const favSet = new Set(Array.isArray(favs) ? favs : []);
     const selectedAvail = available.filter(a => favSet.has(a.value));
-    const shown = selectedAvail.length ? selectedAvail : available;
+    const shown = (_instrFavOnly && selectedAvail.length) ? selectedAvail : available;
 
     let html = '';
     const groups = {};
@@ -800,33 +804,26 @@ const Modal = (() => {
     _updateFavStar();
   }
 
-  // v0.9.312 : étoile favoris — reflète si l'instrument courant est en favori
+  // v0.9.395 : l'étoile reflète l'état du FILTRE (mes instruments vs tout)
   function _updateFavStar() {
-    const star = $('wFavStar'); const sel = $('wInstr');
-    if (!star || !sel) return;
-    const favs = (Store.getSettings && Store.getSettings().favInstruments) || [];
-    const isFav = Array.isArray(favs) && favs.includes(sel.value);
-    star.textContent = isFav ? '★' : '☆';
-    star.style.color = isFav ? 'var(--accent)' : 'var(--muted)';
-    star.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+    const star = $('wFavStar');
+    if (!star) return;
+    star.textContent = _instrFavOnly ? '★' : '☆';
+    star.style.color = _instrFavOnly ? 'var(--accent)' : 'var(--muted)';
+    star.setAttribute('aria-pressed', _instrFavOnly ? 'true' : 'false');
+    star.title = _instrFavOnly ? 'Mes instruments (cliquer pour tout voir)' : 'Tous les instruments (cliquer pour mes instruments)';
   }
 
-  // v0.9.312 : ajoute/retire l'instrument courant des favoris (persisté dans settings, cross-device)
-  function _toggleFavInstrument() {
+  // v0.9.395 : bascule le filtre — « Mes instruments » ⇄ « Tous », puis re-rend la liste
+  function _toggleInstrFilter() {
+    _instrFavOnly = !_instrFavOnly;
     const sel = $('wInstr');
-    if (!sel || !sel.value) return;
-    const cur = sel.value;
-    const favs = ((Store.getSettings && Store.getSettings().favInstruments) || []).slice();
-    const idx = favs.indexOf(cur);
-    if (idx >= 0) favs.splice(idx, 1);
-    else favs.unshift(cur);   // nouveau favori placé en tête
-    if (Store.updateSettings) Store.updateSettings({ favInstruments: favs });
-    populateInstrumentSelect(firmKey, cur);   // re-rend (favori en tête) en gardant la sélection
+    populateInstrumentSelect(firmKey, sel ? sel.value : null);   // garde la sélection si possible
     if (window.UI && UI.toast) {
       const en = (window.i18n && i18n.getLang && i18n.getLang() === 'en');
-      UI.toast(idx >= 0
-        ? (en ? 'Removed from favorites' : 'Retiré des favoris')
-        : (en ? 'Added to favorites ⭐' : 'Ajouté aux favoris ⭐'));
+      UI.toast(_instrFavOnly
+        ? (en ? 'My instruments ⭐' : 'Mes instruments ⭐')
+        : (en ? 'All instruments' : 'Tous les instruments'));
     }
   }
 
@@ -1503,6 +1500,7 @@ const Modal = (() => {
     feePerSide    = 2.14;
     spreadCost    = 0;
     firmKey       = 'apex';
+    _instrFavOnly = true;   // v0.9.395 : toujours « Mes instruments » au démarrage
 
     // Reset state screenshot + pré-génère un ID trade en mode création
     resetShotState();
@@ -2093,7 +2091,7 @@ const Modal = (() => {
       wRecalc();
     });
     // v0.9.312 : étoile favoris (à droite du label Instrument)
-    if ($('wFavStar')) $('wFavStar').addEventListener('click', _toggleFavInstrument);
+    if ($('wFavStar')) $('wFavStar').addEventListener('click', _toggleInstrFilter);
 
     $('wApex').addEventListener('change', () => {
       const val = $('wApex').value;
