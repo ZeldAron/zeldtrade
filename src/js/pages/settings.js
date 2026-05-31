@@ -176,7 +176,7 @@
             ${_accTypeHintHtml}
 
             <!-- v0.9.190 : champs crypto spécifiques (visible uniquement si accountType === 'crypto') -->
-            <div class="maCryptoOnly" style="display:none;background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:12px 14px;margin-bottom:14px">
+            <div class="maCryptoOnly" style="display:none;background:rgba(0, 255, 136,0.05);border:1px solid rgba(0, 255, 136,0.2);border-radius:8px;padding:12px 14px;margin-bottom:14px">
               <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--accent-l);margin-bottom:10px;font-weight:600">Paramètres crypto</div>
               <div class="form-grid" style="grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
                 <div class="form-field">
@@ -238,13 +238,13 @@
                     ${t('set.acc.type')}
                     <span class="plan-badge plan-pro">FUNDED</span>
                   </label>
-                  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1.5px solid rgba(124, 58, 237,0.2);border-radius:8px;cursor:pointer" id="btnUnlockPreset">
+                  <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg3);border:1.5px solid rgba(0, 255, 136,0.2);border-radius:8px;cursor:pointer" id="btnUnlockPreset">
                     <span style="display:inline-flex;color:var(--accent-l)">${Icons.svg('lock',15)}</span>
                     <span style="font-size:12px;color:var(--muted);flex:1">${i18n.getLang()==='en'
                       ? 'Apex, Topstep, FTMO, Lucid presets — Funded / Elite only. Fill manually below.'
                       : 'Presets Apex, Topstep, FTMO, Lucid — réservés aux plans Funded / Elite. Remplissez manuellement ci-dessous.'
                     }</span>
-                    <span style="font-size:10px;font-weight:700;color:#a78bfa;white-space:nowrap">${i18n.getLang()==='en' ? 'See plans →' : 'Voir les offres →'}</span>
+                    <span style="font-size:10px;font-weight:700;color:#5cffab;white-space:nowrap">${i18n.getLang()==='en' ? 'See plans →' : 'Voir les offres →'}</span>
                   </div>
                   <input type="hidden" id="maTypeId" value="">
                 </div>`
@@ -843,7 +843,7 @@
         </div>
 
         <!-- Roadmap -->
-        <div style="background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:14px 16px;margin-top:14px">
+        <div style="background:rgba(0, 255, 136,0.05);border:1px solid rgba(0, 255, 136,0.2);border-radius:8px;padding:14px 16px;margin-top:14px">
           <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">ROADMAP</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.55">
             ${t('set.pf.roadmap.desc')}
@@ -945,7 +945,7 @@
         </div>
         <p style="font-size:12.5px;color:var(--muted);line-height:1.5;margin-bottom:18px">${t('set.cx.desc')}</p>
         ${Object.entries(PLATFORMS).map(([k, p]) => renderPlatformCard(k, p)).join('')}
-        <div style="background:rgba(124, 58, 237,0.05);border:1px solid rgba(124, 58, 237,0.2);border-radius:8px;padding:14px 16px;margin-top:6px">
+        <div style="background:rgba(0, 255, 136,0.05);border:1px solid rgba(0, 255, 136,0.2);border-radius:8px;padding:14px 16px;margin-top:6px">
           <div style="font-size:11px;color:var(--accent-l);font-weight:600;letter-spacing:0.4px;margin-bottom:6px">ROADMAP</div>
           <div style="font-size:12px;color:var(--muted);line-height:1.55">
             ${t('set.cx.roadmap')}
@@ -1277,7 +1277,7 @@
         errEl.parentNode.insertBefore(progressEl, errEl);
       }
       progressEl.style.display = '';
-      progressEl.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(167, 139, 250,0.3);border-top-color:#a78bfa;border-radius:50%;animation:spin 0.8s linear infinite"></span><span id="expPdfProgressText">Préparation…</span></div><div style="margin-top:8px;background:rgba(255,255,255,0.05);height:4px;border-radius:2px;overflow:hidden"><div id="expPdfProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#7c3aed,#a78bfa);transition:width 0.3s"></div></div>';
+      progressEl.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span class="spinner" style="display:inline-block;width:14px;height:14px;border:2px solid rgba(0, 255, 136,0.3);border-top-color:#5cffab;border-radius:50%;animation:spin 0.8s linear infinite"></span><span id="expPdfProgressText">Préparation…</span></div><div style="margin-top:8px;background:rgba(255,255,255,0.05);height:4px;border-radius:2px;overflow:hidden"><div id="expPdfProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#00ff88,#5cffab);transition:width 0.3s"></div></div>';
       // Inject CSS pour spinner (idempotent)
       if (!document.getElementById('expPdfProgressStyle')) {
         const style = document.createElement('style');
