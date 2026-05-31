@@ -11,6 +11,7 @@ const Modal = (() => {
   let _forceClaude  = false;   // v0.9.223 — set par "Réanalyser" pour forcer Claude direct
   let capital       = 50000;
   let feePerSide    = 2.14;
+  let accountBaseFee = 2.14;   // v0.9.411 : forfait du compte (fallback si pas de grille commission firm)
   let feeTakerPct   = null;  // v0.9.190 : null = trade non-crypto, sinon % (ex: 0.05)
   let spreadCost    = 0;
   let firmKey       = 'apex';
@@ -38,6 +39,16 @@ const Modal = (() => {
   function getSpreadForInstrument(fk, instr) {
     const sp = Store.getSpreadsByFirm(fk || 'apex');
     return sp[instr] != null ? sp[instr] : 0;
+  }
+
+  // v0.9.411 — Frais (commission per-side) selon la firm ET l'instrument courant.
+  // Si la firm a une grille de commissions par instrument (ex. Lucid : MES 0.50, ES 1.75,
+  // GC 2.30…), on l'utilise ; sinon on retombe sur le forfait du compte (accountBaseFee).
+  function _applyFee() {
+    if (editingId) return;   // édition : on préserve le feePerSide historique du trade
+    const instr = $('wInstr') ? $('wInstr').value : null;
+    const c = (Store.getCommission && firmKey) ? Store.getCommission(firmKey, instr) : null;
+    feePerSide = (c != null) ? c : accountBaseFee;
   }
 
   // v0.9.358 (fix B-12) : grise le bouton « Analyser cette capture » quand le quota
@@ -867,6 +878,7 @@ const Modal = (() => {
     $('wTP2').value   = parsedTrade.tp2   || '';
     $('wTP3').value   = parsedTrade.tp3   || '';
     spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
+    _applyFee();
     wRecalc();
   }
 
@@ -1498,6 +1510,7 @@ const Modal = (() => {
     parsedTrade   = null;
     capital       = Store.getSettings().capital || 50000;
     feePerSide    = 2.14;
+    accountBaseFee = 2.14;
     spreadCost    = 0;
     firmKey       = 'apex';
     _instrFavOnly = true;   // v0.9.395 : toujours « Mes instruments » au démarrage
@@ -1614,7 +1627,7 @@ const Modal = (() => {
       populateApexSelect(preferredApexValue);
       if (defaultAcc) {
         capital     = defaultAcc.capital;
-        feePerSide  = (defaultAcc.feePerSide != null) ? defaultAcc.feePerSide : 2.14;
+        accountBaseFee = (defaultAcc.feePerSide != null) ? defaultAcc.feePerSide : 2.14;
         firmKey     = defaultAcc.firmKey || 'apex';
         // v0.9.190 : si compte crypto, charger feeTakerPct pour le calc
         feeTakerPct = defaultAcc.accountType === 'crypto'
@@ -1813,7 +1826,7 @@ const Modal = (() => {
               ...data,
               apex:       acc.name,
               capital:    acc.capital,
-              feePerSide: (acc.feePerSide != null ? acc.feePerSide : 2.14),
+              feePerSide: (Store.getCommission && Store.getCommission(acc.firmKey, data.instrument) != null) ? Store.getCommission(acc.firmKey, data.instrument) : (acc.feePerSide != null ? acc.feePerSide : 2.14),
               spreadCost: Store.getSpreadsByFirm(acc.firmKey || 'apex')[data.instrument] || 0,
               groupId,
             };
@@ -1907,6 +1920,7 @@ const Modal = (() => {
       // par défaut pour que le preview live ET le P&L sauvegardé incluent le spread.
       if (!editingId && !parsedTrade) {
         spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
+        _applyFee();
         updateSpreadDisplay();
       }
       // v0.9.176 (H3 fix) : préserver le compte déjà pré-sélectionné au step 1
@@ -2085,6 +2099,7 @@ const Modal = (() => {
 
     $('wInstr').addEventListener('change', () => {
       spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
+      _applyFee();
       updateLotsInput($('wInstr').value);
       updateSpreadDisplay();
       _updateFavStar();   // v0.9.312 : refléter l'état favori du nouvel instrument
@@ -2104,7 +2119,7 @@ const Modal = (() => {
         const firstAcc = grp && grp.accountIds && grp.accountIds.length
           ? Store.getMyAccountById(grp.accountIds[0]) : null;
         capital     = firstAcc ? firstAcc.capital + (firstAcc.pnlOffset || 0) : (Store.getSettings().capital || 50000);
-        feePerSide  = (firstAcc && firstAcc.feePerSide != null) ? firstAcc.feePerSide : 2.14;
+        accountBaseFee = (firstAcc && firstAcc.feePerSide != null) ? firstAcc.feePerSide : 2.14;
         firmKey     = firstAcc?.firmKey || 'apex';
         feeTakerPct = firstAcc && firstAcc.accountType === 'crypto'
           ? (firstAcc.feeTakerPct != null ? firstAcc.feeTakerPct : 0.05)
@@ -2114,7 +2129,7 @@ const Modal = (() => {
         const acc = Store.getMyAccountByName(val);
         if (acc) {
           capital              = acc.capital + (acc.pnlOffset || 0);
-          feePerSide           = (acc.feePerSide != null ? acc.feePerSide : 2.14);
+          accountBaseFee       = (acc.feePerSide != null ? acc.feePerSide : 2.14);
           firmKey              = acc.firmKey || 'apex';
           feeTakerPct          = acc.accountType === 'crypto'
             ? (acc.feeTakerPct != null ? acc.feeTakerPct : 0.05)
@@ -2126,13 +2141,14 @@ const Modal = (() => {
           }
         } else {
           capital     = Store.getSettings().capital || 50000;
-          feePerSide  = 2.14;
+          accountBaseFee = 2.14;
           firmKey     = 'apex';
           feeTakerPct = null;
         }
       }
       populateInstrumentSelect(firmKey);
       spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
+      _applyFee();
       updateLotsInput($('wInstr').value);
       wRecalc();
     });

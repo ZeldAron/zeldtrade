@@ -162,6 +162,22 @@ const Store = (() => {
     fpips:   { US500:0.40,US100:1.20,US30:2.00,GER40:1.20,UK100:0.80,XAUUSD:0.25,EURUSD:0.80,GBPUSD:1.00,USDJPY:0.70,USOIL:2.50 },
   };
 
+  // v0.9.411 — Commissions par instrument et par firm (per side, USD). Mappées sur les
+  // symboles de l'app (futures = suffixe « 1 »). Une firm sans entrée ici → on retombe
+  // sur le feePerSide forfaitaire du compte. On remplit firm par firm au fil des vérifs.
+  // Lucid Trading : vérifié 2026-05-31 (support.lucidtrading.com).
+  const DEFAULT_COMMISSIONS_BY_FIRM = {
+    lucid: {
+      ES1:1.75, MES1:0.50, NQ1:1.75, MNQ1:0.50, YM1:1.75, MYM1:0.50, RTY1:1.75, M2K1:0.50,
+      GC1:2.30, MGC1:0.80, CL1:2.00, MCL1:0.50, QO1:2.00,
+    },
+  };
+  // Renvoie la commission per-side pour (firm, instrument), ou null si non répertoriée.
+  function getCommission(firmKey, instrument) {
+    const m = DEFAULT_COMMISSIONS_BY_FIRM[firmKey];
+    return (m && m[instrument] != null) ? m[instrument] : null;
+  }
+
   // ── État en mémoire ──────────────────────────────────────────────────────────
   let _uid          = 'default';
   let trades        = [];
@@ -1350,7 +1366,7 @@ const Store = (() => {
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,
     getMyAccounts, getArchivedAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount, convertEvalToFunded,
-    getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm,
+    getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm, getCommission,
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
     getPlanInfo, isPro, getTier, getTierBadge, getLimits, getTierRecap, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,
     isPlanLoaded: () => _planLoaded,
