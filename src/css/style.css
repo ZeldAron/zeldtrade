@@ -1082,6 +1082,35 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .dash-account-select option,
 .dash-account-select optgroup { background: var(--bg3); color: var(--text); }
 
+/* v0.9.396 — sélecteur Focus dans la topbar (compact, app-wide) */
+.focus-scope-select {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  color: var(--text);
+  font-family: 'Geist', sans-serif;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 7px 30px 7px 12px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236a82b8' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  max-width: 220px;
+  flex-shrink: 0;
+  text-overflow: ellipsis;
+  transition: border-color 0.15s;
+}
+.focus-scope-select:hover { border-color: var(--accent); }
+.focus-scope-select:focus { border-color: var(--accent); }
+.focus-scope-select option,
+.focus-scope-select optgroup { background: var(--bg3); color: var(--text); }
+@media (max-width: 768px) { .focus-scope-select { max-width: 140px; font-size: 12px; padding: 6px 26px 6px 10px; } }
+@media (max-width: 480px) { .focus-scope-select { max-width: 110px; } }
+
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 /* ─── ANALYTICS TABLE ─── */
@@ -2109,6 +2138,18 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .consent-checks-modal {
   margin: 0 0 18px;
 }
+
+/* v0.9.396 — wizard de setup obligatoire (profil → firms → instruments) */
+.tpm-progress { display: flex; gap: 6px; margin: 0 0 18px; }
+.tpm-progress span { height: 4px; flex: 1; border-radius: 2px; background: var(--border2, #30363d); transition: background 0.2s; }
+.tpm-progress span.on { background: var(--accent, #7c3aed); }
+.tpm-nav { display: flex; gap: 10px; margin-top: 4px; }
+.tpm-nav .login-btn { margin-bottom: 0; }
+.tpm-nav .login-btn:not(.login-btn-ghost) { flex: 1; }
+.login-btn-ghost { background: transparent; border: 1px solid var(--border2, #30363d); color: var(--text, #e6edf3); box-shadow: none; flex: 0 0 auto; min-width: 96px; width: auto; }
+.login-btn-ghost:hover { opacity: 1; border-color: var(--accent, #7c3aed); box-shadow: none; }
+#tpmInstrCats { max-height: 46vh; overflow-y: auto; margin: 0 0 14px; padding-right: 4px; }
+#tpmFirmPills { margin: 0 0 14px; }
 
 /* Toggle switch (Settings → Notifications) */
 .switch {

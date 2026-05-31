@@ -296,6 +296,51 @@ function initApp() {
     if (currentPage === 'settings')  UI.initSettings();
   });
 
+  // ── FOCUS app-wide (v0.9.396) ────────────────────────────────────────────────
+  // Sélecteur unique dans la topbar : Global (tout) / une prop firm / un compte / un
+  // groupe. Persistant (settings.focusScope) + appliqué au dashboard, analytics, calendrier.
+  function renderFocusScopeSelect() {
+    const sel = $('focusScopeSelect');
+    if (!sel) return;
+    const accs  = Store.getMyAccounts ? Store.getMyAccounts() : [];
+    const firms = Store.getMyFirms ? Store.getMyFirms() : [];
+    const grps  = Store.getGroups ? Store.getGroups() : [];
+    // Rien à filtrer (0 compte ET 0 firm) → on masque (pas de friction inutile).
+    if (!accs.length && !firms.length) { sel.style.display = 'none'; return; }
+    const en  = i18n.getLang() === 'en';
+    const cur = (Store.getFocusScope && Store.getFocusScope()) || 'all';
+    let opts = `<option value="all"${cur === 'all' ? ' selected' : ''}>${en ? '🌍 All' : '🌍 Tout'}</option>`;
+    if (firms.length) {
+      opts += `<optgroup label="${en ? 'By prop firm' : 'Par prop firm'}">`;
+      opts += firms.map(f => { const v = 'firm:' + f.key; return `<option value="${UI.escHtml(v)}"${cur === v ? ' selected' : ''}>🎯 ${UI.escHtml(f.name)}</option>`; }).join('');
+      opts += `</optgroup>`;
+    }
+    if (accs.length) {
+      opts += `<optgroup label="${en ? 'By account' : 'Par compte'}">`;
+      opts += accs.map(a => { const v = 'acc:' + a.name; return `<option value="${UI.escHtml(v)}"${cur === v ? ' selected' : ''}>${UI.escHtml(a.name)}</option>`; }).join('');
+      opts += `</optgroup>`;
+    }
+    if (grps.length) {
+      opts += `<optgroup label="${en ? 'By group' : 'Par groupe'}">`;
+      opts += grps.map(g => { const v = 'grp:' + g.id; return `<option value="${UI.escHtml(v)}"${cur === v ? ' selected' : ''}>${UI.escHtml(g.name)}</option>`; }).join('');
+      opts += `</optgroup>`;
+    }
+    sel.innerHTML = opts;
+    sel.style.display = '';
+  }
+  UI.refreshFocusScope = renderFocusScopeSelect;
+
+  $('focusScopeSelect')?.addEventListener('change', e => {
+    const v = e.target.value;
+    if (Store.setFocusScope) Store.setFocusScope(v === 'all' ? null : v);
+    try { if (currentPage === 'dashboard') UI.renderDashboard(); } catch (err) {}
+    try { if (currentPage === 'analytics') UI.renderAnalytics(); } catch (err) {}
+    try { if (currentPage === 'calendar')  UI.renderCalendar();  } catch (err) {}
+  });
+
+  renderFocusScopeSelect();
+  window.addEventListener('store:synced', renderFocusScopeSelect);
+
   // ── TIER-RECAP (v0.9.376) — récap features gagnées/perdues à un VRAI changement de palier ──
   // Déclenché sur store:synced (palier confirmé, pas le défaut transitoire) en comparant au
   // dernier palier vu (localStorage par-uid). Couvre l'upgrade Stripe (resync → synced).

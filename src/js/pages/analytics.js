@@ -66,7 +66,8 @@
 
   UI.renderAnalytics = function () {
     const el    = $('analyticsContent');
-    const all   = Store.getTrades();
+    // v0.9.396 : respecte le Focus app-wide (Global / firm / compte / groupe)
+    const all   = Store.scopedTrades ? Store.scopedTrades() : Store.getTrades();
     const isPro = Store.isPro();
 
     if (!all.length) {
