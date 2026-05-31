@@ -21,8 +21,8 @@ const Theme = (() => {
   function _readStored() {
     try {
       const v = localStorage.getItem(KEY);
-      return VALID.has(v) ? v : 'auto';
-    } catch { return 'auto'; }
+      return VALID.has(v) ? v : 'light';   // v0.9.400 : blanc par défaut
+    } catch { return 'light'; }
   }
 
   function _resolveAuto() {
