@@ -22,7 +22,19 @@ const Calc = (() => {
     ADAUSDT: 1, AVAXUSDT: 1, DOGEUSDT: 1, LINKUSDT: 1, DOTUSDT: 1,
     'BTC-USD': 1, 'ETH-USD': 1, 'SOL-USD': 1, 'XRP-USD': 1, 'AVAX-USD': 1,
   };
-  const TICK_SIZE = 0.25;
+  const TICK_SIZE = 0.25;   // fallback historique
+  // v0.9.413 — taille du tick PAR instrument (le 0.25 global était faux pour GC/CL/YM/RTY/ZN…).
+  // valeur du tick en $ = tickSize × pointValue (POINT_VALUES). Vérifié specs CME.
+  const TICK_SIZES = {
+    MES1: 0.25, ES1: 0.25, MNQ1: 0.25, NQ1: 0.25,
+    MYM1: 1, YM1: 1, M2K1: 0.1, RTY1: 0.1,
+    MGC1: 0.1, GC1: 0.1, QO1: 0.025,
+    MCL1: 0.01, CL1: 0.01,
+    ZN1: 0.015625,   // 1/64
+  };
+  function tickSize(instrument) { return TICK_SIZES[instrument] != null ? TICK_SIZES[instrument] : TICK_SIZE; }
+  // Valeur d'un tick en $ pour l'instrument (= tickSize × $/point).
+  function tickValue(instrument) { return tickSize(instrument) * (POINT_VALUES[instrument] || 0); }
 
   const CFD_INSTRS = new Set(['US30','US100','US500','GER40','UK100','XAUUSD','EURUSD','GBPUSD','USDJPY','USOIL']);
   const CRYPTO_INSTRS = new Set([
@@ -76,8 +88,9 @@ const Calc = (() => {
     const rewardUSD = rewardPts * pv * t.contracts;
     const riskPct   = t.capital > 0 ? (riskUSD / t.capital) * 100 : 0;
 
-    const riskTicks   = isCFD(t.instrument) ? 0 : Math.round(riskPts   / TICK_SIZE);
-    const rewardTicks = isCFD(t.instrument) ? 0 : Math.round(rewardPts / TICK_SIZE);
+    const _ts          = tickSize(t.instrument);
+    const riskTicks   = isCFD(t.instrument) ? 0 : Math.round(riskPts   / _ts);
+    const rewardTicks = isCFD(t.instrument) ? 0 : Math.round(rewardPts / _ts);
 
     // Commissions aller-retour (entry + exit)
     // v0.9.190 : pour crypto, fees = % du notional (qty × prix moyen × feeTakerPct% × 2 sides)
@@ -345,7 +358,7 @@ const Calc = (() => {
   return {
     trade, fromForm, trailingFloor,
     rrColor, rrLabel, riskColor, pnlColor, formatPnL,
-    pointValue, isCFD, isCrypto, ACCOUNT_RULES,
+    pointValue, tickSize, tickValue, isCFD, isCrypto, ACCOUNT_RULES,
     normalizePartials: _normalizePartials,
   };
 })();
