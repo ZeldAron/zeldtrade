@@ -1,56 +1,59 @@
 :root {
-  /* Backgrounds — alignés sur la palette landing (navy cinématique) v0.9.398 */
-  --bg:        #06080d;
-  --bg2:       #0a0e16;
-  --bg3:       #11161f;
-  --bg4:       #1a212d;
+  /* v0.9.399 — THÈME TERMINAL / pro trader (cf. design/proposals/app-2-terminal).
+     Surfaces navy, vert terminal, bordures solides, coins nets, zéro glow. */
+  --bg:        #0b0e14;
+  --bg2:       #11151d;
+  --bg3:       #161b25;
+  --bg4:       #1d2530;
 
-  /* Clean white-tinted borders */
-  --border:    rgba(255,255,255,0.07);
-  --border2:   rgba(255,255,255,0.13);
+  /* Bordures solides (style terminal, pas de blanc translucide) */
+  --border:    #22272f;
+  --border2:   #30363d;
 
   /* Texte */
-  --text:      #f5f5f7;
-  --muted:     #86868b;
-  --muted2:    #48484d;
+  --text:      #e5e9f0;
+  --muted:     #7d8590;
+  --muted2:    #4f5662;
 
-  /* Couleurs sémantiques trading (intactes — convention universelle) */
-  --green:     #30d158;
-  --green-dim: rgba(48,209,88,0.13);
-  --red:       #ff453a;
-  --red-dim:   rgba(255,69,58,0.13);
-  --amber:     #ff9f0a;
-  --amber-dim: rgba(255,159,10,0.13);
-  --blue:      #0a84ff;            /* gardé pour Entry (bleu trading classique) */
-  --blue-dim:  rgba(10,132,255,0.13);
+  /* Couleurs sémantiques trading */
+  --green:     #3fb950;
+  --green-dim: rgba(63,185,80,0.15);
+  --red:       #f85149;
+  --red-dim:   rgba(248,81,73,0.15);
+  --amber:     #d29922;
+  --amber-dim: rgba(210,153,34,0.15);
+  --blue:      #58a6ff;            /* Entry (bleu trading) */
+  --blue-dim:  rgba(88,166,255,0.15);
 
-  /* v0.9.180 (U41) : palette brand violet/rose alignée sur la landing.
-     --accent passe de bleu Apple (#0a84ff) → violet brand (#00ff88).
-     Propage automatiquement à ~62 usages dans tout le CSS. */
-  --accent:     #00ff88;
-  --accent-l:   #5cffab;
-  --accent-d:   #00cc6e;
-  --accent-dim: rgba(0, 255, 136,0.13);
-  --on-accent:  #06080d;   /* texte/icônes SUR un fond accent (vert vif → texte sombre) */
-  --pink:       #f472b6;
-  --cyan:       #22d3ee;
+  /* Accent = vert terminal (un seul vert, comme un vrai terminal) */
+  --accent:     #3fb950;
+  --accent-l:   #56d364;
+  --accent-d:   #2ea043;
+  --accent-dim: rgba(63,185,80,0.15);
+  --on-accent:  #0b0e14;   /* texte/icônes sur fond accent (vert → texte navy sombre) */
+  --pink:       #56d364;   /* neutralisé en vert (le terminal n'a pas de rose) */
+  --cyan:       #58a6ff;
 
-  --r:    12px;
-  --r-sm: 8px;
-  --r-lg: 16px;   /* v0.9.265 — cartes/panneaux (refonte « cartes douces & aérées ») */
+  /* v0.9.399 — polices terminal : JetBrains Mono pour la data, Geist (sans) pour le texte long */
+  --font-mono: 'JetBrains Mono', 'Geist Mono', ui-monospace, monospace;
+  --font-sans: 'Geist', 'Inter', -apple-system, sans-serif;
 
-  /* v0.9.265 — ombres douces partagées (refonte UI). Surchargées en mode clair. */
-  --shadow-sm:   0 1px 3px rgba(0,0,0,0.25);
-  --shadow-card: 0 2px 14px rgba(0,0,0,0.30);
-  --shadow-pop:  0 12px 40px rgba(0,0,0,0.45);
+  /* Coins nets (terminal) */
+  --r:    3px;
+  --r-sm: 2px;
+  --r-lg: 4px;
 
-  /* v0.9.242 : variables surfaces pour différencier au thème.
-     Permet à .sidebar / .user-pill etc. de basculer sans cascade dispute. */
-  --sidebar-bg:    linear-gradient(180deg, #0a0e16 0%, #06080d 100%);
-  --pill-bg:       rgba(255,255,255,0.04);
-  --pill-border:   rgba(255,255,255,0.08);
-  --hover-bg:      rgba(255,255,255,0.05);
-  --active-bg:     rgba(0, 255, 136,0.12);
+  /* Surfaces plates : pas d'ombre (sauf popovers/modales) */
+  --shadow-sm:   none;
+  --shadow-card: none;
+  --shadow-pop:  0 12px 40px rgba(0,0,0,0.6);
+
+  /* Surfaces sidebar / pill */
+  --sidebar-bg:    #0b0e14;
+  --pill-bg:       rgba(255,255,255,0.03);
+  --pill-border:   var(--border);
+  --hover-bg:      var(--bg2);
+  --active-bg:     var(--green-dim);
 
   /* Transition fluide quand on toggle le thème (sur les surfaces principales).
      Limité aux propriétés visibles pour éviter de freezer le scroll/anim. */
@@ -5496,3 +5499,50 @@ img { -webkit-user-drag: none; }
 .logo-mark svg path, .login-logo-mark svg path, .zt-loader .logo-tile svg path { stroke: var(--on-accent); }
 /* Badge « POPULAR » des cartes pricing (texte sur fond accent) */
 .pricing-card.featured::before { color: var(--on-accent); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v0.9.399 — SKIN TERMINAL (pro trader). Pass 1 : mono large, surfaces plates,
+   coins nets, nav préfixée « > ». Bloc final → gagne sur les styles d'origine.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* — Mono sur toute la « data » et la chrome (le texte long reste en sans) — */
+.nav-item, .nav-group-label, .nav-divider,
+.topbar-title, .topbar-subtitle,
+.btn, .btn-primary, .btn-ghost, .btn-secondary, .btn-danger, .new-trade-btn, .chip,
+.kpi-val, .kpi-label, .kpi-sub, .stat-label, .stat-val,
+.account-card, .ac-name, .ac-label, .ac-badge, .status-badge, .pill,
+.recent-trade-table, .recent-trade-table th, .recent-trade-table td,
+.focus-scope-select, #appVersionLabel, .page-section-count, .page-section-ttl,
+.dash-account-select, .lp-billing-btn {
+  font-family: var(--font-mono);
+}
+
+/* — Surfaces PLATES : on tue glows/ombres (terminal = bordure 1px, pas d'ombre) — */
+.kpi-card, .chart-card, .page-section, .account-card, .chip, .pill,
+.btn, .btn-primary, .btn-ghost, .btn-secondary, .new-trade-btn,
+.sidebar-upgrade, .search-wrap, .focus-scope-select, .notif-panel,
+.kpi-card:hover, .chart-card:hover, .account-card:hover,
+.btn-primary:hover, .btn-ghost:hover, .new-trade-btn:hover, .login-btn:hover {
+  box-shadow: none;
+}
+/* boutons primaires : aplatis (le gradient/glow vert → fond plein vert, texte navy) */
+.btn-primary, .new-trade-btn, .login-btn { background: var(--accent); }
+
+/* — Sidebar nav façon terminal : préfixe « > », accent à gauche — */
+.nav-item { position: relative; font-size: 12.5px; letter-spacing: 0.01em; border-radius: 0; }
+.nav-item::before { content: ">"; color: var(--muted2); margin-right: 9px; font-weight: 600; }
+.nav-item.active { background: var(--bg2); border-left: 2px solid var(--accent); }
+.nav-item.active::before { color: var(--accent); }
+.nav-group-label { text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; color: var(--muted2); }
+
+/* — Status bar terminal en tête d'app — */
+.zt-statusbar {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 5px 18px; background: var(--bg2); border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); letter-spacing: 0.03em;
+}
+.zt-statusbar .dot { color: var(--accent); }
+.zt-statusbar .ok { color: var(--accent); }
+.zt-statusbar .sep { color: var(--muted2); }
+.zt-statusbar .right { margin-left: auto; color: var(--accent); }
+@media (max-width: 640px) { .zt-statusbar .hide-sm { display: none; } }

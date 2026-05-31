@@ -24,7 +24,7 @@ UI.renderOffers = function () {
   const tierLabel = isBeta ? 'Bêta Testeur' : isElite ? 'Elite' : isFunded ? 'Funded' : 'Trader';
   const statusBanner = pro
     ? `<div class="pro-active-banner">
-        <div class="pro-active-icon">${isBeta ? Icons.svg('sparkle',24) : '✦'}</div>
+        <div class="pro-active-icon">${isBeta ? Icons.svg('sparkle',24) : ''}</div>
         <div>
           <div class="pro-active-title">${(t('off.plan.active') || 'Plan %s actif').replace('%s', tierLabel)}</div>
           <div class="pro-active-sub">${activatedDate ? tv('off.pro.active.sub', { date: activatedDate }) : (t('off.pro.active.full') || 'Accès complet à toutes les fonctionnalités')}</div>
@@ -128,7 +128,7 @@ UI.renderOffers = function () {
   const cardFunded = `
     <div class="pricing-card featured${bF.cls}"${bF.attrs}>
       ${bF.corner}
-      <div class="pricing-badge-row"><span class="pricing-badge">✦ ${isBeta ? 'Bêta' : t('off.popular')}</span></div>
+      <div class="pricing-badge-row"><span class="pricing-badge">${isBeta ? 'Bêta' : t('off.popular')}</span></div>
       <div class="pricing-card-name">Funded</div>
       <p class="pricing-card-tagline">${t('off.funded.tag')}</p>
       <div class="pricing-launch">${t('off.launch')}</div>
@@ -155,7 +155,7 @@ UI.renderOffers = function () {
   const cardElite = `
     <div class="pricing-card elite${bE.cls}"${bE.attrs}>
       ${bE.corner}
-      <div class="pricing-badge-row"><span class="pricing-badge-elite">✦ Premium</span></div>
+      <div class="pricing-badge-row"><span class="pricing-badge-elite">Premium</span></div>
       <div class="pricing-card-name">Elite</div>
       <p class="pricing-card-tagline">${t('off.elite.tag')}</p>
       <div class="pricing-launch">${t('off.launch')}</div>

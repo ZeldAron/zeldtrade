@@ -402,7 +402,7 @@
     // Upgrade nudge for Trader (free) users with 1 account
     const upgradeBanner = !isPro
       ? `<div class="upgrade-inline" id="dashUpgradeBanner" style="margin-bottom:20px">
-          <div class="upgrade-inline-icon">✦</div>
+          <div class="upgrade-inline-icon"></div>
           <div class="upgrade-inline-body">
             <div class="upgrade-inline-title">${i18n.getLang() === 'en' ? 'Funded & Elite: more accounts & advanced analytics' : 'Funded & Elite : plus de comptes & analytics avancées'}</div>
             <div class="upgrade-inline-sub">${i18n.getLang() === 'en'
