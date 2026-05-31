@@ -71,20 +71,21 @@
      bg2 = main content ("page" gris plus clair)
      bg3 = cards, inputs (blanc pur)
      bg4 = chips, badges hover, états actifs (gris medium) */
-  /* v0.9.400 — BLANC par défaut. Monochrome propre : main blanc, sidebar gris très clair. */
-  --bg:        #f4f4f5;       /* sidebar gris très clair */
-  --bg2:       #ffffff;       /* main blanc */
-  --bg3:       #ffffff;       /* cards blanc */
-  --bg4:       #ebebed;       /* chips / états */
+  /* v0.9.401 — BLANC défaut. Page en GRIS clair, cartes BLANCHES → séparation nette
+     (avant : page et cartes toutes deux blanches = trop fade, zéro contraste). */
+  --bg:        #fbfbfc;       /* sidebar quasi-blanc */
+  --bg2:       #eef0f2;       /* page = gris clair (les cartes blanches ressortent) */
+  --bg3:       #ffffff;       /* cards blanc pur */
+  --bg4:       #e4e6e9;       /* chips / états */
 
-  /* Borders : noires avec alpha (pas de teinte bleue) */
-  --border:    rgba(0, 0, 0, 0.10);
-  --border2:   rgba(0, 0, 0, 0.16);
+  /* Borders plus marquées (avant trop pâles) */
+  --border:    rgba(0, 0, 0, 0.14);
+  --border2:   rgba(0, 0, 0, 0.24);
 
-  /* Texte : noir presque pur pour lisibilité maximale */
-  --text:      #1a1a1a;
-  --muted:     #666666;
-  --muted2:    #999999;
+  /* Texte : contraste max */
+  --text:      #0d0d0f;
+  --muted:     #5a5a61;
+  --muted2:    #8a8a91;
 
   /* Couleurs sémantiques trading — assombries pour contraste fond clair */
   --green:     #15803d;       /* emerald-700 */
@@ -106,16 +107,16 @@
   --cyan:       #1e40af;
 
   /* Surfaces sidebar / pill — pur grayscale */
-  --sidebar-bg:  #f4f4f5;
+  --sidebar-bg:  #fbfbfc;
   --pill-bg:     rgba(0,0,0,0.04);
-  --pill-border: rgba(0,0,0,0.10);
+  --pill-border: rgba(0,0,0,0.12);
   --hover-bg:    rgba(0,0,0,0.05);
-  --active-bg:   rgba(0,0,0,0.07);
+  --active-bg:   rgba(0,0,0,0.08);
 
   /* v0.9.265 — ombres douces adaptées au clair (plus légères que le dark) */
-  --shadow-sm:   0 1px 2px rgba(0,0,0,0.06);
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 6px 18px rgba(0,0,0,0.06);
-  --shadow-pop:  0 12px 40px rgba(0,0,0,0.16);
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.08);
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.08);
+  --shadow-pop:  0 12px 40px rgba(0,0,0,0.18);
 
   color-scheme: light;
 }
