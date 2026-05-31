@@ -1,5 +1,9 @@
 // ─── FIREBASE INIT ────────────────────────────────────────────────────────────
-const firebaseConfig = {
+// v0.9.394 : multi-environnement. La config est choisie par HOSTNAME :
+//   • zeldtrade-staging.web.app / .firebaseapp.com → projet de test ISOLÉ
+//   • tout le reste (zeldtrade.com, .web.app, localhost) → PROD
+// La prod est strictement inchangée (son hostname ne matche jamais le staging).
+const _FB_PROD = {
   apiKey:            'AIzaSyCX5AWqdFyunxpYV9LgaacHU1osXQDbEss',
   authDomain:        'zeldtrade.firebaseapp.com',
   projectId:         'zeldtrade',
@@ -7,6 +11,17 @@ const firebaseConfig = {
   messagingSenderId: '356908373821',
   appId:             '1:356908373821:web:4af7d3be51018b56ef1754',
 };
+const _FB_STAGING = {
+  apiKey:            'AIzaSyDrhhUvHG01ayM5zhxX4kDqAE7OOpTEIJs',
+  authDomain:        'zeldtrade-staging.firebaseapp.com',
+  projectId:         'zeldtrade-staging',
+  storageBucket:     'zeldtrade-staging.firebasestorage.app',
+  messagingSenderId: '396896715351',
+  appId:             '1:396896715351:web:7a7cb7b0267637d3a61912',
+};
+const _IS_STAGING = /(^|\.)zeldtrade-staging\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
+const firebaseConfig = _IS_STAGING ? _FB_STAGING : _FB_PROD;
+if (_IS_STAGING) console.info('%c[Firebase] Environnement STAGING (données isolées de la prod).', 'color:#f59e0b;font-weight:bold');
 
 const _fbApp = firebase.initializeApp(firebaseConfig);
 
