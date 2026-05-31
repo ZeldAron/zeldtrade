@@ -1483,10 +1483,14 @@
   // v0.9.394 — « Mes instruments » : sélection des instruments tradés. Alimente la
   // liste STRICTE de la modale de trade (favInstruments). Toggle = sauvegarde immédiate.
   const INSTRUMENT_CATALOG = [
-    { cat: { fr: 'Futures CME — Indices', en: 'CME Futures — Indices' }, items: ['MES1','ES1','MNQ1','NQ1','MYM1','YM1','M2K1','RTY1'] },
-    { cat: { fr: 'Futures CME — Métaux / Énergie / Taux', en: 'CME Futures — Metals / Energy / Rates' }, items: ['MGC1','GC1','MCL1','CL1','ZN1'] },
+    { cat: { fr: 'Futures CME — Indices', en: 'CME Futures — Indices' }, items: ['MES1','ES1','MNQ1','NQ1','MYM1','YM1','M2K1','RTY1','NKD1'] },
+    { cat: { fr: 'Futures CME — Métaux', en: 'CME Futures — Metals' }, items: ['MGC1','GC1','SI1','SIL1','PL1','HG1'] },
+    { cat: { fr: 'Futures CME — Énergie', en: 'CME Futures — Energy' }, items: ['MCL1','CL1','QM1','NG1','QG1'] },
+    { cat: { fr: 'Futures CME — Taux', en: 'CME Futures — Rates' }, items: ['ZN1'] },
+    { cat: { fr: 'Futures CME — Forex', en: 'CME Futures — FX' }, items: ['6E1','6B1','6J1','6C1','6A1','6S1','6N1'] },
+    { cat: { fr: 'Futures CME — Agricole', en: 'CME Futures — Agricultural' }, items: ['ZS1','ZC1','ZW1','ZL1','ZM1','HE1','LE1'] },
     { cat: { fr: 'CFD — Indices', en: 'CFD — Indices' }, items: ['US500','US100','US30','GER40','UK100'] },
-    { cat: { fr: 'Forex', en: 'Forex' }, items: ['EURUSD','GBPUSD','USDJPY'] },
+    { cat: { fr: 'Forex (spot/CFD)', en: 'Forex (spot/CFD)' }, items: ['EURUSD','GBPUSD','USDJPY'] },
     { cat: { fr: 'CFD — Métaux / Énergie', en: 'CFD — Metals / Energy' }, items: ['XAUUSD','USOIL'] },
     { cat: { fr: 'Crypto perp', en: 'Crypto perp' }, items: ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','AVAXUSDT','DOGEUSDT','LINKUSDT','DOTUSDT'] },
     { cat: { fr: 'Crypto spot', en: 'Crypto spot' }, items: ['BTC-USD','ETH-USD','SOL-USD','XRP-USD','AVAX-USD'] },

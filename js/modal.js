@@ -754,6 +754,12 @@ const Modal = (() => {
     MYM1:'Indices Micro', YM1:'Indices Full', M2K1:'Indices Micro', RTY1:'Indices Full',
     MGC1:'Métaux', GC1:'Métaux',
     MCL1:'Énergie', CL1:'Énergie', ZN1:'Taux',
+    // v0.9.414 — instruments Lucid (futures CME)
+    NKD1:'Indices Full',
+    SI1:'Métaux', SIL1:'Métaux', PL1:'Métaux', HG1:'Métaux',
+    QM1:'Énergie', NG1:'Énergie', QG1:'Énergie',
+    '6E1':'Forex futures', '6B1':'Forex futures', '6J1':'Forex futures', '6C1':'Forex futures', '6A1':'Forex futures', '6S1':'Forex futures', '6N1':'Forex futures',
+    ZS1:'Agricole', ZC1:'Agricole', ZW1:'Agricole', ZL1:'Agricole', ZM1:'Agricole', HE1:'Agricole', LE1:'Agricole',
     US500:'Indices CFD', US100:'Indices CFD', US30:'Indices CFD', GER40:'Indices CFD', UK100:'Indices CFD',
     XAUUSD:'Métaux CFD', EURUSD:'Forex', GBPUSD:'Forex', USDJPY:'Forex', USOIL:'Énergie CFD',
     // Crypto (v0.9.190)
@@ -1661,6 +1667,10 @@ const Modal = (() => {
   // ── Save ────────────────────────────────────────────────────────────────────
   const VALID_OUTCOMES  = new Set(['win', 'loss', 'be', 'open']);
   const VALID_INSTRS    = new Set(['MES1','ES1','MNQ1','NQ1','MYM1','YM1','M2K1','RTY1','MGC1','GC1','QO1','MCL1','CL1','ZN1',
+                                    // v0.9.414 — instruments Lucid (futures CME)
+                                    'NKD1','SI1','SIL1','PL1','HG1','QM1','NG1','QG1',
+                                    '6E1','6B1','6J1','6C1','6A1','6S1','6N1',
+                                    'ZS1','ZC1','ZW1','ZL1','ZM1','HE1','LE1',
                                     'US500','US100','US30','GER40','UK100','XAUUSD','EURUSD','GBPUSD','USDJPY','USOIL',
                                     // Crypto (v0.9.190)
                                     'BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','AVAXUSDT','DOGEUSDT','LINKUSDT','DOTUSDT',
