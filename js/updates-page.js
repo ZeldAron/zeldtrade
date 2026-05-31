@@ -47,12 +47,12 @@
 
   // Mapping des tags réellement utilisés dans les entrées (label FR/EN + couleur).
   const TAG = {
-    feature:  { fr: 'Nouveau',         en: 'New',        color: '#a78bfa' },
-    feat:     { fr: 'Nouveau',         en: 'New',        color: '#a78bfa' },
+    feature:  { fr: 'Nouveau',         en: 'New',        color: '#555555' },
+    feat:     { fr: 'Nouveau',         en: 'New',        color: '#555555' },
     fix:      { fr: 'Correctif',       en: 'Fix',        color: '#facc15' },
     security: { fr: 'Sécurité',        en: 'Security',   color: '#f87171' },
-    ui:       { fr: 'Interface',       en: 'Interface',  color: '#a78bfa' },
-    ux:       { fr: 'Expérience',      en: 'UX',         color: '#a78bfa' },
+    ui:       { fr: 'Interface',       en: 'Interface',  color: '#555555' },
+    ux:       { fr: 'Expérience',      en: 'UX',         color: '#555555' },
     infra:    { fr: 'Technique',       en: 'Technical',  color: '#8b949e' },
     privacy:  { fr: 'Confidentialité', en: 'Privacy',    color: '#34d399' },
     perf:     { fr: 'Performance',     en: 'Performance',color: '#34d399' },
