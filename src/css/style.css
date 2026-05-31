@@ -2265,7 +2265,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
    Tout est scopé sous .zt-loader (pas de reset global) → n'affecte que le loader.
    Vars de couleur réutilisées du thème : --accent / --accent-l / --accent-d / --pink. */
 .lp-loader.zt-loader {
-  --l-bg0: #0d1117;
+  --l-bg0: var(--bg);   /* v0.9.407 : loader suit le thème (blanc en clair, noir en sombre) */
   position: fixed; inset: 0; z-index: 2500;
   display: none;                 /* affiché en flex par le JS (showLoader) */
   background: var(--l-bg0);
@@ -2274,11 +2274,10 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .zt-loader .stage {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  background:
-    radial-gradient(1200px 600px at 50% 110%, rgba(140,140,150,0.10), transparent 60%),
-    radial-gradient(900px 500px at 50% -10%, rgba(244,114,182,0.05), transparent 60%),
-    var(--l-bg0);
+  background: var(--l-bg0);
 }
+/* v0.9.407 : loader épuré → on masque les orbes/glows colorés */
+.zt-loader .orb, .zt-loader .logo-ring { display: none; }
 .zt-loader .grid {
   position: absolute; inset: 0;
   background-image:
@@ -2298,14 +2297,15 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .zt-loader .core { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 36px; padding: 40px; opacity: 0; animation: zt-fade-in 600ms 100ms cubic-bezier(.2,.7,.2,1) forwards; }
 @keyframes zt-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .zt-loader .logo { position: relative; width: 96px; height: 96px; }
-.zt-loader .logo-tile { width: 100%; height: 100%; border-radius: 22px; background: linear-gradient(135deg, var(--accent-l) 0%, var(--accent) 55%, var(--accent-d) 100%); box-shadow: 0 18px 50px -12px rgba(140,140,150,0.55), 0 0 0 1px rgba(255,255,255,0.06) inset; position: relative; overflow: hidden; }
+.zt-loader .logo-tile { width: 100%; height: 100%; border-radius: 22px; background: #15171c; border: 1.5px solid rgba(255,255,255,0.16); box-shadow: var(--shadow-pop); position: relative; overflow: hidden; }
+[data-theme="light"] .zt-loader .logo-tile { border-color: rgba(0,0,0,0.12); }
 .zt-loader .logo-tile::after { content: ""; position: absolute; inset: 0; background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%); transform: translateX(-100%); animation: zt-sheen 3.4s ease-in-out infinite; }
 @keyframes zt-sheen { 0%,30% { transform: translateX(-100%); } 55% { transform: translateX(100%); } 100% { transform: translateX(100%); } }
 .zt-loader .logo-svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .zt-loader .logo-z { fill: none; stroke: #fff; stroke-width: 11; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 200; stroke-dashoffset: 200; animation: zt-draw-z 1.4s 0.2s cubic-bezier(.7,.05,.2,1) forwards, zt-z-pulse 2.8s 1.6s ease-in-out infinite; }
 @keyframes zt-draw-z { to { stroke-dashoffset: 0; } }
 @keyframes zt-z-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.82; } }
-.zt-loader .logo-dot { fill: var(--pink); transform-origin: 78px 22px; transform: scale(0); animation: zt-pop-dot 480ms 1.45s cubic-bezier(.34,1.6,.45,1) forwards; }
+.zt-loader .logo-dot { fill: #f472b6; transform-origin: 78px 22px; transform: scale(0); animation: zt-pop-dot 480ms 1.45s cubic-bezier(.34,1.6,.45,1) forwards; }
 @keyframes zt-pop-dot { 0% { transform: scale(0); } 60% { transform: scale(1.4); } 100% { transform: scale(1); } }
 .zt-loader .logo-ring { position: absolute; inset: -14px; border-radius: 50%; border: 1px solid rgba(140,140,150,0.18); animation: zt-ring-rotate 12s linear infinite; }
 .zt-loader .logo-ring::before, .zt-loader .logo-ring::after { content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--accent-l); box-shadow: 0 0 12px var(--accent-l); }
@@ -2313,16 +2313,16 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .zt-loader .logo-ring::after { bottom: -2.5px; left: 50%; transform: translateX(-50%); background: var(--pink); box-shadow: 0 0 12px var(--pink); }
 @keyframes zt-ring-rotate { to { transform: rotate(360deg); } }
 .zt-loader .wordmark { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.zt-loader .wordmark h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.zt-loader .wordmark h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .zt-loader .wordmark .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--accent-l); font-weight: 600; }
 .zt-loader .status { position: relative; height: 18px; width: 280px; text-align: center; overflow: hidden; }
-.zt-loader .status-text { position: absolute; inset: 0; font-size: 12.5px; color: var(--text2); letter-spacing: 0.02em; transition: opacity 320ms cubic-bezier(.2,.7,.2,1), transform 320ms cubic-bezier(.2,.7,.2,1); opacity: 0; transform: translateY(6px); white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.zt-loader .status-text { position: absolute; inset: 0; font-size: 12.5px; color: var(--muted); letter-spacing: 0.02em; transition: opacity 320ms cubic-bezier(.2,.7,.2,1), transform 320ms cubic-bezier(.2,.7,.2,1); opacity: 0; transform: translateY(6px); white-space: nowrap; display: flex; align-items: center; justify-content: center; gap: 8px; }
 .zt-loader .status-text.is-active { opacity: 1; transform: translateY(0); }
 .zt-loader .status-text .check { display: inline-block; width: 12px; height: 12px; color: #30d158; opacity: 0; animation: zt-check-in 280ms cubic-bezier(.34,1.6,.45,1) forwards; }
 @keyframes zt-check-in { 0% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
 .zt-loader .progress-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 280px; }
 .zt-loader .progress { position: relative; width: 100%; height: 3px; background: rgba(140,140,150,0.12); border-radius: 99px; overflow: hidden; }
-.zt-loader .progress-bar { position: absolute; inset: 0; width: 0%; background: linear-gradient(90deg, var(--accent-l) 0%, var(--accent) 50%, var(--pink) 100%); border-radius: 99px; box-shadow: 0 0 12px rgba(140,140,150,0.45); }
+.zt-loader .progress-bar { position: absolute; inset: 0; width: 0%; background: var(--accent); border-radius: 99px; }
 .zt-loader .progress-bar::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%); transform: translateX(-100%); animation: zt-shimmer 1.6s ease-in-out infinite; }
 @keyframes zt-shimmer { to { transform: translateX(100%); } }
 .zt-loader .progress-meta { display: flex; justify-content: space-between; width: 100%; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
