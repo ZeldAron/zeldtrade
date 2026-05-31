@@ -580,7 +580,7 @@
     if (!el) return;
 
     const firms      = Store.getPropFirms();
-    const FIRM_ORDER = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips'];
+    const FIRM_ORDER = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips', 'tradeify'];
 
     function ddBadge(type) {
       if (!type) return '';
@@ -958,7 +958,7 @@
     const el         = $('settingsSpreads');
     if (!el) return;
     const firms      = Store.getPropFirms();
-    const FIRM_ORDER = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips'];
+    const FIRM_ORDER = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips', 'tradeify'];
 
     function renderRows(firmKey) {
       const sp       = Store.getSpreadsByFirm(firmKey);

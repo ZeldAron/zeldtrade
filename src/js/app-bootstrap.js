@@ -444,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const wrap = $id('tpmFirmPills');
       if (!wrap) return;
       const all = (Store.getPropFirms && Store.getPropFirms()) || {};
-      const order = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips'];
+      const order = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips', 'tradeify'];
       wrap.innerHTML = order.filter(k => all[k]).map(k =>
         `<button type="button" class="instr-pill${firms.has(k) ? ' on' : ''}" data-firm="${k}">${esc(all[k].name || k)}</button>`).join('');
       wrap.querySelectorAll('.instr-pill').forEach(b => b.addEventListener('click', () => {

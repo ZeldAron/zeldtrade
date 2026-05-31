@@ -69,6 +69,20 @@ const Store = (() => {
     { id: 'fpips-50k',    firmKey: 'fpips',   name: 'Funding Pips $50K',  capital:  50000, profitTarget:  4000, maxDrawdown:  2500, dailyLossLimit:  1000, maxContracts: 10,   feePerSide: 0.00 },
     { id: 'fpips-100k',   firmKey: 'fpips',   name: 'Funding Pips $100K', capital: 100000, profitTarget:  8000, maxDrawdown:  5000, dailyLossLimit:  2000, maxContracts: 20,   feePerSide: 0.00 },
     { id: 'fpips-200k',   firmKey: 'fpips',   name: 'Funding Pips $200K', capital: 200000, profitTarget: 16000, maxDrawdown: 10000, dailyLossLimit:  4000, maxContracts: 40,   feePerSide: 0.00 },
+    // ─── Tradeify — vérifié 2026-06-01 (futures CME). 3 types : Growth / Select / Lightning. ───
+    // Valeurs = phase éval (Growth/Select) ou compte instant (Lightning). feePerSide = base (fallback).
+    { id: 'tradeify-growth-25k',    firmKey: 'tradeify', subType: 'Growth',    name: 'Tradeify Growth $25K',    capital:  25000, profitTarget: 1500, maxDrawdown: 1000, dailyLossLimit:  600, maxContracts:  1, feePerSide: 2.88 },
+    { id: 'tradeify-growth-50k',    firmKey: 'tradeify', subType: 'Growth',    name: 'Tradeify Growth $50K',    capital:  50000, profitTarget: 3000, maxDrawdown: 2000, dailyLossLimit: 1250, maxContracts:  4, feePerSide: 2.88 },
+    { id: 'tradeify-growth-100k',   firmKey: 'tradeify', subType: 'Growth',    name: 'Tradeify Growth $100K',   capital: 100000, profitTarget: 6000, maxDrawdown: 3500, dailyLossLimit: 2500, maxContracts:  8, feePerSide: 2.88 },
+    { id: 'tradeify-growth-150k',   firmKey: 'tradeify', subType: 'Growth',    name: 'Tradeify Growth $150K',   capital: 150000, profitTarget: 9000, maxDrawdown: 5000, dailyLossLimit: 3750, maxContracts: 12, feePerSide: 2.88 },
+    { id: 'tradeify-select-25k',    firmKey: 'tradeify', subType: 'Select',    name: 'Tradeify Select $25K',    capital:  25000, profitTarget: 1500, maxDrawdown: 1000, dailyLossLimit:    0, maxContracts:  1, feePerSide: 2.88 },
+    { id: 'tradeify-select-50k',    firmKey: 'tradeify', subType: 'Select',    name: 'Tradeify Select $50K',    capital:  50000, profitTarget: 3000, maxDrawdown: 2000, dailyLossLimit:    0, maxContracts:  4, feePerSide: 2.88 },
+    { id: 'tradeify-select-100k',   firmKey: 'tradeify', subType: 'Select',    name: 'Tradeify Select $100K',   capital: 100000, profitTarget: 6000, maxDrawdown: 3000, dailyLossLimit:    0, maxContracts:  8, feePerSide: 2.88 },
+    { id: 'tradeify-select-150k',   firmKey: 'tradeify', subType: 'Select',    name: 'Tradeify Select $150K',   capital: 150000, profitTarget: 9000, maxDrawdown: 4500, dailyLossLimit:    0, maxContracts: 12, feePerSide: 2.88 },
+    { id: 'tradeify-lightning-25k', firmKey: 'tradeify', subType: 'Lightning', name: 'Tradeify Lightning $25K', capital:  25000, profitTarget: 1500, maxDrawdown: 1000, dailyLossLimit:    0, maxContracts:  1, feePerSide: 2.88 },
+    { id: 'tradeify-lightning-50k', firmKey: 'tradeify', subType: 'Lightning', name: 'Tradeify Lightning $50K', capital:  50000, profitTarget: 3000, maxDrawdown: 2000, dailyLossLimit: 1250, maxContracts:  4, feePerSide: 2.88 },
+    { id: 'tradeify-lightning-100k',firmKey: 'tradeify', subType: 'Lightning', name: 'Tradeify Lightning $100K',capital: 100000, profitTarget: 6000, maxDrawdown: 4000, dailyLossLimit: 2500, maxContracts:  8, feePerSide: 2.88 },
+    { id: 'tradeify-lightning-150k',firmKey: 'tradeify', subType: 'Lightning', name: 'Tradeify Lightning $150K',capital: 150000, profitTarget: 9000, maxDrawdown: 5250, dailyLossLimit: 3000, maxContracts: 12, feePerSide: 2.88 },
   ];
 
   const DEFAULT_PROP_FIRMS = {
@@ -140,6 +154,24 @@ const Store = (() => {
       { id:'fpips-100k',   size:'100K', capital:100000, profitTarget:8000,  maxDrawdown:5000,  dailyLossLimit:2000, drawdownType:'Statique (2-Step)', consistency:'Aucune', minTradingDays:3, payoutConditions:'80% split — délai 14j' },
       { id:'fpips-200k',   size:'200K', capital:200000, profitTarget:16000, maxDrawdown:10000, dailyLossLimit:4000, drawdownType:'Statique (2-Step)', consistency:'Aucune', minTradingDays:3, payoutConditions:'80% split — délai 14j' },
     ]},
+    // ─── Tradeify — vérifié 2026-06-01 (source : tradeify.co). Futures CME uniquement. ───
+    // 3 types : Growth (éval, DLL soft, passe en 1j), Select (éval, consistency 40%, 3j min,
+    // 2 voies funded : Flex/Daily), Lightning (instant funded, sans éval). Drawdown EOD trailing.
+    // 90/10 split · activation gratuite · max 5 comptes funded · pas de crypto · resets ≤10/mois (Growth/Select).
+    tradeify: { name: 'Tradeify', accounts: [
+      { id:'tradeify-growth-25k',    subType:'Growth',    size:'25K',  capital:25000,  profitTarget:1500, maxDrawdown:1000, dailyLossLimit:600,  drawdownType:'EOD Trailing (lock à Start + $100)', consistency:'Aucune (éval) · 35% (funded)', minTradingDays:1, payoutConditions:'90/10 · 5 jours profitables/payout · min payout selon taille · DLL soft' },
+      { id:'tradeify-growth-50k',    subType:'Growth',    size:'50K',  capital:50000,  profitTarget:3000, maxDrawdown:2000, dailyLossLimit:1250, drawdownType:'EOD Trailing (lock à Start + $100)', consistency:'Aucune (éval) · 35% (funded)', minTradingDays:1, payoutConditions:'90/10 · 5 jours profitables/payout · DLL soft, +6% profit → DLL relevée' },
+      { id:'tradeify-growth-100k',   subType:'Growth',    size:'100K', capital:100000, profitTarget:6000, maxDrawdown:3500, dailyLossLimit:2500, drawdownType:'EOD Trailing (lock à Start + $100)', consistency:'Aucune (éval) · 35% (funded)', minTradingDays:1, payoutConditions:'90/10 · 5 jours profitables/payout · DLL soft' },
+      { id:'tradeify-growth-150k',   subType:'Growth',    size:'150K', capital:150000, profitTarget:9000, maxDrawdown:5000, dailyLossLimit:3750, drawdownType:'EOD Trailing (lock à Start + $100)', consistency:'Aucune (éval) · 35% (funded)', minTradingDays:1, payoutConditions:'90/10 · 5 jours profitables/payout · DLL soft' },
+      { id:'tradeify-select-25k',    subType:'Select',    size:'25K',  capital:25000,  profitTarget:1500, maxDrawdown:1000, dailyLossLimit:0,    drawdownType:'EOD Trailing', consistency:'40% (éval)', minTradingDays:3, payoutConditions:'90/10 · voies Flex (payout/5j win) ou Daily (payout quotidien) · pas de DLL en éval' },
+      { id:'tradeify-select-50k',    subType:'Select',    size:'50K',  capital:50000,  profitTarget:3000, maxDrawdown:2000, dailyLossLimit:0,    drawdownType:'EOD Trailing', consistency:'40% (éval)', minTradingDays:3, payoutConditions:'90/10 · voies Flex ou Daily · pas de DLL en éval' },
+      { id:'tradeify-select-100k',   subType:'Select',    size:'100K', capital:100000, profitTarget:6000, maxDrawdown:3000, dailyLossLimit:0,    drawdownType:'EOD Trailing', consistency:'40% (éval)', minTradingDays:3, payoutConditions:'90/10 · voies Flex ou Daily · pas de DLL en éval' },
+      { id:'tradeify-select-150k',   subType:'Select',    size:'150K', capital:150000, profitTarget:9000, maxDrawdown:4500, dailyLossLimit:0,    drawdownType:'EOD Trailing', consistency:'40% (éval)', minTradingDays:3, payoutConditions:'90/10 · voies Flex ou Daily · pas de DLL en éval' },
+      { id:'tradeify-lightning-25k', subType:'Lightning', size:'25K',  capital:25000,  profitTarget:1500, maxDrawdown:1000, dailyLossLimit:0,    drawdownType:'EOD Trailing (instant funded)', consistency:'20→25→30% (par payout)', minTradingDays:0, payoutConditions:'90/10 · sans éval · profit goal payout1 = $1,500 puis $1,000 · pas de jours min' },
+      { id:'tradeify-lightning-50k', subType:'Lightning', size:'50K',  capital:50000,  profitTarget:3000, maxDrawdown:2000, dailyLossLimit:1250, drawdownType:'EOD Trailing (instant funded)', consistency:'20→25→30% (par payout)', minTradingDays:0, payoutConditions:'90/10 · sans éval · profit goal payout1 = $3,000 puis $2,000' },
+      { id:'tradeify-lightning-100k',subType:'Lightning', size:'100K', capital:100000, profitTarget:6000, maxDrawdown:4000, dailyLossLimit:2500, drawdownType:'EOD Trailing (instant funded)', consistency:'20→25→30% (par payout)', minTradingDays:0, payoutConditions:'90/10 · sans éval · profit goal payout1 = $6,000 puis $3,500' },
+      { id:'tradeify-lightning-150k',subType:'Lightning', size:'150K', capital:150000, profitTarget:9000, maxDrawdown:5250, dailyLossLimit:3000, drawdownType:'EOD Trailing (instant funded)', consistency:'20→25→30% (par payout)', minTradingDays:0, payoutConditions:'90/10 · sans éval · profit goal payout1 = $9,000 puis $4,500' },
+    ]},
   };
 
   const DEFAULT_SPREADS = { MES1:1.25,ES1:12.50,MNQ1:0.50,NQ1:5.00,MYM1:0.50,YM1:5.00,M2K1:0.50,RTY1:5.00,MGC1:1.00,GC1:10.00,MCL1:1.00,CL1:10.00 };
@@ -187,6 +219,14 @@ const Store = (() => {
       ZS1:12.50, ZC1:12.50, ZW1:12.50, ZL1:6.00, ZM1:10.00, HE1:10.00, LE1:10.00,
     },
     fpips:   { US500:0.40,US100:1.20,US30:2.00,GER40:1.20,UK100:0.80,XAUUSD:0.25,EURUSD:0.80,GBPUSD:1.00,USDJPY:0.70,USOIL:2.50 },
+    // v0.9.418 : Tradeify = futures CME uniquement (pas de forex spot, pas de crypto). Valeur du tick ($).
+    tradeify: {
+      ES1:12.50, MES1:1.25, NQ1:5.00, MNQ1:0.50, YM1:5.00, MYM1:0.50, RTY1:5.00, M2K1:0.50, EMD1:10.00, NKD1:25.00,
+      '6E1':6.25, M6E1:1.25, '6B1':6.25, '6J1':6.25, '6A1':5.00, '6C1':5.00, '6S1':12.50, M6A1:1.00,
+      GC1:10.00, SI1:25.00, HG1:12.50, PL1:5.00, PA1:50.00, QO1:8.30, MGC1:1.00,
+      CL1:10.00, QM1:12.50, MCL1:1.00, NG1:10.00, QG1:12.50,
+      ZS1:12.50, ZL1:6.00, ZM1:10.00, ZC1:12.50, ZW1:12.50, HE1:10.00, LE1:10.00, GF1:12.50,
+    },
   };
 
   // v0.9.411 — Commissions par instrument et par firm (per side, USD). Mappées sur les
@@ -233,6 +273,15 @@ const Store = (() => {
       CL1:1.98, QM1:1.96, MCL1:0.51, NG1:1.98, QG1:1.26, HO1:1.98, RB1:1.98,
       ZC1:2.79, ZW1:2.79, ZS1:2.79, ZM1:2.79, ZL1:2.79, HE1:2.79, LE1:2.79, GF1:2.79,
       MBT1:2.76, MET1:0.46,
+    },
+    // Tradeify — commission per side = Round Trip / 2 (RT publié par Tradeify). PL/PA/NKD non publiés → fallback.
+    tradeify: {
+      ES1:2.88, NQ1:2.88, YM1:2.88, RTY1:2.88, EMD1:2.83,
+      MES1:0.91, MNQ1:0.91, MYM1:0.91, M2K1:0.91, MGC1:1.06, MCL1:1.06, M6A1:0.80, M6E1:0.80,
+      '6E1':3.10, '6B1':3.10, '6A1':3.10, '6C1':3.10, '6J1':3.10, '6S1':5.10,
+      CL1:3.00, NG1:3.10, QM1:2.70, QG1:2.00,
+      GC1:3.10, SI1:3.10, HG1:3.10, QO1:2.50,
+      HE1:4.60, LE1:5.60, GF1:3.60, ZS1:7.60, ZL1:3.60, ZC1:3.60, ZW1:8.60, ZM1:4.60,
     },
   };
   // Renvoie la commission per-side pour (firm, instrument), ou null si non répertoriée.
@@ -925,7 +974,7 @@ const Store = (() => {
 
   // v0.9.396 — Focus app-wide. Renvoie le scope courant SI l'entité visée existe
   // encore (sinon → null = Global, pour éviter un dashboard vide après suppression).
-  const _FIRM_ORDER = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips'];
+  const _FIRM_ORDER = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips', 'tradeify'];
   function getFocusScope() {
     const f = settings.focusScope;
     if (!f || typeof f !== 'string') return null;
