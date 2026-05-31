@@ -158,7 +158,9 @@ const Store = (() => {
     topstep: { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID, ..._CFD_FOREX_SPREADS, ZN1:15.63 },
     ftmo:      { ..._CFD_FOREX_SPREADS },
     ftmo1step: { ..._CFD_FOREX_SPREADS },
-    lucid:   { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID, ..._CFD_FOREX_SPREADS },
+    // v0.9.412 : Lucid ne propose QUE des futures CME (pas de forex/CFD spot) → instruments
+    // restreints aux futures. La liste d'instruments d'un compte = les clés de SA firm ici.
+    lucid:   { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID },
     fpips:   { US500:0.40,US100:1.20,US30:2.00,GER40:1.20,UK100:0.80,XAUUSD:0.25,EURUSD:0.80,GBPUSD:1.00,USDJPY:0.70,USOIL:2.50 },
   };
 
