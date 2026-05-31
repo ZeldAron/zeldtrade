@@ -23,7 +23,8 @@ import {
   getFunctions, httpsCallable, connectFunctionsEmulator,
 } from 'https://www.gstatic.com/firebasejs/10.12.4/firebase-functions.js';
 
-const firebaseConfig = {
+// v0.9.394 : multi-environnement par hostname (même logique que firebase.js).
+const _FB_PROD = {
   apiKey:            'AIzaSyCX5AWqdFyunxpYV9LgaacHU1osXQDbEss',
   authDomain:        'zeldtrade.firebaseapp.com',
   projectId:         'zeldtrade',
@@ -31,6 +32,16 @@ const firebaseConfig = {
   messagingSenderId: '356908373821',
   appId:             '1:356908373821:web:4af7d3be51018b56ef1754',
 };
+const _FB_STAGING = {
+  apiKey:            'AIzaSyDrhhUvHG01ayM5zhxX4kDqAE7OOpTEIJs',
+  authDomain:        'zeldtrade-staging.firebaseapp.com',
+  projectId:         'zeldtrade-staging',
+  storageBucket:     'zeldtrade-staging.firebasestorage.app',
+  messagingSenderId: '396896715351',
+  appId:             '1:396896715351:web:7a7cb7b0267637d3a61912',
+};
+const _IS_STAGING = /(^|\.)zeldtrade-staging\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
+const firebaseConfig = _IS_STAGING ? _FB_STAGING : _FB_PROD;
 
 const app       = initializeApp(firebaseConfig);
 const auth      = getAuth(app);
