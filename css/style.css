@@ -5406,3 +5406,16 @@ img { -webkit-user-drag: none; }
 .tuto-replay-title { font-size: 14px; font-weight: 650; color: var(--text); margin-bottom: 3px; }
 .tuto-replay-desc  { font-size: 12.5px; color: var(--muted); }
 .tuto-replay-btn   { white-space: nowrap; flex-shrink: 0; padding: 10px 18px; font-size: 13px; }
+
+/* ─── v0.9.394 : Mes instruments (sélection par pills, Réglages) ───────────── */
+.instr-cat { margin-bottom: 14px; }
+.instr-cat-label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px; }
+.instr-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.instr-pill {
+  background: var(--surface); border: 1px solid var(--border2); color: var(--muted);
+  font-size: 12.5px; font-weight: 600; font-family: inherit;
+  padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.instr-pill:hover { border-color: var(--accent-l); color: var(--text); }
+.instr-pill.on { background: var(--accent); border-color: var(--accent); color: #fff; }

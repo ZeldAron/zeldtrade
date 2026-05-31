@@ -776,21 +776,19 @@ const Modal = (() => {
       }
     }
 
-    // v0.9.312 : favoris (⭐) en tête, filtrés sur les instruments dispo du compte courant
+    // v0.9.394 : liste STRICTE — uniquement « Mes instruments » (favInstruments,
+    // sélectionnés au setup / dans Réglages), filtrés sur ceux valides pour ce compte.
+    // Si l'user n'a aucun instrument sélectionné valide pour ce compte → fallback sur
+    // tous les dispo (jamais de dropdown vide qui bloquerait le trade). Pour en ajouter :
+    // Réglages → Mes instruments.
     const favs = (Store.getSettings && Store.getSettings().favInstruments) || [];
-    const availSet = new Set(available.map(a => a.value));
-    const favList = (Array.isArray(favs) ? favs : []).filter(f => availSet.has(f));
-    const favSet = new Set(favList);
+    const favSet = new Set(Array.isArray(favs) ? favs : []);
+    const selectedAvail = available.filter(a => favSet.has(a.value));
+    const shown = selectedAvail.length ? selectedAvail : available;
 
     let html = '';
-    if (favList.length) {
-      html += `<optgroup label="⭐ Favoris">${favList.map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`;
-    }
     const groups = {};
-    available.forEach(a => {
-      if (favSet.has(a.value)) return;   // déjà listé dans Favoris → pas de doublon
-      (groups[a.cat] = groups[a.cat] || []).push(a.value);
-    });
+    shown.forEach(a => { (groups[a.cat] = groups[a.cat] || []).push(a.value); });
     Object.keys(groups).forEach(cat => {
       html += `<optgroup label="${cat}">${groups[cat].map(i => `<option value="${i}">${i}</option>`).join('')}</optgroup>`;
     });
