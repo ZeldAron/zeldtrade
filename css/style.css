@@ -5531,3 +5531,15 @@ img { -webkit-user-drag: none; }
   color: var(--accent);
   border: 1px solid var(--accent);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v0.9.406 — LOGO de marque FIXE : carré sombre + Z blanc + point rose (identique
+   partout, ne s'inverse plus). En thème NOIR : contour blanc pour rester visible
+   sur fond noir. En thème clair : fine bordure pour définir le carré sur le blanc.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.logo-mark, .login-logo-mark { background: #15171c !important; border: 1.5px solid rgba(255,255,255,0.92); box-shadow: none; }
+[data-theme="light"] .logo-mark, [data-theme="light"] .login-logo-mark { border: 1px solid rgba(0,0,0,0.12); }
+.logo-mark svg, .logo-mark svg path, .logo-mark svg polyline,
+.login-logo-mark svg, .login-logo-mark svg path { stroke: #ffffff !important; }
+.logo-mark .logo-dot, .login-logo-mark .logo-dot,
+.logo-mark svg circle, .login-logo-mark svg circle { fill: #f472b6 !important; stroke: none !important; }
