@@ -15,8 +15,13 @@ const Calc = (() => {
     QM1: 500, NG1: 10000, QG1: 2500,           // énergie (e-mini Crude, NatGas, e-mini NatGas)
     '6E1': 125000, '6B1': 62500, '6J1': 12500000, '6C1': 100000, '6A1': 100000, '6S1': 125000, '6N1': 100000,  // futures FX
     ZS1: 50, ZC1: 50, ZW1: 50, ZL1: 600, ZM1: 100, HE1: 400, LE1: 400,  // agricoles
-    // CFD Indices MT4/MT5 ($ par lot par point d'index, lot size standard FTMO/FP)
-    US30: 5, US100: 1, US500: 1, GER40: 1, UK100: 1,
+    // v0.9.416 — instruments Topstep supplémentaires (specs CME). $/point = tickValue/tickSize.
+    MHG1: 2500,                                  // µCopper
+    M6E1: 12500, M6B1: 6250, M6A1: 10000, E71: 62500, '6M1': 1000000,  // µFX + e-mini EUR + Peso
+    MNG1: 1000, RB1: 42000, HO1: 42000,          // µNatGas, RBOB, Heating Oil
+    ZB1: 1000, ZF1: 1000, ZT1: 2000, UB1: 1000, TN1: 1000,  // taux/obligations
+    // CFD Indices MT4/MT5 ($ par lot par point d'index — contract size 1 chez FTMO → $1/pt)
+    US30: 1, US100: 1, US500: 1, GER40: 1, UK100: 1,   // v0.9.416 : US30 5→1 (contract size FTMO = 1)
     // Métaux CFD ($ par lot par $ de prix — XAUUSD : 100 oz/lot)
     XAUUSD: 100,
     // Forex ($ par lot par unité complète — EURUSD 100k$/lot, 1 pip=0.0001=$10/lot)
@@ -43,6 +48,11 @@ const Calc = (() => {
     QM1: 0.025, NG1: 0.001, QG1: 0.005,
     '6E1': 0.00005, '6B1': 0.0001, '6J1': 0.0000005, '6C1': 0.00005, '6A1': 0.0001, '6S1': 0.0001, '6N1': 0.0001,
     ZS1: 0.25, ZC1: 0.25, ZW1: 0.25, ZL1: 0.01, ZM1: 0.1, HE1: 0.025, LE1: 0.025,
+    // v0.9.416 — instruments Topstep supplémentaires (specs CME)
+    MHG1: 0.0005,
+    M6E1: 0.0001, M6B1: 0.0001, M6A1: 0.0001, E71: 0.0001, '6M1': 0.00001,
+    MNG1: 0.001, RB1: 0.0001, HO1: 0.0001,
+    ZB1: 0.03125, ZF1: 0.0078125, ZT1: 0.00390625, UB1: 0.03125, TN1: 0.015625,
   };
   function tickSize(instrument) { return TICK_SIZES[instrument] != null ? TICK_SIZES[instrument] : TICK_SIZE; }
   // Valeur d'un tick en $ pour l'instrument (= tickSize × $/point).

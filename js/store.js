@@ -89,9 +89,9 @@ const Store = (() => {
     // Pas de DLL fixe sur le Combine — Live Funded a un DLL dynamique de base $2K/$3K/$4.5K.
     // Consistency : best day ≤ 50% des profits totaux. 5 jours gagnants min pour 1er payout.
     topstep: { name: 'Topstep', accounts: [
-      { id:'topstep-50k',  size:'50K',  capital:50000,  profitTarget:3000, maxDrawdown:2000, dailyLossLimit:0, maxContractsEval:5,  evalFeeMonthly:49,  drawdownType:'Trailing (se fige à PT)', consistency:'Best day ≤50% profits totaux', minTradingDays:5, payoutConditions:'Combine $49/mois — Live Funded DLL $2K — 50% premiers profits jusqu\'à 30j, puis 100% (max $5K), 5j gagnants min' },
-      { id:'topstep-100k', size:'100K', capital:100000, profitTarget:6000, maxDrawdown:3000, dailyLossLimit:0, maxContractsEval:10, evalFeeMonthly:99,  drawdownType:'Trailing (se fige à PT)', consistency:'Best day ≤50% profits totaux', minTradingDays:5, payoutConditions:'Combine $99/mois — Live Funded DLL $3K — 50% premiers profits jusqu\'à 30j, puis 100% (max $10K), 5j gagnants min' },
-      { id:'topstep-150k', size:'150K', capital:150000, profitTarget:9000, maxDrawdown:4500, dailyLossLimit:0, maxContractsEval:15, evalFeeMonthly:149, drawdownType:'Trailing (se fige à PT)', consistency:'Best day ≤50% profits totaux', minTradingDays:5, payoutConditions:'Combine $149/mois — Live Funded DLL $4.5K — 50% premiers profits jusqu\'à 30j, puis 100% (max $15K), 5j gagnants min' },
+      { id:'topstep-50k',  size:'50K',  capital:50000,  profitTarget:3000, maxDrawdown:2000, dailyLossLimit:0, maxContractsEval:5,  evalFeeMonthly:49,  drawdownType:'Intraday trailing temps réel (P&L non réalisé), se verrouille à la balance initiale', consistency:'Best day < 50% du Profit Target (sinon PT augmente)', minTradingDays:0, payoutConditions:'Combine $49/mois — Live Funded DLL $2K — 50% premiers profits jusqu\'à 30j, puis 100% (max $5K), 5j gagnants min' },
+      { id:'topstep-100k', size:'100K', capital:100000, profitTarget:6000, maxDrawdown:3000, dailyLossLimit:0, maxContractsEval:10, evalFeeMonthly:99,  drawdownType:'Intraday trailing temps réel (P&L non réalisé), se verrouille à la balance initiale', consistency:'Best day < 50% du Profit Target (sinon PT augmente)', minTradingDays:0, payoutConditions:'Combine $99/mois — Live Funded DLL $3K — 50% premiers profits jusqu\'à 30j, puis 100% (max $10K), 5j gagnants min' },
+      { id:'topstep-150k', size:'150K', capital:150000, profitTarget:9000, maxDrawdown:4500, dailyLossLimit:0, maxContractsEval:15, evalFeeMonthly:149, drawdownType:'Intraday trailing temps réel (P&L non réalisé), se verrouille à la balance initiale', consistency:'Best day < 50% du Profit Target (sinon PT augmente)', minTradingDays:0, payoutConditions:'Combine $149/mois — Live Funded DLL $4.5K — 50% premiers profits jusqu\'à 30j, puis 100% (max $15K), 5j gagnants min' },
     ]},
     ftmo:    { name: 'FTMO (CFD/Forex)', accounts: [
       { id:'ftmo-10k',     size:'10K',  capital:10000,  profitTarget:1000,  maxDrawdown:1000,  dailyLossLimit:500,   drawdownType:'Max Loss statique 10% · Daily Loss 5% (EOD dynamique, recalc 00:00 CET)', consistency:'Aucune (2-Step)', minTradingDays:4, payoutConditions:'90% split (jusqu\'à 90%) · fee remboursée au 1er payout · Swing dispo (1:30) · Challenge 10% + Vérif 5%' },
@@ -155,7 +155,15 @@ const Store = (() => {
   };
   const DEFAULT_SPREADS_BY_FIRM = {
     apex:    { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID, ..._CFD_FOREX_SPREADS },
-    topstep: { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID, ..._CFD_FOREX_SPREADS, ZN1:15.63 },
+    // v0.9.416 : Topstep = futures CME UNIQUEMENT (pas de CFD/forex spot). Catalogue complet + valeur du tick ($).
+    topstep: {
+      ES1:12.50, MES1:1.25, NQ1:5.00, MNQ1:0.50, YM1:5.00, MYM1:0.50, RTY1:5.00, M2K1:0.50, NKD1:25.00,
+      GC1:10.00, MGC1:1.00, SI1:25.00, SIL1:2.50, HG1:12.50, MHG1:1.25, PL1:5.00,
+      '6E1':6.25, M6E1:1.25, '6B1':6.25, M6B1:0.625, '6J1':6.25, '6A1':10.00, M6A1:1.00, '6C1':5.00, '6S1':12.50, '6N1':10.00, E71:6.25, '6M1':10.00,
+      CL1:10.00, MCL1:1.00, QM1:12.50, NG1:10.00, QG1:12.50, MNG1:1.00, RB1:4.20, HO1:4.20,
+      ZN1:15.625, ZB1:31.25, ZF1:7.8125, ZT1:7.8125, UB1:31.25, TN1:15.625,
+      ZC1:12.50, ZW1:12.50, ZS1:12.50, ZM1:10.00, ZL1:6.00, HE1:10.00, LE1:10.00,
+    },
     ftmo:      { ..._CFD_FOREX_SPREADS },
     ftmo1step: { ..._CFD_FOREX_SPREADS },
     // v0.9.414 : catalogue d'instruments RÉEL de Lucid (34 futures CME) + valeur d'un tick ($)
@@ -194,6 +202,15 @@ const Store = (() => {
       US500:0, US100:0, US30:0, GER40:0, UK100:0,
       EURUSD:2.50, GBPUSD:2.50, USDJPY:2.50,
       XAUUSD:2.80, USOIL:0,
+    },
+    // Topstep — vérifié 2026-05-31. Commission per side = round-turn / 2 (RT publié par Topstep).
+    topstep: {
+      ES1:1.90, MES1:0.62, NQ1:1.90, MNQ1:0.62, YM1:1.90, MYM1:0.62, RTY1:1.90, M2K1:0.62, NKD1:2.67,
+      GC1:2.12, MGC1:0.87, SI1:2.12, SIL1:1.27, HG1:2.12, MHG1:0.87, PL1:2.12,
+      '6E1':2.12, M6E1:0.51, '6B1':2.12, M6B1:0.51, '6J1':2.12, '6A1':2.12, M6A1:0.51, '6C1':2.12, '6S1':2.12, '6N1':2.12, E71:1.12, '6M1':2.12,
+      CL1:2.02, MCL1:0.77, QM1:1.72, NG1:2.10, QG1:1.02, MNG1:0.87, RB1:2.02, HO1:2.02,
+      ZN1:1.30, ZB1:1.39, ZF1:1.17, ZT1:1.17, UB1:1.47, TN1:1.32,
+      ZC1:2.65, ZW1:2.65, ZS1:2.65, ZM1:2.65, ZL1:2.65, HE1:2.62, LE1:2.62,
     },
   };
   // Renvoie la commission per-side pour (firm, instrument), ou null si non répertoriée.

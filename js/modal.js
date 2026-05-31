@@ -760,6 +760,11 @@ const Modal = (() => {
     QM1:'Énergie', NG1:'Énergie', QG1:'Énergie',
     '6E1':'Forex futures', '6B1':'Forex futures', '6J1':'Forex futures', '6C1':'Forex futures', '6A1':'Forex futures', '6S1':'Forex futures', '6N1':'Forex futures',
     ZS1:'Agricole', ZC1:'Agricole', ZW1:'Agricole', ZL1:'Agricole', ZM1:'Agricole', HE1:'Agricole', LE1:'Agricole',
+    // v0.9.416 — instruments Topstep supplémentaires
+    MHG1:'Métaux',
+    M6E1:'Forex futures', M6B1:'Forex futures', M6A1:'Forex futures', E71:'Forex futures', '6M1':'Forex futures',
+    MNG1:'Énergie', RB1:'Énergie', HO1:'Énergie',
+    ZB1:'Taux', ZF1:'Taux', ZT1:'Taux', UB1:'Taux', TN1:'Taux',
     US500:'Indices CFD', US100:'Indices CFD', US30:'Indices CFD', GER40:'Indices CFD', UK100:'Indices CFD',
     XAUUSD:'Métaux CFD', EURUSD:'Forex', GBPUSD:'Forex', USDJPY:'Forex', USOIL:'Énergie CFD',
     // Crypto (v0.9.190)
@@ -1671,6 +1676,9 @@ const Modal = (() => {
                                     'NKD1','SI1','SIL1','PL1','HG1','QM1','NG1','QG1',
                                     '6E1','6B1','6J1','6C1','6A1','6S1','6N1',
                                     'ZS1','ZC1','ZW1','ZL1','ZM1','HE1','LE1',
+                                    // v0.9.416 — instruments Topstep supplémentaires
+                                    'MHG1','M6E1','M6B1','M6A1','E71','6M1','MNG1','RB1','HO1',
+                                    'ZB1','ZF1','ZT1','UB1','TN1',
                                     'US500','US100','US30','GER40','UK100','XAUUSD','EURUSD','GBPUSD','USDJPY','USOIL',
                                     // Crypto (v0.9.190)
                                     'BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','AVAXUSDT','DOGEUSDT','LINKUSDT','DOTUSDT',

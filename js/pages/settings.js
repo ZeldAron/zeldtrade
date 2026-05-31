@@ -1484,10 +1484,10 @@
   // liste STRICTE de la modale de trade (favInstruments). Toggle = sauvegarde immédiate.
   const INSTRUMENT_CATALOG = [
     { cat: { fr: 'Futures CME — Indices', en: 'CME Futures — Indices' }, items: ['MES1','ES1','MNQ1','NQ1','MYM1','YM1','M2K1','RTY1','NKD1'] },
-    { cat: { fr: 'Futures CME — Métaux', en: 'CME Futures — Metals' }, items: ['MGC1','GC1','SI1','SIL1','PL1','HG1'] },
-    { cat: { fr: 'Futures CME — Énergie', en: 'CME Futures — Energy' }, items: ['MCL1','CL1','QM1','NG1','QG1'] },
-    { cat: { fr: 'Futures CME — Taux', en: 'CME Futures — Rates' }, items: ['ZN1'] },
-    { cat: { fr: 'Futures CME — Forex', en: 'CME Futures — FX' }, items: ['6E1','6B1','6J1','6C1','6A1','6S1','6N1'] },
+    { cat: { fr: 'Futures CME — Métaux', en: 'CME Futures — Metals' }, items: ['MGC1','GC1','SI1','SIL1','PL1','HG1','MHG1'] },
+    { cat: { fr: 'Futures CME — Énergie', en: 'CME Futures — Energy' }, items: ['MCL1','CL1','QM1','NG1','QG1','MNG1','RB1','HO1'] },
+    { cat: { fr: 'Futures CME — Taux', en: 'CME Futures — Rates' }, items: ['ZN1','ZB1','ZF1','ZT1','UB1','TN1'] },
+    { cat: { fr: 'Futures CME — Forex', en: 'CME Futures — FX' }, items: ['6E1','6B1','6J1','6C1','6A1','6S1','6N1','M6E1','M6B1','M6A1','E71','6M1'] },
     { cat: { fr: 'Futures CME — Agricole', en: 'CME Futures — Agricultural' }, items: ['ZS1','ZC1','ZW1','ZL1','ZM1','HE1','LE1'] },
     { cat: { fr: 'CFD — Indices', en: 'CFD — Indices' }, items: ['US500','US100','US30','GER40','UK100'] },
     { cat: { fr: 'Forex (spot/CFD)', en: 'Forex (spot/CFD)' }, items: ['EURUSD','GBPUSD','USDJPY'] },
