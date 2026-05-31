@@ -6,7 +6,7 @@ const Calc = (() => {
     // Futures CME
     MES1: 5, ES1: 50, MNQ1: 2, NQ1: 20,
     MYM1: 0.5, YM1: 5, M2K1: 5, RTY1: 50,
-    MGC1: 10, GC1: 100, QO1: 50,  // QO1 délisté par CME en 2017 — gardé pour rétro-compat trades historiques uniquement
+    MGC1: 10, GC1: 100, QO1: 33.20,  // QO = E-mini Gold (33.2 oz) — $33.20/point, tick 0.25, $8.30/tick (v0.9.418)
     MCL1: 100, CL1: 1000,
     ZN1: 1000,
     // v0.9.414 — instruments Lucid (specs CME officielles). $/point = tickValue / tickSize.
@@ -42,7 +42,7 @@ const Calc = (() => {
   const TICK_SIZES = {
     MES1: 0.25, ES1: 0.25, MNQ1: 0.25, NQ1: 0.25,
     MYM1: 1, YM1: 1, M2K1: 0.1, RTY1: 0.1,
-    MGC1: 0.1, GC1: 0.1, QO1: 0.025,
+    MGC1: 0.1, GC1: 0.1, QO1: 0.25,
     MCL1: 0.01, CL1: 0.01,
     ZN1: 0.015625,   // 1/64
     // v0.9.414 — instruments Lucid (specs CME). tickValue = tickSize × $/point (vérifié).
