@@ -158,9 +158,15 @@ const Store = (() => {
     topstep: { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID, ..._CFD_FOREX_SPREADS, ZN1:15.63 },
     ftmo:      { ..._CFD_FOREX_SPREADS },
     ftmo1step: { ..._CFD_FOREX_SPREADS },
-    // v0.9.412 : Lucid ne propose QUE des futures CME (pas de forex/CFD spot) → instruments
-    // restreints aux futures. La liste d'instruments d'un compte = les clés de SA firm ici.
-    lucid:   { ..._FUTURES_SPREADS_APEX_TOPSTEP_LUCID },
+    // v0.9.414 : catalogue d'instruments RÉEL de Lucid (34 futures CME) + valeur d'un tick ($)
+    // par instrument (= slippage par défaut 1 tick). Les clés définissent ce qui est tradable.
+    lucid: {
+      ES1:12.50, MES1:1.25, NQ1:5.00, MNQ1:0.50, YM1:5.00, MYM1:0.50, RTY1:5.00, M2K1:0.50, NKD1:25.00,
+      GC1:10.00, MGC1:1.00, SI1:25.00, SIL1:2.50, PL1:5.00, HG1:12.50,
+      CL1:10.00, MCL1:1.00, QM1:12.50, NG1:10.00, QG1:12.50,
+      '6E1':6.25, '6B1':6.25, '6J1':6.25, '6C1':5.00, '6A1':10.00, '6S1':12.50, '6N1':10.00,
+      ZS1:12.50, ZC1:12.50, ZW1:12.50, ZL1:6.00, ZM1:10.00, HE1:10.00, LE1:10.00,
+    },
     fpips:   { US500:0.40,US100:1.20,US30:2.00,GER40:1.20,UK100:0.80,XAUUSD:0.25,EURUSD:0.80,GBPUSD:1.00,USDJPY:0.70,USOIL:2.50 },
   };
 
@@ -169,9 +175,13 @@ const Store = (() => {
   // sur le feePerSide forfaitaire du compte. On remplit firm par firm au fil des vérifs.
   // Lucid Trading : vérifié 2026-05-31 (support.lucidtrading.com).
   const DEFAULT_COMMISSIONS_BY_FIRM = {
+    // Lucid Trading — commissions per side (USD), vérifié 2026-05-31.
     lucid: {
-      ES1:1.75, MES1:0.50, NQ1:1.75, MNQ1:0.50, YM1:1.75, MYM1:0.50, RTY1:1.75, M2K1:0.50,
-      GC1:2.30, MGC1:0.80, CL1:2.00, MCL1:0.50, QO1:2.00,
+      ES1:1.75, MES1:0.50, NQ1:1.75, MNQ1:0.50, YM1:1.75, MYM1:0.50, RTY1:1.75, M2K1:0.50, NKD1:1.75,
+      GC1:2.30, MGC1:0.80, SI1:2.30, SIL1:1.60, PL1:2.30, HG1:2.30,
+      CL1:2.00, MCL1:0.50, QM1:2.00, NG1:2.00, QG1:1.30,
+      '6E1':2.40, '6B1':2.40, '6J1':2.40, '6C1':2.40, '6A1':2.40, '6S1':2.40, '6N1':2.40,
+      ZS1:2.80, ZC1:2.80, ZW1:2.80, ZL1:2.80, ZM1:2.80, HE1:2.80, LE1:2.80,
     },
   };
   // Renvoie la commission per-side pour (firm, instrument), ou null si non répertoriée.

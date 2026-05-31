@@ -9,6 +9,12 @@ const Calc = (() => {
     MGC1: 10, GC1: 100, QO1: 50,  // QO1 délisté par CME en 2017 — gardé pour rétro-compat trades historiques uniquement
     MCL1: 100, CL1: 1000,
     ZN1: 1000,
+    // v0.9.414 — instruments Lucid (specs CME officielles). $/point = tickValue / tickSize.
+    NKD1: 5,                                   // Nikkei/USD
+    SI1: 5000, SIL1: 500, PL1: 50, HG1: 25000, // métaux (Silver, µSilver, Platinum, Copper)
+    QM1: 500, NG1: 10000, QG1: 2500,           // énergie (e-mini Crude, NatGas, e-mini NatGas)
+    '6E1': 125000, '6B1': 62500, '6J1': 12500000, '6C1': 100000, '6A1': 100000, '6S1': 125000, '6N1': 100000,  // futures FX
+    ZS1: 50, ZC1: 50, ZW1: 50, ZL1: 600, ZM1: 100, HE1: 400, LE1: 400,  // agricoles
     // CFD Indices MT4/MT5 ($ par lot par point d'index, lot size standard FTMO/FP)
     US30: 5, US100: 1, US500: 1, GER40: 1, UK100: 1,
     // Métaux CFD ($ par lot par $ de prix — XAUUSD : 100 oz/lot)
@@ -31,6 +37,12 @@ const Calc = (() => {
     MGC1: 0.1, GC1: 0.1, QO1: 0.025,
     MCL1: 0.01, CL1: 0.01,
     ZN1: 0.015625,   // 1/64
+    // v0.9.414 — instruments Lucid (specs CME). tickValue = tickSize × $/point (vérifié).
+    NKD1: 5,
+    SI1: 0.005, SIL1: 0.005, PL1: 0.1, HG1: 0.0005,
+    QM1: 0.025, NG1: 0.001, QG1: 0.005,
+    '6E1': 0.00005, '6B1': 0.0001, '6J1': 0.0000005, '6C1': 0.00005, '6A1': 0.0001, '6S1': 0.0001, '6N1': 0.0001,
+    ZS1: 0.25, ZC1: 0.25, ZW1: 0.25, ZL1: 0.01, ZM1: 0.1, HE1: 0.025, LE1: 0.025,
   };
   function tickSize(instrument) { return TICK_SIZES[instrument] != null ? TICK_SIZES[instrument] : TICK_SIZE; }
   // Valeur d'un tick en $ pour l'instrument (= tickSize × $/point).
