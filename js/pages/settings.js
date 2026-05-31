@@ -675,12 +675,29 @@
     }
 
     function render(activeKey) {
+      const en  = i18n.getLang() === 'en';
+      const sel = new Set((Store.getSelectedFirms && Store.getSelectedFirms()) || []);
       const tabs = FIRM_ORDER
         .filter(k => firms[k])
         .map(k => `<button class="chip${activeKey === k ? ' active' : ''}" data-pf-tab="${k}">${UI.escHtml(firms[k].name)}</button>`)
         .join('');
 
+      // v0.9.396 — « Mes prop firms » : sélection de l'user (selectedFirms). Alimente
+      // ses comptes (presets pré-filtrés) + le filtre Focus app-wide. Toggle = save immédiat.
+      const firmPills = FIRM_ORDER
+        .filter(k => firms[k])
+        .map(k => `<button type="button" class="instr-pill${sel.has(k) ? ' on' : ''}" data-myfirm="${k}">${UI.escHtml(firms[k].name)}</button>`)
+        .join('');
+
       el.innerHTML = `
+        <div class="settings-section">
+          <h3 style="margin:0 0 4px">${en ? 'My prop firms' : 'Mes prop firms'}</h3>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5">
+            ${en ? 'The prop firms you use. Powers your accounts and the Focus filter.' : 'Les prop firms que tu utilises. Alimente tes comptes et le filtre Focus.'}
+            &nbsp;<strong style="color:var(--accent-l)">${sel.size}</strong> ${en ? 'selected' : 'sélectionnée(s)'}
+          </p>
+          <div class="instr-pills" id="myFirmPills">${firmPills}</div>
+        </div>
         <div class="settings-section settings-section--wide">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
             <h3 style="margin:0">${t('set.pf.title')}</h3>
@@ -689,6 +706,15 @@
           <div style="display:flex;gap:6px;margin:14px 0;flex-wrap:wrap">${tabs}</div>
           ${renderCards(activeKey)}
         </div>`;
+
+      el.querySelectorAll('[data-myfirm]').forEach(btn => btn.addEventListener('click', () => {
+        const k = btn.dataset.myfirm;
+        const cur = new Set((Store.getSelectedFirms && Store.getSelectedFirms()) || []);
+        if (cur.has(k)) cur.delete(k); else cur.add(k);
+        Store.updateSettings({ selectedFirms: [...cur] });
+        try { if (UI.refreshFocusScope) UI.refreshFocusScope(); } catch(e) {}
+        render(activeKey);
+      }));
 
       el.querySelectorAll('[data-pf-tab]').forEach(btn => {
         btn.addEventListener('click', () => render(btn.dataset.pfTab));
@@ -1465,6 +1491,8 @@
     { cat: { fr: 'Crypto perp', en: 'Crypto perp' }, items: ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','ADAUSDT','AVAXUSDT','DOGEUSDT','LINKUSDT','DOTUSDT'] },
     { cat: { fr: 'Crypto spot', en: 'Crypto spot' }, items: ['BTC-USD','ETH-USD','SOL-USD','XRP-USD','AVAX-USD'] },
   ];
+  // v0.9.396 : exposé pour le wizard de setup obligatoire (app-bootstrap.js) — source unique.
+  try { UI.INSTRUMENT_CATALOG = INSTRUMENT_CATALOG; } catch(e) {}
   function renderInstrumentsSettings() {
     const el = $('settingsInstruments');
     if (!el) return;
@@ -1547,6 +1575,9 @@
 
     // v0.9.142 : refresh statut email vérifié à chaque render Settings.
     _refreshEmailVerifyStatus();
+
+    // v0.9.396 : rafraîchit le sélecteur Focus (options dépendent des comptes/firms)
+    try { if (UI.refreshFocusScope) UI.refreshFocusScope(); } catch(e) {}
 
     // v0.9.150 : refresh state du toggle newsletter (lit depuis userEmails.newsletterOptIn)
     _refreshNewsletterToggle();

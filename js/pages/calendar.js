@@ -204,7 +204,8 @@
     if (!el) return;
 
     const today  = localToday();
-    const trades = Store.getTrades();
+    // v0.9.396 : respecte le Focus app-wide (Global / firm / compte / groupe)
+    const trades = Store.scopedTrades ? Store.scopedTrades() : Store.getTrades();
     const byDate = buildByDate(trades);
     const months = getMonths();
     const days   = getDays();

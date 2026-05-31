@@ -6,23 +6,10 @@
   let dashFilter = null;
   let pnlChart   = null;
 
-  function tradesForFilter(filter) {
-    const all = Store.getTrades();
-    if (!filter || filter === 'all') return all;
-    if (filter.startsWith('acc:')) {
-      const name = filter.slice(4);
-      return all.filter(t => t.apex === name);
-    }
-    if (filter.startsWith('grp:')) {
-      const grp = Store.getGroupById(filter.slice(4));
-      if (!grp) return [];
-      const names = (grp.accountIds || [])
-        .map(id => Store.getMyAccountById(id))
-        .filter(Boolean)
-        .map(a => a.name);
-      return all.filter(t => names.includes(t.apex));
-    }
-    return all;
+  // v0.9.396 : le filtre du dashboard EST désormais le Focus app-wide (persistant,
+  // partagé avec analytics + calendrier). On délègue à Store.scopedTrades().
+  function tradesForFilter() {
+    return Store.scopedTrades ? Store.scopedTrades() : Store.getTrades();
   }
 
   function progressBar(pct, color, label, sub) {
@@ -279,7 +266,9 @@
     const all    = Store.getTrades();
     const accs   = Store.getMyAccounts();
     const grps   = Store.getGroups();
-    const trades = tradesForFilter(dashFilter);
+    // v0.9.396 : le filtre vient du Focus app-wide (persistant), plus d'état local.
+    dashFilter   = (Store.getFocusScope && Store.getFocusScope()) || null;
+    const trades = tradesForFilter();
     const s      = UI.statsForTrades(trades);
     const isPro  = Store.isPro();
 
@@ -313,28 +302,7 @@
       return;
     }
 
-    const currentVal = dashFilter || 'all';
-    let opts = `<option value="all"${currentVal==='all'?' selected':''}>${t('dash.all.accounts')}</option>`;
-    if (accs.length) {
-      opts += `<optgroup label="${t('dash.accounts.grp')}">`;
-      opts += accs.map(a => {
-        const v = 'acc:' + a.name;
-        return `<option value="${UI.escHtml(v)}"${currentVal===v?' selected':''}>${UI.escHtml(a.name)}</option>`;
-      }).join('');
-      opts += `</optgroup>`;
-    }
-    if (grps.length) {
-      opts += `<optgroup label="${t('dash.groups.grp')}">`;
-      opts += grps.map(g => {
-        const v = 'grp:' + g.id;
-        return `<option value="${UI.escHtml(v)}"${currentVal===v?' selected':''}>${UI.escHtml(g.name)}</option>`;
-      }).join('');
-      opts += `</optgroup>`;
-    }
-    const filterBar = `<div class="dash-selector-row">
-      <select class="dash-account-select" id="dashAccountSelect">${opts}</select>
-    </div>`;
-
+    // v0.9.396 : le sélecteur de filtre a migré dans la topbar (Focus app-wide).
     let body = '';
 
     function recentTradesBlock(tradesList) {
@@ -378,13 +346,19 @@
       body += `<div class="chart-card"><h3>${t('dash.pnl.curve')}</h3><div class="chart-area"><canvas id="pnlChart"></canvas></div><div id="pnlStats"></div></div>`;
       body += recentTradesBlock(trades);
 
-    } else if (dashFilter && dashFilter.startsWith('grp:')) {
-      const grp = Store.getGroupById(dashFilter.slice(4));
-      if (grp && grp.accountIds && grp.accountIds.length) {
-        body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.accounts.grp')}</span><span class="page-section-count">${grp.accountIds.length} ${grp.accountIds.length > 1 ? t('ui.accounts') : t('ui.account')}</span></div><div class="dash-group-accounts">`;
-        grp.accountIds.forEach(accId => {
-          const acc = Store.getMyAccountById(accId);
-          if (!acc) return;
+    } else if (dashFilter && (dashFilter.startsWith('grp:') || dashFilter.startsWith('firm:'))) {
+      // v0.9.396 : vue agrégée multi-comptes — groupe (grp:) OU prop firm entière (firm:)
+      let memberAccs = [];
+      if (dashFilter.startsWith('grp:')) {
+        const grp = Store.getGroupById(dashFilter.slice(4));
+        if (grp && grp.accountIds) memberAccs = grp.accountIds.map(id => Store.getMyAccountById(id)).filter(Boolean);
+      } else {
+        const key = dashFilter.slice(5);
+        memberAccs = accs.filter(a => a.firmKey === key);
+      }
+      if (memberAccs.length) {
+        body += `<div class="page-section"><div class="page-section-hd"><span class="page-section-ttl">${t('dash.accounts.grp')}</span><span class="page-section-count">${memberAccs.length} ${memberAccs.length > 1 ? t('ui.accounts') : t('ui.account')}</span></div><div class="dash-group-accounts">`;
+        memberAccs.forEach(acc => {
           body += accountCard(acc, trades.filter(tr => tr.apex === acc.name));
         });
         body += `</div></div>`;
@@ -441,18 +415,11 @@
 
     const titleRow = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div class="page-title" style="margin-bottom:0">Dashboard</div>
-      ${filterBar.replace('<div class="dash-selector-row">', '<div class="dash-selector-row" style="margin-bottom:0">')}
     </div>`;
     el.innerHTML = titleRow + upgradeBanner + body;
 
     const upgBtn = $('btnDashUpgrade');
     if (upgBtn) upgBtn.addEventListener('click', goOffers);
-
-    const sel = $('dashAccountSelect');
-    if (sel) sel.addEventListener('change', () => {
-      dashFilter = sel.value === 'all' ? null : sel.value;
-      UI.renderDashboard();
-    });
 
     if (typeof Chart === 'undefined') {
       const ca = $('pnlChart');

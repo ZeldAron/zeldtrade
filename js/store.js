@@ -10,7 +10,12 @@ const Store = (() => {
   }
 
   // ── Données statiques (presets, référence) ───────────────────────────────────
-  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1', tradingTypes: null, favInstruments: [] };
+  // v0.9.396 :
+  //  - selectedFirms : prop firms déclarées par l'user (setup 1er login / Réglages). []=aucune.
+  //  - focusScope    : contexte Focus app-wide (dashboard/analytics/calendrier). null=Global (tout),
+  //                    'firm:KEY' = une prop firm entière, 'acc:NOM' = un compte, 'grp:ID' = un groupe.
+  //  - setupDone     : true une fois le wizard de setup obligatoire complété.
+  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1', tradingTypes: null, favInstruments: [], selectedFirms: [], focusScope: null, setupDone: false };
 
   // v0.9.275 (F1/F2) — profil de trading utilisateur (multi-choix). null = pas encore répondu.
   const VALID_TRADING_TYPES = ['fundsOwn', 'propFirm', 'crypto'];
@@ -834,7 +839,50 @@ const Store = (() => {
   // ── Settings ─────────────────────────────────────────────────────────────────
   function getSettings()        { return { ...settings }; }
   function getTradingTypes()    { return Array.isArray(settings.tradingTypes) ? [...settings.tradingTypes] : null; }
-  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes','favInstruments']);
+  function getSelectedFirms()   { return Array.isArray(settings.selectedFirms) ? [...settings.selectedFirms] : []; }
+  function isSetupDone()        { return !!settings.setupDone; }
+
+  // v0.9.396 — Focus app-wide. Renvoie le scope courant SI l'entité visée existe
+  // encore (sinon → null = Global, pour éviter un dashboard vide après suppression).
+  const _FIRM_ORDER = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips'];
+  function getFocusScope() {
+    const f = settings.focusScope;
+    if (!f || typeof f !== 'string') return null;
+    if (f.startsWith('acc:'))  return getMyAccountByName(f.slice(4)) ? f : null;
+    if (f.startsWith('grp:'))  return getGroupById(f.slice(4)) ? f : null;
+    if (f.startsWith('firm:')) return getMyFirms().some(x => x.key === f.slice(5)) ? f : null;
+    return null;
+  }
+  function setFocusScope(v)     { updateSettings({ focusScope: (v == null ? null : v) }); }
+
+  // Liste des prop firms « de l'user » : déclarées (selectedFirms) ∪ celles de ses
+  // comptes (firmKey). Ordonnées. → alimente le sélecteur Focus + l'onboarding.
+  function getMyFirms() {
+    const keys = new Set([...(settings.selectedFirms || []), ...myAccounts.map(a => a.firmKey).filter(Boolean)]);
+    return _FIRM_ORDER.filter(k => keys.has(k)).map(k => ({ key: k, name: (DEFAULT_PROP_FIRMS[k] && DEFAULT_PROP_FIRMS[k].name) || k }));
+  }
+
+  // Trades filtrés par le Focus courant. list optionnelle (défaut = tous les trades).
+  function scopedTrades(list) {
+    const all = Array.isArray(list) ? list : getTrades();
+    const f = getFocusScope();
+    if (!f) return all;
+    if (f.startsWith('acc:')) { const n = f.slice(4); return all.filter(t => t.apex === n); }
+    if (f.startsWith('firm:')) {
+      const key = f.slice(5);
+      const names = new Set(myAccounts.filter(a => a.firmKey === key).map(a => a.name));
+      return all.filter(t => names.has(t.apex));
+    }
+    if (f.startsWith('grp:')) {
+      const g = getGroupById(f.slice(4));
+      if (!g) return all;
+      const names = new Set((g.accountIds || []).map(id => { const a = getMyAccountById(id); return a && a.name; }).filter(Boolean));
+      return all.filter(t => names.has(t.apex));
+    }
+    return all;
+  }
+  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes','favInstruments','selectedFirms','focusScope','setupDone']);
+  const _FIRM_KEYS = new Set(Object.keys(DEFAULT_PROP_FIRMS));
   function updateSettings(data) {
     const safe = Object.create(null);
     for (const [k, v] of Object.entries(data)) {
@@ -849,6 +897,17 @@ const Store = (() => {
           ? [...new Set(v.filter(x => typeof x === 'string' && x.length <= 20))].slice(0, 100)
           : [];
       }
+      else if (k === 'selectedFirms') {
+        // v0.9.396 : prop firms déclarées — uniquement des clés de firm connues.
+        safe.selectedFirms = Array.isArray(v)
+          ? [...new Set(v.filter(x => _FIRM_KEYS.has(x)))]
+          : [];
+      }
+      else if (k === 'focusScope') {
+        // v0.9.396 : null/'' = Global ; sinon string préfixée acc:/grp:/firm: (max 80 car.)
+        safe.focusScope = (typeof v === 'string' && /^(acc:|grp:|firm:).+/.test(v)) ? v.slice(0, 80) : null;
+      }
+      else if (k === 'setupDone') safe.setupDone = !!v;
     }
     settings = { ...settings, ...safe };
     lsSet(lk().settings, settings);
@@ -1285,6 +1344,7 @@ const Store = (() => {
     newTradeId: _newTradeId, uploadTradeScreenshot, getTradeScreenshotUrl, deleteTradeScreenshot,
     getMaxScreenshots, canSaveScreenshots,
     getSettings, getTradingTypes, updateSettings,
+    getSelectedFirms, isSetupDone, getFocusScope, setFocusScope, getMyFirms, scopedTrades,
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,
     getMyAccounts, getArchivedAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount, convertEvalToFunded,

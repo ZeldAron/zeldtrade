@@ -385,32 +385,142 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // v0.9.275 (F1/F2) — modale « profil de trading » (1er login, nouveaux + existants).
   // Stocke tradingTypes dans le doc settings → adapte l'UI (masque prop firm / crypto).
+  // v0.9.396 — setup OBLIGATOIRE au 1er login : wizard 3 étapes.
+  //   1) profil de trading (prop/fonds propres/crypto)
+  //   2) prop firms (uniquement si « prop firm » coché)
+  //   3) instruments tradés (alimente favInstruments)
+  // Sauvegarde groupée + setupDone=true à la fin. Les comptes restent créés ensuite,
+  // quand l'user veut (pas de friction de création forcée).
   function _showTradingProfileModal() {
     const modal = document.getElementById('tradingProfileModal');
-    const form  = document.getElementById('tradingProfileForm');
-    const err   = document.getElementById('tpmError');
-    if (!modal || !form) return;
+    if (!modal) return;
     // Ne pas empiler avec une autre modale bloquante (vérif email / consent RGPD) :
     // elle se ré-affichera au prochain chargement une fois celle-ci résolue.
     const isUp = el => el && el.style.display && el.style.display !== 'none';
     if (isUp(document.getElementById('verifyEmailGate')) || isUp(document.getElementById('consentModal'))) return;
-    modal.style.display = 'flex';
-    if (form.dataset.bound) return;
-    form.dataset.bound = '1';
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const checked = [...modal.querySelectorAll('.tp-choice:checked')].map(c => c.value);
-      if (!checked.length) {
-        if (err) err.textContent = i18n.getLang() === 'en' ? 'Pick at least one option.' : 'Choisis au moins une option.';
-        return;
-      }
-      const btn = document.getElementById('btnTradingProfileSubmit');
-      if (btn) btn.disabled = true;
-      try { Store.updateSettings({ tradingTypes: checked }); } catch {}
+
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const en = i18n.getLang() === 'en';
+    const T = {
+      pickType:  en ? 'Pick at least one option.'        : 'Choisis au moins une option.',
+      pickFirm:  en ? 'Pick at least one prop firm.'     : 'Sélectionne au moins une prop firm.',
+      pickInstr: en ? 'Pick at least one instrument.'    : 'Sélectionne au moins un instrument.',
+      firmsTtl:  en ? 'Your prop firms'                  : 'Tes prop firms',
+      firmsIntro:en ? 'Select the prop firms you use. You can add more in Settings.' : 'Sélectionne les prop firms que tu utilises. Tu pourras en ajouter dans les Réglages.',
+      instrTtl:  en ? 'Your instruments'                 : 'Tes instruments',
+      instrIntro:en ? 'Pick the instruments you trade. Only these appear when logging a trade (editable in Settings).' : 'Choisis les instruments que tu trades. Seuls ceux-ci apparaîtront au moment de saisir un trade (modifiable dans les Réglages).',
+      back:      en ? 'Back'     : 'Retour',
+      cont:      en ? 'Continue' : 'Continuer',
+      finish:    en ? 'Finish'   : 'Terminer',
+    };
+
+    // ── état du wizard (pré-rempli si l'user avait déjà des données) ──
+    let types  = (Store.getTradingTypes && Store.getTradingTypes()) || [];
+    const firms  = new Set((Store.getSelectedFirms && Store.getSelectedFirms()) || []);
+    const instrs = new Set((Store.getSettings && Store.getSettings().favInstruments) || []);
+
+    const $id = id => document.getElementById(id);
+    const step1 = $id('tpmStep1'), step2 = $id('tpmStep2'), step3 = $id('tpmStep3');
+    const prog  = $id('tpmProgress');
+
+    function hasProp() { return types.includes('propFirm'); }
+
+    function renderProgress(cur) {
+      if (!prog) return;
+      const total = hasProp() ? 3 : 2;
+      const idx = (cur === 3 && !hasProp()) ? 2 : cur;  // étape 3 = 2/2 si pas de firms
+      prog.innerHTML = Array.from({ length: total }, (_, i) => `<span class="${i < idx ? 'on' : ''}"></span>`).join('');
+    }
+
+    function show(step) {
+      if (step1) step1.style.display = step === 1 ? '' : 'none';
+      if (step2) step2.style.display = step === 2 ? '' : 'none';
+      if (step3) step3.style.display = step === 3 ? '' : 'none';
+      renderProgress(step);
+    }
+
+    // ── étape 2 : pills de firms ──
+    function buildFirmPills() {
+      const wrap = $id('tpmFirmPills');
+      if (!wrap) return;
+      const all = (Store.getPropFirms && Store.getPropFirms()) || {};
+      const order = ['apex', 'topstep', 'ftmo', 'ftmo1step', 'lucid', 'fpips'];
+      wrap.innerHTML = order.filter(k => all[k]).map(k =>
+        `<button type="button" class="instr-pill${firms.has(k) ? ' on' : ''}" data-firm="${k}">${esc(all[k].name || k)}</button>`).join('');
+      wrap.querySelectorAll('.instr-pill').forEach(b => b.addEventListener('click', () => {
+        const k = b.dataset.firm;
+        if (firms.has(k)) { firms.delete(k); b.classList.remove('on'); }
+        else { firms.add(k); b.classList.add('on'); }
+        const e2 = $id('tpmError2'); if (e2) e2.textContent = '';
+      }));
+    }
+
+    // ── étape 3 : pills d'instruments (catalogue partagé avec les Réglages) ──
+    function buildInstrPills() {
+      const wrap = $id('tpmInstrCats');
+      if (!wrap) return;
+      const cat = (window.UI && UI.INSTRUMENT_CATALOG) || [];
+      wrap.innerHTML = cat.map(g => {
+        const pills = g.items.map(sym =>
+          `<button type="button" class="instr-pill${instrs.has(sym) ? ' on' : ''}" data-sym="${esc(sym)}">${esc(sym)}</button>`).join('');
+        return `<div class="instr-cat"><div class="instr-cat-label">${esc(en ? g.cat.en : g.cat.fr)}</div><div class="instr-pills">${pills}</div></div>`;
+      }).join('');
+      wrap.querySelectorAll('.instr-pill').forEach(b => b.addEventListener('click', () => {
+        const sym = b.dataset.sym;
+        if (instrs.has(sym)) { instrs.delete(sym); b.classList.remove('on'); }
+        else { instrs.add(sym); b.classList.add('on'); }
+        const e3 = $id('tpmError3'); if (e3) e3.textContent = '';
+      }));
+    }
+
+    function finish() {
+      const e3 = $id('tpmError3');
+      if (!instrs.size) { if (e3) e3.textContent = T.pickInstr; return; }
+      const btn = $id('tpmFinish'); if (btn) btn.disabled = true;
+      try {
+        Store.updateSettings({
+          tradingTypes:   types,
+          selectedFirms:  hasProp() ? [...firms] : [],
+          favInstruments: [...instrs],
+          setupDone:      true,
+        });
+      } catch (e) {}
       modal.style.display = 'none';
       try { UI.initSettings(); } catch {}
+      try { if (UI.refreshFocusScope) UI.refreshFocusScope(); } catch {}
       try { window.dispatchEvent(new CustomEvent('store:profileChanged')); } catch {}
-    });
+    }
+
+    // localise les titres/boutons (steps 2-3 construits hors i18n auto)
+    const setTxt = (id, v) => { const e = $id(id); if (e) e.textContent = v; };
+    setTxt('tpmTitle2', T.firmsTtl); setTxt('tpmIntro2', T.firmsIntro);
+    setTxt('tpmTitle3', T.instrTtl); setTxt('tpmIntro3', T.instrIntro);
+    setTxt('tpmBack2', T.back); setTxt('tpmNext2', T.cont);
+    setTxt('tpmBack3', T.back); setTxt('tpmFinish', T.finish);
+
+    // affiche + (re)initialise à l'étape 1
+    modal.style.display = 'flex';
+    show(1);
+
+    // bindings une seule fois
+    if (!modal.dataset.bound) {
+      modal.dataset.bound = '1';
+      $id('tpmNext1') && $id('tpmNext1').addEventListener('click', () => {
+        types = [...modal.querySelectorAll('.tp-choice:checked')].map(c => c.value);
+        const e1 = $id('tpmError');
+        if (!types.length) { if (e1) e1.textContent = T.pickType; return; }
+        if (e1) e1.textContent = '';
+        if (hasProp()) { buildFirmPills(); show(2); }
+        else { buildInstrPills(); show(3); }
+      });
+      $id('tpmBack2') && $id('tpmBack2').addEventListener('click', () => show(1));
+      $id('tpmNext2') && $id('tpmNext2').addEventListener('click', () => {
+        if (!firms.size) { const e2 = $id('tpmError2'); if (e2) e2.textContent = T.pickFirm; return; }
+        buildInstrPills(); show(3);
+      });
+      $id('tpmBack3') && $id('tpmBack3').addEventListener('click', () => show(hasProp() ? 2 : 1));
+      $id('tpmFinish') && $id('tpmFinish').addEventListener('click', finish);
+    }
   }
 
   // v0.9.150 — Affiche la consent modal et attend que l'user soumette le form.
