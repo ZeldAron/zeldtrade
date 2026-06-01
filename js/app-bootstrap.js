@@ -32,7 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (el.dataset.hcaptchaWidgetId) {
         hcaptcha.reset(el.dataset.hcaptchaWidgetId);  // déjà rendu explicitement → reset propre
       } else if (!el.querySelector('iframe')) {       // auto-render a échoué → rend explicitement
-        const id = hcaptcha.render(el, { sitekey: el.dataset.sitekey, theme: 'dark', size: 'compact' });
+        const hl = (typeof i18n !== 'undefined' && i18n.getLang) ? i18n.getLang() : 'fr';
+        const id = hcaptcha.render(el, { sitekey: el.dataset.sitekey, theme: 'dark', size: 'compact', hl: hl });
         el.dataset.hcaptchaWidgetId = String(id);
       }
     } catch (e) { /* déjà rendu par l'auto-render → on laisse */ }

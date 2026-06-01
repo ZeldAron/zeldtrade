@@ -5,6 +5,31 @@ const Changelog = (() => {
 
   const ENTRIES = [
     {
+      version: '1.0.0',
+      date: '2026-06-01',
+      time: '12:00',
+      tags: ['feat'],
+      title: '🎉 ZeldTrade 1.0 — fin de la beta',
+      titleEn: '🎉 ZeldTrade 1.0 — out of beta',
+      items: [
+        { type: 'feat', text: '🎉 **ZeldTrade sort de beta.** Merci aux bêta testeurs qui ont façonné l\'app — voici la 1.0, plus rapide, plus claire, et bien plus complète.', textEn: '🎉 **ZeldTrade is out of beta.** Thanks to the beta testers who shaped the app — here is 1.0: faster, cleaner and far more complete.' },
+        { type: 'ui', text: '🎨 **Refonte visuelle complète** : nouveau design monochrome épuré (clair par défaut, mode sombre dispo), de la page d\'accueil jusqu\'à l\'app.', textEn: '🎨 **Full visual redesign**: clean new monochrome look (light by default, dark mode available), from the landing page to the app.' },
+        { type: 'feat', text: '🏦 **Les 5 prop firms majeures à la règle près** : Apex, FTMO, Topstep, Lucid et Funding Pips — instruments, valeurs du tick et commissions **exactes par firm** (+ Tradeify ajoutée). Plus d\'à-peu-près sur ton drawdown EOD.', textEn: '🏦 **The 5 major prop firms, to the rule**: Apex, FTMO, Topstep, Lucid and Funding Pips — instruments, tick values and commissions **exact per firm** (+ Tradeify added). No more guesswork on your EOD drawdown.' },
+        { type: 'feat', text: '⚙️ **Profil de trading au 1ᵉʳ login** + **Focus par firm ou par compte** : l\'app s\'adapte à ta façon de trader (prop firm, crypto, fonds propres).', textEn: '⚙️ **Trading profile on first login** + **Focus by firm or account**: the app adapts to how you trade (prop firm, crypto, personal funds).' },
+        { type: 'feat', text: '🧮 **Calculateur EOD interactif** sur la page d\'accueil + **prix affichables en € ou en $**, et toute l\'app/landing **bilingue FR/EN**.', textEn: '🧮 **Interactive EOD calculator** on the landing + **prices shown in € or $**, and the whole app/landing **bilingual EN/FR**.' },
+        { type: 'feat', text: '📸 **IA Vision** (entry/SL/TP depuis un screenshot), **multi-comptes groupables**, archive PDF, export RGPD — hébergé en Europe.', textEn: '📸 **AI Vision** (entry/SL/TP from a screenshot), **groupable multi-accounts**, PDF archive, GDPR export — hosted in Europe.' },
+      ],
+      user: {
+        title: '🎉 ZeldTrade 1.0 — fin de la beta',
+        items: [
+          { type: 'feat', text: '🎉 ZeldTrade sort de beta — voici la 1.0, plus rapide, plus claire et plus complète.' },
+          { type: 'ui', text: '🎨 Refonte visuelle complète (design monochrome, clair/sombre).' },
+          { type: 'feat', text: '🏦 Les 5 prop firms majeures avec instruments, ticks et commissions exacts par firm (+ Tradeify).' },
+          { type: 'feat', text: '🧮 Calc EOD interactive, prix en € ou $, app entièrement bilingue FR/EN.' },
+        ],
+      },
+    },
+    {
       version: '0.9.379',
       date: '2026-05-27',
       time: '20:30',

@@ -25,6 +25,7 @@
     'sb.launch':   { fr: 'EN LIGNE · MADE IN FRANCE 🇫🇷', en: 'ONLINE · MADE IN FRANCE 🇫🇷' },
     'promo.text':  { fr: "🔥 Lancement : −40% sur Funded & Elite + 1 semaine d'essai", en: '🔥 Launch: −40% on Funded & Elite + 1-week trial' },
     'promo.copy':  { fr: 'copier', en: 'copy' },
+    'promo.aria':  { fr: 'Copier le code promo ZELD40', en: 'Copy promo code ZELD40' },
 
     // Hero
     'hero.eyebrow': { fr: 'POUR LES TRADERS PROP FIRM · CRYPTO · FONDS PROPRES', en: 'FOR PROP FIRM · CRYPTO · PERSONAL FUNDS TRADERS' },
@@ -44,6 +45,7 @@
     'dash.dd':         { fr: 'EOD Trailing Drawdown', en: 'EOD Trailing Drawdown' },
 
     // Split
+    'split.eyebrow': { fr: '// AVANT / APRÈS', en: '// BEFORE / AFTER' },
     'split.title': { fr: 'Deux trajectoires de compte funded. <span class="accent">Une seule survit.</span>', en: 'Two funded-account paths. <span class="accent">Only one survives.</span>' },
     'split.sub':   { fr: "Le trailing drawdown EOD ne pardonne aucune approximation. La différence n'est pas dans ton edge — elle est dans ton tracking.", en: 'EOD trailing drawdown forgives nothing. The difference isn\'t your edge — it\'s your tracking.' },
     'split.before.tag':  { fr: 'SANS OUTIL · J+14', en: 'NO TOOL · DAY 14' },
@@ -63,7 +65,15 @@
     'firms.title': { fr: 'Les 5 prop firms majeures. <span class="accent">Leurs règles exactes.</span>', en: 'The 5 major prop firms. <span class="accent">Their exact rules.</span>' },
     'firms.sub':   { fr: "Pas une moyenne. Pas une approximation. Chaque firm a son propre moteur de règles, codé à la main et vérifié par les bêta testeurs.", en: 'No average. No approximation. Each firm has its own rules engine, hand-coded and verified by beta testers.' },
     'firms.none':   { fr: 'Aucune', en: 'None' },
-    'firms.mindays':{ fr: 'Min trading days', en: 'Min trading days' },
+    'firms.mindays':{ fr: 'Jours de trading min.', en: 'Min trading days' },
+    'firms.trailing':  { fr: 'Trailing', en: 'Trailing' },
+    'firms.dailyloss': { fr: 'Perte journalière', en: 'Daily loss' },
+    'firms.split':     { fr: 'Partage des gains', en: 'Profit split' },
+    'firms.rules.apex': { fr: 'Voir les règles Apex Trader Funding', en: 'View Apex Trader Funding rules' },
+    'firms.rules.ftmo': { fr: 'Voir les règles FTMO Challenge', en: 'View FTMO Challenge rules' },
+    'firms.rules.tps':  { fr: 'Voir les règles Topstep Combine', en: 'View Topstep Combine rules' },
+    'firms.rules.lcd':  { fr: 'Voir les règles Lucid Trading', en: 'View Lucid Trading rules' },
+    'firms.rules.fnp':  { fr: 'Voir les règles Funding Pips', en: 'View Funding Pips rules' },
     'firms.apex.split': { fr: "100% jusqu'à $25k", en: '100% up to $25k' },
     'firms.static': { fr: 'Statique · 10%', en: 'Static · 10%' },
     'firms.staticshort': { fr: 'Statique', en: 'Static' },
@@ -77,6 +87,14 @@
     'demo.today':   { fr: "Journal · Aujourd'hui", en: 'Journal · Today' },
     'demo.price':   { fr: 'Évolution prix · 1m', en: 'Price action · 1m' },
     'demo.winrate': { fr: 'Win rate', en: 'Win rate' },
+    'demo.sb.accounts': { fr: 'COMPTES', en: 'ACCOUNTS' },
+    'demo.sb.journal':  { fr: 'JOURNAL', en: 'JOURNAL' },
+    'demo.sb.tools':    { fr: 'OUTILS',  en: 'TOOLS' },
+    'demo.sb.today':    { fr: "Aujourd'hui · 3 trades", en: 'Today · 3 trades' },
+    'demo.sb.week':     { fr: 'Semaine · 14 trades', en: 'Week · 14 trades' },
+    'demo.sb.archive':  { fr: 'Archive PDF', en: 'PDF archive' },
+    'demo.sb.calc':     { fr: 'Calc. EOD', en: 'EOD calc' },
+    'demo.sb.import':   { fr: 'Import TradingView', en: 'TradingView import' },
 
     // Calc
     'calc.title': { fr: 'Calc. EOD drawdown. <span class="accent">Essaye-la.</span>', en: 'EOD drawdown calc. <span class="accent">Try it.</span>' },
@@ -90,10 +108,10 @@
     'calc.risk':    { fr: 'Risque trade prévu', en: 'Planned trade risk' },
     'calc.safe':    { fr: 'SAFE · trade autorisé', en: 'SAFE · trade allowed' },
     'calc.bufafter':{ fr: '// buffer EOD après ce trade', en: '// EOD buffer after this trade' },
-    'calc.floor':   { fr: 'EOD floor', en: 'EOD floor' },
+    'calc.floor':   { fr: 'Plancher EOD', en: 'EOD floor' },
     'calc.equity':  { fr: 'Equity actuelle', en: 'Current equity' },
     'calc.buffer':  { fr: 'Buffer actuel', en: 'Current buffer' },
-    'calc.dist':    { fr: 'Distance breach', en: 'Distance to breach' },
+    'calc.dist':    { fr: 'Distance au breach', en: 'Distance to breach' },
 
     // About
     'about.title': { fr: 'Fait par un trader, <span class="accent">pour les traders.</span>', en: 'Built by a trader, <span class="accent">for traders.</span>' },
@@ -130,6 +148,7 @@
     'pricing.month':   { fr: '/ mois', en: '/ mo' },
     'pricing.year':    { fr: '/ an', en: '/ yr' },
     'pricing.discount':{ fr: 'LANCEMENT −40% · CODE ZELD40 · essai 7 jours', en: 'LAUNCH −40% · CODE ZELD40 · 7-day trial' },
+    'pricing.curnote': { fr: 'Affichage indicatif · facturé en euros', en: 'Indicative display · billed in euros' },
     'pricing.trader.desc': { fr: 'Pour découvrir sans engagement.', en: 'To explore with no commitment.' },
     'pricing.trader.f1': { fr: '1 compte (prop / crypto / perso)', en: '1 account (prop / crypto / personal)' },
     'pricing.trader.f2': { fr: '1 analyse IA par jour', en: '1 AI analysis per day' },
@@ -176,7 +195,7 @@
     'footer.cgu':           { fr: 'CGU', en: 'Terms' },
     'footer.copy':          { fr: '© 2026 ZELDTRADE · INDÉPENDANT · HÉBERGÉ EN EUROPE', en: '© 2026 ZELDTRADE · INDEPENDENT · HOSTED IN EUROPE' },
     'cookie.text':          { fr: 'Cookies strictement nécessaires uniquement (pas de tracking publicitaire).', en: 'Strictly necessary cookies only (no advertising tracking).' },
-    'cookie.ok':            { fr: 'OK', en: 'OK' },
+    'cookie.ok':            { fr: "J'ai compris", en: 'Got it' },
   };
 
   // ── Méta traduisibles (<title>, description) ────────────────────────────────
@@ -234,6 +253,15 @@
       b.setAttribute('aria-pressed', b.getAttribute('data-lang') === lang ? 'true' : 'false');
     });
 
+    // F-05 — propage la langue choisie vers l'app (/app, /app?signup=1) via ?lang=
+    document.querySelectorAll('a[href^="/app"]').forEach(function (a) {
+      try {
+        const u = new URL(a.getAttribute('href'), location.origin);
+        u.searchParams.set('lang', lang);
+        a.setAttribute('href', u.pathname + u.search);
+      } catch (e) {}
+    });
+
     try { localStorage.setItem(LS_KEY, lang); } catch (e) {}
     try { const u = new URL(location.href); u.searchParams.set('lang', lang); history.replaceState(null, '', u); } catch (e) {}
     try { window.dispatchEvent(new CustomEvent('zt:langchange', { detail: { lang: lang } })); } catch (e) {}
@@ -254,6 +282,11 @@
       b.addEventListener('click', function () {
         const l = b.getAttribute('data-lang');
         if (document.documentElement.lang !== l) switchWithLoader(l);
+        // F-09 — referme le menu mobile après le choix de langue
+        const links = document.getElementById('navLinks');
+        const toggle = document.getElementById('navToggle');
+        if (links) links.classList.remove('open');
+        if (toggle) { toggle.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
       });
     });
   }
