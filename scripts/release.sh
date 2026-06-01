@@ -73,9 +73,12 @@ else
     # Tous les ?v=<num.num...> des HTML servis (src/ + src/pages/) → version courante
     find src -name '*.html' -type f -exec \
         sed -i '' -E "s/\?v=[0-9][0-9.]*/?v=$VNUM/g" {} +
-    # Libellés de version affichés (splash loader + Réglages) — app.html est dans src/pages/
-    sed -i '' -E "s/(id=\"ztLoaderVer\"[^>]*>)v[0-9][0-9.]*/\1v$VNUM/" src/pages/app.html
-    sed -i '' -E "s/(id=\"appVersionLabel\"[^>]*>)[0-9][0-9.]*/\1$VNUM/" src/pages/app.html
+    # Libellés de version affichés — TOUS gérés ici (via leur id) pour qu'aucun ne reste figé :
+    #   ztLoaderVer + appVersionLabel (app.html)  •  sbVersion + footerVersion (landing index.html)
+    sed -i '' -E "s/(id=\"ztLoaderVer\"[^>]*>)v[0-9][0-9.]*/\1v$VNUM/"     src/pages/app.html
+    sed -i '' -E "s/(id=\"appVersionLabel\"[^>]*>)v?[0-9][0-9.]*/\1v$VNUM/" src/pages/app.html
+    sed -i '' -E "s/(id=\"sbVersion\"[^>]*>)v[0-9][0-9.]*/\1v$VNUM/"       src/pages/index.html
+    sed -i '' -E "s/(id=\"footerVersion\"[^>]*>)v[0-9][0-9.]*/\1v$VNUM/"   src/pages/index.html
 fi
 echo "  ✓  Cache-busters + libellés unifiés sur $VNUM."
 
