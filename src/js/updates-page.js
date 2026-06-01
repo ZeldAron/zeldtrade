@@ -64,6 +64,8 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
+  // v0.9.419 : échappe PUIS rend le gras markdown **texte** → <strong> (XSS-safe).
+  function mdBold(s) { return esc(s).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>'); }
 
   const entries = (typeof Changelog !== 'undefined' && Changelog.getEntries)
     ? Changelog.getEntries() : [];
@@ -84,7 +86,7 @@
       }).join('');
       const items = (e.items || []).map(function (it) {
         const text = isEn && it.textEn ? it.textEn : it.text;
-        return '<li>' + esc(text) + '</li>';
+        return '<li>' + mdBold(text) + '</li>';
       }).join('');
       return '' +
         '<article class="up-entry">' +
@@ -93,7 +95,7 @@
             '<span class="up-date">' + esc(e.date) + '</span>' +
             '<span class="up-tags">' + tags + '</span>' +
           '</div>' +
-          '<h3 class="up-title">' + esc(title) + '</h3>' +
+          '<h3 class="up-title">' + mdBold(title) + '</h3>' +
           '<ul class="up-items">' + items + '</ul>' +
         '</article>';
     }).join('');

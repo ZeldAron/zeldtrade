@@ -7,6 +7,9 @@
   'use strict';
   const $  = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+  // v0.9.419 — setters null-safe (évite « Cannot set textContent of null » si un élément manque)
+  const setTxt  = (sel, v) => { const e = $(sel); if (e) e.textContent = v; return e; };
+  const setHtml = (sel, v) => { const e = $(sel); if (e) e.innerHTML = v; return e; };
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rand = () => Math.random();
 
@@ -125,11 +128,14 @@
       const t = trades[idx];
       items.forEach(el => el.classList.toggle('active', +el.dataset.acc === idx));
       tk.textContent = t.sym;
-      sd.textContent = t.side; sd.className = 'side ' + (t.side === 'LONG' ? 'long' : 'short');
-      en.textContent = t.entry; sl.textContent = t.sl; tp.textContent = t.tp; sz.textContent = t.size; rr.textContent = t.r;
-      pn.textContent = (t.pnl >= 0 ? '+' : '−') + '$' + Math.abs(t.pnl);
-      pn.style.color = t.pnl >= 0 ? 'var(--green)' : 'var(--red)';
-      tm.textContent = t.time;
+      if (sd) { sd.textContent = t.side; sd.className = 'side ' + (t.side === 'LONG' ? 'long' : 'short'); }
+      if (en) en.textContent = t.entry;
+      if (sl) sl.textContent = t.sl;
+      if (tp) tp.textContent = t.tp;
+      if (sz) sz.textContent = t.size;
+      if (rr) rr.textContent = t.r;
+      if (pn) { pn.textContent = (t.pnl >= 0 ? '+' : '−') + '$' + Math.abs(t.pnl); pn.style.color = t.pnl >= 0 ? 'var(--green)' : 'var(--red)'; }
+      if (tm) tm.textContent = t.time;
       if (ai) {
         const cls = t.pnl >= 0 ? 'green' : 'red';
         ai.innerHTML = `<b>IA Vision · screenshot lu en 1,2s.</b><br>Trade détecté : <span class="tag ${cls}">${t.tag}</span> · entry <b>${t.entry.replace('$','')}</b> · SL <b>${t.sl.replace('$','')}</b> · TP <b>${t.tp.replace('$','')}</b> · risque <b>${t.r}</b> · ${t.pnl>=0?'clôturé à TP':'stoppé'} <span class="tag ${cls}">${t.pnl>=0?'+':'−'}$${Math.abs(t.pnl)}</span>`;
@@ -157,7 +163,8 @@
     function lang(fr, en) { return document.documentElement.lang === 'en' ? en : fr; }
 
     function compute() {
-      const rule = FIRMS[firm];
+      if (!size || !hwm || !pnl || !risk) return;   // calculatrice absente → on ne fait rien
+      const rule = FIRMS[firm] || FIRMS.Apex;
       const accountSize = +size.value;
       let highWM = +hwm.value; if (highWM < accountSize) highWM = accountSize;
       const openPnL = +pnl.value, plannedRisk = +risk.value;
@@ -169,22 +176,25 @@
       const afterRisk = buffer - plannedRisk;
       const status = afterRisk < 0 ? 'danger' : afterRisk < rule.trailing * 0.25 ? 'warn' : 'safe';
 
-      $('#cSizeVal').textContent = '$' + accountSize.toLocaleString('en-US');
-      $('#cHwmVal').textContent  = '$' + highWM.toLocaleString('en-US');
-      const pv = $('#cPnlVal'); pv.textContent = (openPnL >= 0 ? '+' : '−') + '$' + Math.abs(openPnL).toLocaleString('en-US'); pv.style.color = openPnL >= 0 ? 'var(--green)' : 'var(--red)';
-      $('#cRiskVal').textContent = '$' + plannedRisk.toLocaleString('en-US');
-      $('#cFirmVal').textContent = firm;
-      $('#cFirmNote').textContent = '→ ' + rule.tag;
+      setTxt('#cSizeVal', '$' + accountSize.toLocaleString('en-US'));
+      setTxt('#cHwmVal', '$' + highWM.toLocaleString('en-US'));
+      const pv = setTxt('#cPnlVal', (openPnL >= 0 ? '+' : '−') + '$' + Math.abs(openPnL).toLocaleString('en-US')); if (pv) pv.style.color = openPnL >= 0 ? 'var(--green)' : 'var(--red)';
+      setTxt('#cRiskVal', '$' + plannedRisk.toLocaleString('en-US'));
+      setTxt('#cFirmVal', firm);
+      setTxt('#cFirmNote', '→ ' + rule.tag);
 
-      const big = $('#cBig'); big.textContent = (afterRisk >= 0 ? '' : '−') + fmt(Math.abs(afterRisk)); big.className = 'calc-big ' + status;
-      const st = $('#cStatus'); st.className = 'calc-output-status ' + status;
-      st.innerHTML = '<i></i> ' + (status === 'safe' ? lang('SAFE · trade autorisé', 'SAFE · trade allowed')
-        : status === 'warn' ? lang('WARNING · proche limite', 'WARNING · near limit')
-        : lang('DANGER · breach probable', 'DANGER · likely breach'));
-      $('#cFloor').textContent  = fmt(floor);
-      $('#cEquity').textContent = fmt(equity);
-      const bf = $('#cBuffer'); bf.textContent = (buffer >= 0 ? '+' : '−') + fmt(Math.abs(buffer)); bf.style.color = buffer < 0 ? 'var(--red)' : 'var(--green)';
-      $('#cDist').textContent = ((afterRisk / rule.trailing) * 100).toFixed(1) + '%';
+      const big = setTxt('#cBig', (afterRisk >= 0 ? '' : '−') + fmt(Math.abs(afterRisk))); if (big) big.className = 'calc-big ' + status;
+      const st = $('#cStatus');
+      if (st) {
+        st.className = 'calc-output-status ' + status;
+        st.innerHTML = '<i></i> ' + (status === 'safe' ? lang('SAFE · trade autorisé', 'SAFE · trade allowed')
+          : status === 'warn' ? lang('WARNING · proche limite', 'WARNING · near limit')
+          : lang('DANGER · breach probable', 'DANGER · likely breach'));
+      }
+      setTxt('#cFloor', fmt(floor));
+      setTxt('#cEquity', fmt(equity));
+      const bf = setTxt('#cBuffer', (buffer >= 0 ? '+' : '−') + fmt(Math.abs(buffer))); if (bf) bf.style.color = buffer < 0 ? 'var(--red)' : 'var(--green)';
+      setTxt('#cDist', ((afterRisk / rule.trailing) * 100).toFixed(1) + '%');
     }
     row.addEventListener('click', e => {
       const b = e.target.closest('button[data-firm]'); if (!b) return;
@@ -194,7 +204,7 @@
       compute();
     });
     [size, hwm, pnl, risk].forEach(el => el && el.addEventListener('input', compute));
-    window.addEventListener('zt:langchange', compute);
+    window.addEventListener('zt:langchange', () => { try { compute(); } catch (e) {} });
     compute();
   })();
 
@@ -236,14 +246,31 @@
     });
   })();
 
-  // ── Copie du code promo ─────────────────────────────────────────────────────
+  // ── Copie du code promo (feedback visuel clair sur tout le bouton) ───────────
   (function promo() {
     const btn = $('#promoCode'); if (!btn) return;
+    let busy = false;
+    function feedback() {
+      if (busy) return; busy = true;
+      const en = document.documentElement.lang === 'en';
+      const orig = btn.innerHTML;
+      btn.innerHTML = en ? '✓ Copied!' : '✓ Copié !';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); busy = false; }, 1700);
+    }
+    function fallbackCopy(code) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+      } catch (e) { /* silencieux */ }
+    }
     btn.addEventListener('click', () => {
       const code = btn.dataset.code || 'ZELD40';
-      const done = () => { const c = $('.copy', btn); if (c) { const o = c.textContent; c.textContent = document.documentElement.lang === 'en' ? 'copied ✓' : 'copié ✓'; setTimeout(() => { c.textContent = o; }, 1600); } };
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(done).catch(done);
-      else done();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(feedback).catch(() => { fallbackCopy(code); feedback(); });
+      } else { fallbackCopy(code); feedback(); }
     });
   })();
 })();

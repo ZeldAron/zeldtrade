@@ -16,6 +16,28 @@ document.addEventListener('DOMContentLoaded', () => {
   let appLaunched = false;
 
   // ── Modal auth ──────────────────────────────────────────────────────────────
+  // v0.9.419 (F-04) — filet anti « hCaptcha absent » : le widget est en auto-render,
+  // donc s'il était masqué/0px au chargement il peut ne jamais apparaître. À l'affichage
+  // du form signup, on le rend explicitement s'il manque (pas de double-render : on ne
+  // touche pas s'il a déjà une iframe), sinon on le reset.
+  function _ensureCaptcha(tries) {
+    tries = tries || 0;
+    const el = document.querySelector('#registerFormEl .h-captcha');
+    if (!el) return;
+    if (typeof hcaptcha === 'undefined') {            // API pas encore chargée (async) → réessaie
+      if (tries < 20) setTimeout(() => _ensureCaptcha(tries + 1), 250);
+      return;
+    }
+    try {
+      if (el.dataset.hcaptchaWidgetId) {
+        hcaptcha.reset(el.dataset.hcaptchaWidgetId);  // déjà rendu explicitement → reset propre
+      } else if (!el.querySelector('iframe')) {       // auto-render a échoué → rend explicitement
+        const id = hcaptcha.render(el, { sitekey: el.dataset.sitekey, theme: 'dark', size: 'compact' });
+        el.dataset.hcaptchaWidgetId = String(id);
+      }
+    } catch (e) { /* déjà rendu par l'auto-render → on laisse */ }
+  }
+
   function showForm(mode) {
     ['loginFormEl','registerFormEl','forgotFormEl'].forEach(id => {
       $(id).style.display = (id === mode + 'FormEl') ? '' : 'none';
@@ -25,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const focus = { login: 'loginUsername', register: 'regUsername', forgot: 'forgotEmail' };
     setTimeout(() => { if ($(focus[mode])) $(focus[mode]).focus(); }, 60);
+    if (mode === 'register') setTimeout(() => _ensureCaptcha(), 80);
   }
   function openModal(mode) {
     showForm(mode);
