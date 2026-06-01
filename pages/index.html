@@ -27,7 +27,7 @@
   <meta property="og:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta property="og:description" content="Journal de trading français pour tous tes comptes : prop firm (Apex, FTMO, Topstep, Lucid, Funding Pips), crypto (Binance, Coinbase) et fonds propres. IA Vision, multi-comptes, RGPD natif.">
   <meta property="og:url" content="https://zeldtrade.com/">
-  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.419">
+  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.420">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -35,7 +35,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta name="twitter:description" content="Pour tous tes comptes : prop firm (Apex, FTMO, Topstep, Lucid, FP), crypto et fonds propres. IA Vision, multi-comptes.">
-  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.419">
+  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.420">
   <meta name="twitter:image:alt" content="ZeldTrade — Journal de trading prop firm, crypto et fonds propres avec IA Vision">
 
   <!-- SEO -->
@@ -115,7 +115,7 @@
   }
   </script>
 
-  <link rel="stylesheet" href="css/landing.css?v=0.9.419">
+  <link rel="stylesheet" href="css/landing.css?v=0.9.420">
 </head>
 <body>
 
@@ -406,7 +406,7 @@
           <h3 data-i18n="calc.params">Paramètres compte</h3>
           <div class="sub" data-i18n="calc.params.sub">Ajuste les valeurs · le buffer réagit en live.</div>
           <div class="calc-field">
-            <label data-i18n="calc.firm">Prop firm <span class="value" id="cFirmVal">Apex</span></label>
+            <label><span data-i18n="calc.firm">Prop firm</span> <span class="value" id="cFirmVal">Apex</span></label>
             <div class="calc-firm-row" id="cFirmRow">
               <button class="active" data-firm="Apex">Apex</button>
               <button data-firm="FTMO">FTMO</button>
@@ -416,10 +416,10 @@
             </div>
             <div class="calc-firm-note" id="cFirmNote">→ trailing EOD jusqu'au profit target</div>
           </div>
-          <div class="calc-field"><label data-i18n="calc.size">Taille compte initial <span class="value" id="cSizeVal">$150,000</span></label><input type="range" id="cSize" min="25000" max="300000" step="5000" value="150000"></div>
-          <div class="calc-field"><label data-i18n="calc.hwm">Equity au plus haut (HWM) <span class="value" id="cHwmVal">$155,000</span></label><input type="range" id="cHwm" min="25000" max="330000" step="500" value="155000"></div>
-          <div class="calc-field"><label data-i18n="calc.openpnl">P&amp;L ouvert <span class="value" id="cPnlVal" style="color:var(--green)">+$420</span></label><input type="range" id="cPnl" min="-2000" max="2000" step="50" value="420"></div>
-          <div class="calc-field"><label data-i18n="calc.risk">Risque trade prévu <span class="value" id="cRiskVal">$500</span></label><input type="range" id="cRisk" min="100" max="3000" step="50" value="500"></div>
+          <div class="calc-field"><label><span data-i18n="calc.size">Taille compte initial</span> <span class="value" id="cSizeVal">$150,000</span></label><input type="range" id="cSize" min="25000" max="300000" step="5000" value="150000"></div>
+          <div class="calc-field"><label><span data-i18n="calc.hwm">Equity au plus haut (HWM)</span> <span class="value" id="cHwmVal">$155,000</span></label><input type="range" id="cHwm" min="25000" max="330000" step="500" value="155000"></div>
+          <div class="calc-field"><label><span data-i18n="calc.openpnl">P&amp;L ouvert</span> <span class="value" id="cPnlVal" style="color:var(--green)">+$420</span></label><input type="range" id="cPnl" min="-2000" max="2000" step="50" value="420"></div>
+          <div class="calc-field"><label><span data-i18n="calc.risk">Risque trade prévu</span> <span class="value" id="cRiskVal">$500</span></label><input type="range" id="cRisk" min="100" max="3000" step="50" value="500"></div>
         </div>
         <div class="calc-output">
           <div class="calc-output-status safe" id="cStatus"><i></i> <span data-i18n="calc.safe">SAFE · trade autorisé</span></div>
@@ -632,9 +632,9 @@
   <!-- Firebase (contact form anonyme + stats publiques) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
-  <script src="js/landing-contact.js?v=0.9.419"></script>
-  <script src="js/landing-app.js?v=0.9.419" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.419" defer></script>
+  <script src="js/landing-contact.js?v=0.9.420"></script>
+  <script src="js/landing-app.js?v=0.9.420" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.420" defer></script>
 
 </body>
 </html>
