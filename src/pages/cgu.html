@@ -25,37 +25,37 @@
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: #0e1220; color: #c8cdd8; min-height: 100vh; line-height: 1.7; }
+    body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: #fbfbfc; color: #2a2a2e; min-height: 100vh; line-height: 1.7; }
     .page-wrap { max-width: 760px; margin: 0 auto; padding: 60px 24px 100px; }
-    .back-link { display: inline-flex; align-items: center; gap: 6px; color: #6b7280; text-decoration: none; font-size: 13px; margin-bottom: 48px; transition: color 0.15s; }
-    .back-link:hover { color: #c8cdd8; }
-    .page-title { font-size: 28px; font-weight: 600; color: #f0f2f7; margin-bottom: 6px; }
-    .page-subtitle { font-size: 13px; color: #6b7280; margin-bottom: 48px; }
-    h2 { font-size: 15px; font-weight: 600; color: #f0f2f7; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 48px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #1e2535; }
-    h3 { font-size: 13px; font-weight: 600; color: #c8cdd8; margin: 20px 0 8px; }
-    p { font-size: 14px; color: #9ca3af; margin-bottom: 12px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: #6b6b72; text-decoration: none; font-size: 13px; margin-bottom: 48px; transition: color 0.15s; }
+    .back-link:hover { color: #2a2a2e; }
+    .page-title { font-size: 28px; font-weight: 600; color: #0d0d0f; margin-bottom: 6px; }
+    .page-subtitle { font-size: 13px; color: #6b6b72; margin-bottom: 48px; }
+    h2 { font-size: 15px; font-weight: 600; color: #0d0d0f; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 48px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #e2e4e8; }
+    h3 { font-size: 13px; font-weight: 600; color: #2a2a2e; margin: 20px 0 8px; }
+    p { font-size: 14px; color: #4a4a52; margin-bottom: 12px; }
     ul { list-style: none; margin-bottom: 12px; }
-    ul li { font-size: 14px; color: #9ca3af; padding: 4px 0 4px 16px; position: relative; }
-    ul li::before { content: '—'; position: absolute; left: 0; color: #374151; }
-    strong { color: #c8cdd8; font-weight: 500; }
-    a { color: #6366f1; text-decoration: none; }
+    ul li { font-size: 14px; color: #4a4a52; padding: 4px 0 4px 16px; position: relative; }
+    ul li::before { content: '—'; position: absolute; left: 0; color: #9a9aa1; }
+    strong { color: #2a2a2e; font-weight: 500; }
+    a { color: #0d0d0f; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .info-block { background: #131929; border: 1px solid #1e2535; border-radius: 10px; padding: 20px 24px; margin-bottom: 12px; }
+    .info-block { background: #f3f4f6; border: 1px solid #e2e4e8; border-radius: 10px; padding: 20px 24px; margin-bottom: 12px; }
     .info-block p { margin: 0; }
     .info-block p + p { margin-top: 6px; }
-    .tag { display: inline-block; font-size: 11px; font-weight: 500; background: rgba(99,102,241,0.12); color: #818cf8; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
-    .tag-green { background: rgba(34,197,94,0.1); color: #4ade80; }
-    .tag-amber { background: rgba(245,158,11,0.1); color: #fbbf24; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 500; background: rgba(0,0,0,0.06); color: #0d0d0f; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .tag-green { background: rgba(0,0,0,0.05); color: #0d0d0f; }
+    .tag-amber { background: rgba(0,0,0,0.05); color: #6b6b70; }
     .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
     @media (max-width: 640px) { .plan-grid { grid-template-columns: 1fr; } }
-    .plan-card { background: #131929; border: 1px solid #1e2535; border-radius: 10px; padding: 18px 20px; }
-    .plan-card h4 { font-size: 13px; font-weight: 600; color: #f0f2f7; margin-bottom: 4px; }
-    .plan-card .price { font-size: 18px; font-weight: 600; color: #6366f1; margin-bottom: 8px; }
+    .plan-card { background: #f3f4f6; border: 1px solid #e2e4e8; border-radius: 10px; padding: 18px 20px; }
+    .plan-card h4 { font-size: 13px; font-weight: 600; color: #0d0d0f; margin-bottom: 4px; }
+    .plan-card .price { font-size: 18px; font-weight: 600; color: #0d0d0f; margin-bottom: 8px; }
     .plan-card ul { margin: 0; }
     .plan-card ul li { font-size: 12px; padding: 2px 0 2px 14px; }
-    footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid #1e2535; font-size: 12px; color: #374151; text-align: center; }
-    footer a { color: #4b5563; }
-    footer a:hover { color: #9ca3af; text-decoration: none; }
+    footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid #e2e4e8; font-size: 12px; color: #9a9aa1; text-align: center; }
+    footer a { color: #4a4a52; }
+    footer a:hover { color: #4a4a52; text-decoration: none; }
     @media (max-width: 500px) { .plan-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -110,7 +110,7 @@
 
     <!-- 5. Avertissement trading -->
     <h2>5. Avertissement — trading</h2>
-    <p style="border-left:3px solid #ef4444;padding-left:14px;color:#f87171">Le trading de produits financiers comporte un risque élevé de perte en capital. ZeldTrade est un outil de suivi et d'analyse — il ne constitue en aucun cas un conseil financier, une recommandation d'investissement ou un service de gestion de portefeuille.</p>
+    <p style="border-left:3px solid #d11a2a;padding-left:14px;color:#d11a2a">Le trading de produits financiers comporte un risque élevé de perte en capital. ZeldTrade est un outil de suivi et d'analyse — il ne constitue en aucun cas un conseil financier, une recommandation d'investissement ou un service de gestion de portefeuille.</p>
     <p>Aaron Platon ne saurait être tenu responsable des pertes financières résultant de décisions de trading prises sur la base des informations affichées dans l'application.</p>
 
     <!-- 6. Propriété intellectuelle -->
@@ -227,9 +227,9 @@
 
     <!-- 12. Essai gratuit & politique de remboursement -->
     <h2>12. Essai gratuit &amp; politique de remboursement</h2>
-    <p style="border-left:3px solid #22c55e;padding-left:14px;color:#86efac"><strong>7 jours d'essai gratuit.</strong> Toute première souscription à un plan Pro (Funded ou Elite) débute par une période d'essai gratuite de <strong>7 jours</strong>, sans engagement. Vous pouvez résilier à tout moment pendant cette période depuis vos réglages : aucun montant ne sera prélevé.</p>
+    <p style="border-left:3px solid #0d0d0f;padding-left:14px;color:#0d0d0f"><strong>7 jours d'essai gratuit.</strong> Toute première souscription à un plan Pro (Funded ou Elite) débute par une période d'essai gratuite de <strong>7 jours</strong>, sans engagement. Vous pouvez résilier à tout moment pendant cette période depuis vos réglages : aucun montant ne sera prélevé.</p>
     <p>À l'issue de la période d'essai, l'abonnement est facturé automatiquement, puis renouvelé selon la périodicité choisie. <strong>Les sommes versées ne sont pas remboursables.</strong> Vous pouvez toutefois résilier à tout moment en 1 clic pour empêcher le prochain prélèvement ; votre accès reste actif jusqu'à la fin de la période déjà payée (cf. article 10 bis).</p>
-    <p>En cas de prélèvement résultant d'une erreur technique manifeste imputable à ZeldTrade (par exemple un double prélèvement), le montant indûment perçu sera remboursé sur demande à <a href="mailto:zeldtradepro@gmail.com" style="color:#86efac">zeldtradepro@gmail.com</a>.</p>
+    <p>En cas de prélèvement résultant d'une erreur technique manifeste imputable à ZeldTrade (par exemple un double prélèvement), le montant indûment perçu sera remboursé sur demande à <a href="mailto:zeldtradepro@gmail.com" style="color:#0d0d0f">zeldtradepro@gmail.com</a>.</p>
 
     <!-- 13. Facturation -->
     <h2>13. Facturation</h2>

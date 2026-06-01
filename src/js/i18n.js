@@ -394,6 +394,13 @@ const i18n = (() => {
       'auth.register':    'Créer un compte',
       'auth.create.btn':  'Créer le compte',
       'auth.back.login':  '← Retour à la connexion',
+      'auth.ph.username':         'Pseudo',
+      'auth.ph.email':            'Email',
+      'auth.ph.password':         'Mot de passe',
+      'auth.ph.password.confirm': 'Confirmer le mot de passe',
+      'auth.forgot.link':         'Mot de passe oublié ?',
+      'auth.forgot.intro':        'Entre ton email pour recevoir un lien de réinitialisation.',
+      'auth.forgot.btn':          'Envoyer le lien',
       // Modal
       'modal.ai.active':    '● IA active',
       'modal.ai.exhausted': '● IA — quota du jour épuisé',
@@ -1231,6 +1238,13 @@ const i18n = (() => {
       'auth.register':    'Create an account',
       'auth.create.btn':  'Create account',
       'auth.back.login':  '← Back to login',
+      'auth.ph.username':         'Username',
+      'auth.ph.email':            'Email',
+      'auth.ph.password':         'Password',
+      'auth.ph.password.confirm': 'Confirm password',
+      'auth.forgot.link':         'Forgot password?',
+      'auth.forgot.intro':        'Enter your email to receive a reset link.',
+      'auth.forgot.btn':          'Send the link',
       // Modal
       'modal.ai.active':    '● AI active',
       'modal.ai.exhausted': '● AI — daily quota reached',
@@ -1680,6 +1694,11 @@ const i18n = (() => {
   };
 
   function getLang() {
+    // v0.9.422 — honore ?lang= transmis par la landing (et le persiste), puis localStorage.
+    try {
+      const p = new URLSearchParams(location.search).get('lang');
+      if (p === 'en' || p === 'fr') { localStorage.setItem(LANG_KEY, p); return p; }
+    } catch (e) {}
     return localStorage.getItem(LANG_KEY) || 'fr';
   }
 
@@ -1713,6 +1732,7 @@ const i18n = (() => {
   }
 
   function apply() {
+    try { document.documentElement.lang = getLang(); } catch (e) {}
     document.querySelectorAll('[data-i18n]').forEach(el => {
       const key = el.dataset.i18n;
       if (el.dataset.i18nHtml) {

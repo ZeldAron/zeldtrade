@@ -28,8 +28,8 @@
 
     body {
       font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0e1220;
-      color: #c8cdd8;
+      background: #fbfbfc;
+      color: #2a2a2e;
       min-height: 100vh;
       line-height: 1.7;
     }
@@ -44,42 +44,42 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      color: #6b7280;
+      color: #6b6b72;
       text-decoration: none;
       font-size: 13px;
       margin-bottom: 48px;
       transition: color 0.15s;
     }
-    .back-link:hover { color: #c8cdd8; }
+    .back-link:hover { color: #2a2a2e; }
 
     .page-title {
       font-size: 28px;
       font-weight: 600;
-      color: #f0f2f7;
+      color: #0d0d0f;
       margin-bottom: 6px;
     }
 
     .page-subtitle {
       font-size: 13px;
-      color: #6b7280;
+      color: #6b6b72;
       margin-bottom: 48px;
     }
 
     h2 {
       font-size: 15px;
       font-weight: 600;
-      color: #f0f2f7;
+      color: #0d0d0f;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       margin-top: 48px;
       margin-bottom: 16px;
       padding-bottom: 10px;
-      border-bottom: 1px solid #1e2535;
+      border-bottom: 1px solid #e2e4e8;
     }
 
     p {
       font-size: 14px;
-      color: #9ca3af;
+      color: #4a4a52;
       margin-bottom: 12px;
     }
 
@@ -89,7 +89,7 @@
     }
     ul li {
       font-size: 14px;
-      color: #9ca3af;
+      color: #4a4a52;
       padding: 4px 0;
       padding-left: 16px;
       position: relative;
@@ -98,23 +98,23 @@
       content: '—';
       position: absolute;
       left: 0;
-      color: #374151;
+      color: #9a9aa1;
     }
 
     strong {
-      color: #c8cdd8;
+      color: #2a2a2e;
       font-weight: 500;
     }
 
     a {
-      color: #6366f1;
+      color: #0d0d0f;
       text-decoration: none;
     }
     a:hover { text-decoration: underline; }
 
     .info-block {
-      background: #131929;
-      border: 1px solid #1e2535;
+      background: #f3f4f6;
+      border: 1px solid #e2e4e8;
       border-radius: 10px;
       padding: 20px 24px;
       margin-bottom: 12px;
@@ -126,8 +126,8 @@
       display: inline-block;
       font-size: 11px;
       font-weight: 500;
-      background: rgba(99,102,241,0.12);
-      color: #818cf8;
+      background: rgba(0,0,0,0.06);
+      color: #0d0d0f;
       border-radius: 4px;
       padding: 2px 8px;
       margin-bottom: 8px;
@@ -138,9 +138,9 @@
     footer {
       margin-top: 80px;
       padding-top: 24px;
-      border-top: 1px solid #1e2535;
+      border-top: 1px solid #e2e4e8;
       font-size: 12px;
-      color: #374151;
+      color: #9a9aa1;
       text-align: center;
     }
   </style>
@@ -167,12 +167,19 @@
     <!-- 2. Hébergement -->
     <h2>2. Hébergement</h2>
     <div class="info-block">
-      <span class="tag">Hébergeur</span>
+      <span class="tag">Hébergeur principal</span>
+      <p><strong>Société :</strong> Google Ireland Limited (Firebase Hosting)</p>
+      <p><strong>Adresse :</strong> Gordon House, Barrow Street, Dublin 4, Irlande</p>
+      <p><strong>Infrastructure :</strong> serveurs situés dans l'Union européenne (région <code>europe-west1</code>, Belgique)</p>
+      <p><strong>Site :</strong> <a href="https://firebase.google.com" target="_blank" rel="noopener">firebase.google.com</a></p>
+    </div>
+    <div class="info-block">
+      <span class="tag">Hébergeur de secours</span>
       <p><strong>Société :</strong> GitHub, Inc.</p>
       <p><strong>Adresse :</strong> 88 Colin P Kelly Jr Street, San Francisco, CA 94107, États-Unis</p>
       <p><strong>Site :</strong> <a href="https://pages.github.com" target="_blank" rel="noopener">pages.github.com</a></p>
     </div>
-    <p>Le site ZeldTrade est hébergé sur GitHub Pages, un service de publication de sites statiques fourni par GitHub, Inc.</p>
+    <p>Le site ZeldTrade est hébergé en production sur Firebase Hosting (Google Ireland Limited), avec une copie de secours sur GitHub Pages (GitHub, Inc.).</p>
 
     <!-- 3. Propriété intellectuelle -->
     <h2>3. Propriété intellectuelle</h2>
@@ -215,7 +222,7 @@
       <li><strong>Google reCAPTCHA Enterprise</strong> — États-Unis (anti-abus API)</li>
       <li><strong>GitHub Pages (GitHub Inc.)</strong> — États-Unis (hébergement fichiers statiques)</li>
     </ul>
-    <p style="font-size:13px;color:#6b7280">Détails complets (finalités, bases légales, durées de conservation, transferts hors UE) dans la <a href="/privacy">Politique de confidentialité</a>.</p>
+    <p style="font-size:13px;color:#6b6b72">Détails complets (finalités, bases légales, durées de conservation, transferts hors UE) dans la <a href="/privacy">Politique de confidentialité</a>.</p>
 
     <p><strong>Vos droits :</strong> vous disposez d'un droit d'accès, de rectification, d'effacement, de portabilité et d'opposition concernant vos données. Pour exercer ces droits, contactez : <a href="mailto:zeldtradepro@gmail.com">zeldtradepro@gmail.com</a>.</p>
     <p>Vous pouvez également introduire une réclamation auprès de la <strong>CNIL</strong> (<a href="https://www.cnil.fr" target="_blank" rel="noopener">cnil.fr</a>).</p>

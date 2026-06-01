@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
   <meta name="description" content="Journal de trading français pour tous tes comptes : prop firm (Apex, FTMO, Topstep, Lucid, Funding Pips), crypto (Binance, Coinbase) et fonds propres. IA Vision pour analyser tes charts TradingView, multi-comptes, RGPD natif. Made in France.">
-  <meta name="theme-color" content="#06080d">
+  <meta name="theme-color" content="#fbfbfc">
 
   <!-- Favicon -->
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=0.9.406">
@@ -27,7 +27,7 @@
   <meta property="og:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta property="og:description" content="Journal de trading français pour tous tes comptes : prop firm (Apex, FTMO, Topstep, Lucid, Funding Pips), crypto (Binance, Coinbase) et fonds propres. IA Vision, multi-comptes, RGPD natif.">
   <meta property="og:url" content="https://zeldtrade.com/">
-  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.420">
+  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.423">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -35,7 +35,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ZeldTrade · Journal de trading prop firm, crypto et fonds propres">
   <meta name="twitter:description" content="Pour tous tes comptes : prop firm (Apex, FTMO, Topstep, Lucid, FP), crypto et fonds propres. IA Vision, multi-comptes.">
-  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.420">
+  <meta name="twitter:image" content="https://zeldtrade.com/assets/og-image.png?v=0.9.423">
   <meta name="twitter:image:alt" content="ZeldTrade — Journal de trading prop firm, crypto et fonds propres avec IA Vision">
 
   <!-- SEO -->
@@ -43,7 +43,7 @@
   <meta name="author" content="ZeldTrade">
   <meta name="keywords" content="journal trading, prop firm, Apex, FTMO, Topstep, Lucid Trading, Funding Pips, trading journal français, calcul trading, analyse IA trading, drawdown EOD">
 
-  <!-- Sécurité : CSP server-side dans firebase.json (plus stricte). v0.9.397 : Google Fonts autorisées
+  <!-- Sécurité : CSP server-side dans firebase.json (plus stricte). v0.9.423 : Google Fonts autorisées
        (style fonts.googleapis.com + font fonts.gstatic.com) pour la landing cinématique. -->
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
@@ -115,7 +115,7 @@
   }
   </script>
 
-  <link rel="stylesheet" href="css/landing.css?v=0.9.420">
+  <link rel="stylesheet" href="css/landing.css?v=0.9.423">
 </head>
 <body>
 
@@ -137,7 +137,7 @@
     <div class="statusbar-inner">
       <span><span class="pulse"></span>&nbsp;SYSTEM&nbsp;<span class="ok">ONLINE</span></span>
       <span class="sep hide-sm">│</span>
-      <span class="hide-sm" id="sbVersion">v0.9.397</span>
+      <span class="hide-sm" id="sbVersion">v0.9.423</span>
       <span class="sep hide-sm">│</span>
       <span id="sbClock">EU-WEST-1 · --:--:-- UTC</span>
       <span style="margin-left:auto" class="ok" data-i18n="sb.launch">EN LIGNE · MADE IN FRANCE 🇫🇷</span>
@@ -167,7 +167,7 @@
   <!-- ─── Promo bar ───────────────────────────────────────────── -->
   <div class="promo-bar">
     <span data-i18n="promo.text">🔥 Lancement : −40% sur Funded &amp; Elite + 1 semaine d'essai</span>
-    <button class="promo-code" id="promoCode" type="button" data-code="ZELD40" title="Copier le code">ZELD40 <span class="copy" data-i18n="promo.copy">copier</span></button>
+    <button class="promo-code" id="promoCode" type="button" data-code="ZELD40" title="Copier le code" aria-label="Copier le code promo ZELD40" data-i18n-aria="promo.aria" aria-live="polite">ZELD40 <span class="copy" data-i18n="promo.copy">copier</span></button>
   </div>
 
   <!-- ─── Hero ────────────────────────────────────────────────── -->
@@ -246,7 +246,7 @@
   <!-- ─── Split avant/après ───────────────────────────────────── -->
   <section class="block container" id="split">
     <div class="reveal">
-      <div class="section-eyebrow">// AVANT / APRÈS</div>
+      <div class="section-eyebrow" data-i18n="split.eyebrow">// AVANT / APRÈS</div>
       <h2 class="section-title" data-i18n-html="split.title">Deux trajectoires de compte funded. <span class="accent">Une seule survit.</span></h2>
       <p class="section-sub" style="margin-bottom:56px" data-i18n="split.sub">Le trailing drawdown EOD ne pardonne aucune approximation. La différence n'est pas dans ton edge — elle est dans ton tracking.</p>
     </div>
@@ -305,25 +305,25 @@
     </div>
     <div class="reveal" data-delay="120">
       <div class="firms-grid">
-        <div class="firm-card" tabindex="0">
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Apex Trader Funding" data-i18n-aria="firms.rules.apex">
           <div class="firm-logo">APEX</div><div class="firm-name">Apex Trader Funding</div>
-          <div class="firm-popover"><h4>Apex Trader Funding</h4><ul><li><span>Trailing</span><span>EOD · $2,5K–$7,5K</span></li><li><span>Daily loss</span><span data-i18n="firms.none">Aucune</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>1</span></li><li><span>Profit split</span><span data-i18n="firms.apex.split">100% jusqu'à $25k</span></li></ul></div>
+          <div class="firm-popover"><h4>Apex Trader Funding</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span>EOD · $2,5K–$7,5K</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span data-i18n="firms.none">Aucune</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>1</span></li><li><span data-i18n="firms.split">Profit split</span><span data-i18n="firms.apex.split">100% jusqu'à $25k</span></li></ul></div>
         </div>
-        <div class="firm-card" tabindex="0">
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles FTMO Challenge" data-i18n-aria="firms.rules.ftmo">
           <div class="firm-logo">FTMO</div><div class="firm-name">FTMO Challenge</div>
-          <div class="firm-popover"><h4>FTMO Challenge</h4><ul><li><span>Trailing</span><span data-i18n="firms.static">Statique · 10%</span></li><li><span>Daily loss</span><span>5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>4</span></li><li><span>Profit split</span><span>80% / 90%</span></li></ul></div>
+          <div class="firm-popover"><h4>FTMO Challenge</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span data-i18n="firms.static">Statique · 10%</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span>5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>4</span></li><li><span data-i18n="firms.split">Profit split</span><span>80% / 90%</span></li></ul></div>
         </div>
-        <div class="firm-card" tabindex="0">
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Topstep Combine" data-i18n-aria="firms.rules.tps">
           <div class="firm-logo">TPS</div><div class="firm-name">Topstep Combine</div>
-          <div class="firm-popover"><h4>Topstep Combine</h4><ul><li><span>Trailing</span><span>EOD</span></li><li><span>Daily loss</span><span data-i18n="firms.yes">Oui</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>5</span></li><li><span>Profit split</span><span>100% / 90%</span></li></ul></div>
+          <div class="firm-popover"><h4>Topstep Combine</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span>EOD</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span data-i18n="firms.yes">Oui</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>5</span></li><li><span data-i18n="firms.split">Profit split</span><span>100% / 90%</span></li></ul></div>
         </div>
-        <div class="firm-card" tabindex="0">
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Lucid Trading" data-i18n-aria="firms.rules.lcd">
           <div class="firm-logo">LCD</div><div class="firm-name">Lucid Trading</div>
-          <div class="firm-popover"><h4>Lucid Trading</h4><ul><li><span>Trailing</span><span>EOD</span></li><li><span>Daily loss</span><span>3–5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>3</span></li><li><span>Profit split</span><span data-i18n="firms.upto90">Jusqu'à 90%</span></li></ul></div>
+          <div class="firm-popover"><h4>Lucid Trading</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span>EOD</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span>3–5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>3</span></li><li><span data-i18n="firms.split">Profit split</span><span data-i18n="firms.upto90">Jusqu'à 90%</span></li></ul></div>
         </div>
-        <div class="firm-card" tabindex="0">
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Funding Pips" data-i18n-aria="firms.rules.fnp">
           <div class="firm-logo">FNP</div><div class="firm-name">Funding Pips</div>
-          <div class="firm-popover"><h4>Funding Pips</h4><ul><li><span>Trailing</span><span data-i18n="firms.staticshort">Statique</span></li><li><span>Daily loss</span><span>4–5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>1</span></li><li><span>Profit split</span><span>80%</span></li></ul></div>
+          <div class="firm-popover"><h4>Funding Pips</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span data-i18n="firms.staticshort">Statique</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span>4–5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>1</span></li><li><span data-i18n="firms.split">Profit split</span><span>80%</span></li></ul></div>
         </div>
       </div>
       <p class="firms-disclaimer" data-i18n="firms.disclaimer">Les marques mentionnées (Apex Trader Funding, FTMO, Topstep, Lucid Trading, Funding Pips) appartiennent à leurs propriétaires respectifs. ZeldTrade n'est ni affilié, ni sponsorisé, ni approuvé par ces sociétés.</p>
@@ -340,18 +340,18 @@
     <div class="reveal" data-delay="120">
       <div class="demo">
         <aside class="demo-sidebar" id="demoSidebar">
-          <div class="demo-sb-section">COMPTES</div>
+          <div class="demo-sb-section" data-i18n="demo.sb.accounts">COMPTES</div>
           <div class="demo-sb-item" data-acc="0"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Apex 150K · funded</span><span class="pnl green">+12.4%</span></div>
           <div class="demo-sb-item" data-acc="1"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">FTMO 100K · phase 1</span><span class="pnl green">+6.8%</span></div>
           <div class="demo-sb-item" data-acc="2"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Topstep 50K · combine</span><span class="pnl red">−2.1%</span></div>
           <div class="demo-sb-item" data-acc="3"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Binance · perp</span><span class="pnl green">+18.2%</span></div>
-          <div class="demo-sb-section">JOURNAL</div>
-          <div class="demo-sb-item"><span class="dot"></span> Aujourd'hui · 3 trades</div>
-          <div class="demo-sb-item"><span class="dot"></span> Semaine · 14 trades</div>
-          <div class="demo-sb-item"><span class="dot"></span> Archive PDF</div>
-          <div class="demo-sb-section">OUTILS</div>
-          <div class="demo-sb-item"><span class="dot"></span> Calc. EOD</div>
-          <div class="demo-sb-item"><span class="dot"></span> Import TradingView</div>
+          <div class="demo-sb-section" data-i18n="demo.sb.journal">JOURNAL</div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.today">Aujourd'hui · 3 trades</span></div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.week">Semaine · 14 trades</span></div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.archive">Archive PDF</span></div>
+          <div class="demo-sb-section" data-i18n="demo.sb.tools">OUTILS</div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.calc">Calc. EOD</span></div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.import">Import TradingView</span></div>
         </aside>
         <main class="demo-main">
           <div class="demo-toolbar">
@@ -416,10 +416,10 @@
             </div>
             <div class="calc-firm-note" id="cFirmNote">→ trailing EOD jusqu'au profit target</div>
           </div>
-          <div class="calc-field"><label><span data-i18n="calc.size">Taille compte initial</span> <span class="value" id="cSizeVal">$150,000</span></label><input type="range" id="cSize" min="25000" max="300000" step="5000" value="150000"></div>
-          <div class="calc-field"><label><span data-i18n="calc.hwm">Equity au plus haut (HWM)</span> <span class="value" id="cHwmVal">$155,000</span></label><input type="range" id="cHwm" min="25000" max="330000" step="500" value="155000"></div>
-          <div class="calc-field"><label><span data-i18n="calc.openpnl">P&amp;L ouvert</span> <span class="value" id="cPnlVal" style="color:var(--green)">+$420</span></label><input type="range" id="cPnl" min="-2000" max="2000" step="50" value="420"></div>
-          <div class="calc-field"><label><span data-i18n="calc.risk">Risque trade prévu</span> <span class="value" id="cRiskVal">$500</span></label><input type="range" id="cRisk" min="100" max="3000" step="50" value="500"></div>
+          <div class="calc-field"><label for="cSize"><span data-i18n="calc.size">Taille compte initial</span> <span class="value" id="cSizeVal">$150,000</span></label><input type="range" id="cSize" min="25000" max="300000" step="5000" value="150000" aria-label="Taille compte initial" data-i18n-aria="calc.size" aria-valuemin="25000" aria-valuemax="300000" aria-valuenow="150000"></div>
+          <div class="calc-field"><label for="cHwm"><span data-i18n="calc.hwm">Equity au plus haut (HWM)</span> <span class="value" id="cHwmVal">$155,000</span></label><input type="range" id="cHwm" min="25000" max="330000" step="500" value="155000" aria-label="Equity au plus haut (HWM)" data-i18n-aria="calc.hwm" aria-valuemin="25000" aria-valuemax="330000" aria-valuenow="155000"></div>
+          <div class="calc-field"><label for="cPnl"><span data-i18n="calc.openpnl">P&amp;L ouvert</span> <span class="value" id="cPnlVal" style="color:var(--green)">+$420</span></label><input type="range" id="cPnl" min="-2000" max="2000" step="50" value="420" aria-label="P&amp;L ouvert" data-i18n-aria="calc.openpnl" aria-valuemin="-2000" aria-valuemax="2000" aria-valuenow="420"></div>
+          <div class="calc-field"><label for="cRisk"><span data-i18n="calc.risk">Risque trade prévu</span> <span class="value" id="cRiskVal">$500</span></label><input type="range" id="cRisk" min="100" max="3000" step="50" value="500" aria-label="Risque trade prévu" data-i18n-aria="calc.risk" aria-valuemin="100" aria-valuemax="3000" aria-valuenow="500"></div>
         </div>
         <div class="calc-output">
           <div class="calc-output-status safe" id="cStatus"><i></i> <span data-i18n="calc.safe">SAFE · trade autorisé</span></div>
@@ -477,12 +477,12 @@
     </div>
     <div class="reveal" data-delay="100">
       <div class="faq-list" id="faqList">
-        <div class="faq-item open"><button class="faq-q"><span data-i18n="faq.q1">C'est quoi le « EOD trailing drawdown » et pourquoi c'est piégeux ?</span><span class="faq-icon">+</span></button><div class="faq-a"><div class="faq-a-inner" data-i18n="faq.a1">Sur Apex (et d'autres firms) le drawdown se calcule en fin de journée, pas en intraday. Ton equity ouvert compte. Un trade gagnant non clôturé peut faire monter ton high watermark — et baisser ton trailing floor d'autant. La majorité des breach viennent de là : tu pensais avoir $3 000 de buffer, en réalité $400.</div></div></div>
-        <div class="faq-item"><button class="faq-q"><span data-i18n="faq.q2">L'IA Vision lit vraiment mes screens TradingView ?</span><span class="faq-icon">+</span></button><div class="faq-a"><div class="faq-a-inner" data-i18n="faq.a2">Oui — colle l'image (Ctrl+V) ou dépose-la, le moteur extrait entry, SL, TP, taille et symbole en quelques secondes. Tu valides ou corriges en un clic. Marche sur tes captures TradingView, MT4/MT5, crypto…</div></div></div>
-        <div class="faq-item"><button class="faq-q"><span data-i18n="faq.q3">Je peux grouper plusieurs comptes en un seul trade ?</span><span class="faq-icon">+</span></button><div class="faq-a"><div class="faq-a-inner" data-i18n="faq.a3">Oui — tu écris une fois, ZeldTrade dispatche selon la taille de chaque compte (ratios persos possibles). Prop firm, crypto ou fonds propres : tout se synchronise.</div></div></div>
-        <div class="faq-item"><button class="faq-q"><span data-i18n="faq.q4">Ça marche aussi pour la crypto et les fonds propres ?</span><span class="faq-icon">+</span></button><div class="faq-a"><div class="faq-a-inner" data-i18n="faq.a4">Oui. ZeldTrade gère prop firm, comptes crypto (Binance, Coinbase) et fonds propres dans un seul journal, avec les bons calculs pour chaque type de compte.</div></div></div>
-        <div class="faq-item"><button class="faq-q"><span data-i18n="faq.q5">Pourquoi c'est si peu cher ?</span><span class="faq-icon">+</span></button><div class="faq-a"><div class="faq-a-inner" data-i18n="faq.a5">Projet indé, déjà développé. Pas de levée, pas de budget marketing. Le prix couvre l'infra (l'IA Vision tape sur des APIs payantes) et un revenu raisonnable.</div></div></div>
-        <div class="faq-item"><button class="faq-q"><span data-i18n="faq.q6">Où sont mes données ?</span><span class="faq-icon">+</span></button><div class="faq-a"><div class="faq-a-inner" data-i18n-html="faq.a6">Hébergées en Europe, RGPD-natif. Export JSON intégral et suppression du compte en un clic. Détails : <a href="/privacy">confidentialité</a> et <a href="/legal">mentions légales</a>.</div></div></div>
+        <div class="faq-item open"><button class="faq-q" aria-expanded="true" aria-controls="faq-a1"><span data-i18n="faq.q1">C'est quoi le « EOD trailing drawdown » et pourquoi c'est piégeux ?</span><span class="faq-icon">+</span></button><div class="faq-a" id="faq-a1"><div class="faq-a-inner" data-i18n="faq.a1">Sur Apex (et d'autres firms) le drawdown se calcule en fin de journée, pas en intraday. Ton equity ouvert compte. Un trade gagnant non clôturé peut faire monter ton high watermark — et baisser ton trailing floor d'autant. La majorité des breach viennent de là : tu pensais avoir $3 000 de buffer, en réalité $400.</div></div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false" aria-controls="faq-a2"><span data-i18n="faq.q2">L'IA Vision lit vraiment mes screens TradingView ?</span><span class="faq-icon">+</span></button><div class="faq-a" id="faq-a2"><div class="faq-a-inner" data-i18n="faq.a2">Oui — colle l'image (Ctrl+V) ou dépose-la, le moteur extrait entry, SL, TP, taille et symbole en quelques secondes. Tu valides ou corriges en un clic. Marche sur tes captures TradingView, MT4/MT5, crypto…</div></div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false" aria-controls="faq-a3"><span data-i18n="faq.q3">Je peux grouper plusieurs comptes en un seul trade ?</span><span class="faq-icon">+</span></button><div class="faq-a" id="faq-a3"><div class="faq-a-inner" data-i18n="faq.a3">Oui — tu écris une fois, ZeldTrade dispatche selon la taille de chaque compte (ratios persos possibles). Prop firm, crypto ou fonds propres : tout se synchronise.</div></div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false" aria-controls="faq-a4"><span data-i18n="faq.q4">Ça marche aussi pour la crypto et les fonds propres ?</span><span class="faq-icon">+</span></button><div class="faq-a" id="faq-a4"><div class="faq-a-inner" data-i18n="faq.a4">Oui. ZeldTrade gère prop firm, comptes crypto (Binance, Coinbase) et fonds propres dans un seul journal, avec les bons calculs pour chaque type de compte.</div></div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false" aria-controls="faq-a5"><span data-i18n="faq.q5">Pourquoi c'est si peu cher ?</span><span class="faq-icon">+</span></button><div class="faq-a" id="faq-a5"><div class="faq-a-inner" data-i18n="faq.a5">Projet indé, déjà développé. Pas de levée, pas de budget marketing. Le prix couvre l'infra (l'IA Vision tape sur des APIs payantes) et un revenu raisonnable.</div></div></div>
+        <div class="faq-item"><button class="faq-q" aria-expanded="false" aria-controls="faq-a6"><span data-i18n="faq.q6">Où sont mes données ?</span><span class="faq-icon">+</span></button><div class="faq-a" id="faq-a6"><div class="faq-a-inner" data-i18n-html="faq.a6">Hébergées en Europe, RGPD-natif. Export JSON intégral et suppression du compte en un clic. Détails : <a href="/privacy">confidentialité</a> et <a href="/legal">mentions légales</a>.</div></div></div>
       </div>
     </div>
   </section>
@@ -495,14 +495,21 @@
       <p class="section-sub" style="margin-bottom:32px" data-i18n="pricing.sub">Trader gratuit à vie. Aucune carte requise pour démarrer. Si tu pars, tu emportes tes données.</p>
     </div>
     <div class="reveal" data-delay="80" style="display:flex;flex-direction:column;align-items:center">
-      <div class="pricing-toggle" id="pricingToggle">
-        <button class="active" data-lp-billing="monthly" data-i18n="pricing.monthly">Mensuel</button>
-        <button data-lp-billing="yearly" data-i18n-html="pricing.yearly">Annuel <span class="save">−2 mois</span></button>
+      <div class="pricing-toggles">
+        <div class="pricing-toggle" id="pricingToggle" style="margin:0">
+          <button class="active" data-lp-billing="monthly" data-i18n="pricing.monthly">Mensuel</button>
+          <button data-lp-billing="yearly" data-i18n-html="pricing.yearly">Annuel <span class="save">−2 mois</span></button>
+        </div>
+        <div class="pricing-toggle" id="currencyToggle" style="margin:0">
+          <button class="active" type="button" data-lp-currency="eur">€&nbsp;EUR</button>
+          <button type="button" data-lp-currency="usd">$&nbsp;USD</button>
+        </div>
       </div>
+      <div id="currencyNote" class="pricing-currency-note" style="visibility:hidden" data-i18n="pricing.curnote">Affichage indicatif · facturé en euros</div>
       <div class="pricing-grid" style="width:100%">
         <div class="price-card">
           <div class="price-name">[TRADER]</div>
-          <div class="price-amount">0 €<span class="unit" data-i18n="pricing.forever">/ pour toujours</span></div>
+          <div class="price-amount"><span class="amt" data-eur="0">0 €</span><span class="unit" data-i18n="pricing.forever">/ pour toujours</span></div>
           <p class="price-desc" data-i18n="pricing.trader.desc">Pour découvrir sans engagement.</p>
           <ul class="price-features">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span data-i18n="pricing.trader.f1">1 compte (prop / crypto / perso)</span></li>
@@ -514,8 +521,8 @@
         </div>
         <div class="price-card featured">
           <div class="price-name">[FUNDED]</div>
-          <div class="price-amount"><span data-lp-price-monthly>8,99 €<span class="unit" data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none">89 €<span class="unit" data-i18n="pricing.year">/ an</span></span></div>
-          <div class="price-old"><span data-lp-price-monthly>14,99 € / mois</span><span data-lp-price-yearly style="display:none">149 € / an</span></div>
+          <div class="price-amount"><span data-lp-price-monthly><span class="amt" data-eur="8.99">8,99 €</span><span class="unit" data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="89">89 €</span><span class="unit" data-i18n="pricing.year">/ an</span></span></div>
+          <div class="price-old"><span data-lp-price-monthly><span class="amt" data-eur="14.99">14,99 €</span> / mois</span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="149">149 €</span> / an</span></div>
           <div class="price-discount" data-i18n="pricing.discount">LANCEMENT −40% · CODE ZELD40 · essai 7 jours</div>
           <p class="price-desc" data-i18n="pricing.funded.desc">Pour le trader prop firm sérieux.</p>
           <ul class="price-features">
@@ -529,8 +536,8 @@
         </div>
         <div class="price-card">
           <div class="price-name">[ELITE]</div>
-          <div class="price-amount"><span data-lp-price-monthly>17,99 €<span class="unit" data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none">179 €<span class="unit" data-i18n="pricing.year">/ an</span></span></div>
-          <div class="price-old"><span data-lp-price-monthly>29,99 € / mois</span><span data-lp-price-yearly style="display:none">299 € / an</span></div>
+          <div class="price-amount"><span data-lp-price-monthly><span class="amt" data-eur="17.99">17,99 €</span><span class="unit" data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="179">179 €</span><span class="unit" data-i18n="pricing.year">/ an</span></span></div>
+          <div class="price-old"><span data-lp-price-monthly><span class="amt" data-eur="29.99">29,99 €</span> / mois</span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="299">299 €</span> / an</span></div>
           <div class="price-discount" data-i18n="pricing.discount">LANCEMENT −40% · CODE ZELD40 · essai 7 jours</div>
           <p class="price-desc" data-i18n="pricing.elite.desc">Multi-comptes ou coachs.</p>
           <ul class="price-features">
@@ -618,7 +625,7 @@
       </div>
       <div class="footer-bottom">
         <div data-i18n="footer.copy">© 2026 ZELDTRADE · INDÉPENDANT · HÉBERGÉ EN EUROPE</div>
-        <div id="footerVersion">v0.9.397 · MADE IN FRANCE 🇫🇷</div>
+        <div id="footerVersion">v0.9.423 · MADE IN FRANCE 🇫🇷</div>
       </div>
     </div>
   </footer>
@@ -626,15 +633,15 @@
   <!-- Cookie banner (RGPD) -->
   <div id="cookieBanner" style="display:none;position:fixed;bottom:16px;left:16px;right:16px;max-width:560px;margin:0 auto;z-index:9000;background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;padding:16px 18px;align-items:center;gap:14px;box-shadow:0 20px 60px -20px rgba(0,0,0,0.7);font-size:13px;color:var(--fg-dim)">
     <span style="flex:1" data-i18n="cookie.text">Cookies strictement nécessaires uniquement (pas de tracking publicitaire).</span>
-    <button id="cookieAcceptBtn" class="btn btn-primary btn-sm" data-i18n="cookie.ok">OK</button>
+    <button id="cookieAcceptBtn" class="btn btn-primary btn-sm" data-i18n="cookie.ok">J'ai compris</button>
   </div>
 
   <!-- Firebase (contact form anonyme + stats publiques) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
-  <script src="js/landing-contact.js?v=0.9.420"></script>
-  <script src="js/landing-app.js?v=0.9.420" defer></script>
-  <script src="js/landing-i18n.js?v=0.9.420" defer></script>
+  <script src="js/landing-contact.js?v=0.9.423"></script>
+  <script src="js/landing-app.js?v=0.9.423" defer></script>
+  <script src="js/landing-i18n.js?v=0.9.423" defer></script>
 
 </body>
 </html>

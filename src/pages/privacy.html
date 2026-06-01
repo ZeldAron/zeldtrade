@@ -25,32 +25,32 @@
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: #0e1220; color: #c8cdd8; min-height: 100vh; line-height: 1.7; }
+    body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: #fbfbfc; color: #2a2a2e; min-height: 100vh; line-height: 1.7; }
     .page-wrap { max-width: 760px; margin: 0 auto; padding: 60px 24px 100px; }
-    .back-link { display: inline-flex; align-items: center; gap: 6px; color: #6b7280; text-decoration: none; font-size: 13px; margin-bottom: 48px; transition: color 0.15s; }
-    .back-link:hover { color: #c8cdd8; }
-    .page-title { font-size: 28px; font-weight: 600; color: #f0f2f7; margin-bottom: 6px; }
-    .page-subtitle { font-size: 13px; color: #6b7280; margin-bottom: 48px; }
-    h2 { font-size: 15px; font-weight: 600; color: #f0f2f7; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 48px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #1e2535; }
-    p { font-size: 14px; color: #9ca3af; margin-bottom: 12px; }
+    .back-link { display: inline-flex; align-items: center; gap: 6px; color: #6b6b72; text-decoration: none; font-size: 13px; margin-bottom: 48px; transition: color 0.15s; }
+    .back-link:hover { color: #2a2a2e; }
+    .page-title { font-size: 28px; font-weight: 600; color: #0d0d0f; margin-bottom: 6px; }
+    .page-subtitle { font-size: 13px; color: #6b6b72; margin-bottom: 48px; }
+    h2 { font-size: 15px; font-weight: 600; color: #0d0d0f; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 48px; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid #e2e4e8; }
+    p { font-size: 14px; color: #4a4a52; margin-bottom: 12px; }
     ul { list-style: none; margin-bottom: 12px; }
-    ul li { font-size: 14px; color: #9ca3af; padding: 4px 0 4px 16px; position: relative; }
-    ul li::before { content: '—'; position: absolute; left: 0; color: #374151; }
-    strong { color: #c8cdd8; font-weight: 500; }
-    a { color: #6366f1; text-decoration: none; }
+    ul li { font-size: 14px; color: #4a4a52; padding: 4px 0 4px 16px; position: relative; }
+    ul li::before { content: '—'; position: absolute; left: 0; color: #9a9aa1; }
+    strong { color: #2a2a2e; font-weight: 500; }
+    a { color: #0d0d0f; text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .info-block { background: #131929; border: 1px solid #1e2535; border-radius: 10px; padding: 20px 24px; margin-bottom: 12px; }
+    .info-block { background: #f3f4f6; border: 1px solid #e2e4e8; border-radius: 10px; padding: 20px 24px; margin-bottom: 12px; }
     .info-block p { margin: 0; }
     .info-block p + p { margin-top: 6px; }
-    .tag { display: inline-block; font-size: 11px; font-weight: 500; background: rgba(99,102,241,0.12); color: #818cf8; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
-    .tag-future { background: rgba(212,153,34,0.12); color: #fbbf24; }
+    .tag { display: inline-block; font-size: 11px; font-weight: 500; background: rgba(0,0,0,0.06); color: #0d0d0f; border-radius: 4px; padding: 2px 8px; margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .tag-future { background: rgba(0,0,0,0.05); color: #6b6b70; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 16px; }
-    th { text-align: left; color: #6b7280; font-weight: 500; padding: 8px 12px; border-bottom: 1px solid #1e2535; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
-    td { padding: 10px 12px; border-bottom: 1px solid #131929; color: #9ca3af; vertical-align: top; }
+    th { text-align: left; color: #6b6b72; font-weight: 500; padding: 8px 12px; border-bottom: 1px solid #e2e4e8; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; color: #4a4a52; vertical-align: top; }
     tr:last-child td { border-bottom: none; }
-    footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid #1e2535; font-size: 12px; color: #374151; text-align: center; }
-    footer a { color: #4b5563; }
-    footer a:hover { color: #9ca3af; text-decoration: none; }
+    footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid #e2e4e8; font-size: 12px; color: #9a9aa1; text-align: center; }
+    footer a { color: #4a4a52; }
+    footer a:hover { color: #4a4a52; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -104,13 +104,13 @@
           <td>Haché via Firebase (jamais stocké en clair), supprimé à la fermeture du compte</td>
         </tr>
         <tr>
-          <td><strong>Données de trading</strong><br><span style="font-size:12px;color:#6b7280">(trades, comptes prop firm, groupes, notes, setups)</span></td>
+          <td><strong>Données de trading</strong><br><span style="font-size:12px;color:#6b6b72">(trades, comptes prop firm, groupes, notes, setups)</span></td>
           <td>Fourniture du service de journal</td>
           <td>Exécution du contrat</td>
           <td>Durée du compte + 30 jours (soft-delete avant suppression définitive)</td>
         </tr>
         <tr>
-          <td><strong>Captures d'écran de charts</strong><br><span style="font-size:12px;color:#6b7280">(optionnel)</span></td>
+          <td><strong>Captures d'écran de charts</strong><br><span style="font-size:12px;color:#6b6b72">(optionnel)</span></td>
           <td>Annexer un visuel au trade ; analyse par IA (optionnel)</td>
           <td>Exécution du contrat (stockage) + Consentement (envoi à l'IA)</td>
           <td>Conservées dans votre espace de stockage tant que le compte existe ; supprimées à la fermeture du compte</td>
@@ -122,19 +122,19 @@
           <td>Durée du compte + 30 jours</td>
         </tr>
         <tr>
-          <td><strong>Logs d'audit administrateur</strong><br><span style="font-size:12px;color:#6b7280">(actions admin : génération de codes Pro, suppression de compte, etc.)</span></td>
+          <td><strong>Logs d'audit administrateur</strong><br><span style="font-size:12px;color:#6b6b72">(actions admin : génération de codes Pro, suppression de compte, etc.)</span></td>
           <td>Sécurité, traçabilité, prévention des abus</td>
           <td>Intérêt légitime (art. 6.1.f RGPD)</td>
           <td><strong>1 an</strong> (suppression automatique via TTL Firestore)</td>
         </tr>
         <tr>
-          <td><strong>Données d'usage interne</strong><br><span style="font-size:12px;color:#6b7280">(pages visitées et actions clés dans l'application — création de trade/compte, consultation des offres, analyse IA — associées à votre identifiant de compte, <strong>sans cookie</strong> ni traceur publicitaire)</span></td>
+          <td><strong>Données d'usage interne</strong><br><span style="font-size:12px;color:#6b6b72">(pages visitées et actions clés dans l'application — création de trade/compte, consultation des offres, analyse IA — associées à votre identifiant de compte, <strong>sans cookie</strong> ni traceur publicitaire)</span></td>
           <td>Mesure d'audience interne et amélioration du produit</td>
           <td>Intérêt légitime (art. 6.1.f RGPD)</td>
           <td><strong>13 mois</strong> maximum (recommandation CNIL)</td>
         </tr>
         <tr>
-          <td><strong>Logs techniques Firebase</strong><br><span style="font-size:12px;color:#6b7280">(IP, user-agent, dates de connexion)</span></td>
+          <td><strong>Logs techniques Firebase</strong><br><span style="font-size:12px;color:#6b6b72">(IP, user-agent, dates de connexion)</span></td>
           <td>Sécurité, détection de fraude, conformité légale</td>
           <td>Intérêt légitime / Obligation légale</td>
           <td>Selon politique Google Firebase (typiquement 90 jours)</td>
@@ -153,86 +153,86 @@
     <div class="info-block">
       <span class="tag">Authentification & base de données (region europe-west1)</span>
       <p><strong>Firebase Authentication & Cloud Firestore — Google LLC</strong> (Belgique pour Firestore, États-Unis pour Auth)</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/support/privacy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Données : email, pseudo, mot de passe haché, trades, comptes, paramètres. Hébergement en Europe (region <code>europe-west1</code>) pour Firestore. Transferts US couverts par le Data Privacy Framework EU-US.</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/support/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Données : email, pseudo, mot de passe haché, trades, comptes, paramètres. Hébergement en Europe (region <code>europe-west1</code>) pour Firestore. Transferts US couverts par le Data Privacy Framework EU-US.</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Stockage des captures d'écran (region europe-west1)</span>
       <p><strong>Cloud Storage for Firebase — Google LLC</strong> (Belgique)</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://cloud.google.com/storage/docs/data-locations" target="_blank" rel="noopener">cloud.google.com/storage/docs</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Données : images compressées (~600 KB max) des charts associées à vos trades. Stockées dans <code>users/{votre-uid}/screenshots/</code>, accessibles uniquement par vous via règles Firebase Storage strictes.</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://cloud.google.com/storage/docs/data-locations" target="_blank" rel="noopener">cloud.google.com/storage/docs</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Données : images compressées (~600 KB max) des charts associées à vos trades. Stockées dans <code>users/{votre-uid}/screenshots/</code>, accessibles uniquement par vous via règles Firebase Storage strictes.</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Cloud Functions (region europe-west1)</span>
       <p><strong>Cloud Functions Gen 2 — Google LLC</strong> (Belgique)</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://cloud.google.com/functions" target="_blank" rel="noopener">cloud.google.com/functions</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Exécute les fonctions serveur (analyse IA, envoi de notifications, gestion des abonnements). Aucune donnée persistée côté Cloud Functions.</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://cloud.google.com/functions" target="_blank" rel="noopener">cloud.google.com/functions</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Exécute les fonctions serveur (analyse IA, envoi de notifications, gestion des abonnements). Aucune donnée persistée côté Cloud Functions.</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Analyse IA des charts (optionnel)</span>
       <p><strong>Groq, Inc.</strong> — États-Unis (modèle utilisé pour tous les plans, par défaut)</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://groq.com/privacy-policy" target="_blank" rel="noopener">groq.com/privacy-policy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Données envoyées : capture d'écran du chart (encodée base64), texte du prompt. Selon la politique Groq, les requêtes API ne sont pas conservées pour entraîner leurs modèles. Cette analyse est <strong>volontaire</strong> de votre part (vous cliquez explicitement sur "Analyser") — base légale : consentement (art. 6.1.a RGPD).</p>
-      <p style="margin-top:10px;padding-top:10px;border-top:1px solid #1F2937">
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://groq.com/privacy-policy" target="_blank" rel="noopener">groq.com/privacy-policy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Données envoyées : capture d'écran du chart (encodée base64), texte du prompt. Selon la politique Groq, les requêtes API ne sont pas conservées pour entraîner leurs modèles. Cette analyse est <strong>volontaire</strong> de votre part (vous cliquez explicitement sur "Analyser") — base légale : consentement (art. 6.1.a RGPD).</p>
+      <p style="margin-top:10px;padding-top:10px;border-top:1px solid #1f2024">
         <strong>Anthropic PBC</strong> — États-Unis (modèle Claude Sonnet 4.6, utilisé en <em>fallback automatique</em> pour les plans Funded et Elite quand l'analyse Groq retourne un résultat insuffisant)
       </p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener">anthropic.com/privacy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Données envoyées : mêmes données que Groq (capture d'écran encodée base64 + prompt). Selon la politique Anthropic, les requêtes API ne sont pas utilisées pour entraîner leurs modèles. Le déclenchement du fallback Claude est <strong>automatique côté serveur</strong> uniquement si la première analyse Groq échoue (moins de 3 niveaux détectés, ou ratio risk/reward aberrant). Le plan <strong>Trader</strong> n'utilise jamais Claude — uniquement Groq. Base légale : consentement (art. 6.1.a RGPD), implicite via le clic "Analyser" et explicite via les CGU.</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://www.anthropic.com/privacy" target="_blank" rel="noopener">anthropic.com/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Données envoyées : mêmes données que Groq (capture d'écran encodée base64 + prompt). Selon la politique Anthropic, les requêtes API ne sont pas utilisées pour entraîner leurs modèles. Le déclenchement du fallback Claude est <strong>automatique côté serveur</strong> uniquement si la première analyse Groq échoue (moins de 3 niveaux détectés, ou ratio risk/reward aberrant). Le plan <strong>Trader</strong> n'utilise jamais Claude — uniquement Groq. Base légale : consentement (art. 6.1.a RGPD), implicite via le clic "Analyser" et explicite via les CGU.</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Notifications internes (formulaire de contact + inscriptions)</span>
       <p><strong>Discord — Discord Inc.</strong> — États-Unis</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://discord.com/privacy" target="_blank" rel="noopener">discord.com/privacy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Données reçues via webhooks dans des canaux privés du serveur <em>ZeldTrade HQ</em> :</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://discord.com/privacy" target="_blank" rel="noopener">discord.com/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Données reçues via webhooks dans des canaux privés du serveur <em>ZeldTrade HQ</em> :</p>
       <ul style="margin-left:0;margin-top:6px;font-size:13px">
         <li><strong>Canal privé #support-tickets</strong> (visible par l'équipe uniquement) : pseudo, message du formulaire de contact, et soit l'identifiant utilisateur (UID) si vous êtes connecté à l'application, soit l'adresse IP (bucket anti-spam) si vous nous contactez via la landing page en mode anonyme. <strong>Aucun email n'est transmis via le formulaire de contact</strong> (depuis v0.9.172) — la communication retour se fait via le pseudo Discord/forum/email que vous nous indiquez directement dans votre message si nécessaire. Finalité : permettre à l'équipe de répondre rapidement.</li>
         <li><strong>Canal public #new-users</strong> (visible par tous les membres du serveur Discord) : <strong>pseudo uniquement</strong> (ou partie locale de l'email si pas de pseudo). <strong>L'email complet et l'identifiant ne sont jamais affichés publiquement.</strong></li>
         <li><strong>Canal public #mises-à-jour</strong> : annonces génériques de nouvelles versions, aucune donnée utilisateur.</li>
       </ul>
-      <p style="margin-top:6px;font-size:13px;color:#6b7280">Si vous nous contactez via le formulaire (action volontaire), votre message sera reçu via Discord par l'équipe. Base légale : exécution du contrat (réponse au support).</p>
+      <p style="margin-top:6px;font-size:13px;color:#6b6b72">Si vous nous contactez via le formulaire (action volontaire), votre message sera reçu via Discord par l'équipe. Base légale : exécution du contrat (réponse au support).</p>
     </div>
 
     <div class="info-block">
       <span class="tag tag-future">Paiements (à venir, non actif aujourd'hui)</span>
       <p><strong>Stripe Payments Europe Ltd.</strong> — Irlande</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://stripe.com/fr/privacy" target="_blank" rel="noopener">stripe.com/privacy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Lorsque les paiements seront activés, Stripe traitera la transaction (numéro de carte, adresse de facturation). <strong>ZeldTrade ne stocke et ne voit jamais votre numéro de carte</strong> — seuls Stripe et votre banque y ont accès. Stripe est responsable conjoint du traitement pour la finalité paiement (art. 26 RGPD). Hébergement en Irlande (UE).</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://stripe.com/fr/privacy" target="_blank" rel="noopener">stripe.com/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Lorsque les paiements seront activés, Stripe traitera la transaction (numéro de carte, adresse de facturation). <strong>ZeldTrade ne stocke et ne voit jamais votre numéro de carte</strong> — seuls Stripe et votre banque y ont accès. Stripe est responsable conjoint du traitement pour la finalité paiement (art. 26 RGPD). Hébergement en Irlande (UE).</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Protection anti-bot (notification d'inscription)</span>
       <p><strong>hCaptcha (Intuition Machines, Inc.)</strong> — États-Unis</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://www.hcaptcha.com/privacy" target="_blank" rel="noopener">hcaptcha.com/privacy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Collecte une empreinte de navigateur (IP, headers, comportement) pour distinguer les humains des bots lors de la création de compte. Base légale : intérêt légitime (sécurité contre les inscriptions automatisées).</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://www.hcaptcha.com/privacy" target="_blank" rel="noopener">hcaptcha.com/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Collecte une empreinte de navigateur (IP, headers, comportement) pour distinguer les humains des bots lors de la création de compte. Base légale : intérêt légitime (sécurité contre les inscriptions automatisées).</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Protection anti-bot (analyse IA)</span>
       <p><strong>Cloudflare Turnstile — Cloudflare, Inc.</strong> — États-Unis</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">cloudflare.com/privacypolicy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Vérifie que les requêtes à l'API d'analyse IA proviennent d'un navigateur légitime (pas d'un script automatisé). Collecte minimale : empreinte navigateur, IP, comportement. Base légale : intérêt légitime (protection contre l'abus de l'API IA, coûteuse). Couvert par le Data Privacy Framework EU-US.</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">cloudflare.com/privacypolicy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Vérifie que les requêtes à l'API d'analyse IA proviennent d'un navigateur légitime (pas d'un script automatisé). Collecte minimale : empreinte navigateur, IP, comportement. Base légale : intérêt légitime (protection contre l'abus de l'API IA, coûteuse). Couvert par le Data Privacy Framework EU-US.</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Hébergement statique (HTML/CSS/JS)</span>
       <p><strong>Firebase Hosting — Google LLC</strong> (hébergement primaire, EU)</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/privacy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Héberge les fichiers statiques de l'interface (HTML/CSS/JS) sur le domaine <code>zeldtrade.com</code>. <strong>Aucune donnée personnelle ne transite ni n'est stockée par Firebase Hosting.</strong> Logs d'accès standard (IP, user-agent) conservés selon la politique Google.</p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Un backup statique passif est également déployé sur <strong>GitHub Pages</strong> (filiale Microsoft, États-Unis) à l'URL <code>zeldaron.github.io/zeldtrade</code> — utilisé uniquement en cas d'indisponibilité du primaire. Logs d'accès standard.</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://firebase.google.com/support/privacy" target="_blank" rel="noopener">firebase.google.com/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Héberge les fichiers statiques de l'interface (HTML/CSS/JS) sur le domaine <code>zeldtrade.com</code>. <strong>Aucune donnée personnelle ne transite ni n'est stockée par Firebase Hosting.</strong> Logs d'accès standard (IP, user-agent) conservés selon la politique Google.</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Un backup statique passif est également déployé sur <strong>GitHub Pages</strong> (filiale Microsoft, États-Unis) à l'URL <code>zeldaron.github.io/zeldtrade</code> — utilisé uniquement en cas d'indisponibilité du primaire. Logs d'accès standard.</p>
     </div>
 
     <div class="info-block">
       <span class="tag">Polices d'écriture</span>
       <p><strong>Google Fonts — Google LLC</strong></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Politique : <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></p>
-      <p style="margin-top:4px;font-size:13px;color:#6b7280">Chargement de la police « Geist » depuis les CDN Google. Lors du chargement, votre IP est transmise à Google. Base légale : intérêt légitime (présentation visuelle cohérente).</p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Politique : <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">policies.google.com/privacy</a></p>
+      <p style="margin-top:4px;font-size:13px;color:#6b6b72">Chargement de la police « Geist » depuis les CDN Google. Lors du chargement, votre IP est transmise à Google. Base légale : intérêt légitime (présentation visuelle cohérente).</p>
     </div>
 
-    <p style="margin-top:14px;font-size:13px;color:#6b7280">
+    <p style="margin-top:14px;font-size:13px;color:#6b6b72">
       <strong>Transferts hors UE</strong> : pour les sous-traitants Google (Firebase, Cloud Storage, Cloud Functions, Fonts), le transfert est couvert par le <em>Data Privacy Framework EU-US</em> (décision d'adéquation de la Commission Européenne du 10 juillet 2023). Pour Cloudflare (Turnstile), idem (Cloudflare est également certifié DPF). Pour les autres (Groq, Anthropic, hCaptcha, Discord, GitHub), des Clauses Contractuelles Types (CCT) standard de la Commission s'appliquent. Stripe (Irlande) reste dans l'UE.
     </p>
 
@@ -265,7 +265,7 @@
     </ul>
 
     <p>Pour exercer ces droits, contactez : <a href="mailto:zeldtradepro@gmail.com">zeldtradepro@gmail.com</a>. Nous nous engageons à répondre dans un délai d'<strong>un mois</strong> conformément à l'art. 12.3 du RGPD (prolongeable de 2 mois si demande complexe, avec notification).</p>
-    <p style="font-size:13px;color:#6b7280">Aucun Délégué à la Protection des Données (DPO) n'a été désigné — ZeldTrade ne réalise pas de traitement à grande échelle au sens de l'art. 37 du RGPD. Le responsable du traitement assume directement les obligations RGPD.</p>
+    <p style="font-size:13px;color:#6b6b72">Aucun Délégué à la Protection des Données (DPO) n'a été désigné — ZeldTrade ne réalise pas de traitement à grande échelle au sens de l'art. 37 du RGPD. Le responsable du traitement assume directement les obligations RGPD.</p>
     <p>Vous pouvez également introduire une réclamation auprès de la <strong>CNIL</strong> : <a href="https://www.cnil.fr/fr/plaintes" target="_blank" rel="noopener">cnil.fr/fr/plaintes</a> ou par courrier au 3 place de Fontenoy, 75007 Paris.</p>
 
     <!-- 7. Sécurité -->

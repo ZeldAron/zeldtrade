@@ -44,7 +44,8 @@
   (function reveal() {
     const items = $$('.reveal');
     if (!items.length) return;
-    if (reduceMotion || !('IntersectionObserver' in window)) { items.forEach(el => el.classList.add('in')); return; }
+    const showAll = () => items.forEach(el => el.classList.add('in'));
+    if (reduceMotion || !('IntersectionObserver' in window)) { showAll(); return; }
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
@@ -54,8 +55,22 @@
           io.unobserve(e.target);
         }
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -32px 0px' });
     items.forEach(el => io.observe(el));
+    // Révèle immédiatement ce qui est déjà visible au chargement (évite un flash vide
+    // si l'IO ne déclenche pas tout de suite, ou si un bloc est plus haut que le viewport).
+    const revealInView = () => {
+      const vh = window.innerHeight || document.documentElement.clientHeight;
+      items.forEach(el => {
+        if (el.classList.contains('in')) return;
+        const r = el.getBoundingClientRect();
+        if (r.top < vh * 0.92 && r.bottom > 0) { el.classList.add('in'); io.unobserve(el); }
+      });
+    };
+    requestAnimationFrame(revealInView);
+    // Filet de sécurité : si pour une raison quelconque l'observer n'a rien révélé,
+    // on garantit que tout le contenu finit visible (jamais de page « vide »).
+    setTimeout(() => { if (!$$('.reveal.in').length) showAll(); }, 1500);
   })();
 
   // ── Hero dashboard live ─────────────────────────────────────────────────────
@@ -123,6 +138,7 @@
       { sym: 'ES · S&P', side: 'LONG', entry: '$5 892,25', sl: '$5 884,00', tp: '$5 910,50', size: '1', r: '2.20R', pnl: -210, time: '09:48', tag: 'ES LONG' },
       { sym: 'BTC · perp', side: 'LONG', entry: '$98 420', sl: '$97 950', tp: '$99 180', size: '0.3', r: '1.62R', pnl: 380, time: '08:22', tag: 'BTC LONG' },
     ];
+    const lang = (fr, en) => document.documentElement.lang === 'en' ? en : fr;
     let i = 0;
     function show(idx) {
       const t = trades[idx];
@@ -138,10 +154,16 @@
       if (tm) tm.textContent = t.time;
       if (ai) {
         const cls = t.pnl >= 0 ? 'green' : 'red';
-        ai.innerHTML = `<b>IA Vision · screenshot lu en 1,2s.</b><br>Trade détecté : <span class="tag ${cls}">${t.tag}</span> · entry <b>${t.entry.replace('$','')}</b> · SL <b>${t.sl.replace('$','')}</b> · TP <b>${t.tp.replace('$','')}</b> · risque <b>${t.r}</b> · ${t.pnl>=0?'clôturé à TP':'stoppé'} <span class="tag ${cls}">${t.pnl>=0?'+':'−'}$${Math.abs(t.pnl)}</span>`;
+        const head = lang('IA Vision · screenshot lu en 1,2s.', 'AI Vision · screenshot read in 1.2s.');
+        const detected = lang('Trade détecté :', 'Trade detected:');
+        const riskLbl = lang('risque', 'risk');
+        const outcome = t.pnl >= 0 ? lang('clôturé à TP', 'closed at TP') : lang('stoppé', 'stopped');
+        ai.innerHTML = `<b>${head}</b><br>${detected} <span class="tag ${cls}">${t.tag}</span> · entry <b>${t.entry.replace('$','')}</b> · SL <b>${t.sl.replace('$','')}</b> · TP <b>${t.tp.replace('$','')}</b> · ${riskLbl} <b>${t.r}</b> · ${outcome} <span class="tag ${cls}">${t.pnl>=0?'+':'−'}$${Math.abs(t.pnl)}</span>`;
       }
     }
     show(0);
+    // Re-render le trade courant quand la langue change (l'IA strip est en dur, pas via data-i18n).
+    window.addEventListener('zt:langchange', () => { try { show(i); } catch (e) {} });
     if (reduceMotion) return;
     setInterval(() => { i = (i + 1) % trades.length; show(i); }, 4500);
   })();
@@ -191,6 +213,13 @@
           : status === 'warn' ? lang('WARNING · proche limite', 'WARNING · near limit')
           : lang('DANGER · breach probable', 'DANGER · likely breach'));
       }
+      // A-02 — expose la valeur courante des sliders aux lecteurs d'écran
+      [size, hwm, pnl, risk].forEach(el => {
+        if (!el) return;
+        el.setAttribute('aria-valuenow', el.value);
+        el.setAttribute('aria-valuetext', fmt(+el.value));
+      });
+
       setTxt('#cFloor', fmt(floor));
       setTxt('#cEquity', fmt(equity));
       const bf = setTxt('#cBuffer', (buffer >= 0 ? '+' : '−') + fmt(Math.abs(buffer))); if (bf) bf.style.color = buffer < 0 ? 'var(--red)' : 'var(--green)';
@@ -215,8 +244,11 @@
       const q = e.target.closest('.faq-q'); if (!q) return;
       const item = q.closest('.faq-item');
       const open = item.classList.contains('open');
-      $$('.faq-item', list).forEach(it => it.classList.remove('open'));
-      if (!open) item.classList.add('open');
+      $$('.faq-item', list).forEach(it => {
+        it.classList.remove('open');
+        const b = it.querySelector('.faq-q'); if (b) b.setAttribute('aria-expanded', 'false');
+      });
+      if (!open) { item.classList.add('open'); q.setAttribute('aria-expanded', 'true'); }
     });
   })();
 
@@ -234,16 +266,49 @@
     }));
   })();
 
-  // ── Pricing : toggle mensuel / annuel ───────────────────────────────────────
+  // ── Pricing : toggles mensuel/annuel + devise € / $ ─────────────────────────
   (function pricing() {
-    const toggle = $('#pricingToggle'); if (!toggle) return;
-    toggle.addEventListener('click', e => {
+    const toggle = $('#pricingToggle');
+    const curToggle = $('#currencyToggle');
+    const note = $('#currencyNote');
+    const RATE = 1.08;            // EUR → USD (indicatif ; encaissement réel en €)
+    let currency = 'eur';
+
+    const fmtEur = v => {
+      if (!v) return '0 €';
+      const hasDec = Math.round(v) !== v;
+      return v.toLocaleString('fr-FR', { minimumFractionDigits: hasDec ? 2 : 0, maximumFractionDigits: 2 }) + ' €';
+    };
+    const fmtUsd = v => {
+      if (!v) return '$0';
+      const u = v * RATE;
+      const val = (Math.round(v) !== v)
+        ? u.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+        : Math.round(u).toLocaleString('en-US');
+      return '≈ $' + val;
+    };
+    function renderPrices() {
+      $$('.amt[data-eur]').forEach(el => {
+        const v = parseFloat(el.dataset.eur) || 0;
+        el.textContent = currency === 'usd' ? fmtUsd(v) : fmtEur(v);
+      });
+      if (note) note.style.visibility = currency === 'usd' ? 'visible' : 'hidden';
+    }
+
+    if (toggle) toggle.addEventListener('click', e => {
       const b = e.target.closest('button[data-lp-billing]'); if (!b) return;
       const mode = b.dataset.lpBilling;
       $$('button', toggle).forEach(x => x.classList.toggle('active', x === b));
       $$('[data-lp-price-monthly]').forEach(el => el.style.display = mode === 'monthly' ? '' : 'none');
       $$('[data-lp-price-yearly]').forEach(el => el.style.display = mode === 'yearly' ? '' : 'none');
     });
+    if (curToggle) curToggle.addEventListener('click', e => {
+      const b = e.target.closest('button[data-lp-currency]'); if (!b) return;
+      currency = b.dataset.lpCurrency;
+      $$('button', curToggle).forEach(x => x.classList.toggle('active', x === b));
+      renderPrices();
+    });
+    renderPrices();
   })();
 
   // ── Copie du code promo (feedback visuel clair sur tout le bouton) ───────────
