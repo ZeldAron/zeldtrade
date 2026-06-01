@@ -316,8 +316,10 @@ section.block + section.block { border-top: 1px solid var(--line); }
 .firm-card:hover { border-color: var(--green); background: var(--bg-2); }
 .firm-logo { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.02em; color: var(--fg); margin-bottom: 4px; }
 .firm-name { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; color: var(--fg-mute); text-transform: uppercase; }
-.firm-popover { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%) translateY(8px); width: 280px; max-width: 80vw; background: var(--bg-2); border: 1px solid var(--line-strong); border-radius: 12px; padding: 16px; box-shadow: 0 30px 80px -20px rgba(0,0,0,0.7); opacity: 0; pointer-events: none; transition: opacity 0.22s var(--ease), transform 0.22s var(--ease); z-index: 30; text-align: left; }
+/* v0.9.419 : ouverture vers le BAS (évite le chevauchement du titre de section) */
+.firm-popover { position: absolute; top: calc(100% + 12px); bottom: auto; left: 50%; transform: translateX(-50%) translateY(-8px); width: 280px; max-width: 80vw; background: var(--bg-2); border: 1px solid var(--line-strong); border-radius: 12px; padding: 16px; box-shadow: 0 24px 60px -20px rgba(0,0,0,0.35); opacity: 0; pointer-events: none; transition: opacity 0.22s var(--ease), transform 0.22s var(--ease); z-index: 40; text-align: left; }
 .firm-card:hover .firm-popover, .firm-card:focus-within .firm-popover { opacity: 1; transform: translateX(-50%) translateY(0); }
+.promo-code.copied { background: var(--green-soft); border-color: var(--fg); color: var(--fg); }
 .firm-popover h4 { font-family: var(--font-display); font-size: 14px; margin-bottom: 10px; }
 .firm-popover ul { list-style: none; font-size: 12px; font-family: var(--font-mono); }
 .firm-popover li { padding: 4px 0; color: var(--fg-dim); display: flex; justify-content: space-between; gap: 10px; }
