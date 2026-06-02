@@ -252,6 +252,25 @@
     });
   })();
 
+  // ── Nav auto-hide (cache au scroll vers le bas, réapparaît vers le haut) ─────
+  (function navAutoHide() {
+    const nav = $('nav.main');
+    if (!nav) return;
+    let last = window.scrollY || 0;
+    let ticking = false;
+    function update() {
+      const y = window.scrollY || 0;
+      if (y < 80) nav.classList.remove('nav-hidden');                 // tout en haut → visible
+      else if (y > last + 6) nav.classList.add('nav-hidden');         // descend → cache
+      else if (y < last - 6) nav.classList.remove('nav-hidden');      // remonte → montre
+      last = y;
+      ticking = false;
+    }
+    window.addEventListener('scroll', () => {
+      if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+    }, { passive: true });
+  })();
+
   // ── Nav mobile ──────────────────────────────────────────────────────────────
   (function nav() {
     const toggle = $('#navToggle'), links = $('#navLinks');
