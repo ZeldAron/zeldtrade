@@ -1,17 +1,11 @@
-// ─── LANDING THEME (v1.0.0) ─────────────────────────────────────────────────
-// Thème clair/sombre de la landing. GATÉ STAGING : sur zeldtrade-staging, défaut
-// sombre + bouton de bascule (☾/☀) à côté du sélecteur de langue. En prod, ce
-// script ne fait RIEN → la landing reste blanche, le bouton reste masqué.
+// ─── LANDING THEME (v1.0.1) ─────────────────────────────────────────────────
+// Thème clair/sombre de la landing + pages légales/nouveautés. Défaut SOMBRE
+// partout (prod + staging), bouton de bascule (☾/☀) à côté du sélecteur de langue.
 // Partage la clé localStorage `zeld_theme` avec l'app (cohérence landing ↔ app).
 // Chargé en <head> (synchrone) pour appliquer le thème avant le 1er paint (anti-FOUC).
 (function () {
   'use strict';
   var KEY = 'zeld_theme';
-  function isStaging() {
-    try { return (location.hostname || '').indexOf('zeldtrade-staging') !== -1; }
-    catch (e) { return false; }
-  }
-  if (!isStaging()) return;   // prod : pas de thème sombre / pas de bouton (pour l'instant)
 
   function stored() {
     try { var v = localStorage.getItem(KEY); return (v === 'dark' || v === 'light' || v === 'auto') ? v : 'dark'; }
