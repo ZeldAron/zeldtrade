@@ -23,6 +23,7 @@
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=1.0.0">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="js/landing-theme.js?v=1.0.0"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Geist', -apple-system, BlinkMacSystemFont, sans-serif; background: #fbfbfc; color: #2a2a2e; min-height: 100vh; line-height: 1.7; }
@@ -57,6 +58,20 @@
     footer a { color: #4a4a52; }
     footer a:hover { color: #4a4a52; text-decoration: none; }
     @media (max-width: 500px) { .plan-grid { grid-template-columns: 1fr; } }
+    /* v1.0.0 — thème sombre (posé par landing-theme.js sur staging) */
+    html[data-theme="dark"] body { background:#070a10; color:#c4c9d2; }
+    html[data-theme="dark"] .page-title, html[data-theme="dark"] h2, html[data-theme="dark"] h3, html[data-theme="dark"] strong { color:#f1f3f6; }
+    html[data-theme="dark"] h2 { border-bottom-color: rgba(255,255,255,0.14); }
+    html[data-theme="dark"] p, html[data-theme="dark"] ul li { color:#a3a9b4; }
+    html[data-theme="dark"] ul li::before { color:#5b626e; }
+    html[data-theme="dark"] a { color:#cfd3da; }
+    html[data-theme="dark"] .back-link { color:#7f8694; }
+    html[data-theme="dark"] .back-link:hover { color:#f1f3f6; }
+    html[data-theme="dark"] .page-subtitle { color:#7f8694; }
+    html[data-theme="dark"] .info-block, html[data-theme="dark"] .plan-card { background:#161c26; border-color:rgba(255,255,255,0.12); }
+    html[data-theme="dark"] .tag, html[data-theme="dark"] .tag-future, html[data-theme="dark"] .tag-amber, html[data-theme="dark"] .tag-green { background:rgba(255,255,255,0.08); color:#f1f3f6; }
+    html[data-theme="dark"] footer { border-top-color: rgba(255,255,255,0.12); color:#7f8694; }
+
   </style>
 </head>
 <body>

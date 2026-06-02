@@ -28,6 +28,8 @@
   <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=1.0.0">
   <meta name="robots" content="index, follow">
   <title>Nouveautés — ZeldTrade</title>
+  <!-- Thème (staging only — anti-FOUC, suit le choix clair/sombre du site) -->
+  <script src="js/landing-theme.js?v=1.0.0"></script>
   <style>
     :root{
       /* v0.9.419 — blanc monochrome (assorti app/landing) */
@@ -35,6 +37,13 @@
       --accent:#111111; --accent-l:#333333; --accent-d:#000000;
       --text:#0d0d0f; --text2:#2a2a2e; --muted:#5a5a61; --muted2:#8a8a91;
       --green:#1a7f37; --red:#d11a2a;
+    }
+    /* v1.0.0 — thème sombre (posé par landing-theme.js sur staging) */
+    html[data-theme="dark"]{
+      --bg:#070a10; --bg2:#0e131b; --border:rgba(255,255,255,0.14);
+      --accent:#f1f3f6; --accent-l:#c4c9d2; --accent-d:#ffffff;
+      --text:#f1f3f6; --text2:#d3d7de; --muted:#a3a9b4; --muted2:#7f8694;
+      --green:#46d17e; --red:#ff5d6c;
     }
     *{box-sizing:border-box}
     html,body{margin:0;padding:0;max-width:100vw;overflow-x:hidden}
