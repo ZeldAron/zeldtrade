@@ -563,3 +563,48 @@ nav.main { background: var(--bg-glass); }
 /* Promo bar neutralisée (plus d'ambre) */
 .promo-bar { background: var(--bg-2); color: var(--fg-dim); }
 .promo-code { border-color: var(--line-strong); color: var(--fg); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v1.0.0 — THÈME SOMBRE de la landing (toggle ☾/☀ à côté de la langue).
+   Activé seulement quand <html data-theme="dark"> (posé par landing-theme.js,
+   staging only). Monochrome : surfaces sombres, accent clair, rouge conservé.
+   `html[data-theme]` (0,1,1) > `:root` (0,1,0) → écrase les variables blanches.
+   ═══════════════════════════════════════════════════════════════════════════ */
+html[data-theme="dark"] {
+  --bg-0: #070a10;
+  --bg-1: #0e131b;
+  --bg-2: #161c26;
+  --bg-3: #202833;
+  --bg-glass: rgba(10, 14, 20, 0.82);
+  --line: rgba(255,255,255,0.12);
+  --line-2: rgba(255,255,255,0.18);
+  --line-strong: rgba(255,255,255,0.32);
+  --fg: #f1f3f6;
+  --fg-2: #d3d7de;
+  --fg-dim: #a3a9b4;
+  --fg-mute: #6f7682;
+  --green: #f1f3f6;
+  --green-2: #c4c9d2;
+  --green-soft: rgba(255,255,255,0.08);
+  --red: #ff5d6c;
+  --red-soft: rgba(255,93,108,0.14);
+  --amber: #a3a9b4;
+  --amber-soft: rgba(255,255,255,0.07);
+  --blue: #a3a9b4;
+  --blue-soft: rgba(255,255,255,0.07);
+}
+/* Grille de fond : lignes claires sur sombre (sinon invisibles) */
+html[data-theme="dark"] .bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.045) 1px, transparent 1px);
+}
+/* Logo : garde la boîte sombre mais avec bordure pour rester visible sur fond sombre */
+html[data-theme="dark"] .brand-mark { background: #1c222e !important; border: 1px solid rgba(255,255,255,0.16); }
+/* Remplissages d'accent (clair en dark) : le texte doit être SOMBRE, pas blanc */
+html[data-theme="dark"] .btn-primary:hover { color: var(--bg-0); }
+html[data-theme="dark"] .price-card.featured::before { color: var(--bg-0); }
+html[data-theme="dark"] .price-card.featured .price-cta:hover { color: var(--bg-0); }
+
+/* Bouton bascule thème (réutilise .lang-btn) : la glyphe ☾/☀ un peu plus grande */
+.lang-btn.theme-toggle { font-size: 13px; padding: 4px 8px; }
