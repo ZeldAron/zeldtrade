@@ -557,8 +557,21 @@ const Store = (() => {
           favInstruments: Array.isArray(raw.favInstruments)
             ? [...new Set(raw.favInstruments.filter(x => typeof x === 'string' && x.length <= 20))].slice(0, 100)
             : [],
+          // v1.0.x : ces 3 champs étaient OMIS à la lecture → setupDone/selectedFirms/focusScope
+          // restaient aux DEFAULT (setupDone=false) → le wizard se redemandait à la reconnexion.
+          selectedFirms: Array.isArray(raw.selectedFirms)
+            ? [...new Set(raw.selectedFirms.filter(x => _FIRM_KEYS.has(x)))]
+            : [],
+          focusScope: (typeof raw.focusScope === 'string' && /^(acc:|grp:|firm:).+/.test(raw.focusScope)) ? raw.focusScope.slice(0, 80) : null,
+          setupDone: raw.setupDone === true,
         };
         changed = true;
+      } else if (settings && settings.setupDone === true) {
+        // v1.0.x : migration douce — doc settings absent en Firestore (les anciennes
+        // écritures échouaient sur la rule) MAIS le setup est marqué fait localement →
+        // on sème le doc serveur pour activer la persistance cross-device. Conditionné à
+        // setupDone=true pour ne JAMAIS écraser un état distant valide avec des défauts.
+        try { fbSet('settings', settings); } catch (e) {}
       }
       if (maSnap.exists)  { myAccounts  = maSnap.data().items || [];  changed = true; }
       if (spfSnap.exists) {
@@ -1029,8 +1042,9 @@ const Store = (() => {
       }
       else if (k === 'selectedFirms') {
         // v0.9.396 : prop firms déclarées — uniquement des clés de firm connues.
+        // v1.0.x : borné à 20 pour rester sous le cap de la rule Firestore (cohérence).
         safe.selectedFirms = Array.isArray(v)
-          ? [...new Set(v.filter(x => _FIRM_KEYS.has(x)))]
+          ? [...new Set(v.filter(x => _FIRM_KEYS.has(x)))].slice(0, 20)
           : [];
       }
       else if (k === 'focusScope') {

@@ -343,7 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     appLaunched = true;
     if (window.Analytics && Analytics.pingVisit) Analytics.pingVisit();
-    Store.initForUser(user.id);
+    // v1.0.x : on capture la promesse de chargement (Firestore) pour ne décider de
+    // l'affichage du wizard de setup qu'APRÈS l'arrivée des réglages serveur.
+    const _settingsLoaded = Store.initForUser(user.id);
     $('userPillName').textContent = user.username;
     $('userAvatar').textContent   = user.username[0].toUpperCase();
     initApp();   // rend l'app DERRIÈRE le loader plein écran (encore visible) → invisible
@@ -377,24 +379,29 @@ document.addEventListener('DOMContentLoaded', () => {
           setTimeout(() => { loader.style.display = 'none'; loader.classList.remove('done'); loader.style.opacity = ''; }, 450);
         }
       });
-      // v0.9.275 (F1/F2) : profil de trading non renseigné → modale 1er login
-      let _tpmShown = false;
-      try {
-        if (Store.getTradingTypes && !Store.getTradingTypes()) {
-          _showTradingProfileModal();
-          const m = document.getElementById('tradingProfileModal');
-          _tpmShown = !!(m && m.style.display === 'flex');
-        }
-      } catch {}
-      // v0.9.335 : visite guidée au 1er login (flag localStorage zt_tour_done).
-      // Si la modale profil de trading vient de s'afficher, on attend sa validation
-      // (store:profileChanged) pour ne pas empiler deux overlays sur l'écran d'accueil.
-      try {
-        if (window.ZTTour) {
-          if (_tpmShown) window.addEventListener('store:profileChanged', () => { try { ZTTour.maybeAuto(); } catch (e) {} }, { once: true });
-          else ZTTour.maybeAuto();
-        }
-      } catch (e) {}
+      // v1.0.x : la décision d'afficher le wizard attend le chargement Firestore des
+      // réglages (sinon, sur un nouvel appareil/onglet, `setupDone` n'est pas encore
+      // arrivé du serveur → le wizard se redemandait à tort à chaque reconnexion).
+      // On gate sur `setupDone` (flag canonique du setup complété), lu depuis Firestore.
+      Promise.resolve(_settingsLoaded).then(() => {
+        let _tpmShown = false;
+        try {
+          const s = (Store.getSettings && Store.getSettings()) || {};
+          if (!s.setupDone) {
+            _showTradingProfileModal();
+            const m = document.getElementById('tradingProfileModal');
+            _tpmShown = !!(m && m.style.display === 'flex');
+          }
+        } catch {}
+        // Visite guidée au 1er login : si la modale profil vient de s'afficher, on
+        // attend sa validation (store:profileChanged) pour ne pas empiler deux overlays.
+        try {
+          if (window.ZTTour) {
+            if (_tpmShown) window.addEventListener('store:profileChanged', () => { try { ZTTour.maybeAuto(); } catch (e) {} }, { once: true });
+            else ZTTour.maybeAuto();
+          }
+        } catch (e) {}
+      }).catch(() => {});
     }
     function revealApp() {
       // min 700 ms d'affichage (évite un flash de loader si Firestore répond très vite)
