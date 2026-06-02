@@ -82,16 +82,19 @@ service cloud.firestore {
       // et la modale CGU bouclait à l'infini. Ici l'identité (uid/email/username) est
       // IMMUABLE (sinon affectedKeys la révélerait et hasOnly échouerait), donc on ne
       // re-valide PAS le regex username. Plus restrictif ET plus robuste.
+      // NB : `X in <Map>` (request.resource.data) est valide ; `X in <Set>`
+      // (affectedKeys()) ne l'est PAS et fait erreur runtime → deny. On teste donc
+      // la présence des champs sur le document, pas sur le set des clés modifiées.
       allow update: if request.auth != null
                     && request.auth.uid == uid
                     && request.resource.data.diff(resource.data).affectedKeys()
                          .hasOnly(['lastSeen', 'termsAccepted', 'newsletterOptIn'])
                     && (
-                      !('lastSeen' in request.resource.data.diff(resource.data).affectedKeys())
+                      !('lastSeen' in request.resource.data)
                       || request.resource.data.lastSeen is int
                     )
                     && (
-                      !('termsAccepted' in request.resource.data.diff(resource.data).affectedKeys())
+                      !('termsAccepted' in request.resource.data)
                       || (
                         request.resource.data.termsAccepted is map
                         && request.resource.data.termsAccepted.keys().hasOnly(['version', 'acceptedAt'])
@@ -102,7 +105,7 @@ service cloud.firestore {
                       )
                     )
                     && (
-                      !('newsletterOptIn' in request.resource.data.diff(resource.data).affectedKeys())
+                      !('newsletterOptIn' in request.resource.data)
                       || request.resource.data.newsletterOptIn is bool
                     );
     }
