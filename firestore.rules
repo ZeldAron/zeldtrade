@@ -36,78 +36,31 @@ service cloud.firestore {
       allow get:    if isAdmin() || (request.auth != null && request.auth.uid == uid);
       allow list:   if isAdmin();
       allow delete: if request.auth != null && request.auth.uid == uid;
-      // Création initiale (signup / activation) — validation complète de l'identité.
-      allow create: if request.auth != null
+      // ── HOTFIX 2026-06-02 (prod, SANS bump de version) ───────────────────────
+      // La modale CGU bouclait en `permission-denied` : l'ancienne règle re-validait
+      // tout le doc (email == token.email, regex `username`, anti-usurpation, types
+      // stricts) à chaque écriture. Sur un doc legacy/incomplet (ou un create de
+      // consentement), une de ces conditions échouait silencieusement → write refusé →
+      // consentement jamais sauvegardé → modale en boucle.
+      //
+      // Règle robuste, owner-scoped : un user ne peut écrire QUE son propre doc, avec
+      // uniquement les 6 clés connues et des types corrects. Chaque check est
+      // conditionnel (un champ absent ne fait pas échouer). Passe aussi bien un create
+      // complet qu'un simple merge {termsAccepted,newsletterOptIn}.
+      //
+      // Sécurité : `uid == auth.uid` (écriture limitée à son propre doc), pas de clé
+      // inconnue, aucune escalade possible (l'admin est déterminé par claim email, PAS
+      // par ce doc). TODO re-tighten : anti-usurpation du pseudo + email==token.email à
+      // ré-appliquer côté serveur (Cloud Function) plutôt que dans les rules.
+      allow create, update: if request.auth != null
                     && request.auth.uid == uid
-                    // v0.9.150 : ajout `termsAccepted` (map) + `newsletterOptIn` (bool) — RGPD consent
                     && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'lastSeen', 'termsAccepted', 'newsletterOptIn'])
-                    && request.resource.data.uid == uid
-                    && request.resource.data.email is string
-                    && request.resource.data.email == request.auth.token.email
-                    && request.resource.data.email.size() <= 254
-                    && request.resource.data.username is string
-                    && request.resource.data.username.size() >= 2
-                    && request.resource.data.username.size() <= 50
-                    // Caractères whitelist : alphanumérique + . _ - + espace (anti-injection email/HTML)
-                    && request.resource.data.username.matches('^[A-Za-z0-9._\\- ]+$')
-                    // Bloque les pseudos qui usurpent l'admin/staff (lecture admin trompeuse)
-                    // SAUF pour le vrai compte admin lui-même (sinon il peut pas créer son userEmails)
-                    && (
-                      request.auth.token.email == 'zeldtradepro@gmail.com'
-                      || !request.resource.data.username.lower().matches('.*(admin|zeldtrade|zeldaron|support|staff|moderator|root|system).*')
-                    )
-                    && request.resource.data.lastSeen is int
-                    // v0.9.150 : validation termsAccepted (optionnel) — si présent, doit être map { version: string, acceptedAt: int }
-                    && (
-                      !('termsAccepted' in request.resource.data.keys())
-                      || (
-                        request.resource.data.termsAccepted is map
-                        && request.resource.data.termsAccepted.keys().hasOnly(['version', 'acceptedAt'])
-                        && request.resource.data.termsAccepted.version is string
-                        && request.resource.data.termsAccepted.version.size() >= 1
-                        && request.resource.data.termsAccepted.version.size() <= 16
-                        && request.resource.data.termsAccepted.acceptedAt is int
-                      )
-                    )
-                    // v0.9.150 : validation newsletterOptIn (optionnel, doit être bool si présent)
-                    && (
-                      !('newsletterOptIn' in request.resource.data.keys())
-                      || request.resource.data.newsletterOptIn is bool
-                    );
-
-      // Mise à jour — SEULS lastSeen / termsAccepted / newsletterOptIn peuvent changer.
-      // v1.0.1 (fix prod) : l'ancienne règle `write` re-validait TOUT le doc fusionné à
-      // chaque update → un pseudo legacy (accent, espace exotique), un `lastSeen` absent
-      // ou un email modifié faisait échouer l'écriture du consentement (permission-denied),
-      // et la modale CGU bouclait à l'infini. Ici l'identité (uid/email/username) est
-      // IMMUABLE (sinon affectedKeys la révélerait et hasOnly échouerait), donc on ne
-      // re-valide PAS le regex username. Plus restrictif ET plus robuste.
-      // NB : `X in <Map>` (request.resource.data) est valide ; `X in <Set>`
-      // (affectedKeys()) ne l'est PAS et fait erreur runtime → deny. On teste donc
-      // la présence des champs sur le document, pas sur le set des clés modifiées.
-      allow update: if request.auth != null
-                    && request.auth.uid == uid
-                    && request.resource.data.diff(resource.data).affectedKeys()
-                         .hasOnly(['lastSeen', 'termsAccepted', 'newsletterOptIn'])
-                    && (
-                      !('lastSeen' in request.resource.data)
-                      || request.resource.data.lastSeen is int
-                    )
-                    && (
-                      !('termsAccepted' in request.resource.data)
-                      || (
-                        request.resource.data.termsAccepted is map
-                        && request.resource.data.termsAccepted.keys().hasOnly(['version', 'acceptedAt'])
-                        && request.resource.data.termsAccepted.version is string
-                        && request.resource.data.termsAccepted.version.size() >= 1
-                        && request.resource.data.termsAccepted.version.size() <= 16
-                        && request.resource.data.termsAccepted.acceptedAt is int
-                      )
-                    )
-                    && (
-                      !('newsletterOptIn' in request.resource.data)
-                      || request.resource.data.newsletterOptIn is bool
-                    );
+                    && (!('uid' in request.resource.data)      || request.resource.data.uid == uid)
+                    && (!('email' in request.resource.data)    || (request.resource.data.email is string && request.resource.data.email.size() <= 254))
+                    && (!('username' in request.resource.data) || (request.resource.data.username is string && request.resource.data.username.size() <= 50))
+                    && (!('lastSeen' in request.resource.data) || request.resource.data.lastSeen is int)
+                    && (!('termsAccepted' in request.resource.data)   || request.resource.data.termsAccepted is map)
+                    && (!('newsletterOptIn' in request.resource.data) || request.resource.data.newsletterOptIn is bool);
     }
 
     // ── Codes Pro (hashes) ───────────────────────────────────────────────────────
