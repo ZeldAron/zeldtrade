@@ -5489,9 +5489,12 @@ img { -webkit-user-drag: none; }
 .instr-pill.on { color: var(--on-accent); }
 
 /* Logo « Z » : était blanc sur violet ; sur vert vif → tracé sombre (comme la landing) */
+/* Ces 3 logos ont une boîte TOUJOURS sombre (#15171c, !important) → le tracé doit
+   être blanc dans TOUS les thèmes. `--on-accent` basculait en sombre sur fond sombre
+   (Z invisible) depuis que le défaut est passé en noir. */
 .logo-mark svg, .logo-mark svg path, .logo-mark svg polyline,
 .login-logo-mark svg, .login-logo-mark svg path,
-.zt-loader .logo-tile svg path { stroke: var(--on-accent); }
+.zt-loader .logo-tile svg path { stroke: #fff; }
 /* Badge « POPULAR » des cartes pricing (texte sur fond accent) */
 .pricing-card.featured::before { color: var(--on-accent); }
 
