@@ -483,7 +483,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function buildInstrPills() {
       const wrap = $id('tpmInstrCats');
       if (!wrap) return;
-      const cat = (window.UI && UI.INSTRUMENT_CATALOG) || [];
+      // UI est un `const` top-level (ui.js), PAS window.UI → tester la référence directe,
+      // sinon le catalogue est vide → aucun instrument affiché (= étape 3 bloquée).
+      const cat = (typeof UI !== 'undefined' && UI.INSTRUMENT_CATALOG) || [];
       wrap.innerHTML = cat.map(g => {
         const pills = g.items.map(sym =>
           `<button type="button" class="instr-pill${instrs.has(sym) ? ' on' : ''}" data-sym="${esc(sym)}">${esc(sym)}</button>`).join('');

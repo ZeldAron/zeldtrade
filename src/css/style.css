@@ -2089,10 +2089,12 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   align-items: flex-start;
   gap: 10px;
   cursor: pointer;
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.5;
-  color: var(--text2, #c9d1d9);
+  /* v1.0.0 hotfix : texte trop pâle → couleur de texte principale (meilleur contraste) */
+  color: var(--text, #e6edf3);
 }
+.consent-label strong { color: var(--text, #e6edf3); font-weight: 600; }
 .consent-check input[type="checkbox"] {
   flex-shrink: 0;
   margin-top: 3px;
@@ -2144,8 +2146,9 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
 .tpm-progress span { height: 4px; flex: 1; border-radius: 2px; background: var(--border2, #30363d); transition: background 0.2s; }
 .tpm-progress span.on { background: var(--accent, var(--accent)); }
 .tpm-nav { display: flex; gap: 10px; margin-top: 4px; }
-.tpm-nav .login-btn { margin-bottom: 0; }
-.tpm-nav .login-btn:not(.login-btn-ghost) { flex: 1; }
+/* v1.0.0 hotfix : les 2 boutons à parts égales (avant : Retour prenait toute la
+   largeur via width:100% et Continuer/Terminer débordait). */
+.tpm-nav .login-btn { flex: 1 1 0; width: auto; min-width: 0; margin-bottom: 0; }
 .login-btn-ghost { background: transparent; border: 1px solid var(--border2, #30363d); color: var(--text, #e6edf3); box-shadow: none; flex: 0 0 auto; min-width: 96px; width: auto; }
 .login-btn-ghost:hover { opacity: 1; border-color: var(--accent, var(--accent)); box-shadow: none; }
 #tpmInstrCats { max-height: 46vh; overflow-y: auto; margin: 0 0 14px; padding-right: 4px; }
