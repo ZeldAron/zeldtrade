@@ -604,10 +604,38 @@ html[data-theme="dark"] .bg-grid {
 }
 /* Logo : garde la boîte sombre mais avec bordure pour rester visible sur fond sombre */
 html[data-theme="dark"] .brand-mark { background: #1c222e !important; border: 1px solid rgba(255,255,255,0.16); }
-/* Remplissages d'accent (clair en dark) : le texte doit être SOMBRE, pas blanc */
+/* Remplissages d'accent (clair en dark) : le texte doit être SOMBRE, pas blanc.
+   (le plan FUNDED est géré à part en violet plus bas — texte blanc sur violet) */
 html[data-theme="dark"] .btn-primary:hover { color: var(--bg-0); }
-html[data-theme="dark"] .price-card.featured::before { color: var(--bg-0); }
-html[data-theme="dark"] .price-card.featured .price-cta:hover { color: var(--bg-0); }
 
 /* Bouton bascule thème (réutilise .lang-btn) : la glyphe ☾/☀ un peu plus grande */
 .lang-btn.theme-toggle { font-size: 13px; padding: 4px 8px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   v1.0.2 — ACCENT VIOLET DISCRET. La marque reste monochrome ; le violet ne
+   ponctue QUE les points de vente (mots-clés de titres, plan FUNDED, CTA démo)
+   pour casser la monotonie sans dénaturer l'identité. Une seule couleur, dosée.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root              { --violet: #6d5ad6; }   /* lisible sur fond clair */
+html[data-theme="dark"] { --violet: #9d8cf0; }  /* plus lumineux sur fond sombre */
+
+/* Mots-clés accentués des titres (« Une seule survit. », etc.) — sélecteurs assez
+   spécifiques pour battre `h1.display .accent` / `h2.section-title .accent` (0,2,1). */
+h1.display .accent, h2.section-title .accent, .accent { color: var(--violet); }
+/* Petits points "live" (statusbar / eyebrow) */
+.statusbar .pulse, .eyebrow .pulse { background: var(--violet); box-shadow: 0 0 8px var(--violet); }
+
+/* Plan FUNDED mis en avant : bordure + badge POPULAR + CTA en violet, texte blanc */
+.price-card.featured { border-color: var(--violet); box-shadow: 0 0 0 1px var(--violet), 0 24px 60px -28px rgba(109,90,214,0.45); }
+.price-card.featured::before { background: var(--violet); color: #fff; }
+.price-card.featured .price-cta { background: var(--violet); color: #fff; border-color: var(--violet); }
+.price-card.featured .price-cta:hover { background: var(--violet); filter: brightness(1.08); color: #fff; }
+
+/* Prix annuel : équivalent mensuel mis en avant + note "facturé X/an" */
+.price-billed { font-family: var(--font-mono); font-size: 12px; color: var(--fg-mute); margin-top: 4px; }
+/* Badge "prêt pour les prop firms" sur le plan FUNDED (le vrai différenciateur) */
+.fund-ready { display: inline-block; margin: 8px 0 2px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.03em; color: var(--violet); border: 1px solid var(--violet); border-radius: 999px; padding: 4px 11px; }
+
+/* CTA "Tester la démo" rendu plus visible (violet, c'est ton meilleur argument de conversion) */
+.cta-row .btn-ghost { border-color: var(--violet); color: var(--fg); }
+.cta-row .btn-ghost:hover { background: var(--violet); color: #fff; border-color: var(--violet); }
