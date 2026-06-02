@@ -113,23 +113,38 @@ service cloud.firestore {
     match /users/{userId}/data/settings {
       allow read:   if (request.auth != null && request.auth.uid == userId) || isAdmin();
       allow delete: if isVerified(userId);
+      // v1.0.x : ajout de selectedFirms / focusScope / setupDone à la whitelist.
+      // AVANT, ces 3 champs (toujours présents via DEFAULT_SETTINGS) faisaient échouer
+      // hasOnly() → TOUTE écriture settings était refusée (permission-denied) → le setup
+      // ne se persistait jamais en Firestore → wizard redemandé sur un autre appareil.
       allow write:  if isVerified(userId)
-                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument', 'tradingTypes', 'favInstruments'])
+                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument', 'tradingTypes', 'favInstruments', 'selectedFirms', 'focusScope', 'setupDone'])
                    && request.resource.data.capital is number
                    && request.resource.data.capital >= 0
                    && request.resource.data.capital <= 1000000000
                    && request.resource.data.contracts is number
-                   && request.resource.data.contracts >= 1
+                   && request.resource.data.contracts >= 0.01
                    && request.resource.data.contracts <= 999
                    && request.resource.data.instrument is string
                    && request.resource.data.instrument.size() <= 20
                    && (!('tradingTypes' in request.resource.data)
+                       || request.resource.data.tradingTypes == null
                        || (request.resource.data.tradingTypes is list
                            && request.resource.data.tradingTypes.size() >= 1
                            && request.resource.data.tradingTypes.size() <= 3))
                    && (!('favInstruments' in request.resource.data)
                        || (request.resource.data.favInstruments is list
-                           && request.resource.data.favInstruments.size() <= 100));
+                           && request.resource.data.favInstruments.size() <= 100))
+                   && (!('selectedFirms' in request.resource.data)
+                       || (request.resource.data.selectedFirms is list
+                           && request.resource.data.selectedFirms.size() <= 20))
+                   && (!('focusScope' in request.resource.data)
+                       || request.resource.data.focusScope == null
+                       || (request.resource.data.focusScope is string
+                           && request.resource.data.focusScope.size() <= 80
+                           && request.resource.data.focusScope.matches('^(acc:|grp:|firm:).+')))
+                   && (!('setupDone' in request.resource.data)
+                       || request.resource.data.setupDone is bool);
     }
 
     // ── Notifications (centre de notifs, v0.9.305) ───────────────────────────
