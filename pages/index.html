@@ -115,7 +115,9 @@
   }
   </script>
 
-  <link rel="stylesheet" href="css/landing.css?v=1.0.0">
+  <link rel="stylesheet" href="css/landing.css?v=1.0.0&amp;h=1">
+  <!-- Thème landing (staging only — anti-FOUC, chargé avant le body) -->
+  <script src="js/landing-theme.js?v=1.0.0"></script>
 </head>
 <body>
 
@@ -159,6 +161,7 @@
       <span class="lang-switch" role="group" aria-label="Langue / Language">
         <button type="button" class="lang-btn" data-lang="fr" aria-label="Français" title="Français">🇫🇷</button>
         <button type="button" class="lang-btn" data-lang="en" aria-label="English" title="English">🇬🇧</button>
+        <button type="button" class="lang-btn theme-toggle" id="themeToggle" aria-label="Changer de thème" title="Thème" aria-pressed="false" style="display:none">☾</button>
       </span>
     </div>
     <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
