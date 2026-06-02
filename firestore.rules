@@ -36,7 +36,8 @@ service cloud.firestore {
       allow get:    if isAdmin() || (request.auth != null && request.auth.uid == uid);
       allow list:   if isAdmin();
       allow delete: if request.auth != null && request.auth.uid == uid;
-      allow write:  if request.auth != null
+      // Création initiale (signup / activation) — validation complète de l'identité.
+      allow create: if request.auth != null
                     && request.auth.uid == uid
                     // v0.9.150 : ajout `termsAccepted` (map) + `newsletterOptIn` (bool) — RGPD consent
                     && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'lastSeen', 'termsAccepted', 'newsletterOptIn'])
@@ -71,6 +72,37 @@ service cloud.firestore {
                     // v0.9.150 : validation newsletterOptIn (optionnel, doit être bool si présent)
                     && (
                       !('newsletterOptIn' in request.resource.data.keys())
+                      || request.resource.data.newsletterOptIn is bool
+                    );
+
+      // Mise à jour — SEULS lastSeen / termsAccepted / newsletterOptIn peuvent changer.
+      // v1.0.1 (fix prod) : l'ancienne règle `write` re-validait TOUT le doc fusionné à
+      // chaque update → un pseudo legacy (accent, espace exotique), un `lastSeen` absent
+      // ou un email modifié faisait échouer l'écriture du consentement (permission-denied),
+      // et la modale CGU bouclait à l'infini. Ici l'identité (uid/email/username) est
+      // IMMUABLE (sinon affectedKeys la révélerait et hasOnly échouerait), donc on ne
+      // re-valide PAS le regex username. Plus restrictif ET plus robuste.
+      allow update: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['lastSeen', 'termsAccepted', 'newsletterOptIn'])
+                    && (
+                      !('lastSeen' in request.resource.data.diff(resource.data).affectedKeys())
+                      || request.resource.data.lastSeen is int
+                    )
+                    && (
+                      !('termsAccepted' in request.resource.data.diff(resource.data).affectedKeys())
+                      || (
+                        request.resource.data.termsAccepted is map
+                        && request.resource.data.termsAccepted.keys().hasOnly(['version', 'acceptedAt'])
+                        && request.resource.data.termsAccepted.version is string
+                        && request.resource.data.termsAccepted.version.size() >= 1
+                        && request.resource.data.termsAccepted.version.size() <= 16
+                        && request.resource.data.termsAccepted.acceptedAt is int
+                      )
+                    )
+                    && (
+                      !('newsletterOptIn' in request.resource.data.diff(resource.data).affectedKeys())
                       || request.resource.data.newsletterOptIn is bool
                     );
     }
