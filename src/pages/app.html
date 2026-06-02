@@ -249,6 +249,18 @@
     </div>
   </div>
 
+  <!-- ══ OFFRE D'ESSAI (v1.0.2) — proposée 1×, après le wizard de setup (nouveaux users) ══ -->
+  <div id="trialOfferModal" class="consent-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="tofTitle">
+    <div class="consent-modal-box">
+      <h2 id="tofTitle" class="consent-title">🚀 Démarre ton essai 7 jours</h2>
+      <p id="tofIntro" class="consent-intro">Passe en <strong>Funded</strong> : 2 comptes groupables, 5 analyses IA/jour, drawdown EOD précis, archive PDF par trade.</p>
+      <p id="tofFine" class="consent-intro" style="font-size:12.5px">7 jours gratuits, puis <strong>8,99 €/mois</strong> avec le code <strong>ZELD40</strong> (−40%). Carte requise · annulable en 1 clic · prélevé seulement à J+7.</p>
+      <div class="login-error" id="tofError"></div>
+      <button type="button" class="login-btn" id="tofStart">Démarrer l'essai 7 jours →</button>
+      <button type="button" class="btn-ghost" id="tofSkip" style="width:100%;margin-top:8px;color:var(--muted)">Continuer en gratuit</button>
+    </div>
+  </div>
+
   <!-- ══ VERIFY EMAIL GATE — bloque l'accès à l'app tant que l'email n'est pas vérifié (v0.9.255) ══ -->
   <div id="verifyEmailGate" class="consent-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="vegTitle">
     <div class="consent-modal-box">
@@ -1125,7 +1137,7 @@
   <script src="js/app.js?v=1.0.1"></script>
   <script src="js/tour.js?v=1.0.1"></script>
 
-  <script src="js/app-bootstrap.js?v=1.0.1"></script>
+  <script src="js/app-bootstrap.js?v=1.0.1&amp;h=1"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent
