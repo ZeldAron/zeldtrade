@@ -298,11 +298,33 @@ const Auth = (() => {
     const acceptedTerms   = !!(opts && opts.acceptedTerms);
     const newsletterOptIn = !!(opts && opts.newsletterOptIn);
     if (!acceptedTerms) return { error: 'terms-required' };
+    const ref = _fbDb.collection('userEmails').doc(user.uid);
+    const consentFields = {
+      termsAccepted:   { version: TERMS_VERSION, acceptedAt: Date.now() },
+      newsletterOptIn: newsletterOptIn,
+    };
     try {
-      await _fbDb.collection('userEmails').doc(user.uid).set({
-        termsAccepted:   { version: TERMS_VERSION, acceptedAt: Date.now() },
-        newsletterOptIn: newsletterOptIn,
-      }, { merge: true });
+      // v1.0.1 : self-heal. Si le doc userEmails n'existe pas (compte créé sans, ou
+      // write signup échoué), un simple merge des 2 champs = CREATE incomplet → refusé
+      // par les rules (uid/email/username/lastSeen requis). On crée donc le doc complet.
+      let exists = false;
+      try { exists = (await ref.get()).exists; } catch (e) { /* lecture refusée → on tente l'update */ exists = true; }
+      if (exists) {
+        await ref.set(consentFields, { merge: true });
+      } else {
+        // Pseudo : displayName Firebase (posé au signup) sinon dérivé de l'email, nettoyé
+        // selon le whitelist des rules (^[A-Za-z0-9._\- ]+$), borné 2..30.
+        let username = (user.displayName || '').trim();
+        if (username.length < 2) username = String(user.email || '').split('@')[0] || 'trader';
+        username = username.replace(/[^A-Za-z0-9._\- ]/g, '').slice(0, 30);
+        if (username.length < 2) username = 'trader';
+        await ref.set(Object.assign({
+          uid:      user.uid,
+          email:    user.email,
+          username: username,
+          lastSeen: Date.now(),
+        }, consentFields));
+      }
       return { ok: true };
     } catch (e) {
       console.warn('[Auth] recordConsent failed:', e && e.code, e && e.message);
