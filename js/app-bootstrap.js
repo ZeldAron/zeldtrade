@@ -515,6 +515,8 @@ document.addEventListener('DOMContentLoaded', () => {
       try { UI.initSettings(); } catch {}
       try { if (UI.refreshFocusScope) UI.refreshFocusScope(); } catch {}
       try { window.dispatchEvent(new CustomEvent('store:profileChanged')); } catch {}
+      // v1.0.2 : juste après le setup, propose l'essai 7j avec CB (1×, skippable).
+      try { _showTrialOffer(); } catch (e) {}
     }
 
     // localise les titres/boutons (steps 2-3 construits hors i18n auto)
@@ -546,6 +548,70 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       $id('tpmBack3') && $id('tpmBack3').addEventListener('click', () => show(hasProp() ? 2 : 1));
       $id('tpmFinish') && $id('tpmFinish').addEventListener('click', finish);
+    }
+  }
+
+  // v1.0.2 — Offre d'essai 7j (avec CB) proposée UNE FOIS après le setup wizard.
+  // On garde le plan gratuit : « Continuer en gratuit » reste dispo. Si l'user a
+  // déjà un abonnement actif ou a déjà vu l'offre → on ne (re)montre rien.
+  function _showTrialOffer() {
+    const modal = document.getElementById('trialOfferModal');
+    if (!modal) return;
+    try {
+      const s = (Store.getSettings && Store.getSettings()) || {};
+      if (s.trialOfferSeen) return;
+      const st = (Store.getStripeInfo && Store.getStripeInfo()) || {};
+      if (st.customerId && st.subscriptionStatus &&
+          !['canceled', 'incomplete_expired', 'incomplete'].includes(st.subscriptionStatus)) return;
+    } catch (e) {}
+    try { Store.updateSettings({ trialOfferSeen: true }); } catch (e) {}  // 1× seulement
+
+    const en = i18n.getLang() === 'en';
+    const $id = id => document.getElementById(id);
+    const setTxt = (id, v) => { const e = $id(id); if (e) e.textContent = v; };
+    const setHtml = (id, v) => { const e = $id(id); if (e) e.innerHTML = v; };
+    if (en) {
+      setTxt('tofTitle', '🚀 Start your 7-day trial');
+      setHtml('tofIntro', 'Go <strong>Funded</strong>: 2 groupable accounts, 5 AI analyses/day, precise EOD drawdown, PDF archive per trade.');
+      setHtml('tofFine', '7 days free, then <strong>€8.99/mo</strong> with code <strong>ZELD40</strong> (−40%). Card required · cancel in 1 click · charged only on day 7.');
+      setTxt('tofStart', 'Start 7-day trial →');
+      setTxt('tofSkip', 'Continue for free');
+    }
+
+    modal.style.display = 'flex';
+    if (!modal.dataset.bound) {
+      modal.dataset.bound = '1';
+      $id('tofSkip') && $id('tofSkip').addEventListener('click', () => { modal.style.display = 'none'; });
+      $id('tofStart') && $id('tofStart').addEventListener('click', _startTrialCheckout);
+    }
+  }
+
+  async function _startTrialCheckout() {
+    const btn = document.getElementById('tofStart');
+    const err = document.getElementById('tofError');
+    if (err) err.textContent = '';
+    if (typeof _fbFunctions === 'undefined' || !_fbFunctions) {
+      if (err) err.textContent = (i18n.t && i18n.t('off.checkout.err')) || 'Service de paiement indisponible — recharge la page.';
+      return;
+    }
+    const orig = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    // Force-refresh du token (email tout juste vérifié → évite un refus checkout)
+    try {
+      if (typeof _fbAuth !== 'undefined' && _fbAuth && _fbAuth.currentUser) {
+        await _fbAuth.currentUser.reload();
+        await _fbAuth.currentUser.getIdToken(true);
+      }
+    } catch (e) {}
+    try {
+      if (window.Analytics) Analytics.track('checkout_started', { label: 'funded_monthly_trialoffer' });
+      const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan: 'funded_monthly' });
+      if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+      if (err) err.textContent = (i18n.t && i18n.t('off.checkout.err')) || 'Erreur lors de la création du paiement — réessaie.';
+    } catch (e) {
+      if (err) err.textContent = (i18n.t && i18n.t('off.checkout.err')) || 'Erreur lors de la création du paiement — réessaie.';
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = orig; }
     }
   }
 
