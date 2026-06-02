@@ -18,11 +18,20 @@ const Theme = (() => {
   const VALID = new Set(['dark', 'light', 'auto']);
   const callbacks = [];
 
+  // v1.0.0 : sur l'environnement de TEST (zeldtrade-staging), le thème par défaut
+  // est le NOIR complet (pour évaluer le rendu sombre). La prod reste en blanc.
+  // Un choix explicite de l'user (localStorage) prime toujours sur ce défaut.
+  function _isStaging() {
+    try { return (location.hostname || '').indexOf('zeldtrade-staging') !== -1; }
+    catch { return false; }
+  }
+  function _defaultTheme() { return _isStaging() ? 'dark' : 'light'; }
+
   function _readStored() {
     try {
       const v = localStorage.getItem(KEY);
-      return VALID.has(v) ? v : 'light';   // v0.9.400 : blanc par défaut
-    } catch { return 'light'; }
+      return VALID.has(v) ? v : _defaultTheme();
+    } catch { return _defaultTheme(); }
   }
 
   function _resolveAuto() {
