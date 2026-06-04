@@ -1848,6 +1848,7 @@ const Modal = (() => {
     const jf = (Store.getJournalFields && Store.getJournalFields()) || { prices: true };
     const showPrices = jf.prices !== false;
     const setVis = (id, show) => { const e = $(id); if (e) e.style.display = show ? '' : 'none'; };
+    setVis('wContractsField', showPrices); // Lots (taille de position)
     setVis('wLevelsGrid', showPrices);     // Entry / SL / TP1
     setVis('wTp23Row', showPrices);        // TP2 / TP3 (dans les optionnels)
     setVis('wPartialsBlock', showPrices);  // sorties partielles (scale-out)
