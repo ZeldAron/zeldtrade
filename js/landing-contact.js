@@ -18,6 +18,8 @@
   // v0.9.278 : compteur de visites cookieless — 1 ping par session (landing).
   (function pingVisit() {
     try {
+      // v1.0.2 : appareil admin (flag posé par la page admin) → ne compte pas mes visites.
+      if (localStorage.getItem('zt_notrack') === '1') return;
       if (sessionStorage.getItem('zeld_visit_ping')) return;
       sessionStorage.setItem('zeld_visit_ping', '1');
       fn.httpsCallable('recordVisit')().catch(() => {});

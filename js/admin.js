@@ -257,7 +257,10 @@ const Admin = (() => {
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
         <div class="admin-flt-count" style="margin:0">${filtered.length} résultat${filtered.length > 1 ? 's' : ''}${_isFiltered ? ' (filtré)' : ''}</div>
-        <button id="btnNewTest" class="btn-refresh" title="Créer un compte de test (réservé admin)">+ Compte test</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${tierCounts.beta > 0 ? `<button id="btnBulkBetaElite" class="btn-refresh" title="Passer TOUS les utilisateurs Bêta en Elite (accès complet à vie)">🌟 Tout Bêta → Elite (${tierCounts.beta})</button>` : ''}
+          <button id="btnNewTest" class="btn-refresh" title="Créer un compte de test (réservé admin)">+ Compte test</button>
+        </div>
       </div>
       <table class="admin-table">
         <thead><tr><th>Utilisateur</th><th>Palier</th><th>Activité</th><th class="th-actions">Actions</th></tr></thead>
@@ -291,6 +294,8 @@ const Admin = (() => {
     });
     const newTestEl = $('btnNewTest');
     if (newTestEl) newTestEl.addEventListener('click', openTestModal);
+    const bulkBetaEl = $('btnBulkBetaElite');
+    if (bulkBetaEl) bulkBetaEl.addEventListener('click', bulkBetaToElite);
 
     // Bind actions (data-action). stopPropagation → ne pas ouvrir le drawer en cliquant un bouton.
     wrap.querySelectorAll('[data-action]').forEach(btn => {
@@ -324,6 +329,30 @@ const Admin = (() => {
       toast((e && e.message) || 'Erreur lors de l\'activation Elite.', true);
       if (btn) { btn.disabled = false; }
     }
+  }
+
+  // ── Passer TOUS les Bêta en Elite (v1.0.2) ──────────────────────────────────
+  // Réutilise adminGrantElite par user (idempotent : re-cliquer ne touche que les Bêta
+  // restants). La CF rate-limit à 30/fenêtre → si beaucoup de Bêta, des appels peuvent
+  // échouer ; on les compte et on re-clique plus tard pour finir le reste.
+  async function bulkBetaToElite() {
+    const betas = (_cachedUsers || [])
+      .map((u, i) => ({ u, tier: _userTier(_cachedPlans[i]) }))
+      .filter(x => x.tier === 'beta');
+    if (!betas.length) { toast('Aucun utilisateur Bêta à convertir.'); return; }
+    if (!confirm(`Passer les ${betas.length} utilisateur(s) BÊTA en Elite (accès complet à vie, gratuit) ?\n\nÀ déclencher une seule fois. Si certains échouent (limite anti-abus), re-clique pour finir le reste.`)) return;
+    if (!_fbFunctions) { toast('SDK Functions non chargé.', true); return; }
+    const btn = $('btnBulkBetaElite');
+    if (btn) btn.disabled = true;
+    const callable = _fbFunctions.httpsCallable('adminGrantElite');
+    let ok = 0, fail = 0;
+    for (const { u } of betas) {
+      try { await callable({ uid: u.uid }); ok++; }
+      catch (e) { fail++; console.warn('[Admin] bulk grant échec', u.email, e && e.message); }
+      if (btn) btn.textContent = `… ${ok + fail}/${betas.length}`;
+    }
+    toast(`Elite activé : ${ok} OK${fail ? ` · ${fail} échec(s) — re-clique pour finir` : ''}.`, fail > 0);
+    await renderUsers();
   }
 
   // ── Forcer email_verified=true sur un compte (v0.9.144) ─────────────────────
@@ -1331,6 +1360,9 @@ const Admin = (() => {
   function init() {
     _fbAuth.onAuthStateChanged(user => {
       if (user && user.email === ADMIN_EMAIL) {
+        // v1.0.2 : marque cet appareil comme « admin » → tes visites ne comptent plus
+        // dans les stats publiques (recordVisit landing/app lit ce flag et skip).
+        try { localStorage.setItem('zt_notrack', '1'); } catch (e) {}
         showDashboard(user);
       } else {
         show('loginScreen', 'flex');

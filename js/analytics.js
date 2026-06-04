@@ -49,6 +49,8 @@ const Analytics = (() => {
   // Compté côté serveur (CF recordVisit → publicStats). Inclut la landing.
   function pingVisit() {
     try {
+      // v1.0.2 : appareil admin (flag posé par la page admin) → ne compte pas mes visites.
+      if (localStorage.getItem('zt_notrack') === '1') return;
       if (sessionStorage.getItem('zeld_visit_ping')) return;
       sessionStorage.setItem('zeld_visit_ping', '1');
       if (typeof _fbFunctions !== 'undefined' && _fbFunctions) {
