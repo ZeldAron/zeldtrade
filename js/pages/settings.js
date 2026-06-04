@@ -1558,12 +1558,24 @@
             <input type="checkbox" id="jfPrices"${jf.prices ? ' checked' : ''}>
           </label>
           <p style="font-size:11px;color:var(--muted);margin:2px 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.prices.hint'))}</p>
+          <label style="${rowStyle};cursor:pointer">
+            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.pnl.label'))}</span>
+            <input type="checkbox" id="jfPnl"${jf.pnl ? ' checked' : ''}>
+          </label>
+          <label style="${rowStyle};cursor:pointer">
+            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.rMultiple.label'))}</span>
+            <input type="checkbox" id="jfR"${jf.rMultiple ? ' checked' : ''}>
+          </label>
           <h4 style="margin:16px 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.fields.title'))}</h4>
           <p style="font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.fields.hint'))}</p>
           ${fieldRows}
         </div>`;
       const pc = $('jfPrices');
       if (pc) pc.addEventListener('change', () => { const jfNow = cur(); jfNow.prices = pc.checked; save(jfNow); });
+      const pp = $('jfPnl');
+      if (pp) pp.addEventListener('change', () => { const jfNow = cur(); jfNow.pnl = pp.checked; save(jfNow); });
+      const pr = $('jfR');
+      if (pr) pr.addEventListener('change', () => { const jfNow = cur(); jfNow.rMultiple = pr.checked; save(jfNow); });
       el.querySelectorAll('.jf-field-mode').forEach(s => s.addEventListener('change', () => {
         const jfNow = cur();
         const f = { ...jfNow.fields };
