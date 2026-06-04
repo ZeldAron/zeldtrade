@@ -146,15 +146,9 @@ function initApp() {
   $('btnNewTrade').addEventListener('click', () => {
     if (isMobile()) closeSidebar();
     if (!Store.getMyAccounts().length) {
-      // v1.0.3 : aucun compte de trading → on va dans Réglages ET on OUVRE DIRECT le
-      // formulaire de création de compte (réutilise le form complet/testé : presets prop
-      // firm, drawdown, taille…). L'user a le form prêt à remplir, pas juste la page.
-      UI.toast(i18n.t('err.no.account'));
-      switchPage('settings');
-      setTimeout(() => {
-        document.getElementById('btnAddMyAccount')?.click();
-        document.getElementById('maName')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 100);
+      // v1.0.3 : aucun compte → petite modale d'info (croix en haut à droite) ; son bouton
+      // « Créer mon compte » ouvre Réglages + le formulaire d'ajout de compte directement.
+      showNoAccountModal();
       return;
     }
     Modal.open(null, saved => {
@@ -163,6 +157,39 @@ function initApp() {
       UI.renderList();
     });
   });
+
+  // v1.0.3 : petite modale « pas de compte » — info + croix de fermeture + bouton qui
+  // emmène vers Réglages avec le formulaire de création de compte ouvert.
+  function showNoAccountModal() {
+    if (document.getElementById('noAccountOverlay')) return; // anti double-ouverture
+    const en = (i18n.getLang && i18n.getLang() === 'en');
+    const overlay = document.createElement('div');
+    overlay.id = 'noAccountOverlay';
+    overlay.className = 'modal-overlay open';
+    overlay.style.cssText = 'display:flex;align-items:center;justify-content:center;z-index:1000;opacity:1;pointer-events:all';
+    overlay.innerHTML = `
+      <div class="modal-card" style="position:relative;max-width:380px;width:90vw;padding:30px 24px 24px;background:var(--bg2);border-radius:12px;border:1px solid var(--border);text-align:center">
+        <button id="naClose" type="button" aria-label="${en ? 'Close' : 'Fermer'}" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--muted);font-size:24px;line-height:1;cursor:pointer;padding:2px 6px">&times;</button>
+        <div style="font-size:34px;margin-bottom:8px">📒</div>
+        <h3 style="margin:0 0 8px;font-size:18px;color:var(--text)">${en ? 'No trading account yet' : 'Pas encore de compte'}</h3>
+        <p style="margin:0 0 20px;font-size:13.5px;color:var(--muted);line-height:1.55">${en ? 'To log a trade, you first need a trading account (prop firm, crypto or your own funds).' : 'Pour enregistrer un trade, tu dois d\'abord créer un compte de trading (prop firm, crypto ou fonds propres).'}</p>
+        <button class="btn-primary" id="naCreate" type="button" style="width:100%">${en ? 'Create my account →' : 'Créer mon compte →'}</button>
+      </div>`;
+    document.body.appendChild(overlay);
+    function close() { overlay.remove(); document.removeEventListener('keydown', onEsc); }
+    function onEsc(e) { if (e.key === 'Escape') close(); }
+    document.getElementById('naClose').addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', onEsc);
+    document.getElementById('naCreate').addEventListener('click', () => {
+      close();
+      switchPage('settings');
+      setTimeout(() => {
+        document.getElementById('btnAddMyAccount')?.click();
+        document.getElementById('maName')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    });
+  }
 
   // ── KEYBOARD SHORTCUTS (v0.9.238 enrichis) ─────────────────────────────────
   document.addEventListener('keydown', e => {
