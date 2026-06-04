@@ -10,7 +10,7 @@
 (function () {
   'use strict';
 
-  var META_PIXEL_ID = 'REMPLACER_PAR_TON_PIXEL_ID';
+  var META_PIXEL_ID = '27618404664430031';
 
   // Garde-fou : on n'active le pixel QUE si l'ID ressemble à un vrai Pixel ID.
   if (!/^\d{10,20}$/.test(META_PIXEL_ID)) {
