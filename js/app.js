@@ -146,10 +146,15 @@ function initApp() {
   $('btnNewTrade').addEventListener('click', () => {
     if (isMobile()) closeSidebar();
     if (!Store.getMyAccounts().length) {
-      // v1.0.3 : aucun compte de trading → on redirige DIRECT vers Réglages (Mes comptes)
-      // pour en créer un, plutôt qu'ouvrir un wizard inutilisable. Plus simple pour l'user.
+      // v1.0.3 : aucun compte de trading → on va dans Réglages ET on OUVRE DIRECT le
+      // formulaire de création de compte (réutilise le form complet/testé : presets prop
+      // firm, drawdown, taille…). L'user a le form prêt à remplir, pas juste la page.
       UI.toast(i18n.t('err.no.account'));
       switchPage('settings');
+      setTimeout(() => {
+        document.getElementById('btnAddMyAccount')?.click();
+        document.getElementById('maName')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
       return;
     }
     Modal.open(null, saved => {
