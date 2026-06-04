@@ -458,6 +458,8 @@ function initApp() {
     let params;
     try { params = new URLSearchParams(window.location.search); } catch { return; }
     if (params.get('payment') !== 'success') return;
+    // Meta Pixel : retour de checkout Stripe réussi → conversion "Purchase" (l'event $$).
+    try { if (window.ztTrack) window.ztTrack('Purchase', { currency: 'EUR' }); } catch (e) {}
     // Nettoie l'URL pour ne pas re-déclencher au refresh
     try {
       params.delete('payment');

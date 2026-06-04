@@ -908,6 +908,8 @@ document.addEventListener('DOMContentLoaded', () => {
       $('registerError').textContent = result.error;
       return;
     }
+    // Meta Pixel : inscription réussie → conversion top-funnel (optimisation des ads)
+    try { if (window.ztTrack) window.ztTrack('CompleteRegistration'); } catch (e) {}
 
     // v0.9.143 : modale info post-signup — informer l'user sur l'email de
     // vérification (souvent en spam sur Gmail / free.fr / Hotmail car expédié
