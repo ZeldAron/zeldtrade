@@ -53,19 +53,24 @@
       .catch(() => { /* fail-soft : on n'affiche simplement pas le compteur */ });
   })();
 
-  // v0.9.253 : bannière cookies RGPD. Affichée tant que pas acquittée.
-  // Clé partagée `zt_cookie_ok` avec l'app → un seul acquittement pour les 2.
+  // v1.0.x : bannière de CONSENTEMENT RGPD (Accepter / Refuser). Le choix `zt_consent`
+  // pilote le Meta Pixel (window.ztConsent) → le pixel ne se charge QUE si « Accepter ».
+  // Clé partagée avec l'app → un seul choix pour les 2 surfaces.
   (function cookieBanner() {
     const banner = document.getElementById('cookieBanner');
+    if (!banner) return;
     const accept = document.getElementById('cookieAcceptBtn');
-    if (!banner || !accept) return;
-    try {
-      if (!localStorage.getItem('zt_cookie_ok')) banner.style.display = 'flex';
-    } catch { banner.style.display = 'flex'; }
-    accept.addEventListener('click', () => {
-      try { localStorage.setItem('zt_cookie_ok', '1'); } catch {}
+    const refuse = document.getElementById('cookieRefuseBtn');
+    let decided = false;
+    try { decided = !!localStorage.getItem('zt_consent'); } catch {}
+    if (!decided) banner.style.display = 'flex';
+    function decide(granted) {
+      if (window.ztConsent) window.ztConsent(granted);
+      else { try { localStorage.setItem('zt_consent', granted ? 'granted' : 'denied'); } catch {} }
       banner.style.display = 'none';
-    });
+    }
+    if (accept) accept.addEventListener('click', () => decide(true));
+    if (refuse) refuse.addEventListener('click', () => decide(false));
   })();
 
   const form    = document.getElementById('lcForm');

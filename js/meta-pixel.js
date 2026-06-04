@@ -1,37 +1,46 @@
-// ─── META (FACEBOOK/INSTAGRAM) PIXEL ─────────────────────────────────────────
-// Chargé sur la landing ET l'app. Sert au retargeting + au suivi des conversions
-// (inscriptions, abonnements) pour les Meta Ads.
+// ─── META (FACEBOOK/INSTAGRAM) PIXEL — chargé sous CONSENTEMENT (RGPD) ───────
+// Le pixel ne se charge PAS au chargement de la page : il attend le consentement
+// explicite de l'utilisateur (bandeau cookies → « Accepter »). Un visiteur ayant
+// déjà accepté (localStorage `zt_consent` = 'granted') le recharge automatiquement.
 //
-// ⚠️  AARON : colle TON Pixel ID ci-dessous (un nombre d'environ 15-16 chiffres,
-//     récupéré sur business.facebook.com → Gestionnaire d'événements → ton dataset).
-//     Tant que ce n'est pas un vrai ID, le pixel reste INERTE (rien n'est envoyé).
-//
-// Helper exposé : window.ztTrack('CompleteRegistration' | 'Purchase' | 'Lead', params)
+// API exposée :
+//   window.ztConsent(true|false)  → enregistre le choix et charge le pixel si accepté
+//   window.ztTrack('Lead' | 'CompleteRegistration' | 'Purchase', params)  → no-op tant
+//                                   que le pixel n'est pas chargé (= pas de consentement)
 (function () {
   'use strict';
 
   var META_PIXEL_ID = '27618404664430031';
 
-  // Garde-fou : on n'active le pixel QUE si l'ID ressemble à un vrai Pixel ID.
-  if (!/^\d{10,20}$/.test(META_PIXEL_ID)) {
-    window.ztTrack = function () {};   // no-op tant que l'ID n'est pas configuré
-    return;
+  // Garde-fou : pixel inerte si l'ID n'est pas configuré.
+  if (!/^\d{10,20}$/.test(META_PIXEL_ID)) { window.ztTrack = function () {}; return; }
+
+  var loaded = false;
+
+  function load() {
+    if (loaded) return; loaded = true;
+    // Snippet officiel Meta Pixel (base code).
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () { n.callMethod ?
+        n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0; t.src = v;
+      s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
+    }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    try { fbq('init', META_PIXEL_ID); fbq('track', 'PageView'); } catch (e) {}
   }
 
-  // Snippet officiel Meta Pixel (base code).
-  !function (f, b, e, v, n, t, s) {
-    if (f.fbq) return; n = f.fbq = function () { n.callMethod ?
-      n.callMethod.apply(n, arguments) : n.queue.push(arguments); };
-    if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
-    n.queue = []; t = b.createElement(e); t.async = !0; t.src = v;
-    s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s);
-  }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
-
-  fbq('init', META_PIXEL_ID);
-  fbq('track', 'PageView');
-
-  // Helper global : déclenche un événement standard Meta (utilisé par le reste de l'app).
+  // Événements : ignorés tant qu'il n'y a pas de consentement (pixel non chargé).
   window.ztTrack = function (event, params) {
-    try { if (window.fbq) fbq('track', event, params || {}); } catch (e) {}
+    try { if (loaded && window.fbq) fbq('track', event, params || {}); } catch (e) {}
   };
+
+  // Appelé par le bandeau cookies. true = accepte (charge le pixel) ; false = refuse.
+  window.ztConsent = function (granted) {
+    try { localStorage.setItem('zt_consent', granted ? 'granted' : 'denied'); } catch (e) {}
+    if (granted) load();
+  };
+
+  // Visiteur ayant déjà donné son consentement → on (re)charge le pixel directement.
+  try { if (localStorage.getItem('zt_consent') === 'granted') load(); } catch (e) {}
 })();
