@@ -78,6 +78,28 @@ const Modal = (() => {
     if ($('wline23')) $('wline23').className = 'wdot-line' + (n > 2 ? ' done' : '');
   }
 
+  // Entrée dans l'étape 3 (détails) : initialise instrument / spread / frais / compte puis
+  // affiche l'étape. Appelée par le bouton « Suivant » (après l'IA) ET par le mode
+  // discrétionnaire (qui saute l'étape 2). Source unique → pas de divergence d'init.
+  function _enterDetailsStep() {
+    if (!parsedTrade) {
+      const hint = ($('wTextHint').value || '').trim();
+      if (hint) parsedTrade = parseTextHint(hint);
+    }
+    if (parsedTrade) fillStep3FromParsed();
+    populateInstrumentSelect(firmKey, parsedTrade?.instrument);
+    // Saisie MANUELLE (pas d'IA) : init spreadCost depuis l'instrument par défaut.
+    if (!editingId && !parsedTrade) {
+      spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
+      _applyFee();
+      updateSpreadDisplay();
+    }
+    populateApexSelect($('wApex').value || '');
+    goToStep(3);
+    _seedSlot0FromAnalysis();
+    $('wContracts').focus();
+  }
+
   // ── Étape 1 : Direction ──────────────────────────────────────────────────────
   function setDirection(d) {
     direction = d;
@@ -90,8 +112,8 @@ const Modal = (() => {
     // v1.0.2 : journal discrétionnaire (prix désactivés) → on SAUTE l'étape 2 (analyse IA
     // par capture) et on va direct aux détails. Pas de prix = pas d'IA.
     if (Store.getJournalFields && Store.getJournalFields().prices === false) {
+      _enterDetailsStep();
       _applyJournalLayout(false);
-      goToStep(3);
       return;
     }
     goToStep(2);
@@ -1606,7 +1628,7 @@ const Modal = (() => {
       const tt = t.date && t.date.length > 10 ? t.date.slice(11, 16) : '';
       $('wTradeDate').value  = td;
       $('wTradeTime').value  = tt;
-      $('wExitField').style.display = t.outcome !== 'open' ? '' : 'none';
+      $('wExitField').style.display = (t.outcome !== 'open' && !(Store.getJournalFields && Store.getJournalFields().prices === false)) ? '' : 'none';
 
       // Badge direction
       const badge = $('wDirBadge');
@@ -1824,9 +1846,14 @@ const Modal = (() => {
     const jf = (Store.getJournalFields && Store.getJournalFields()) || { prices: true };
     const showPrices = jf.prices !== false;
     const setVis = (id, show) => { const e = $(id); if (e) e.style.display = show ? '' : 'none'; };
-    setVis('wLevelsGrid', showPrices);   // Entry / SL / TP1
-    setVis('wTp23Row', showPrices);      // TP2 / TP3 (dans les optionnels)
-    if (!showPrices) { const lc = $('wLiveCalc'); if (lc) lc.style.display = 'none'; }
+    setVis('wLevelsGrid', showPrices);     // Entry / SL / TP1
+    setVis('wTp23Row', showPrices);        // TP2 / TP3 (dans les optionnels)
+    setVis('wPartialsBlock', showPrices);  // sorties partielles (scale-out)
+    if (!showPrices) {
+      // Plus aucune notion de prix : on masque aussi le live-calc ET le prix de sortie.
+      const lc = $('wLiveCalc');  if (lc) lc.style.display = 'none';
+      const ex = $('wExitField'); if (ex) ex.style.display = 'none';
+    }
     // Mode discrétionnaire en CRÉATION : on vide les niveaux (→ null au save). En ÉDITION,
     // on préserve les valeurs existantes (pas de perte de données sur un ancien trade chiffré).
     if (!showPrices && !isEdit) ['wEntry', 'wSL', 'wTP1', 'wTP2', 'wTP3'].forEach(id => { const e = $(id); if (e) e.value = ''; });
@@ -2012,29 +2039,7 @@ const Modal = (() => {
     $('wTextHint').addEventListener('keydown', e => {
       if (e.key === 'Enter') { e.preventDefault(); analyzeImage(); }
     });
-    $('wBtnNext2').addEventListener('click', () => {
-      if (!parsedTrade) {
-        const hint = ($('wTextHint').value || '').trim();
-        if (hint) parsedTrade = parseTextHint(hint);
-      }
-      if (parsedTrade) fillStep3FromParsed();
-      populateInstrumentSelect(firmKey, parsedTrade?.instrument);
-      // v0.9.358 (fix B-06) : en saisie MANUELLE (pas d'IA), fillStep3FromParsed n'est
-      // pas appelé → spreadCost resterait à 0. On l'initialise ici depuis l'instrument
-      // par défaut pour que le preview live ET le P&L sauvegardé incluent le spread.
-      if (!editingId && !parsedTrade) {
-        spreadCost = getSpreadForInstrument(firmKey, $('wInstr').value);
-        _applyFee();
-        updateSpreadDisplay();
-      }
-      // v0.9.176 (H3 fix) : préserver le compte déjà pré-sélectionné au step 1
-      // (lecture du select courant avant re-render). Évite de re-demander à l'user
-      // de choisir son compte 50x par jour quand il est déjà sélectionné par défaut.
-      populateApexSelect($('wApex').value || '');
-      goToStep(3);
-      _seedSlot0FromAnalysis();   // v0.9.290 : l'image d'analyse devient la capture #1
-      $('wContracts').focus();
-    });
+    $('wBtnNext2').addEventListener('click', () => { _enterDetailsStep(); });
 
     $('wDropZone').addEventListener('click', e => {
       if (e.target === $('wBtnClearImg') || $('wBtnClearImg').contains(e.target)) return;
@@ -2309,7 +2314,8 @@ const Modal = (() => {
 
     $('wOutcome').addEventListener('change', () => {
       const outcome = $('wOutcome').value;
-      $('wExitField').style.display = outcome === 'open' ? 'none' : '';
+      const pricesOff = !!(Store.getJournalFields && Store.getJournalFields().prices === false);
+      $('wExitField').style.display = (outcome === 'open' || pricesOff) ? 'none' : '';
       if (outcome === 'open') {
         $('wExit').value = '';
       } else if (outcome === 'win') {
