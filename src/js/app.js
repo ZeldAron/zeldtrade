@@ -146,7 +146,10 @@ function initApp() {
   $('btnNewTrade').addEventListener('click', () => {
     if (isMobile()) closeSidebar();
     if (!Store.getMyAccounts().length) {
-      UI.toast(i18n.t('err.no.account'), true);
+      // v1.0.3 : aucun compte de trading → on redirige DIRECT vers Réglages (Mes comptes)
+      // pour en créer un, plutôt qu'ouvrir un wizard inutilisable. Plus simple pour l'user.
+      UI.toast(i18n.t('err.no.account'));
+      switchPage('settings');
       return;
     }
     Modal.open(null, saved => {
