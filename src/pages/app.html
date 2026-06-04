@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src  'self' https://www.gstatic.com https://cdnjs.cloudflare.com https://hcaptcha.com https://*.hcaptcha.com https://www.google.com https://www.recaptcha.net https://www.gstatic.com/recaptcha/ https://apis.google.com https://challenges.cloudflare.com;
+    script-src  'self' https://www.gstatic.com https://cdnjs.cloudflare.com https://hcaptcha.com https://*.hcaptcha.com https://www.google.com https://www.recaptcha.net https://www.gstatic.com/recaptcha/ https://apis.google.com https://challenges.cloudflare.com https://connect.facebook.net;
     style-src   'self' 'unsafe-inline' https://fonts.googleapis.com https://hcaptcha.com https://*.hcaptcha.com;
     font-src    'self' https://fonts.gstatic.com;
-    connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://firebase.googleapis.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://firebasestorage.googleapis.com https://*.firebasestorage.app https://*.firebaseio.com wss://*.firebaseio.com wss://firestore.googleapis.com https://europe-west1-zeldtrade.cloudfunctions.net https://europe-west1-zeldtrade-staging.cloudfunctions.net https://zeldtrade-staging.firebaseapp.com https://api.frankfurter.app https://hcaptcha.com https://*.hcaptcha.com https://www.google.com https://www.recaptcha.net https://apis.google.com;
-    img-src     'self' data: blob: https://www.gstatic.com/recaptcha/ https://firebasestorage.googleapis.com https://*.firebasestorage.app;
+    connect-src 'self' https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firebaseinstallations.googleapis.com https://firebase.googleapis.com https://firebaseappcheck.googleapis.com https://content-firebaseappcheck.googleapis.com https://firebasestorage.googleapis.com https://*.firebasestorage.app https://*.firebaseio.com wss://*.firebaseio.com wss://firestore.googleapis.com https://europe-west1-zeldtrade.cloudfunctions.net https://europe-west1-zeldtrade-staging.cloudfunctions.net https://zeldtrade-staging.firebaseapp.com https://api.frankfurter.app https://hcaptcha.com https://*.hcaptcha.com https://www.google.com https://www.recaptcha.net https://apis.google.com https://www.facebook.com https://connect.facebook.net;
+    img-src     'self' data: blob: https://www.gstatic.com/recaptcha/ https://firebasestorage.googleapis.com https://*.firebasestorage.app https://www.facebook.com;
     frame-src   https://hcaptcha.com https://*.hcaptcha.com https://www.google.com https://www.recaptcha.net https://zeldtrade.firebaseapp.com https://zeldtrade-staging.firebaseapp.com https://challenges.cloudflare.com;
     form-action 'self';
     object-src  'none';
@@ -53,6 +53,8 @@
   <!-- v0.9.255 : theme manager en TÊTE du head — applique data-theme="light"
        AVANT le parsing du body pour éviter le FOUC (flash dark → light). -->
   <script src="js/theme.js?v=1.0.1"></script>
+  <!-- Meta Pixel (retargeting + conversions) — inerte tant que le Pixel ID n'est pas posé -->
+  <script src="js/meta-pixel.js?v=1.0.1"></script>
 </head>
 <body>
 
@@ -1134,10 +1136,10 @@
   <script src="js/pages/outils.js?v=1.0.1"></script>
   <script src="js/pages/offers.js?v=1.0.1"></script>
   <script src="js/contact.js?v=1.0.1"></script>
-  <script src="js/app.js?v=1.0.1"></script>
+  <script src="js/app.js?v=1.0.1&amp;h=1"></script>
   <script src="js/tour.js?v=1.0.1"></script>
 
-  <script src="js/app-bootstrap.js?v=1.0.1&amp;h=2"></script>
+  <script src="js/app-bootstrap.js?v=1.0.1&amp;h=3"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent

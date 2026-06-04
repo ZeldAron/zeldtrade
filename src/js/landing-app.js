@@ -357,4 +357,11 @@
       } else { fallbackCopy(code); feedback(); }
     });
   })();
+
+  // ── Meta Pixel : event "Lead" au clic sur un CTA d'inscription ──────────────
+  (function leadTracking() {
+    $$('a[href^="/app?signup"]').forEach(a => a.addEventListener('click', () => {
+      if (window.ztTrack) window.ztTrack('Lead');
+    }));
+  })();
 })();
