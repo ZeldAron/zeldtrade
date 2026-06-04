@@ -1551,6 +1551,7 @@ const Modal = (() => {
     $('wNotes').value              = '';
     $('wExit').value               = '';
     $('wManualPnl').value          = '';
+    _renderJournalCustomFields(null);
     $('wContracts').value          = Store.getSettings().contracts || 1;
     // Date + heure par défaut = maintenant (heure locale)
     const nowLocal = new Date();
@@ -1573,6 +1574,7 @@ const Modal = (() => {
       $('wOutcome').value    = t.outcome;
       $('wExit').value       = t.exitPrice || '';
       $('wManualPnl').value  = t.manualPnl != null ? t.manualPnl : '';
+      _renderJournalCustomFields(t);
       // Sorties partielles (v0.9.250) — nouveau format `partials[]` prioritaire,
       // sinon migration depuis le legacy partialPercent/partialPrice.
       if (Array.isArray(t.partials) && t.partials.length) {
@@ -1757,13 +1759,70 @@ const Modal = (() => {
     };
   }
 
+  // ── v1.0.2 : Journal personnalisable — champs non-chiffrés (sentiment, plan, confiance) ──
+  // Injectés dans #wCustomFields selon settings.journalFields. Catalogue = Store.JOURNAL_CUSTOM_FIELDS
+  // (source unique). Aucun champ actif → conteneur masqué (trader chiffré classique = inchangé).
+  function _renderJournalCustomFields(trade) {
+    const host = $('wCustomFields');
+    if (!host) return;
+    const cat = Store.JOURNAL_CUSTOM_FIELDS || {};
+    const jf  = (Store.getJournalFields && Store.getJournalFields()) || { fields: {} };
+    const active = Object.keys(cat).filter(k => jf.fields && jf.fields[k]);
+    if (!active.length) { host.innerHTML = ''; host.style.display = 'none'; return; }
+    const cv = (trade && trade.custom && typeof trade.custom === 'object') ? trade.custom : {};
+    host.innerHTML = active.map(key => {
+      const def = cat[key];
+      const required = jf.fields[key] === 'required';
+      const star = required ? ' <span style="color:var(--red)">*</span>' : '';
+      let optsHtml = '<option value="">—</option>';
+      if (def.kind === 'select') {
+        optsHtml += def.options.map(o =>
+          `<option value="${o}"${cv[key] === o ? ' selected' : ''}>${UI.escHtml(i18n.t('jf.' + key + '.' + o))}</option>`).join('');
+      } else if (def.kind === 'rating') {
+        for (let n = def.min; n <= def.max; n++)
+          optsHtml += `<option value="${n}"${String(cv[key]) === String(n) ? ' selected' : ''}>${n}</option>`;
+      }
+      return `<div class="form-field" style="margin-bottom:8px">
+        <label class="form-label">${UI.escHtml(i18n.t('jf.' + key + '.label'))}${star}</label>
+        <select class="form-input wjf-input" data-jf-key="${key}" data-jf-req="${required ? '1' : ''}">${optsHtml}</select>
+      </div>`;
+    }).join('');
+    host.style.display = '';
+  }
+  function _collectJournalCustom() {
+    const host = $('wCustomFields');
+    const out = {};
+    if (!host) return out;
+    host.querySelectorAll('.wjf-input').forEach(inp => { if (inp.value !== '') out[inp.dataset.jfKey] = inp.value; });
+    return out;
+  }
+  // Retourne le libellé du 1er champ marqué « obligatoire » mais laissé vide, sinon null.
+  function _firstMissingRequiredJournalField() {
+    const host = $('wCustomFields');
+    if (!host) return null;
+    let missing = null;
+    host.querySelectorAll('.wjf-input').forEach(inp => {
+      if (missing) return;
+      if (inp.dataset.jfReq === '1' && inp.value === '') missing = i18n.t('jf.' + inp.dataset.jfKey + '.label');
+    });
+    return missing;
+  }
+
   let _saveInFlight = false;
   async function save() {
     if (_saveInFlight) return;
     const entry = parseFloat($('wEntry').value);
     const sl    = parseFloat($('wSL').value);
     const tp1   = parseFloat($('wTP1').value);
-    if (!entry || !sl || !tp1) { UI.toast(i18n.t('modal.required'), true); return; }
+    // v1.0.2 : validation pilotée par settings.journalFields. Entry reste l'ancre minimale ;
+    // SL/TP1 requis seulement si l'utilisateur ne les a PAS désactivés (défaut = requis →
+    // zéro régression pour les traders chiffrés). Débloque le journal « feeling » (sans TP/SL).
+    const jf = (Store.getJournalFields && Store.getJournalFields()) || { slRequired: true, tp1Required: true };
+    if (!entry)                  { UI.toast(i18n.t('modal.required.entry'), true); return; }
+    if (jf.slRequired && !sl)    { UI.toast(i18n.t('modal.required'), true); return; }
+    if (jf.tp1Required && !tp1)  { UI.toast(i18n.t('modal.required'), true); return; }
+    const jfMissing = _firstMissingRequiredJournalField();
+    if (jfMissing) { UI.toast(i18n.t('modal.required.field').replace('{field}', jfMissing), true); return; }
     const apexValueRaw = $('wApex').value;
     if (!apexValueRaw)         { UI.toast(i18n.t('err.no.account.sel'), true); return; }
     // v0.9.179 (M8 fix) : bloquer save si l'user a sélectionné un groupe VIDE
@@ -1823,6 +1882,8 @@ const Modal = (() => {
       partials:       _collectPartials().length ? _collectPartials() : null,
       partialPercent: null,
       partialPrice:   null,
+      // v1.0.2 : champs non-chiffrés du journal personnalisé (sanitizés/bornés par le Store)
+      custom:         _collectJournalCustom(),
     };
 
     try {
