@@ -1535,10 +1535,8 @@
   function renderJournalFieldsSettings() {
     const el = $('settingsJournalFields');
     if (!el) return;
-    const LEVEL_KEYS = ['entry', 'sl', 'tp1'];
     const FIELD_KEYS = Object.keys(Store.JOURNAL_CUSTOM_FIELDS || {});
-    const cur = () => (Store.getJournalFields && Store.getJournalFields())
-      || { levels: { entry: 'required', sl: 'required', tp1: 'required' }, fields: {} };
+    const cur = () => (Store.getJournalFields && Store.getJournalFields()) || { prices: true, fields: {} };
     const save = (jf) => { Store.updateSettings({ journalFields: jf }); render(); };
     const rowStyle = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--border)';
     const modeSel = (cls, dataAttr, val) => `<select class="form-input ${cls}" ${dataAttr} style="max-width:160px">${
@@ -1546,11 +1544,6 @@
     }</select>`;
     function render() {
       const jf = cur();
-      const levelRows = LEVEL_KEYS.map(key =>
-        `<div style="${rowStyle}">
-           <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.' + key + '.label'))}</span>
-           ${modeSel('jf-level-mode', `data-jf-level="${key}"`, jf.levels[key] || 'required')}
-         </div>`).join('');
       const fieldRows = FIELD_KEYS.map(key =>
         `<div style="${rowStyle}">
            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.' + key + '.label'))}</span>
@@ -1560,18 +1553,17 @@
         <div class="settings-section">
           <h3 style="margin:0 0 4px">${UI.escHtml(i18n.t('jf.section.title'))}</h3>
           <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5">${UI.escHtml(i18n.t('jf.section.desc'))}</p>
-          <h4 style="margin:0 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.levels.title'))}</h4>
-          <p style="font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.levels.hint'))}</p>
-          ${levelRows}
+          <label style="${rowStyle};border-top:none;cursor:pointer">
+            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.prices.label'))}</span>
+            <input type="checkbox" id="jfPrices"${jf.prices ? ' checked' : ''}>
+          </label>
+          <p style="font-size:11px;color:var(--muted);margin:2px 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.prices.hint'))}</p>
           <h4 style="margin:16px 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.fields.title'))}</h4>
           <p style="font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.fields.hint'))}</p>
           ${fieldRows}
         </div>`;
-      el.querySelectorAll('.jf-level-mode').forEach(s => s.addEventListener('change', () => {
-        const jfNow = cur();
-        jfNow.levels[s.dataset.jfLevel] = s.value;
-        save(jfNow);
-      }));
+      const pc = $('jfPrices');
+      if (pc) pc.addEventListener('change', () => { const jfNow = cur(); jfNow.prices = pc.checked; save(jfNow); });
       el.querySelectorAll('.jf-field-mode').forEach(s => s.addEventListener('change', () => {
         const jfNow = cur();
         const f = { ...jfNow.fields };
