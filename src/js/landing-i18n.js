@@ -197,7 +197,9 @@
     'footer.privacy':       { fr: 'Confidentialité', en: 'Privacy' },
     'footer.cgu':           { fr: 'CGU', en: 'Terms' },
     'footer.copy':          { fr: '© 2026 ZELDTRADE · INDÉPENDANT · HÉBERGÉ EN EUROPE', en: '© 2026 ZELDTRADE · INDEPENDENT · HOSTED IN EUROPE' },
-    'cookie.text':          { fr: 'Cookies strictement nécessaires uniquement (pas de tracking publicitaire).', en: 'Strictly necessary cookies only (no advertising tracking).' },
+    'cookie.text':          { fr: 'Cookies essentiels (session, sécurité). Avec ton accord, on ajoute un cookie de mesure publicitaire (Meta) pour améliorer nos pubs. Tu peux refuser.', en: 'Essential cookies (session, security). With your consent, we add an advertising measurement cookie (Meta) to improve our ads. You can decline.' },
+    'cookie.accept':        { fr: 'Accepter', en: 'Accept' },
+    'cookie.refuse':        { fr: 'Refuser', en: 'Decline' },
     'cookie.ok':            { fr: "J'ai compris", en: 'Got it' },
   };
 

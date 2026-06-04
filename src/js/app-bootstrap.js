@@ -967,14 +967,20 @@ document.addEventListener('DOMContentLoaded', () => {
   $('showForgot').addEventListener('click',          () => showForm('forgot'));
   $('showLoginFromForgot').addEventListener('click', () => showForm('login'));
 
-  // ── Cookie banner ───────────────────────────────────────────────────────────
+  // ── Bandeau de CONSENTEMENT RGPD (Accepter / Refuser) ───────────────────────
+  // v1.0.x : le choix `zt_consent` pilote le Meta Pixel (window.ztConsent) — le pixel
+  // ne se charge QUE si l'user accepte. Clé partagée avec la landing.
   const cookieBanner = $('cookieBanner');
-  if (cookieBanner && !localStorage.getItem('zt_cookie_ok')) {
-    cookieBanner.style.display = 'flex';
+  if (cookieBanner) {
+    let decided = false;
+    try { decided = !!localStorage.getItem('zt_consent'); } catch (e) {}
+    if (!decided) cookieBanner.style.display = 'flex';
+    const decide = (granted) => {
+      if (window.ztConsent) window.ztConsent(granted);
+      else { try { localStorage.setItem('zt_consent', granted ? 'granted' : 'denied'); } catch (e) {} }
+      cookieBanner.style.display = 'none';
+    };
+    const acc = $('cookieAcceptBtn'); if (acc) acc.addEventListener('click', () => decide(true));
+    const ref = $('cookieRefuseBtn'); if (ref) ref.addEventListener('click', () => decide(false));
   }
-  const cookieBtn = $('cookieAcceptBtn');
-  if (cookieBtn) cookieBtn.addEventListener('click', () => {
-    cookieBanner.style.display = 'none';
-    localStorage.setItem('zt_cookie_ok', '1');
-  });
 });

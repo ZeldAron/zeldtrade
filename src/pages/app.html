@@ -54,17 +54,20 @@
        AVANT le parsing du body pour éviter le FOUC (flash dark → light). -->
   <script src="js/theme.js?v=1.0.1"></script>
   <!-- Meta Pixel (retargeting + conversions) — inerte tant que le Pixel ID n'est pas posé -->
-  <script src="js/meta-pixel.js?v=1.0.1&amp;h=1"></script>
+  <script src="js/meta-pixel.js?v=1.0.1&amp;h=2"></script>
 </head>
 <body>
 
   <!-- ══ BANNIÈRE COOKIES ══════════════════════════════════════════════════════ -->
   <div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg3);border-top:1px solid var(--border);padding:16px 104px 16px 24px;z-index:9999;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:var(--shadow-pop)">
     <p style="margin:0;font-size:13px;color:var(--muted);max-width:600px">
-      ZeldTrade utilise uniquement des cookies <strong style="color:var(--text)">essentiels</strong> : session (Firebase Auth), sécurité anti-bot (Turnstile / hCaptcha) et stockage local de tes données. <strong style="color:var(--text)">Aucun tracking publicitaire.</strong>
+      Cookies <strong style="color:var(--text)">essentiels</strong> : session (Firebase Auth), anti-bot (Turnstile / hCaptcha), stockage local. Avec ton accord, on ajoute un <strong style="color:var(--text)">cookie de mesure publicitaire (Meta)</strong> pour améliorer nos pubs — tu peux refuser.
       <a href="/privacy" style="color:var(--accent);text-decoration:underline">En savoir plus</a>
     </p>
-    <button id="cookieAcceptBtn" style="background:transparent;color:var(--accent);border:1.5px solid var(--accent);border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0">J'ai compris</button>
+    <div style="display:flex;gap:10px;flex-shrink:0">
+      <button id="cookieRefuseBtn" style="background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Refuser</button>
+      <button id="cookieAcceptBtn" style="background:transparent;color:var(--accent);border:1.5px solid var(--accent);border-radius:8px;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Accepter</button>
+    </div>
   </div>
   <!-- ══ AUTH MODAL ════════════════════════════════════════════════════════════ -->
   <div id="authModal" class="auth-modal" style="display:none">
@@ -1139,7 +1142,7 @@
   <script src="js/app.js?v=1.0.1&amp;h=1"></script>
   <script src="js/tour.js?v=1.0.1"></script>
 
-  <script src="js/app-bootstrap.js?v=1.0.1&amp;h=3"></script>
+  <script src="js/app-bootstrap.js?v=1.0.1&amp;h=4"></script>
 
   <!-- hCaptcha (anti-bot pour les formulaires register et contact)
        NOTE: pas de SRI car hCaptcha sert un bundle qui varie selon le User-Agent
