@@ -1535,39 +1535,41 @@
   function renderJournalFieldsSettings() {
     const el = $('settingsJournalFields');
     if (!el) return;
+    const LEVEL_KEYS = ['entry', 'sl', 'tp1'];
     const FIELD_KEYS = Object.keys(Store.JOURNAL_CUSTOM_FIELDS || {});
-    const cur = () => (Store.getJournalFields && Store.getJournalFields()) || { slRequired: true, tp1Required: true, fields: {} };
+    const cur = () => (Store.getJournalFields && Store.getJournalFields())
+      || { levels: { entry: 'required', sl: 'required', tp1: 'required' }, fields: {} };
     const save = (jf) => { Store.updateSettings({ journalFields: jf }); render(); };
+    const rowStyle = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--border)';
+    const modeSel = (cls, dataAttr, val) => `<select class="form-input ${cls}" ${dataAttr} style="max-width:160px">${
+      ['off', 'optional', 'required'].map(m => `<option value="${m}"${val === m ? ' selected' : ''}>${UI.escHtml(i18n.t('jf.mode.' + m))}</option>`).join('')
+    }</select>`;
     function render() {
       const jf = cur();
-      const modeSel = (val) => ['off', 'optional', 'required']
-        .map(m => `<option value="${m}"${val === m ? ' selected' : ''}>${UI.escHtml(i18n.t('jf.mode.' + m))}</option>`).join('');
-      const rowStyle = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--border)';
+      const levelRows = LEVEL_KEYS.map(key =>
+        `<div style="${rowStyle}">
+           <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.' + key + '.label'))}</span>
+           ${modeSel('jf-level-mode', `data-jf-level="${key}"`, jf.levels[key] || 'required')}
+         </div>`).join('');
       const fieldRows = FIELD_KEYS.map(key =>
         `<div style="${rowStyle}">
            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.' + key + '.label'))}</span>
-           <select class="form-input jf-field-mode" data-jf-field="${key}" style="max-width:160px">${modeSel(jf.fields[key] || 'off')}</select>
+           ${modeSel('jf-field-mode', `data-jf-field="${key}"`, jf.fields[key] || 'off')}
          </div>`).join('');
       el.innerHTML = `
         <div class="settings-section">
           <h3 style="margin:0 0 4px">${UI.escHtml(i18n.t('jf.section.title'))}</h3>
           <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5">${UI.escHtml(i18n.t('jf.section.desc'))}</p>
           <h4 style="margin:0 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.levels.title'))}</h4>
-          <label style="${rowStyle};border-top:none">
-            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.sl.required'))}</span>
-            <input type="checkbox" class="jf-req" data-jf-req="slRequired"${jf.slRequired ? ' checked' : ''}>
-          </label>
-          <label style="${rowStyle}">
-            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.tp1.required'))}</span>
-            <input type="checkbox" class="jf-req" data-jf-req="tp1Required"${jf.tp1Required ? ' checked' : ''}>
-          </label>
+          <p style="font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.levels.hint'))}</p>
+          ${levelRows}
           <h4 style="margin:16px 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.fields.title'))}</h4>
           <p style="font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.fields.hint'))}</p>
           ${fieldRows}
         </div>`;
-      el.querySelectorAll('.jf-req').forEach(c => c.addEventListener('change', () => {
+      el.querySelectorAll('.jf-level-mode').forEach(s => s.addEventListener('change', () => {
         const jfNow = cur();
-        jfNow[c.dataset.jfReq] = c.checked;
+        jfNow.levels[s.dataset.jfLevel] = s.value;
         save(jfNow);
       }));
       el.querySelectorAll('.jf-field-mode').forEach(s => s.addEventListener('change', () => {

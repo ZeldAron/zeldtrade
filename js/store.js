@@ -677,13 +677,18 @@ const Store = (() => {
   // Config persistée dans settings.journalFields : toggles SL/TP1 (défaut REQUIS = zéro
   // régression pour les traders chiffrés) + mode par champ non-chiffré. On ne stocke que
   // les champs actifs (optional/required) → doc settings compact.
+  const _JF_LEVELS = ['entry', 'sl', 'tp1'];
   function _sanitizeJournalFields(v) {
     if (!v || typeof v !== 'object') return null;
-    const out = {
-      slRequired:  v.slRequired  === false ? false : true,
-      tp1Required: v.tp1Required === false ? false : true,
-      fields: {},
-    };
+    const out = { levels: {}, fields: {} };
+    // Niveaux de prix : 3 états (off=masqué / optional / required). Défaut REQUIS = zéro
+    // régression pour les traders chiffrés. « off » → le champ disparaît de la saisie.
+    const lv = (v.levels && typeof v.levels === 'object') ? v.levels : {};
+    for (const key of _JF_LEVELS) {
+      const m = lv[key];
+      out.levels[key] = _JF_MODES.has(m) ? m : 'required';
+    }
+    // Champs non-chiffrés : on ne stocke que les actifs (optional/required).
     const rawFields = (v.fields && typeof v.fields === 'object') ? v.fields : {};
     for (const key of Object.keys(JOURNAL_CUSTOM_FIELDS)) {
       const m = rawFields[key];
@@ -1040,9 +1045,10 @@ const Store = (() => {
   // → SL/TP1 requis (comportement historique), aucun champ non-chiffré.
   function getJournalFields() {
     const jf = settings.journalFields;
+    const lv = (jf && jf.levels && typeof jf.levels === 'object') ? jf.levels : {};
+    const norm = (m) => _JF_MODES.has(m) ? m : 'required';
     return {
-      slRequired:  jf && jf.slRequired  === false ? false : true,
-      tp1Required: jf && jf.tp1Required === false ? false : true,
+      levels: { entry: norm(lv.entry), sl: norm(lv.sl), tp1: norm(lv.tp1) },
       fields: (jf && jf.fields && typeof jf.fields === 'object') ? { ...jf.fields } : {},
     };
   }

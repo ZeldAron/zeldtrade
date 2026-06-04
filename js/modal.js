@@ -1552,6 +1552,7 @@ const Modal = (() => {
     $('wExit').value               = '';
     $('wManualPnl').value          = '';
     _renderJournalCustomFields(null);
+    _applyJournalLayout(false);
     $('wContracts').value          = Store.getSettings().contracts || 1;
     // Date + heure par défaut = maintenant (heure locale)
     const nowLocal = new Date();
@@ -1575,6 +1576,7 @@ const Modal = (() => {
       $('wExit').value       = t.exitPrice || '';
       $('wManualPnl').value  = t.manualPnl != null ? t.manualPnl : '';
       _renderJournalCustomFields(t);
+      _applyJournalLayout(true);
       // Sorties partielles (v0.9.250) — nouveau format `partials[]` prioritaire,
       // sinon migration depuis le legacy partialPercent/partialPrice.
       if (Array.isArray(t.partials) && t.partials.length) {
@@ -1807,6 +1809,25 @@ const Modal = (() => {
     });
     return missing;
   }
+  // v1.0.2 : applique le mode des niveaux de prix (Entry/SL/TP1). « off » = champ MASQUÉ
+  // (disparaît de la saisie). En nouveau trade, un niveau masqué est vidé (→ null au save) ;
+  // en édition on préserve la valeur existante (pas de perte de données). Grille entière
+  // masquée si aucun niveau affiché.
+  function _applyJournalLayout(isEdit) {
+    const jf = (Store.getJournalFields && Store.getJournalFields()) || { levels: {} };
+    const lv = jf.levels || {};
+    const apply = (wrapId, inputId, mode) => {
+      const wrap = $(wrapId);
+      const shown = mode !== 'off';
+      if (wrap) wrap.style.display = shown ? '' : 'none';
+      if (!shown && !isEdit) { const inp = $(inputId); if (inp) inp.value = ''; }
+    };
+    apply('wEntryField', 'wEntry', lv.entry);
+    apply('wSLField',    'wSL',    lv.sl);
+    apply('wTP1Field',   'wTP1',   lv.tp1);
+    const grid = $('wLevelsGrid');
+    if (grid) grid.style.display = (lv.entry !== 'off' || lv.sl !== 'off' || lv.tp1 !== 'off') ? '' : 'none';
+  }
 
   let _saveInFlight = false;
   async function save() {
@@ -1814,13 +1835,14 @@ const Modal = (() => {
     const entry = parseFloat($('wEntry').value);
     const sl    = parseFloat($('wSL').value);
     const tp1   = parseFloat($('wTP1').value);
-    // v1.0.2 : validation pilotée par settings.journalFields. Entry reste l'ancre minimale ;
-    // SL/TP1 requis seulement si l'utilisateur ne les a PAS désactivés (défaut = requis →
-    // zéro régression pour les traders chiffrés). Débloque le journal « feeling » (sans TP/SL).
-    const jf = (Store.getJournalFields && Store.getJournalFields()) || { slRequired: true, tp1Required: true };
-    if (!entry)                  { UI.toast(i18n.t('modal.required.entry'), true); return; }
-    if (jf.slRequired && !sl)    { UI.toast(i18n.t('modal.required'), true); return; }
-    if (jf.tp1Required && !tp1)  { UI.toast(i18n.t('modal.required'), true); return; }
+    // v1.0.2 : validation pilotée par settings.journalFields.levels. Un niveau n'est requis
+    // que s'il est en mode 'required' (défaut → zéro régression). 'off' = masqué → jamais
+    // requis. Débloque le journal « feeling » (Entry/SL/TP masqués = saisie purement qualitative).
+    const jf = (Store.getJournalFields && Store.getJournalFields()) || { levels: { entry: 'required', sl: 'required', tp1: 'required' } };
+    const lv = jf.levels || {};
+    if (lv.entry === 'required' && !entry) { UI.toast(i18n.t('modal.required.entry'), true); return; }
+    if (lv.sl    === 'required' && !sl)    { UI.toast(i18n.t('modal.required.field').replace('{field}', i18n.t('jf.sl.label')), true); return; }
+    if (lv.tp1   === 'required' && !tp1)   { UI.toast(i18n.t('modal.required.field').replace('{field}', i18n.t('jf.tp1.label')), true); return; }
     const jfMissing = _firstMissingRequiredJournalField();
     if (jfMissing) { UI.toast(i18n.t('modal.required.field').replace('{field}', jfMissing), true); return; }
     const apexValueRaw = $('wApex').value;
