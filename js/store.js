@@ -1354,7 +1354,7 @@ const Store = (() => {
     trader: { label: 'TRADER', cls: 'plan-basic'  },
     funded: { label: 'FUNDED', cls: 'plan-funded' },
     elite:  { label: 'ELITE',  cls: 'plan-elite'  },
-    beta:   { label: 'BÊTA',   cls: 'plan-beta'   },
+    beta:   { label: 'VIP',    cls: 'plan-beta'   },
   };
   function getTierBadge() { return TIER_BADGE[getTier()] || TIER_BADGE.trader; }
   function getLimits()   { return TIER_LIMITS[getTier()] || TIER_LIMITS.trader; }

@@ -113,7 +113,7 @@ const Admin = (() => {
     basic:  { label: 'BASIC',    cls: 'plan-tag-basic'  },
     funded: { label: '✦ FUNDED', cls: 'plan-tag-funded' },
     elite:  { label: '✦ ELITE',  cls: 'plan-tag-elite'  },
-    beta:   { label: 'BÊTA',     cls: 'plan-tag-beta'   },
+    beta:   { label: 'VIP',      cls: 'plan-tag-beta'   },
   };
 
   // Palier spécial (v0.9.347) — ADMIN/TEST affichés DANS la colonne palier.
@@ -225,7 +225,7 @@ const Admin = (() => {
         <div class="stat-chip"><span class="stat-val">${total}</span><span class="stat-lbl">Total</span></div>
         <div class="stat-chip stat-chip-funded"><span class="stat-val">${tierCounts.funded}</span><span class="stat-lbl">Funded</span></div>
         <div class="stat-chip stat-chip-elite"><span class="stat-val">${tierCounts.elite}</span><span class="stat-lbl">Elite</span></div>
-        <div class="stat-chip stat-chip-beta"><span class="stat-val">${tierCounts.beta}</span><span class="stat-lbl">Bêta</span></div>
+        <div class="stat-chip stat-chip-beta"><span class="stat-val">${tierCounts.beta}</span><span class="stat-lbl">VIP</span></div>
         <div class="stat-chip"><span class="stat-val">${tierCounts.basic}</span><span class="stat-lbl">Basic</span></div>
         <div class="stat-chip"><span class="stat-val">${newsletterCount}</span><span class="stat-lbl">Newsletter</span></div>
       </div>
@@ -236,7 +236,7 @@ const Admin = (() => {
           <option value="basic"${_sel(_filterPlan,'basic')}>Basic</option>
           <option value="funded"${_sel(_filterPlan,'funded')}>Funded</option>
           <option value="elite"${_sel(_filterPlan,'elite')}>Elite</option>
-          <option value="beta"${_sel(_filterPlan,'beta')}>Bêta</option>
+          <option value="beta"${_sel(_filterPlan,'beta')}>VIP</option>
         </select>
         <select id="fltNews" class="admin-flt">
           <option value="all"${_sel(_filterNews,'all')}>Newsletter : tous</option>
@@ -257,10 +257,7 @@ const Admin = (() => {
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
         <div class="admin-flt-count" style="margin:0">${filtered.length} résultat${filtered.length > 1 ? 's' : ''}${_isFiltered ? ' (filtré)' : ''}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${tierCounts.beta > 0 ? `<button id="btnBulkBetaElite" class="btn-refresh" title="Passer TOUS les utilisateurs Bêta en Elite (accès complet à vie)">🌟 Tout Bêta → Elite (${tierCounts.beta})</button>` : ''}
-          <button id="btnNewTest" class="btn-refresh" title="Créer un compte de test (réservé admin)">+ Compte test</button>
-        </div>
+        <button id="btnNewTest" class="btn-refresh" title="Créer un compte de test (réservé admin)">+ Compte test</button>
       </div>
       <table class="admin-table">
         <thead><tr><th>Utilisateur</th><th>Palier</th><th>Activité</th><th class="th-actions">Actions</th></tr></thead>
@@ -294,8 +291,6 @@ const Admin = (() => {
     });
     const newTestEl = $('btnNewTest');
     if (newTestEl) newTestEl.addEventListener('click', openTestModal);
-    const bulkBetaEl = $('btnBulkBetaElite');
-    if (bulkBetaEl) bulkBetaEl.addEventListener('click', bulkBetaToElite);
 
     // Bind actions (data-action). stopPropagation → ne pas ouvrir le drawer en cliquant un bouton.
     wrap.querySelectorAll('[data-action]').forEach(btn => {
@@ -329,30 +324,6 @@ const Admin = (() => {
       toast((e && e.message) || 'Erreur lors de l\'activation Elite.', true);
       if (btn) { btn.disabled = false; }
     }
-  }
-
-  // ── Passer TOUS les Bêta en Elite (v1.0.2) ──────────────────────────────────
-  // Réutilise adminGrantElite par user (idempotent : re-cliquer ne touche que les Bêta
-  // restants). La CF rate-limit à 30/fenêtre → si beaucoup de Bêta, des appels peuvent
-  // échouer ; on les compte et on re-clique plus tard pour finir le reste.
-  async function bulkBetaToElite() {
-    const betas = (_cachedUsers || [])
-      .map((u, i) => ({ u, tier: _userTier(_cachedPlans[i]) }))
-      .filter(x => x.tier === 'beta');
-    if (!betas.length) { toast('Aucun utilisateur Bêta à convertir.'); return; }
-    if (!confirm(`Passer les ${betas.length} utilisateur(s) BÊTA en Elite (accès complet à vie, gratuit) ?\n\nÀ déclencher une seule fois. Si certains échouent (limite anti-abus), re-clique pour finir le reste.`)) return;
-    if (!_fbFunctions) { toast('SDK Functions non chargé.', true); return; }
-    const btn = $('btnBulkBetaElite');
-    if (btn) btn.disabled = true;
-    const callable = _fbFunctions.httpsCallable('adminGrantElite');
-    let ok = 0, fail = 0;
-    for (const { u } of betas) {
-      try { await callable({ uid: u.uid }); ok++; }
-      catch (e) { fail++; console.warn('[Admin] bulk grant échec', u.email, e && e.message); }
-      if (btn) btn.textContent = `… ${ok + fail}/${betas.length}`;
-    }
-    toast(`Elite activé : ${ok} OK${fail ? ` · ${fail} échec(s) — re-clique pour finir` : ''}.`, fail > 0);
-    await renderUsers();
   }
 
   // ── Forcer email_verified=true sur un compte (v0.9.144) ─────────────────────
