@@ -1529,8 +1529,61 @@
     render();
   }
 
+  // v1.0.2 — Journal personnalisable : toggles SL/TP1 obligatoires + mode (off/optionnel/
+  // obligatoire) par champ non-chiffré. Lit/écrit settings.journalFields via Store.
+  // Source unique des champs = Store.JOURNAL_CUSTOM_FIELDS (catalogue fermé).
+  function renderJournalFieldsSettings() {
+    const el = $('settingsJournalFields');
+    if (!el) return;
+    const FIELD_KEYS = Object.keys(Store.JOURNAL_CUSTOM_FIELDS || {});
+    const cur = () => (Store.getJournalFields && Store.getJournalFields()) || { slRequired: true, tp1Required: true, fields: {} };
+    const save = (jf) => { Store.updateSettings({ journalFields: jf }); render(); };
+    function render() {
+      const jf = cur();
+      const modeSel = (val) => ['off', 'optional', 'required']
+        .map(m => `<option value="${m}"${val === m ? ' selected' : ''}>${UI.escHtml(i18n.t('jf.mode.' + m))}</option>`).join('');
+      const rowStyle = 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--border)';
+      const fieldRows = FIELD_KEYS.map(key =>
+        `<div style="${rowStyle}">
+           <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.' + key + '.label'))}</span>
+           <select class="form-input jf-field-mode" data-jf-field="${key}" style="max-width:160px">${modeSel(jf.fields[key] || 'off')}</select>
+         </div>`).join('');
+      el.innerHTML = `
+        <div class="settings-section">
+          <h3 style="margin:0 0 4px">${UI.escHtml(i18n.t('jf.section.title'))}</h3>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 14px;line-height:1.5">${UI.escHtml(i18n.t('jf.section.desc'))}</p>
+          <h4 style="margin:0 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.levels.title'))}</h4>
+          <label style="${rowStyle};border-top:none">
+            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.sl.required'))}</span>
+            <input type="checkbox" class="jf-req" data-jf-req="slRequired"${jf.slRequired ? ' checked' : ''}>
+          </label>
+          <label style="${rowStyle}">
+            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.tp1.required'))}</span>
+            <input type="checkbox" class="jf-req" data-jf-req="tp1Required"${jf.tp1Required ? ' checked' : ''}>
+          </label>
+          <h4 style="margin:16px 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.fields.title'))}</h4>
+          <p style="font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.fields.hint'))}</p>
+          ${fieldRows}
+        </div>`;
+      el.querySelectorAll('.jf-req').forEach(c => c.addEventListener('change', () => {
+        const jfNow = cur();
+        jfNow[c.dataset.jfReq] = c.checked;
+        save(jfNow);
+      }));
+      el.querySelectorAll('.jf-field-mode').forEach(s => s.addEventListener('change', () => {
+        const jfNow = cur();
+        const f = { ...jfNow.fields };
+        if (s.value === 'off') delete f[s.dataset.jfField]; else f[s.dataset.jfField] = s.value;
+        jfNow.fields = f;
+        save(jfNow);
+      }));
+    }
+    render();
+  }
+
   UI.initSettings = function () {
     try { renderInstrumentsSettings(); } catch(e) { console.error('[Settings] instruments error:', e); }
+    try { renderJournalFieldsSettings(); } catch(e) { console.error('[Settings] journalFields error:', e); }
     try { renderGroupsSettings(); }    catch(e) { console.error('[Settings] groups error:', e); }
     try { renderMyAccountsSettings(); } catch(e) { console.error('[Settings] accounts error:', e); }
     try { renderPropFirmsSettings(); }  catch(e) { console.error('[Settings] propfirms error:', e); }

@@ -118,7 +118,7 @@ service cloud.firestore {
       // hasOnly() → TOUTE écriture settings était refusée (permission-denied) → le setup
       // ne se persistait jamais en Firestore → wizard redemandé sur un autre appareil.
       allow write:  if isVerified(userId)
-                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument', 'tradingTypes', 'favInstruments', 'selectedFirms', 'focusScope', 'setupDone'])
+                   && request.resource.data.keys().hasOnly(['capital', 'contracts', 'instrument', 'tradingTypes', 'favInstruments', 'selectedFirms', 'focusScope', 'setupDone', 'journalFields'])
                    && request.resource.data.capital is number
                    && request.resource.data.capital >= 0
                    && request.resource.data.capital <= 1000000000
@@ -144,7 +144,13 @@ service cloud.firestore {
                            && request.resource.data.focusScope.size() <= 80
                            && request.resource.data.focusScope.matches('^(acc:|grp:|firm:).+')))
                    && (!('setupDone' in request.resource.data)
-                       || request.resource.data.setupDone is bool);
+                       || request.resource.data.setupDone is bool)
+                   // v1.0.2 : journal personnalisable. Validation fine côté client
+                   // (_sanitizeJournalFields) ; ici on borne juste au type map/null
+                   // (cohérent avec l'archi : on ne valide pas les sous-clés en rules).
+                   && (!('journalFields' in request.resource.data)
+                       || request.resource.data.journalFields == null
+                       || request.resource.data.journalFields is map);
     }
 
     // ── Notifications (centre de notifs, v0.9.305) ───────────────────────────

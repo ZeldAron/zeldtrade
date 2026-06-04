@@ -679,6 +679,8 @@
           <div id="settingsMyAccounts"></div>
           <!-- v0.9.394 : sélection des instruments tradés (alimente la liste stricte de la modale de trade) -->
           <div id="settingsInstruments"></div>
+          <!-- v1.0.2 : journal personnalisable — champs à la carte (TP/SL optionnels + champs non-chiffrés) -->
+          <div id="settingsJournalFields"></div>
         </div>
 
         <!-- Onglet : Règles & marchés (v0.9.270 — regroupe Prop Firms + Fonds propres + Crypto + Spreads) -->
@@ -980,6 +982,10 @@
           <div class="lc-stat"><span class="lc-stat-label" id="lcNetLabel">Net reward</span><span class="lc-stat-val" id="lcNet">—</span></div>
           <span id="lcApexWarn" style="display:none;font-size:11px;color:var(--red)">⚠ Hors limite</span>
         </div>
+
+        <!-- v1.0.2 : champs non-chiffrés du journal personnalisé (sentiment, plan, confiance) —
+             injectés par modal.js selon settings.journalFields. Vide/masqué si aucun actif. -->
+        <div id="wCustomFields" style="display:none;margin-bottom:4px"></div>
 
         <!-- Champs optionnels (dépliables) -->
         <button class="wiz-opt-toggle" id="wOptToggle" data-i18n="wiz.setup">+ Setup / Notes / Résultat</button>

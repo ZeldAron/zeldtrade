@@ -15,7 +15,7 @@ const Store = (() => {
   //  - focusScope    : contexte Focus app-wide (dashboard/analytics/calendrier). null=Global (tout),
   //                    'firm:KEY' = une prop firm entière, 'acc:NOM' = un compte, 'grp:ID' = un groupe.
   //  - setupDone     : true une fois le wizard de setup obligatoire complété.
-  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1', tradingTypes: null, favInstruments: [], selectedFirms: [], focusScope: null, setupDone: false };
+  const DEFAULT_SETTINGS = { capital: 50000, contracts: 1, instrument: 'MES1', tradingTypes: null, favInstruments: [], selectedFirms: [], focusScope: null, setupDone: false, journalFields: null };
 
   // v0.9.275 (F1/F2) — profil de trading utilisateur (multi-choix). null = pas encore répondu.
   const VALID_TRADING_TYPES = ['fundsOwn', 'propFirm', 'crypto'];
@@ -564,6 +564,9 @@ const Store = (() => {
             : [],
           focusScope: (typeof raw.focusScope === 'string' && /^(acc:|grp:|firm:).+/.test(raw.focusScope)) ? raw.focusScope.slice(0, 80) : null,
           setupDone: raw.setupDone === true,
+          // v1.0.2 : reconstruit champ par champ comme les autres → DOIT être listé ici,
+          // sinon la config journal serait perdue au load serveur (cf. bug setupDone v1.0.x).
+          journalFields: _sanitizeJournalFields(raw.journalFields),
         };
         changed = true;
       } else if (settings && settings.setupDone === true) {
@@ -660,6 +663,52 @@ const Store = (() => {
 
   const DIRS     = new Set(['long', 'short']);
   const OUTCOMES = new Set(['win', 'loss', 'be', 'open']);
+  // v1.0.2 — Journal personnalisable (champs à la carte). Catalogue FERMÉ des champs
+  // non-chiffrés : source UNIQUE lue par le wizard (modal.js), les Réglages (settings.js)
+  // et le détail trade (ui.js). Enum stricts / nombre borné = aucune saisie libre →
+  // pas d'XSS, pas de validation Firestore par-champ nécessaire. Les libellés vivent en
+  // i18n (clés `jf.*`). Étendre = ajouter une entrée ici (R2 : emotion, discipline, …).
+  const JOURNAL_CUSTOM_FIELDS = {
+    sentiment:    { kind: 'select', options: ['bullish', 'bearish', 'neutral', 'range'] },
+    planFollowed: { kind: 'select', options: ['yes', 'partial', 'no'] },
+    confidence:   { kind: 'rating', min: 1, max: 5 },
+  };
+  const _JF_MODES = new Set(['off', 'optional', 'required']);
+  // Config persistée dans settings.journalFields : toggles SL/TP1 (défaut REQUIS = zéro
+  // régression pour les traders chiffrés) + mode par champ non-chiffré. On ne stocke que
+  // les champs actifs (optional/required) → doc settings compact.
+  function _sanitizeJournalFields(v) {
+    if (!v || typeof v !== 'object') return null;
+    const out = {
+      slRequired:  v.slRequired  === false ? false : true,
+      tp1Required: v.tp1Required === false ? false : true,
+      fields: {},
+    };
+    const rawFields = (v.fields && typeof v.fields === 'object') ? v.fields : {};
+    for (const key of Object.keys(JOURNAL_CUSTOM_FIELDS)) {
+      const m = rawFields[key];
+      if (_JF_MODES.has(m) && m !== 'off') out.fields[key] = m;
+    }
+    return out;
+  }
+  // Valeurs non-chiffrées portées par un trade (trade.custom). Fail-closed : tout ce qui
+  // sort du catalogue (clé inconnue, option hors enum, note > borne) est silencieusement
+  // ignoré. Retourne null si rien de valide → champ omis du trade (pas de bloat).
+  function _sanitizeJournalCustom(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const out = {};
+    for (const [key, def] of Object.entries(JOURNAL_CUSTOM_FIELDS)) {
+      const val = raw[key];
+      if (val == null || val === '') continue;
+      if (def.kind === 'select') {
+        if (def.options.includes(val)) out[key] = val;
+      } else if (def.kind === 'rating') {
+        const n = Math.round(_safeNum(val, def.min, def.max, NaN));
+        if (isFinite(n)) out[key] = n;
+      }
+    }
+    return Object.keys(out).length ? out : null;
+  }
   function _safeNum(v, min, max, def) {
     // Accepte virgule décimale (CSV européens) ET valeurs notation scientifique
     // raisonnable. Reject Infinity, NaN, et tout ce qui ne parse pas en finite.
@@ -789,6 +838,10 @@ const Store = (() => {
         .filter(Boolean);
       if (cleaned.length) out.screenshotPaths = cleaned;
     }
+    // v1.0.2 : champs non-chiffrés du journal personnalisé (sentiment, respect du plan,
+    // confiance…) — enum/borne stricts. Omis si rien de valide.
+    const _jc = _sanitizeJournalCustom(raw.custom);
+    if (_jc) out.custom = _jc;
     return out;
   }
 
@@ -982,6 +1035,17 @@ const Store = (() => {
   // ── Settings ─────────────────────────────────────────────────────────────────
   function getSettings()        { return { ...settings }; }
   function getTradingTypes()    { return Array.isArray(settings.tradingTypes) ? [...settings.tradingTypes] : null; }
+  // v1.0.2 : config du journal personnalisé, normalisée (défauts appliqués). Source unique
+  // lue par modal.js (validation + saisie) et settings.js (édition). null = non configuré
+  // → SL/TP1 requis (comportement historique), aucun champ non-chiffré.
+  function getJournalFields() {
+    const jf = settings.journalFields;
+    return {
+      slRequired:  jf && jf.slRequired  === false ? false : true,
+      tp1Required: jf && jf.tp1Required === false ? false : true,
+      fields: (jf && jf.fields && typeof jf.fields === 'object') ? { ...jf.fields } : {},
+    };
+  }
   function getSelectedFirms()   { return Array.isArray(settings.selectedFirms) ? [...settings.selectedFirms] : []; }
   function isSetupDone()        { return !!settings.setupDone; }
 
@@ -1024,7 +1088,7 @@ const Store = (() => {
     }
     return all;
   }
-  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes','favInstruments','selectedFirms','focusScope','setupDone']);
+  const SETTINGS_ALLOWED = new Set(['capital','contracts','instrument','tradingTypes','favInstruments','selectedFirms','focusScope','setupDone','journalFields']);
   const _FIRM_KEYS = new Set(Object.keys(DEFAULT_PROP_FIRMS));
   function updateSettings(data) {
     const safe = Object.create(null);
@@ -1052,6 +1116,7 @@ const Store = (() => {
         safe.focusScope = (typeof v === 'string' && /^(acc:|grp:|firm:).+/.test(v)) ? v.slice(0, 80) : null;
       }
       else if (k === 'setupDone') safe.setupDone = !!v;
+      else if (k === 'journalFields') { const jf = _sanitizeJournalFields(v); if (jf) safe.journalFields = jf; }
     }
     settings = { ...settings, ...safe };
     lsSet(lk().settings, settings);
@@ -1487,7 +1552,7 @@ const Store = (() => {
     getTrades, getTradeById, addTrade, addTradesBatch, updateTrade, deleteTrade, importTrades, clearTrades, exportJSON, exportFullJSON,
     newTradeId: _newTradeId, uploadTradeScreenshot, getTradeScreenshotUrl, deleteTradeScreenshot,
     getMaxScreenshots, canSaveScreenshots,
-    getSettings, getTradingTypes, updateSettings,
+    getSettings, getTradingTypes, updateSettings, getJournalFields, JOURNAL_CUSTOM_FIELDS,
     getSelectedFirms, isSetupDone, getFocusScope, setFocusScope, getMyFirms, scopedTrades,
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,

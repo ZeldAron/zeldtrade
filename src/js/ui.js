@@ -477,11 +477,25 @@ const UI = (() => {
       partialRow = `<div class="info-row"><span class="info-key">Partial close</span><span class="info-val" style="color:var(--accent-l)">${c.partialPercent}% à ${c.partialPrice.toFixed(2)}${ignoredTag}</span></div>`;
     }
 
-    const infoCard = (t.setup || t.notes || t.apex || c.hasPartial)
+    // v1.0.2 : champs non-chiffrés du journal personnalisé (sentiment, respect du plan,
+    // confiance…). Valeurs enum traduites via i18n ; confiance = n/max.
+    const customRows = (t.custom && typeof t.custom === 'object')
+      ? Object.keys(t.custom).map(key => {
+          const def = (Store.JOURNAL_CUSTOM_FIELDS || {})[key];
+          if (!def) return '';
+          const raw = t.custom[key];
+          const valLabel = def.kind === 'rating'
+            ? `${escHtml(String(raw))}/${def.max}`
+            : escHtml(i18n.t('jf.' + key + '.' + raw));
+          return `<div class="info-row"><span class="info-key">${escHtml(i18n.t('jf.' + key + '.label'))}</span><span class="info-val">${valLabel}</span></div>`;
+        }).join('')
+      : '';
+    const infoCard = (t.setup || t.notes || t.apex || c.hasPartial || customRows)
       ? `<div class="info-card">
            <h4>${i18n.t('ui.analysis')}</h4>
            ${t.apex  ? `<div class="info-row"><span class="info-key">${i18n.t('ui.apex.account')}</span><span class="info-val">${escHtml(t.apex)}</span></div>` : ''}
            ${partialRow}
+           ${customRows}
            ${t.setup ? `<div class="info-row"><span class="info-key">${i18n.t('ui.setup')}</span><span class="info-val">${escHtml(t.setup)}</span></div>` : ''}
            ${t.notes ? `<div class="info-row"><span class="info-key">${i18n.t('ui.notes')}</span><span class="info-val">${escHtml(t.notes)}</span></div>` : ''}
          </div>`
