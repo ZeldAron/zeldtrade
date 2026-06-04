@@ -87,6 +87,13 @@ const Modal = (() => {
     badge.textContent      = d === 'long' ? 'LONG' : 'SHORT';
     badge.style.color      = d === 'long' ? 'var(--green)' : 'var(--red)';
     badge.style.background = d === 'long' ? 'var(--green-dim)' : 'var(--red-dim)';
+    // v1.0.2 : journal discrétionnaire (prix désactivés) → on SAUTE l'étape 2 (analyse IA
+    // par capture) et on va direct aux détails. Pas de prix = pas d'IA.
+    if (Store.getJournalFields && Store.getJournalFields().prices === false) {
+      _applyJournalLayout(false);
+      goToStep(3);
+      return;
+    }
     goToStep(2);
     const aiBadge = $('aiStatusBadge');
     if (aiBadge) {
@@ -1814,19 +1821,15 @@ const Modal = (() => {
   // en édition on préserve la valeur existante (pas de perte de données). Grille entière
   // masquée si aucun niveau affiché.
   function _applyJournalLayout(isEdit) {
-    const jf = (Store.getJournalFields && Store.getJournalFields()) || { levels: {} };
-    const lv = jf.levels || {};
-    const apply = (wrapId, inputId, mode) => {
-      const wrap = $(wrapId);
-      const shown = mode !== 'off';
-      if (wrap) wrap.style.display = shown ? '' : 'none';
-      if (!shown && !isEdit) { const inp = $(inputId); if (inp) inp.value = ''; }
-    };
-    apply('wEntryField', 'wEntry', lv.entry);
-    apply('wSLField',    'wSL',    lv.sl);
-    apply('wTP1Field',   'wTP1',   lv.tp1);
-    const grid = $('wLevelsGrid');
-    if (grid) grid.style.display = (lv.entry !== 'off' || lv.sl !== 'off' || lv.tp1 !== 'off') ? '' : 'none';
+    const jf = (Store.getJournalFields && Store.getJournalFields()) || { prices: true };
+    const showPrices = jf.prices !== false;
+    const setVis = (id, show) => { const e = $(id); if (e) e.style.display = show ? '' : 'none'; };
+    setVis('wLevelsGrid', showPrices);   // Entry / SL / TP1
+    setVis('wTp23Row', showPrices);      // TP2 / TP3 (dans les optionnels)
+    if (!showPrices) { const lc = $('wLiveCalc'); if (lc) lc.style.display = 'none'; }
+    // Mode discrétionnaire en CRÉATION : on vide les niveaux (→ null au save). En ÉDITION,
+    // on préserve les valeurs existantes (pas de perte de données sur un ancien trade chiffré).
+    if (!showPrices && !isEdit) ['wEntry', 'wSL', 'wTP1', 'wTP2', 'wTP3'].forEach(id => { const e = $(id); if (e) e.value = ''; });
   }
 
   let _saveInFlight = false;
@@ -1835,14 +1838,10 @@ const Modal = (() => {
     const entry = parseFloat($('wEntry').value);
     const sl    = parseFloat($('wSL').value);
     const tp1   = parseFloat($('wTP1').value);
-    // v1.0.2 : validation pilotée par settings.journalFields.levels. Un niveau n'est requis
-    // que s'il est en mode 'required' (défaut → zéro régression). 'off' = masqué → jamais
-    // requis. Débloque le journal « feeling » (Entry/SL/TP masqués = saisie purement qualitative).
-    const jf = (Store.getJournalFields && Store.getJournalFields()) || { levels: { entry: 'required', sl: 'required', tp1: 'required' } };
-    const lv = jf.levels || {};
-    if (lv.entry === 'required' && !entry) { UI.toast(i18n.t('modal.required.entry'), true); return; }
-    if (lv.sl    === 'required' && !sl)    { UI.toast(i18n.t('modal.required.field').replace('{field}', i18n.t('jf.sl.label')), true); return; }
-    if (lv.tp1   === 'required' && !tp1)   { UI.toast(i18n.t('modal.required.field').replace('{field}', i18n.t('jf.tp1.label')), true); return; }
+    // v1.0.2 : prix activés (défaut) → Entry/SL/TP1 requis (comportement classique). Mode
+    // discrétionnaire (prix off) → aucun niveau requis (saisie purement qualitative).
+    const jf = (Store.getJournalFields && Store.getJournalFields()) || { prices: true };
+    if (jf.prices !== false && (!entry || !sl || !tp1)) { UI.toast(i18n.t('modal.required'), true); return; }
     const jfMissing = _firstMissingRequiredJournalField();
     if (jfMissing) { UI.toast(i18n.t('modal.required.field').replace('{field}', jfMissing), true); return; }
     const apexValueRaw = $('wApex').value;

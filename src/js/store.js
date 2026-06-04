@@ -677,17 +677,12 @@ const Store = (() => {
   // Config persistée dans settings.journalFields : toggles SL/TP1 (défaut REQUIS = zéro
   // régression pour les traders chiffrés) + mode par champ non-chiffré. On ne stocke que
   // les champs actifs (optional/required) → doc settings compact.
-  const _JF_LEVELS = ['entry', 'sl', 'tp1'];
   function _sanitizeJournalFields(v) {
     if (!v || typeof v !== 'object') return null;
-    const out = { levels: {}, fields: {} };
-    // Niveaux de prix : 3 états (off=masqué / optional / required). Défaut REQUIS = zéro
-    // régression pour les traders chiffrés. « off » → le champ disparaît de la saisie.
-    const lv = (v.levels && typeof v.levels === 'object') ? v.levels : {};
-    for (const key of _JF_LEVELS) {
-      const m = lv[key];
-      out.levels[key] = _JF_MODES.has(m) ? m : 'required';
-    }
+    // prices : UN seul interrupteur. true (défaut) = niveaux Entry/SL/TP + analyse IA par
+    // capture (comportement classique). false = journal discrétionnaire : aucun champ de
+    // prix, étape IA sautée, saisie 100% manuelle.
+    const out = { prices: v.prices === false ? false : true, fields: {} };
     // Champs non-chiffrés : on ne stocke que les actifs (optional/required).
     const rawFields = (v.fields && typeof v.fields === 'object') ? v.fields : {};
     for (const key of Object.keys(JOURNAL_CUSTOM_FIELDS)) {
@@ -1045,10 +1040,8 @@ const Store = (() => {
   // → SL/TP1 requis (comportement historique), aucun champ non-chiffré.
   function getJournalFields() {
     const jf = settings.journalFields;
-    const lv = (jf && jf.levels && typeof jf.levels === 'object') ? jf.levels : {};
-    const norm = (m) => _JF_MODES.has(m) ? m : 'required';
     return {
-      levels: { entry: norm(lv.entry), sl: norm(lv.sl), tp1: norm(lv.tp1) },
+      prices: jf && jf.prices === false ? false : true,
       fields: (jf && jf.fields && typeof jf.fields === 'object') ? { ...jf.fields } : {},
     };
   }

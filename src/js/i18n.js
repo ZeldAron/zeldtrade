@@ -422,6 +422,8 @@ const i18n = (() => {
       // v1.0.2 — Journal personnalisable (champs à la carte)
       'jf.section.title':     'Personnaliser mon journal',
       'jf.section.desc':      "Choisis les champs qui apparaissent quand tu saisis un trade. Désactive ce que tu n'utilises pas.",
+      'jf.prices.label':      'Prix (Entry / SL / TP + analyse IA)',
+      'jf.prices.hint':       "Décoche pour un journal discrétionnaire : aucun champ de prix, étape d'analyse IA sautée, saisie 100 % manuelle.",
       'jf.levels.title':      'Champs de prix',
       'jf.levels.hint':       '« Masqué » retire complètement le champ du formulaire de saisie.',
       'jf.entry.label':       "Prix d'entrée",
@@ -1291,6 +1293,8 @@ const i18n = (() => {
       // v1.0.2 — Customizable journal (à la carte fields)
       'jf.section.title':     'Customize my journal',
       'jf.section.desc':      "Choose which fields show up when you log a trade. Turn off what you don't use.",
+      'jf.prices.label':      'Prices (Entry / SL / TP + AI analysis)',
+      'jf.prices.hint':       'Uncheck for a discretionary journal: no price fields, AI analysis step skipped, fully manual entry.',
       'jf.levels.title':      'Price fields',
       'jf.levels.hint':       "'Hidden' removes the field from the trade form entirely.",
       'jf.entry.label':       'Entry price',
