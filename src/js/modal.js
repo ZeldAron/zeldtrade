@@ -1580,6 +1580,7 @@ const Modal = (() => {
     $('wNotes').value              = '';
     $('wExit').value               = '';
     $('wManualPnl').value          = '';
+    if ($('wRMultiple')) $('wRMultiple').value = '';
     _renderJournalCustomFields(null);
     _applyJournalLayout(false);
     $('wContracts').value          = Store.getSettings().contracts || 1;
@@ -1604,6 +1605,7 @@ const Modal = (() => {
       $('wOutcome').value    = t.outcome;
       $('wExit').value       = t.exitPrice || '';
       $('wManualPnl').value  = t.manualPnl != null ? t.manualPnl : '';
+      if ($('wRMultiple')) $('wRMultiple').value = t.rMultiple != null ? t.rMultiple : '';
       _renderJournalCustomFields(t);
       _applyJournalLayout(true);
       // Sorties partielles (v0.9.250) — nouveau format `partials[]` prioritaire,
@@ -1849,6 +1851,9 @@ const Modal = (() => {
     setVis('wLevelsGrid', showPrices);     // Entry / SL / TP1
     setVis('wTp23Row', showPrices);        // TP2 / TP3 (dans les optionnels)
     setVis('wPartialsBlock', showPrices);  // sorties partielles (scale-out)
+    // P&L net et R réalisé : interrupteurs indépendants des prix (visibles ou non au choix).
+    setVis('wManualPnlField', jf.pnl !== false);
+    setVis('wRMultipleField', jf.rMultiple === true);
     if (!showPrices) {
       // Plus aucune notion de prix : on masque aussi le live-calc ET le prix de sortie.
       const lc = $('wLiveCalc');  if (lc) lc.style.display = 'none';
@@ -1924,6 +1929,10 @@ const Modal = (() => {
       exitPrice:  parseFloat($('wExit').value) || null,
       manualPnl:  $('wManualPnl').value.trim() !== '' && !isNaN(parseFloat($('wManualPnl').value))
                     ? parseFloat($('wManualPnl').value)
+                    : null,
+      // v1.0.2 : R réalisé saisi manuellement (borné/validé par le Store)
+      rMultiple:  ($('wRMultiple') && $('wRMultiple').value.trim() !== '' && !isNaN(parseFloat($('wRMultiple').value)))
+                    ? parseFloat($('wRMultiple').value)
                     : null,
       // v0.9.250 : sorties partielles multiples [{ lots, price }].
       // Legacy partialPercent/partialPrice forcés à null (on n'écrit plus l'ancien format).

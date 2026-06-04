@@ -682,7 +682,12 @@ const Store = (() => {
     // prices : UN seul interrupteur. true (défaut) = niveaux Entry/SL/TP + analyse IA par
     // capture (comportement classique). false = journal discrétionnaire : aucun champ de
     // prix, étape IA sautée, saisie 100% manuelle.
-    const out = { prices: v.prices === false ? false : true, fields: {} };
+    const out = {
+      prices:    v.prices    === false ? false : true,  // niveaux + analyse IA
+      pnl:       v.pnl       === false ? false : true,  // champ P&L net manuel (défaut affiché)
+      rMultiple: v.rMultiple === true,                  // champ R réalisé (défaut masqué)
+      fields: {},
+    };
     // Champs non-chiffrés : on ne stocke que les actifs (optional/required).
     const rawFields = (v.fields && typeof v.fields === 'object') ? v.fields : {};
     for (const key of Object.keys(JOURNAL_CUSTOM_FIELDS)) {
@@ -804,6 +809,8 @@ const Store = (() => {
       spreadCost: raw.spreadCost != null ? _safeNum(raw.spreadCost,  0,    1000, null) : null,
       pnl:        raw.pnl        != null ? _safeNum(raw.pnl,        -1e7, 1e7, null) : null,
       rr:         raw.rr         != null ? _safeNum(raw.rr,         -100, 100, null) : null,
+      // v1.0.2 : R réalisé saisi manuellement (multiple de risque, ex : +2.5R)
+      rMultiple:  raw.rMultiple  != null ? _safeNum(raw.rMultiple,  -1000, 1000, null) : null,
     };
     // groupId optionnel : utilisé pour lier les trades multi-comptes via groupes
     if (raw.groupId) {
@@ -1041,7 +1048,9 @@ const Store = (() => {
   function getJournalFields() {
     const jf = settings.journalFields;
     return {
-      prices: jf && jf.prices === false ? false : true,
+      prices:    jf && jf.prices === false ? false : true,
+      pnl:       jf && jf.pnl    === false ? false : true,
+      rMultiple: !!(jf && jf.rMultiple === true),
       fields: (jf && jf.fields && typeof jf.fields === 'object') ? { ...jf.fields } : {},
     };
   }
