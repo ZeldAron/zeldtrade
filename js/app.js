@@ -174,30 +174,56 @@ function initApp() {
     // Désactivé pour l'instant : TradingView marche partout sans inscription.
     // _loadFJWidget('financialjuice-eco-widget-container', 'ECOCAL', '100%');
 
-    // Widget NEWS : flux Twitter @financialjuice (headlines en direct, pas de restriction domaine).
-    // FJ widget bloqué (domain check serveur) → Twitter timeline = même source, fonctionne partout.
+    // ── RSS News fetcher ─────────────────────────────────────────────────────
+    // Fetch direct via rss2json.com (proxy CORS gratuit, aucun widget tiers,
+    // fonctionne partout incl. Safari ITP/content blockers).
+    // Source primaire : FJ RSS ; fallback : Reuters Business.
+    function _loadFjRssNews(host, isEn) {
+      const FJ_RSS  = 'https://financialjuice.com/home/news-feed/rss';
+      const RT_RSS  = 'https://feeds.reuters.com/reuters/businessNews';
+      const API     = 'https://api.rss2json.com/v1.api.json?count=30&rss_url=';
+      const label   = isEn ? 'news' : 'news';
+      const errtxt  = isEn ? 'Could not load news.' : 'Impossible de charger les news.';
+
+      function _renderItems(items) {
+        if (!items || !items.length) { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; return; }
+        const rows = items.map(i => {
+          const d   = new Date(i.pubDate);
+          const hm  = d.toLocaleTimeString(isEn ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
+          const src = i.author || (i.link || '').replace(/https?:\/\/(www\.)?/, '').split('/')[0];
+          return `<div class="fj-news-row">
+            <span class="fj-news-time">${hm}</span>
+            <span class="fj-news-title"><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></span>
+            ${src ? `<span class="fj-news-src">${src}</span>` : ''}
+          </div>`;
+        }).join('');
+        host.innerHTML = `<div class="fj-news-list">${rows}</div>`;
+      }
+
+      function _tryFetch(rssUrl) {
+        return fetch(API + encodeURIComponent(rssUrl))
+          .then(r => r.json())
+          .then(d => {
+            if (d.status === 'ok' && d.items && d.items.length) return d.items;
+            throw new Error('empty');
+          });
+      }
+
+      _tryFetch(FJ_RSS)
+        .catch(() => _tryFetch(RT_RSS))
+        .then(_renderItems)
+        .catch(() => { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; });
+    }
+
+    // Widget NEWS : fetch RSS via rss2json.com (CORS-friendly, aucun widget tiers,
+    // marche dans tous les navigateurs dont Safari avec content blocker).
+    // Source : Financial Juice RSS → si indisponible, Reuters Business.
     if (hasFjNews) {
       const tw = document.getElementById('fjNewsHost');
       if (tw && !tw.dataset.loaded) {
         tw.dataset.loaded = '1';
-        const a = document.createElement('a');
-        a.className    = 'twitter-timeline';
-        a.href         = 'https://twitter.com/financialjuice';
-        a.dataset.theme  = dark ? 'dark' : 'light';
-        a.dataset.height = '600';
-        a.dataset.chrome = 'noheader nofooter noborders';
-        a.textContent  = 'Financial Juice';
-        tw.appendChild(a);
-        if (!document.getElementById('tw-widgets-js')) {
-          const s = document.createElement('script');
-          s.id    = 'tw-widgets-js';
-          s.src   = 'https://platform.twitter.com/widgets.js';
-          s.async = true;
-          s.charset = 'utf-8';
-          document.getElementsByTagName('head')[0].appendChild(s);
-        } else if (window.twttr && window.twttr.widgets) {
-          window.twttr.widgets.load(tw);
-        }
+        tw.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">⏳ ${en ? 'Loading news…' : 'Chargement…'}</div>`;
+        _loadFjRssNews(tw, en);
       }
     }
   }
