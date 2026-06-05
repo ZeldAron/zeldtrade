@@ -1219,20 +1219,87 @@ async function _writeAuditLog(action, adminEmail, payload) {
 // fait login il y a plus d'1h, il doit re-authentifier avant ces actions.
 // Réduit la fenêtre d'attaque si un token a été volé/phishé.
 const ADMIN_MAX_TOKEN_AGE_MIN = 60;
+
+// v0.9.392 (Sec Trou #3) — Alerte Discord pour TENTATIVE admin non-autorisée.
+// Différent de _reportError (rouge, erreur serveur) : ici c'est orange (warning
+// sécurité), fire-and-forget, rate-limité à 1 alerte/min par (raison + email + fn)
+// pour éviter le flood en cas d'attaque automatisée.
+// Doc TTL : la collection adminAttemptRateLimit utilise le champ `expireAt`
+// (TTL Firestore 1h) — à activer en console Firebase si nettoyage auto désiré.
+async function _alertAdminAttempt(ctx) {
+  try {
+    const url = DISCORD_ERRORS_WEBHOOK.value();
+    if (!url) return;
+    const reason = String(ctx.reason || 'unknown').slice(0, 64);
+    const fn     = String(ctx.fn     || 'unknown').slice(0, 64);
+    const email  = String(ctx.email  || '_no_auth_').slice(0, 80);
+    const uid    = String(ctx.uid    || '_no_auth_').slice(0, 32);
+
+    // Rate-limit : 1 alerte/min par (fn + reason + email) pour anti-flood
+    const rlKey = crypto.createHash('sha256')
+      .update(`${fn}|${reason}|${email}`).digest('hex').slice(0, 24);
+    const rlRef = admin.firestore().doc(`adminAttemptRateLimit/${rlKey}`);
+    const now = Date.now();
+    const proceed = await admin.firestore().runTransaction(async (tx) => {
+      const snap = await tx.get(rlRef);
+      const last = snap.exists ? Number(snap.data().lastAt || 0) : 0;
+      if (now - last < 60 * 1000) return false;
+      tx.set(rlRef, {
+        lastAt:   now,
+        expireAt: admin.firestore.Timestamp.fromMillis(now + 3600 * 1000),
+      }, { merge: true });
+      return true;
+    }).catch(() => false);
+    if (!proceed) return;
+
+    const embed = {
+      title:       `🛡️ Tentative admin non-autorisée — \`${fn}\``,
+      description: `**Raison** : ${reason}`,
+      color:       0xf59e0b,  // amber/orange = warning sécu (vs rouge erreur)
+      fields: [
+        { name: 'Email tenté',  value: email, inline: true },
+        { name: 'UID',          value: uid,   inline: true },
+        { name: 'Région',       value: 'europe-west1', inline: true },
+      ],
+      footer:    { text: 'ZeldTrade Security · Admin Watch' },
+      timestamp: new Date().toISOString(),
+    };
+    await _postDiscordWebhook(url, embed);
+  } catch (e) {
+    // Defensive : ne JAMAIS faire échouer une CF à cause d'une alerte
+    console.error('[_alertAdminAttempt] silent fail:', e && e.message);
+  }
+}
+
 function _assertAdmin(request, opts) {
   const maxAgeMin = (opts && Number.isFinite(opts.maxTokenAgeMin))
     ? opts.maxTokenAgeMin
     : ADMIN_MAX_TOKEN_AGE_MIN;
+  const fn = (opts && opts.fn) || 'unknown';
+
   if (!request.auth) {
+    _alertAdminAttempt({ fn, reason: 'no_auth' }).catch(() => {});
     throw new HttpsError('unauthenticated', 'Authentication required');
   }
   if (request.auth.token.email !== ADMIN_EMAIL || !request.auth.token.email_verified) {
+    _alertAdminAttempt({
+      fn,
+      reason: request.auth.token.email_verified ? 'wrong_email' : 'email_not_verified',
+      email:  request.auth.token.email,
+      uid:    request.auth.uid,
+    }).catch(() => {});
     throw new HttpsError('permission-denied', 'Admin only');
   }
   // auth_time = timestamp Unix (secondes) de la dernière re-auth Firebase.
   // Si > maxAgeMin, on force re-login (anti vol de token longue durée).
   const authTimeMs = (request.auth.token.auth_time || 0) * 1000;
   if (authTimeMs > 0 && (Date.now() - authTimeMs) > maxAgeMin * 60 * 1000) {
+    _alertAdminAttempt({
+      fn,
+      reason: `token_expired_${maxAgeMin}min`,
+      email:  request.auth.token.email,
+      uid:    request.auth.uid,
+    }).catch(() => {});
     throw new HttpsError('permission-denied',
       `Session expirée (>${maxAgeMin}min). Déconnecte-toi et reconnecte-toi avant cette action.`);
   }
@@ -1272,13 +1339,14 @@ async function _assertAdminRateLimit(action, max) {
  */
 exports.adminCreateTestAccount = onCall(
   {
+    secrets:        [DISCORD_ERRORS_WEBHOOK],  // v0.9.392 : alertes admin watch
     maxInstances:    2,
     timeoutSeconds:  30,
     memory:         '256MiB',
     region:         'europe-west1',
   },
   _wrapCF('adminCreateTestAccount', async (request) => {
-    _assertAdmin(request);
+    _assertAdmin(request, { fn: 'adminCreateTestAccount' });
     await _assertAdminRateLimit('adminCreateTestAccount', 10);
 
     const email    = String(request.data?.email || '').trim().toLowerCase();
@@ -1344,7 +1412,7 @@ exports.deleteUserAccount = onCall(
     region:         'europe-west1',
   },
   _wrapCF('deleteUserAccount', async (request) => {
-    _assertAdmin(request);
+    _assertAdmin(request, { fn: 'deleteUserAccount' });
     await _assertAdminRateLimit('deleteUserAccount', 5);
 
     const targetUid = String(request.data?.uid || '').trim();
@@ -1531,7 +1599,7 @@ exports.generateProCode = onCall(
     region:         'europe-west1',
   },
   _wrapCF('generateProCode', async (request) => {
-    _assertAdmin(request);
+    _assertAdmin(request, { fn: 'generateProCode' });
     await _assertAdminRateLimit('generateProCode', 10);
 
     const codeHash  = String(request.data?.codeHash || '').trim();
@@ -1593,7 +1661,7 @@ exports.revokeProCode = onCall(
     region:         'europe-west1',
   },
   _wrapCF('revokeProCode', async (request) => {
-    _assertAdmin(request);
+    _assertAdmin(request, { fn: 'revokeProCode' });
     await _assertAdminRateLimit('revokeProCode', 10);
 
     const codeHash = String(request.data?.codeHash || '').trim();
@@ -2162,7 +2230,7 @@ exports.cleanupOrphanUserEmails = onCall(
     region:          'europe-west1',
   },
   _wrapCF('cleanupOrphanUserEmails', async (request) => {
-    _assertAdmin(request);
+    _assertAdmin(request, { fn: 'cleanupOrphanUserEmails' });
     await _assertAdminRateLimit('cleanupOrphanUserEmails', 5);
 
     const confirm = request.data?.confirm === true;
@@ -2312,6 +2380,73 @@ exports.cleanupOrphanUserEmails = onCall(
  *  Brevo+DKIM/SPF rendront la deliverability fiable.
  * ============================================================================
  */
+/**
+ * adminGrantElite — accorde le tier Elite gratuitement à un user (v0.9.385)
+ *
+ * Use case : donner un accès complet aux influenceurs/partenaires en 1 clic depuis
+ * la console admin, sans passer par le système de code (retiré de l'UI publique
+ * en v0.9.384). Écrit directement le plan en Firestore ; le trigger syncProClaim
+ * propage le custom claim `pro` automatiquement.
+ *
+ * data = { uid: string }
+ * retour = { ok: true, uid, tier: 'elite' }
+ */
+exports.adminGrantElite = onCall(
+  {
+    secrets:        [DISCORD_ERRORS_WEBHOOK],
+    maxInstances:    1,
+    timeoutSeconds:  30,
+    memory:          '256MiB',
+    region:          'europe-west1',
+  },
+  _wrapCF('adminGrantElite', async (request) => {
+    _assertAdmin(request, { fn: 'adminGrantElite' });
+    await _assertAdminRateLimit('adminGrantElite', 30);
+
+    const targetUid = typeof request.data?.uid === 'string' ? request.data.uid.trim() : '';
+    if (!targetUid || !/^[A-Za-z0-9]{1,128}$/.test(targetUid)) {
+      throw new HttpsError('invalid-argument', 'Invalid UID.');
+    }
+
+    // Vérifie que le user existe (sinon on créerait un doc orphelin)
+    let targetEmail = null;
+    try {
+      const u = await admin.auth().getUser(targetUid);
+      targetEmail = u.email || null;
+    } catch (e) {
+      if (e.code === 'auth/user-not-found') {
+        throw new HttpsError('not-found', 'User UID does not exist.');
+      }
+      throw e;
+    }
+
+    const db = admin.firestore();
+    const now = Date.now();
+
+    // Écrit le plan Elite — trigger syncProClaim propage le claim `pro` automatiquement
+    await db.doc(`users/${targetUid}/data/plan`).set({
+      plan:        'pro',
+      tier:        'elite',
+      source:      'admin-grant',
+      activatedAt: now,
+      grantedBy:   request.auth.token.email,
+    }, { merge: false });
+
+    // Audit log
+    try {
+      await db.collection('auditLogs').add({
+        action:  'adminGrantElite',
+        admin:   request.auth.token.email,
+        target:  { uid: targetUid, email: targetEmail },
+        at:      admin.firestore.FieldValue.serverTimestamp(),
+        expireAt: admin.firestore.Timestamp.fromMillis(now + 365 * 24 * 3600 * 1000),
+      });
+    } catch (e) { console.warn('[adminGrantElite] audit failed', e && e.message); }
+
+    return { ok: true, uid: targetUid, email: targetEmail, tier: 'elite', activatedAt: now };
+  })
+);
+
 exports.adminMarkEmailVerified = onCall(
   {
     secrets:        [DISCORD_ERRORS_WEBHOOK],
@@ -2321,7 +2456,7 @@ exports.adminMarkEmailVerified = onCall(
     region:          'europe-west1',
   },
   _wrapCF('adminMarkEmailVerified', async (request) => {
-    _assertAdmin(request);
+    _assertAdmin(request, { fn: 'adminMarkEmailVerified' });
     await _assertAdminRateLimit('adminMarkEmailVerified', 5);
 
     const db = admin.firestore();
@@ -2699,5 +2834,63 @@ exports.syncProClaim = onDocumentWritten(
       // user supprimé d'Auth, etc. → non bloquant (le doc plan peut survivre brièvement)
       console.error('[syncProClaim] failed uid=' + uid.slice(0, 8), e && e.message);
     }
+  }
+);
+
+// ─── getMarketNews (v1.0.4) ──────────────────────────────────────────────────
+// Proxy RSS → JSON pour l'onglet Éco (news en direct Funded/Elite/VIP).
+// Fetch BBC Business RSS côté serveur (pas de CORS, pas de proxy tiers),
+// parse XML natif, renvoie les 30 derniers items. Cache 5 min via Cache-Control.
+// Fallback CNBC si BBC indisponible.
+exports.getMarketNews = onCall(
+  { region: 'europe-west1', cors: true },
+  async (request) => {
+    const { auth } = request;
+    if (!auth) throw new HttpsError('unauthenticated', 'Auth required');
+    const claims = auth.token || {};
+    const tier   = claims.tier || 'free';
+    const ALLOWED = ['funded', 'elite', 'beta', 'admin'];
+    if (!ALLOWED.includes(tier)) throw new HttpsError('permission-denied', 'Upgrade required');
+
+    // Cache en mémoire CF (shared entre invocations chaudes) ~5 min
+    const now = Date.now();
+    if (exports._newsCache && (now - exports._newsCache.ts) < 5 * 60 * 1000) {
+      return exports._newsCache.data;
+    }
+
+    const SOURCES = [
+      'https://feeds.bbci.co.uk/news/business/rss.xml',
+      'https://www.cnbc.com/id/100003114/device/rss/rss.html',
+    ];
+
+    function _parseRSS(xml) {
+      const items = [];
+      const itemRx = /<item>([\s\S]*?)<\/item>/g;
+      let m;
+      while ((m = itemRx.exec(xml)) !== null) {
+        const block = m[1];
+        const t = (tag) => { const r = new RegExp(`<${tag}[^>]*>(?:<\\!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${tag}>`); const x = r.exec(block); return x ? x[1].trim() : ''; };
+        items.push({ title: t('title'), link: t('link'), pubDate: t('pubDate'), author: t('author') || t('dc:creator') || '' });
+        if (items.length >= 30) break;
+      }
+      return items;
+    }
+
+    let items = null;
+    for (const url of SOURCES) {
+      try {
+        const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+        if (!res.ok) continue;
+        const xml = await res.text();
+        items = _parseRSS(xml);
+        if (items.length) break;
+      } catch (_) { /* try next */ }
+    }
+
+    if (!items || !items.length) throw new HttpsError('unavailable', 'No news available');
+
+    const data = { items, fetchedAt: now };
+    exports._newsCache = { ts: now, data };
+    return data;
   }
 );
