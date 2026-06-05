@@ -115,14 +115,27 @@ function initApp() {
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
 
-    // Chargement du script Financial Juice (Economic Calendar, mode standard, fond transparent)
-    if (!document.getElementById('FJ-Widgets-Cal')) {
-      const s = document.createElement('script');
-      s.type = 'text/javascript';
-      s.id   = 'FJ-Widgets-Cal';
-      const r = Math.floor(Math.random() * 9999);
-      s.src = 'https://feed.financialjuice.com/widgets/widgets.js?r=' + r + '&w=eco&m=standard&h=600&bgcol=transparent&fontcol=white&container=financialjuice-eco-widget-container';
-      document.body.appendChild(s);
+    // Chargement du widget Financial Juice Economic Calendar (code embed officiel, adapté).
+    // Width passée en 100% (vs 340px d'origine) + couleurs selon le thème ZeldTrade.
+    if (!document.getElementById('FJ-Widgets')) {
+      const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+      const jo = document.createElement('script');
+      jo.type = 'text/javascript';
+      jo.id   = 'FJ-Widgets';
+      const r = Math.floor(Math.random() * (9999 - 0 + 1) + 0);
+      jo.src = 'https://feed.financialjuice.com/widgets/widgets.js?r=' + r;
+      jo.onload = function() {
+        const options = {};
+        options.container  = 'financialjuice-eco-widget-container';
+        options.mode       = 'standard';
+        options.width      = '100%';
+        options.height     = '600px';
+        options.backColor  = dark ? '15171c' : 'ffffff';
+        options.fontColor  = dark ? 'b2b5be' : '2a2a2e';
+        options.widgetType = 'ECOCAL';
+        new window.FJWidgets.createWidget(options);
+      };
+      document.getElementsByTagName('head')[0].appendChild(jo);
     }
   }
 
