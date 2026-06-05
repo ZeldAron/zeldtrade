@@ -89,10 +89,24 @@ function initApp() {
     const en = i18n.getLang && i18n.getLang() === 'en';
     const hasFjNews = Store.canUseFeature && Store.canUseFeature('fjNews');
 
-    // Bloc 1 — Calendrier économique Financial Juice (gratuit, tous tiers)
-    // Le widget FJ injecte son contenu dans #financialjuice-eco-widget-container via
-    // feed.financialjuice.com/widgets/widgets.js (domaine autorisé en CSP script-src).
-    const calBlock = `<div id="financialjuice-eco-widget-container" style="width:100%;min-height:560px;border-radius:12px;overflow:hidden;background:var(--bg2);border:1px solid var(--border)"></div>`;
+    // Bloc 1 — Calendrier économique TradingView (iframe, gratuit, aucune inscription).
+    // FJ ECOCAL bloqué car domaine non enregistré chez eux → TradingView fonctionne partout.
+    const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const tvCfg = encodeURIComponent(JSON.stringify({
+      colorTheme: dark ? 'dark' : 'light',
+      isTransparent: true,
+      width: '100%', height: 600,
+      locale: en ? 'en' : 'fr',
+      importanceFilter: '-1,0,1',
+      countryFilter: 'us,eu,fr,gb,de,jp,ca,au,ch,cn'
+    }));
+    const calBlock = `<iframe
+        src="https://s.tradingview.com/external-embedding/embed-widget-events.html?locale=${en ? 'en' : 'fr'}#${tvCfg}"
+        style="width:100%;height:600px;border:0;border-radius:12px;background:var(--bg2);display:block"
+        loading="lazy"
+        title="Calendrier économique"
+        allowtransparency="true"
+      ></iframe>`;
 
     // Bloc 2 — News en direct (réservé Funded/Elite/VIP)
     const newsBlock = hasFjNews
@@ -115,31 +129,6 @@ function initApp() {
       ${newsBlock}`;
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
-
-    // Widget FJ — code officiel reproduit tel quel, adapté ZeldTrade (100%, thème).
-    // On recrée le script à chaque ouverture (id unique via r) pour éviter les
-    // problèmes de double-appel si l'user navigue et revient.
-    const dark = document.documentElement.getAttribute('data-theme') !== 'light';
-    const r    = Math.floor(Math.random() * (9999 - 0 + 1) + 0);
-    const jo   = document.createElement('script');
-    jo.type = 'text/javascript';
-    jo.id   = 'FJ-Widgets-' + r;
-    jo.src  = 'https://feed.financialjuice.com/widgets/widgets.js?r=' + r;
-    jo.onload = function() {
-      try {
-        const options      = {};
-        options.container  = 'financialjuice-eco-widget-container';
-        options.mode       = 'standard';
-        options.width      = '100%';
-        options.height     = '600px';
-        options.backColor  = dark ? '15171c' : 'ffffff';
-        options.fontColor  = dark ? 'b2b5be' : '2a2a2e';
-        options.widgetType = 'ECOCAL';
-        new window.FJWidgets.createWidget(options);
-      } catch(e) { console.error('[FJ] widget init error:', e); }
-    };
-    jo.onerror = function() { console.error('[FJ] script failed to load from feed.financialjuice.com'); };
-    document.getElementsByTagName('head')[0].appendChild(jo);
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
