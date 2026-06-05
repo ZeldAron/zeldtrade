@@ -90,23 +90,10 @@ function initApp() {
     const hasFjNews = Store.canUseFeature && Store.canUseFeature('fjNews');
 
     // Bloc 1 — Calendrier économique TradingView (iframe, gratuit, aucune inscription).
-    // FJ ECOCAL bloqué car domaine non enregistré chez eux → TradingView fonctionne partout.
+    // On crée l'iframe via createElement pour éviter le problème d'échappement HTML
+    // des guillemets du JSON dans l'attribut src (qui cassait l'URL).
     const dark = document.documentElement.getAttribute('data-theme') !== 'light';
-    const tvCfg = encodeURIComponent(JSON.stringify({
-      colorTheme: dark ? 'dark' : 'light',
-      isTransparent: true,
-      width: '100%', height: 600,
-      locale: en ? 'en' : 'fr',
-      importanceFilter: '-1,0,1',
-      countryFilter: 'us,eu,fr,gb,de,jp,ca,au,ch,cn'
-    }));
-    const calBlock = `<iframe
-        src="https://s.tradingview.com/external-embedding/embed-widget-events.html?locale=${en ? 'en' : 'fr'}#${tvCfg}"
-        style="width:100%;height:600px;border:0;border-radius:12px;background:var(--bg2);display:block"
-        loading="lazy"
-        title="Calendrier économique"
-        allowtransparency="true"
-      ></iframe>`;
+    const calBlock = `<div id="tvCalContainer" style="width:100%;height:600px;border-radius:12px;overflow:hidden;background:var(--bg2)"></div>`;
 
     // Bloc 2 — News en direct (réservé Funded/Elite/VIP)
     const newsBlock = hasFjNews
@@ -129,6 +116,27 @@ function initApp() {
       ${newsBlock}`;
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
+
+    // Injection de l'iframe TradingView via createElement → le navigateur gère l'URL
+    // proprement (les guillemets du JSON dans le hash ne cassent pas l'attribut src).
+    const tvContainer = document.getElementById('tvCalContainer');
+    if (tvContainer) {
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%;height:600px;border:0;display:block';
+      iframe.loading    = 'lazy';
+      iframe.title      = en ? 'Economic calendar' : 'Calendrier économique';
+      iframe.allowtransparency = true;
+      iframe.src = 'https://s.tradingview.com/external-embedding/embed-widget-events.html#' + JSON.stringify({
+        colorTheme:     dark ? 'dark' : 'light',
+        isTransparent:  false,
+        width:          '100%',
+        height:         600,
+        locale:         en ? 'en' : 'fr',
+        importanceFilter: '-1,0,1',
+        countryFilter:  'us,eu,fr,gb,de,jp,ca,au,ch,cn'
+      });
+      tvContainer.appendChild(iframe);
+    }
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
