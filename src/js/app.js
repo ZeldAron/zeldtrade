@@ -83,8 +83,9 @@ function initApp() {
   // aura son code embed. Build une seule fois (l'iframe du calendrier persiste).
   function renderEcon() {
     const el = document.getElementById('econContent');
-    if (!el || el.dataset.built === '1') return;
-    el.dataset.built = '1';
+    if (!el) return;
+    // On re-render à chaque visite pour réinjecter le widget FJ
+    // (le script FJ se recharge avec un r unique à chaque fois).
     const en = i18n.getLang && i18n.getLang() === 'en';
     const hasFjNews = Store.canUseFeature && Store.canUseFeature('fjNews');
 
@@ -115,17 +116,18 @@ function initApp() {
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
 
-    // Chargement du widget Financial Juice Economic Calendar (code embed officiel, adapté).
-    // Width passée en 100% (vs 340px d'origine) + couleurs selon le thème ZeldTrade.
-    if (!document.getElementById('FJ-Widgets')) {
-      const dark = document.documentElement.getAttribute('data-theme') !== 'light';
-      const jo = document.createElement('script');
-      jo.type = 'text/javascript';
-      jo.id   = 'FJ-Widgets';
-      const r = Math.floor(Math.random() * (9999 - 0 + 1) + 0);
-      jo.src = 'https://feed.financialjuice.com/widgets/widgets.js?r=' + r;
-      jo.onload = function() {
-        const options = {};
+    // Widget FJ — code officiel reproduit tel quel, adapté ZeldTrade (100%, thème).
+    // On recrée le script à chaque ouverture (id unique via r) pour éviter les
+    // problèmes de double-appel si l'user navigue et revient.
+    const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const r    = Math.floor(Math.random() * (9999 - 0 + 1) + 0);
+    const jo   = document.createElement('script');
+    jo.type = 'text/javascript';
+    jo.id   = 'FJ-Widgets-' + r;
+    jo.src  = 'https://feed.financialjuice.com/widgets/widgets.js?r=' + r;
+    jo.onload = function() {
+      try {
+        const options      = {};
         options.container  = 'financialjuice-eco-widget-container';
         options.mode       = 'standard';
         options.width      = '100%';
@@ -134,9 +136,10 @@ function initApp() {
         options.fontColor  = dark ? 'b2b5be' : '2a2a2e';
         options.widgetType = 'ECOCAL';
         new window.FJWidgets.createWidget(options);
-      };
-      document.getElementsByTagName('head')[0].appendChild(jo);
-    }
+      } catch(e) { console.error('[FJ] widget init error:', e); }
+    };
+    jo.onerror = function() { console.error('[FJ] script failed to load from feed.financialjuice.com'); };
+    document.getElementsByTagName('head')[0].appendChild(jo);
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
