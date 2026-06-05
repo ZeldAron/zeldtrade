@@ -97,7 +97,7 @@ function initApp() {
 
     // Bloc 2 — News en direct (réservé Funded/Elite/VIP)
     const newsBlock = hasFjNews
-      ? `<div id="financialjuice-news-widget-container" style="width:100%;min-height:600px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>`
+      ? `<div id="fjNewsHost" style="width:100%;min-height:600px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>`
       : `<div style="border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;background:var(--bg2)">
            <div style="font-size:30px;margin-bottom:6px">🔒</div>
            <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.55">${en
@@ -174,8 +174,32 @@ function initApp() {
     // Désactivé pour l'instant : TradingView marche partout sans inscription.
     // _loadFJWidget('financialjuice-eco-widget-container', 'ECOCAL', '100%');
 
-    // Widget FJ NEWS (headlines en direct — Funded/Elite/VIP uniquement)
-    if (hasFjNews) _loadFJWidget('financialjuice-news-widget-container', 'NEWS', '100%');
+    // Widget NEWS : flux Twitter @financialjuice (headlines en direct, pas de restriction domaine).
+    // FJ widget bloqué (domain check serveur) → Twitter timeline = même source, fonctionne partout.
+    if (hasFjNews) {
+      const tw = document.getElementById('fjNewsHost');
+      if (tw && !tw.dataset.loaded) {
+        tw.dataset.loaded = '1';
+        const a = document.createElement('a');
+        a.className    = 'twitter-timeline';
+        a.href         = 'https://twitter.com/financialjuice';
+        a.dataset.theme  = dark ? 'dark' : 'light';
+        a.dataset.height = '600';
+        a.dataset.chrome = 'noheader nofooter noborders';
+        a.textContent  = 'Financial Juice';
+        tw.appendChild(a);
+        if (!document.getElementById('tw-widgets-js')) {
+          const s = document.createElement('script');
+          s.id    = 'tw-widgets-js';
+          s.src   = 'https://platform.twitter.com/widgets.js';
+          s.async = true;
+          s.charset = 'utf-8';
+          document.getElementsByTagName('head')[0].appendChild(s);
+        } else if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load(tw);
+        }
+      }
+    }
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
