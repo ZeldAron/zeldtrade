@@ -179,18 +179,14 @@ function initApp() {
     // fonctionne partout incl. Safari ITP/content blockers).
     // Source primaire : FJ RSS ; fallback : Reuters Business.
     function _loadFjRssNews(host, isEn) {
-      const FJ_RSS  = 'https://financialjuice.com/home/news-feed/rss';
-      const RT_RSS  = 'https://feeds.reuters.com/reuters/businessNews';
-      const API     = 'https://api.rss2json.com/v1.api.json?count=30&rss_url=';
-      const label   = isEn ? 'news' : 'news';
-      const errtxt  = isEn ? 'Could not load news.' : 'Impossible de charger les news.';
+      const errtxt = isEn ? 'Could not load news.' : 'Impossible de charger les news.';
 
       function _renderItems(items) {
         if (!items || !items.length) { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; return; }
         const rows = items.map(i => {
-          const d   = new Date(i.pubDate);
-          const hm  = d.toLocaleTimeString(isEn ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
-          const src = i.author || (i.link || '').replace(/https?:\/\/(www\.)?/, '').split('/')[0];
+          const d  = new Date(i.pubDate);
+          const hm = isNaN(d) ? '' : d.toLocaleTimeString(isEn ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
+          const src = i.author || '';
           return `<div class="fj-news-row">
             <span class="fj-news-time">${hm}</span>
             <span class="fj-news-title"><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></span>
@@ -200,19 +196,12 @@ function initApp() {
         host.innerHTML = `<div class="fj-news-list">${rows}</div>`;
       }
 
-      function _tryFetch(rssUrl) {
-        return fetch(API + encodeURIComponent(rssUrl))
-          .then(r => r.json())
-          .then(d => {
-            if (d.status === 'ok' && d.items && d.items.length) return d.items;
-            throw new Error('empty');
-          });
-      }
-
-      _tryFetch(FJ_RSS)
-        .catch(() => _tryFetch(RT_RSS))
-        .then(_renderItems)
-        .catch(() => { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; });
+      // Appel via Cloud Function (pas de CORS, marche partout y compris Safari)
+      const functions = firebase.functions ? firebase.functions() : null;
+      if (!functions) { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; return; }
+      const fn = functions.httpsCallable('getMarketNews');
+      fn({}).then(r => _renderItems(r.data && r.data.items))
+            .catch(() => { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; });
     }
 
     // Widget NEWS : fetch RSS via rss2json.com (CORS-friendly, aucun widget tiers,
