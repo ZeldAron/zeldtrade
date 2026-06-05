@@ -54,7 +54,7 @@ service cloud.firestore {
       // ré-appliquer côté serveur (Cloud Function) plutôt que dans les rules.
       allow create, update: if request.auth != null
                     && request.auth.uid == uid
-                    && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'lastSeen', 'termsAccepted', 'newsletterOptIn'])
+                    && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'lastSeen', 'termsAccepted', 'newsletterOptIn', 'isTestAccount'])
                     && (!('uid' in request.resource.data)      || request.resource.data.uid == uid)
                     && (!('email' in request.resource.data)    || (request.resource.data.email is string && request.resource.data.email.size() <= 254))
                     && (!('username' in request.resource.data) || (request.resource.data.username is string && request.resource.data.username.size() <= 50))
