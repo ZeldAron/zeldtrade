@@ -117,25 +117,33 @@ function initApp() {
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
 
-    // Injection de l'iframe TradingView via createElement → le navigateur gère l'URL
-    // proprement (les guillemets du JSON dans le hash ne cassent pas l'attribut src).
+    // Widget TradingView Economic Calendar — approche officielle : script src +
+    // config JSON en text content (lu par TradingView via currentScript.text).
+    // s3.tradingview.com est autorisé en CSP script-src.
     const tvContainer = document.getElementById('tvCalContainer');
-    if (tvContainer) {
-      const iframe = document.createElement('iframe');
-      iframe.style.cssText = 'width:100%;height:600px;border:0;display:block';
-      iframe.loading    = 'lazy';
-      iframe.title      = en ? 'Economic calendar' : 'Calendrier économique';
-      iframe.allowtransparency = true;
-      iframe.src = 'https://s.tradingview.com/external-embedding/embed-widget-events.html#' + JSON.stringify({
+    if (tvContainer && !tvContainer.dataset.loaded) {
+      tvContainer.dataset.loaded = '1';
+      const wrap   = document.createElement('div');
+      wrap.className = 'tradingview-widget-container';
+      wrap.style.cssText = 'width:100%;height:600px';
+      const inner  = document.createElement('div');
+      inner.className = 'tradingview-widget-container__widget';
+      wrap.appendChild(inner);
+      const script = document.createElement('script');
+      script.type  = 'text/javascript';
+      script.src   = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
+      script.async = true;
+      script.text  = JSON.stringify({
         colorTheme:     dark ? 'dark' : 'light',
         isTransparent:  false,
         width:          '100%',
-        height:         600,
+        height:         '600',
         locale:         en ? 'en' : 'fr',
         importanceFilter: '-1,0,1',
         countryFilter:  'us,eu,fr,gb,de,jp,ca,au,ch,cn'
       });
-      tvContainer.appendChild(iframe);
+      wrap.appendChild(script);
+      tvContainer.appendChild(wrap);
     }
   }
 
