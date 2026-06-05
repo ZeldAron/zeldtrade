@@ -97,9 +97,7 @@ function initApp() {
 
     // Bloc 2 — News en direct (réservé Funded/Elite/VIP)
     const newsBlock = hasFjNews
-      ? `<div id="fjNewsHost" style="border:1px dashed var(--border);border-radius:12px;padding:28px;text-align:center;color:var(--muted);font-size:13.5px">
-           📰 ${en ? 'Financial Juice live news — coming very soon.' : 'News en direct Financial Juice — branchement imminent.'}
-         </div>`
+      ? `<div id="financialjuice-news-widget-container" style="width:100%;min-height:600px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>`
       : `<div style="border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;background:var(--bg2)">
            <div style="font-size:30px;margin-bottom:6px">🔒</div>
            <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.55">${en
@@ -116,6 +114,32 @@ function initApp() {
       ${newsBlock}`;
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
+
+    // Helper : charge le script FJ (shared entre ECOCAL et NEWS) puis crée le widget.
+    function _loadFJWidget(containerId, widgetType, width) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const r  = Math.floor(Math.random() * (9999 - 0 + 1) + 0);
+      const jo = document.createElement('script');
+      jo.type  = 'text/javascript';
+      jo.id    = 'FJ-Widgets-' + containerId;
+      jo.src   = 'https://feed.financialjuice.com/widgets/widgets.js?r=' + r;
+      jo.onload = function() {
+        try {
+          const options      = {};
+          options.container  = containerId;
+          options.mode       = 'Dark';
+          options.width      = width || '100%';
+          options.height     = '600px';
+          options.backColor  = dark ? '15171c' : 'ffffff';
+          options.fontColor  = dark ? 'b2b5be' : '2a2a2e';
+          options.widgetType = widgetType;
+          new window.FJWidgets.createWidget(options);
+        } catch(e) { console.error('[FJ] ' + widgetType + ' error:', e); }
+      };
+      jo.onerror = function() { console.error('[FJ] failed to load widget: ' + widgetType); };
+      document.getElementsByTagName('head')[0].appendChild(jo);
+    }
 
     // Widget TradingView Economic Calendar — approche officielle : script src +
     // config JSON en text content (lu par TradingView via currentScript.text).
@@ -145,6 +169,13 @@ function initApp() {
       wrap.appendChild(script);
       tvContainer.appendChild(wrap);
     }
+
+    // Widget FJ ECOCAL (calendrier éco, gratuit — remplacement si TradingView non dispo)
+    // Désactivé pour l'instant : TradingView marche partout sans inscription.
+    // _loadFJWidget('financialjuice-eco-widget-container', 'ECOCAL', '100%');
+
+    // Widget FJ NEWS (headlines en direct — Funded/Elite/VIP uniquement)
+    if (hasFjNews) _loadFJWidget('financialjuice-news-widget-container', 'NEWS', '100%');
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
