@@ -324,6 +324,7 @@ const Store = (() => {
     betaFeatures:     ['elite', 'beta'],
     decisiveVote:     ['elite', 'beta'],
     partials:         ['funded', 'elite', 'beta'],   // v0.9.251 : sorties partielles = Pro only
+    fjNews:           ['funded', 'elite', 'beta'],   // v1.0.4 : news Financial Juice = payant (le calendrier éco reste libre)
   };
 
   // ── Clés localStorage (cache local) ─────────────────────────────────────────

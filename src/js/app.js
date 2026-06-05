@@ -69,12 +69,51 @@ function initApp() {
     if (page === 'goals')     _renderWithSkeleton('goalsContent',    UI.renderGoals);
     if (page === 'calendar')  _renderWithSkeleton('calContent',      UI.renderCalendar);
     if (page === 'outils')    UI.renderOutils();
+    if (page === 'econ')      renderEcon();
     if (page === 'offers')    UI.renderOffers();
     // v0.9.257 : recalcule la page Réglages à chaque ouverture (sinon la section
     // « Gérer mon abonnement » restait masquée si le doc Stripe a été chargé APRÈS
     // le 1er rendu — la visibilité n'était jamais réévaluée). initSettings est
     // idempotent (bindings gardés par dataset.bound).
     if (page === 'settings')  UI.initSettings();
+  }
+
+  // v1.0.4 : page « Éco » — calendrier économique (LIBRE, tous) + news Financial Juice
+  // (réservé Funded/Elite/VIP via la feature fjNews). Le widget FJ sera branché dès qu'on
+  // aura son code embed. Build une seule fois (l'iframe du calendrier persiste).
+  function renderEcon() {
+    const el = document.getElementById('econContent');
+    if (!el || el.dataset.built === '1') return;
+    el.dataset.built = '1';
+    const en   = i18n.getLang && i18n.getLang() === 'en';
+    const dark = document.documentElement.getAttribute('data-theme') !== 'light';
+    const cfg  = encodeURIComponent(JSON.stringify({
+      colorTheme: dark ? 'dark' : 'light', isTransparent: true,
+      width: '100%', height: '100%', locale: en ? 'en' : 'fr',
+      importanceFilter: '0,1', countryFilter: 'fr,de,it,es,gb,us,jp,ca,au,ch,cn,nz'
+    }));
+    const calIframe = `<iframe title="Economic calendar" loading="lazy" style="width:100%;height:560px;border:0;border-radius:12px;background:var(--bg2)" src="https://www.tradingview-widget.com/embed-widget/events/?locale=${en ? 'en' : 'fr'}#${cfg}"></iframe>`;
+
+    let newsBlock;
+    if (Store.canUseFeature && Store.canUseFeature('fjNews')) {
+      newsBlock = `<div id="fjNewsHost" style="border:1px dashed var(--border);border-radius:12px;padding:28px;text-align:center;color:var(--muted);font-size:13.5px">${en ? 'Financial Juice live news — coming very soon.' : 'News en direct Financial Juice — branchement imminent.'}</div>`;
+    } else {
+      newsBlock = `<div style="border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;background:var(--bg2)">
+          <div style="font-size:30px;margin-bottom:6px">🔒</div>
+          <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.55">${en
+            ? 'Live news (Financial Juice) is reserved for <strong>Funded / Elite</strong> plans. The economic calendar above is free.'
+            : 'Les news en direct (Financial Juice) sont réservées aux plans <strong>Funded / Elite</strong>. Le calendrier ci-dessus reste gratuit.'}</p>
+          <button class="btn-primary" id="econUpsell" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
+        </div>`;
+    }
+
+    el.innerHTML = `
+      <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
+      <h3 style="margin:0 0 10px;font-size:15px;color:var(--text)">📅 ${en ? "Today's economic events" : 'Events économiques du jour'}</h3>
+      ${calIframe}
+      <h3 style="margin:26px 0 10px;font-size:15px;color:var(--text)">📰 ${en ? 'Live news' : 'News en direct'}</h3>
+      ${newsBlock}`;
+    document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
@@ -462,7 +501,7 @@ function initApp() {
   UI.updateStats();
 
   // Redirect post-login if a destination was set (ex: landing Pro button)
-  const VALID_PAGES = new Set(['journal','dashboard','analytics','goals','calendar','outils','offers','settings','tutorial']);
+  const VALID_PAGES = new Set(['journal','dashboard','analytics','goals','calendar','outils','econ','offers','settings','tutorial']);
   const _goto = sessionStorage.getItem('ztGoto');
   sessionStorage.removeItem('ztGoto');
   if (_goto && VALID_PAGES.has(_goto)) {
