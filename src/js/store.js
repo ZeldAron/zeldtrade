@@ -670,9 +670,18 @@ const Store = (() => {
   // pas d'XSS, pas de validation Firestore par-champ nécessaire. Les libellés vivent en
   // i18n (clés `jf.*`). Étendre = ajouter une entrée ici (R2 : emotion, discipline, …).
   const JOURNAL_CUSTOM_FIELDS = {
-    sentiment:    { kind: 'select', options: ['bullish', 'bearish', 'neutral', 'range'] },
-    planFollowed: { kind: 'select', options: ['yes', 'partial', 'no'] },
-    confidence:   { kind: 'rating', min: 1, max: 5 },
+    // ── Psychologique ─────────────────────────────────────────────────────────
+    emotion:       { kind: 'select',  options: ['calm', 'confident', 'anxious', 'fomo', 'tired', 'revenge'] },
+    planFollowed:  { kind: 'select',  options: ['yes', 'partial', 'no'] },
+    confidence:    { kind: 'rating',  min: 1, max: 5 },
+    prepQuality:   { kind: 'select',  options: ['done', 'partial', 'none'] },
+    tradeGrade:    { kind: 'select',  options: ['A', 'B', 'C', 'D'] },
+    // ── Contexte marché ───────────────────────────────────────────────────────
+    sentiment:     { kind: 'select',  options: ['bullish', 'bearish', 'neutral', 'range'] },
+    marketStructure:{ kind: 'select', options: ['trend', 'range', 'chop'] },
+    macroContext:  { kind: 'select',  options: ['calm', 'news', 'fomc', 'nfp'] },
+    volatility:    { kind: 'select',  options: ['low', 'normal', 'high'] },
+    session:       { kind: 'select',  options: ['asia', 'london', 'overlap', 'ny', 'ny-close'] },
   };
   const _JF_MODES = new Set(['off', 'optional', 'required']);
   // Config persistée dans settings.journalFields : toggles SL/TP1 (défaut REQUIS = zéro

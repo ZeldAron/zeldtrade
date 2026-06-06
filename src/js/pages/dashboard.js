@@ -761,6 +761,122 @@
     });
   }
 
+  // ── Analytics psycho / contexte ───────────────────────────────────────────
+
+  // Helper : win rate d'un groupe de trades
+  function _wr(arr) { return arr.length ? arr.filter(t=>t.outcome==='win').length/arr.length*100 : null; }
+  function _avgPnl(arr) { return arr.length ? arr.reduce((s,t)=>s+(Calc.trade(t).netPnl||0),0)/arr.length : null; }
+
+  // Graphique barres groupées WR% + PnL moyen par valeur d'un champ custom
+  function _renderCustomFieldChart(containerId, trades, fieldKey, labelFn) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades).filter(t => t.custom && t.custom[fieldKey] != null);
+    if (closed.length < 3) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const groups = {};
+    closed.forEach(t => {
+      const v = String(t.custom[fieldKey]);
+      if (!groups[v]) groups[v] = [];
+      groups[v].push(t);
+    });
+    const keys    = Object.keys(groups);
+    const wrVals  = keys.map(k => +(_wr(groups[k])||0).toFixed(1));
+    const pnlVals = keys.map(k => +(_avgPnl(groups[k])||0).toFixed(2));
+    const labels  = keys.map(k => labelFn ? labelFn(k) : k);
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label:'Win rate (%)', data: wrVals, backgroundColor:'rgba(77,166,255,0.75)', borderRadius:5, borderWidth:0, yAxisID:'y' },
+          { label:'PnL moyen ($)', data: pnlVals, backgroundColor: pnlVals.map(v=>v>=0?'rgba(0,229,160,0.6)':'rgba(255,87,103,0.6)'), borderRadius:5, borderWidth:0, yAxisID:'y2' },
+        ],
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:true, position:'top', labels:{color:'#b2b5be',font:CHART_DEFAULTS.font,boxWidth:12,padding:12} },
+          tooltip:{ ...CHART_DEFAULTS.tooltip, callbacks:{ label: c => c.datasetIndex===0 ? ` WR: ${c.parsed.y}% (${groups[keys[c.dataIndex]].length}T)` : ` Moy: ${Calc.formatPnL(c.parsed.y)}` }}},
+        scales:{
+          x:{ ticks:{color:'#b2b5be',font:{...CHART_DEFAULTS.font,size:10}}, grid:{display:false}, border:{display:false} },
+          y:{ position:'left', min:0, max:100, ticks:{color:CHART_DEFAULTS.color.blue,font:CHART_DEFAULTS.font,callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,0.04)'}, border:{display:false} },
+          y2:{ position:'right', ticks:{color:CHART_DEFAULTS.color.green,font:CHART_DEFAULTS.font,callback:v=>'$'+v}, grid:{display:false}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // Win rate + PnL par note de confiance (1–5) — barres + courbe
+  function _renderConfidenceChart(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades).filter(t => t.custom && t.custom.confidence != null);
+    if (closed.length < 3) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const byLevel = {};
+    for (let i=1;i<=5;i++) byLevel[i]=[];
+    closed.forEach(t => { const v=t.custom.confidence; if(byLevel[v]) byLevel[v].push(t); });
+    const levels = [1,2,3,4,5];
+    const wrVals  = levels.map(l => byLevel[l].length ? +_wr(byLevel[l]).toFixed(1) : null);
+    const pnlVals = levels.map(l => byLevel[l].length ? +_avgPnl(byLevel[l]).toFixed(2) : null);
+    const counts  = levels.map(l => byLevel[l].length);
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['⭐','⭐⭐','⭐⭐⭐','⭐⭐⭐⭐','⭐⭐⭐⭐⭐'],
+        datasets:[
+          { label:'Win rate (%)', data:wrVals, backgroundColor:'rgba(77,166,255,0.75)', borderRadius:5, borderWidth:0, yAxisID:'y' },
+          { label:'PnL moyen ($)', data:pnlVals, type:'line', borderColor:CHART_DEFAULTS.color.amber, borderWidth:2.5, fill:false, tension:0.3, pointRadius:4, pointBackgroundColor:CHART_DEFAULTS.color.amber, yAxisID:'y2' },
+        ],
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:true, position:'top', labels:{color:'#b2b5be',font:CHART_DEFAULTS.font,boxWidth:12,padding:12} },
+          tooltip:{ ...CHART_DEFAULTS.tooltip, callbacks:{ label: c => c.datasetIndex===0 ? ` WR: ${c.parsed.y}% (${counts[c.dataIndex]}T)` : ` Moy: ${Calc.formatPnL(c.parsed.y)}` }}},
+        scales:{
+          x:{ ticks:{color:'#b2b5be',font:CHART_DEFAULTS.font}, grid:{display:false}, border:{display:false} },
+          y:{ position:'left', min:0, max:100, ticks:{color:CHART_DEFAULTS.color.blue,font:CHART_DEFAULTS.font,callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,0.04)'}, border:{display:false} },
+          y2:{ position:'right', ticks:{color:CHART_DEFAULTS.color.amber,font:CHART_DEFAULTS.font,callback:v=>'$'+v}, grid:{display:false}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // Plan suivi vs non suivi — barres comparatives
+  function _renderPlanFollowedChart(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades).filter(t => t.custom && t.custom.planFollowed);
+    if (closed.length < 3) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const groups = { yes:[], partial:[], no:[] };
+    closed.forEach(t => { const v=t.custom.planFollowed; if(groups[v]) groups[v].push(t); });
+    const labelMap = { yes:'✅ Oui', partial:'⚠️ Partiellement', no:'❌ Non' };
+    const keys = ['yes','partial','no'];
+    const wrVals  = keys.map(k => groups[k].length ? +_wr(groups[k]).toFixed(1) : 0);
+    const pnlTot  = keys.map(k => +groups[k].reduce((s,t)=>s+(Calc.trade(t).netPnl||0),0).toFixed(0));
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: keys.map(k=>labelMap[k]),
+        datasets:[
+          { label:'Win rate (%)', data:wrVals, backgroundColor:['rgba(0,229,160,0.75)','rgba(245,166,35,0.75)','rgba(255,87,103,0.75)'], borderRadius:5, borderWidth:0, yAxisID:'y' },
+          { label:'P&L total ($)', data:pnlTot, type:'line', borderColor:'rgba(255,255,255,0.4)', borderWidth:2, fill:false, tension:0, pointRadius:5, pointBackgroundColor:'rgba(255,255,255,0.6)', yAxisID:'y2' },
+        ],
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:true, position:'top', labels:{color:'#b2b5be',font:CHART_DEFAULTS.font,boxWidth:12,padding:12} },
+          tooltip:{ ...CHART_DEFAULTS.tooltip, callbacks:{ label: c => c.datasetIndex===0 ? ` WR: ${c.parsed.y}% (${groups[keys[c.dataIndex]].length}T)` : ` PnL total: ${Calc.formatPnL(c.parsed.y)}` }}},
+        scales:{
+          x:{ ticks:{color:'#b2b5be',font:CHART_DEFAULTS.font}, grid:{display:false}, border:{display:false} },
+          y:{ position:'left', min:0, max:100, ticks:{color:CHART_DEFAULTS.color.green,font:CHART_DEFAULTS.font,callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,0.04)'}, border:{display:false} },
+          y2:{ position:'right', ticks:{color:'rgba(255,255,255,0.5)',font:CHART_DEFAULTS.font,callback:v=>'$'+v}, grid:{display:false}, border:{display:false} },
+        },
+      },
+    });
+  }
+
   // 15. Calendar heatmap (90 jours, style GitHub)
   function _renderCalendarHeatmap(containerId, trades) {
     const host = $(containerId); if (!host) return;
@@ -840,6 +956,18 @@
       <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Drawdown cumulé (%)</h3><div class="chart-area chart-area-sm"><canvas id="chartDD${s}"></canvas></div></div>
       <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Scatter : R:R prévu vs réalisé</h3><div class="chart-area"><canvas id="chartScatter${s}"></canvas></div></div>
       <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Courbes d'équité par compte</h3><div class="chart-area"><canvas id="chartMulti${s}"></canvas></div></div>
+    </div>
+    <div class="adv-section-hd">🧠 Psychologie & Contexte</div>
+    <div class="adv-charts-grid">
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Win rate & PnL moyen — Plan suivi ?</h3><div class="chart-area chart-area-sm"><canvas id="chartPlan${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — État émotionnel</h3><div class="chart-area chart-area-sm"><canvas id="chartEmo${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — Note de confiance</h3><div class="chart-area chart-area-sm"><canvas id="chartConf${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — Préparation</h3><div class="chart-area chart-area-sm"><canvas id="chartPrep${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — Grade trade (A–D)</h3><div class="chart-area chart-area-sm"><canvas id="chartGrade${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — Structure marché</h3><div class="chart-area chart-area-sm"><canvas id="chartStruct${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — Session</h3><div class="chart-area chart-area-sm"><canvas id="chartSess${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — Contexte macro</h3><div class="chart-area chart-area-sm"><canvas id="chartMacro${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate & PnL — Volatilité</h3><div class="chart-area chart-area-sm"><canvas id="chartVol${s}"></canvas></div></div>
     </div>`;
   }
 
@@ -859,8 +987,25 @@
       _renderRollingWinRate   ('chartRolWR'  + s, trades);
       _renderRollingPF        ('chartRolPF'  + s, trades);
       _renderDrawdown         ('chartDD'     + s, trades);
-      _renderRRScatter        ('chartScatter'+ s, trades);
+      _renderRRScatter         ('chartScatter'+ s, trades);
       _renderMultiAccountEquity('chartMulti' + s, trades, accs || []);
+      // Psychologie & contexte
+      const emoLabel  = k => i18n.t('jf.emotion.'        + k) || k;
+      const prepLabel = k => i18n.t('jf.prepQuality.'    + k) || k;
+      const gradeLabel= k => i18n.t('jf.tradeGrade.'     + k) || k;
+      const structLbl = k => i18n.t('jf.marketStructure.'+ k) || k;
+      const sessLabel = k => i18n.t('jf.session.'        + k) || k;
+      const macroLbl  = k => i18n.t('jf.macroContext.'   + k) || k;
+      const volLabel  = k => i18n.t('jf.volatility.'     + k) || k;
+      _renderPlanFollowedChart  ('chartPlan' + s, trades);
+      _renderCustomFieldChart   ('chartEmo'  + s, trades, 'emotion',        emoLabel);
+      _renderConfidenceChart    ('chartConf' + s, trades);
+      _renderCustomFieldChart   ('chartPrep' + s, trades, 'prepQuality',    prepLabel);
+      _renderCustomFieldChart   ('chartGrade'+ s, trades, 'tradeGrade',     gradeLabel);
+      _renderCustomFieldChart   ('chartStruct'+s, trades, 'marketStructure',structLbl);
+      _renderCustomFieldChart   ('chartSess' + s, trades, 'session',        sessLabel);
+      _renderCustomFieldChart   ('chartMacro'+ s, trades, 'macroContext',   macroLbl);
+      _renderCustomFieldChart   ('chartVol'  + s, trades, 'volatility',     volLabel);
     });
   }
 
