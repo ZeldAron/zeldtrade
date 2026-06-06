@@ -3,8 +3,10 @@
   const $ = id => document.getElementById(id);
   const t = k => i18n.t(k);
 
-  let dashFilter = null;
-  let pnlChart   = null;
+  let dashFilter   = null;
+  let pnlChart     = null;
+  // Graphiques avancés — références pour destroy() au re-render
+  const _charts = {};
 
   // v0.9.396 : le filtre du dashboard EST désormais le Focus app-wide (persistant,
   // partagé avec analytics + calendrier). On délègue à Store.scopedTrades().
@@ -257,6 +259,303 @@
     </div>`;
   }
 
+  // ── Helpers graphiques ────────────────────────────────────────────────────────
+  const CHART_DEFAULTS = {
+    color:   { green:'#00e5a0', red:'#ff5767', amber:'#f5a623', blue:'#4da6ff', muted:'#55556a' },
+    font:    { family:"'Geist Mono',monospace", size: 11 },
+    tooltip: { backgroundColor:'#1f1f26', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, padding:10 },
+  };
+  function _destroyChart(key) { if (_charts[key]) { try { _charts[key].destroy(); } catch(_){} _charts[key] = null; } }
+  function _closedTrades(trades) {
+    return trades.filter(tr => tr.outcome && tr.outcome !== 'open')
+                 .sort((a, b) => (a.date || '') < (b.date || '') ? -1 : 1);
+  }
+
+  // 1. Donut Win / Loss / BE
+  function _renderDonut(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const wins = closed.filter(t => t.outcome === 'win').length;
+    const losses = closed.filter(t => t.outcome === 'loss').length;
+    const be = closed.filter(t => t.outcome === 'breakeven').length;
+    if (!closed.length) { el.parentElement.style.display = 'none'; return; }
+    el.parentElement.style.display = '';
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Win', 'Loss', 'BE'],
+        datasets: [{ data: [wins, losses, be],
+          backgroundColor: [CHART_DEFAULTS.color.green, CHART_DEFAULTS.color.red, CHART_DEFAULTS.color.muted],
+          borderWidth: 0, hoverOffset: 6 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '68%',
+        plugins: {
+          legend: { position: 'right', labels: { color:'#b2b5be', font: CHART_DEFAULTS.font, padding: 14, boxWidth: 12 } },
+          tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: { label: c => ` ${c.label} : ${c.raw} (${closed.length ? ((c.raw/closed.length)*100).toFixed(0) : 0}%)` } },
+        },
+      },
+    });
+  }
+
+  // 2. P&L moyen par jour de la semaine (heatmap bars)
+  function _renderDayOfWeek(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const DAY_LABELS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven'];
+    const sums = [0,0,0,0,0]; const counts = [0,0,0,0,0];
+    closed.forEach(tr => {
+      const d = new Date(tr.date).getDay(); // 0=dim, 1=lun…5=ven
+      const idx = d - 1; if (idx < 0 || idx > 4) return;
+      sums[idx]   += (Calc.trade(tr).netPnl || 0);
+      counts[idx] += 1;
+    });
+    const avgs = sums.map((s, i) => counts[i] ? +(s / counts[i]).toFixed(2) : 0);
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: DAY_LABELS,
+        datasets: [{ data: avgs, backgroundColor: avgs.map(v => v >= 0 ? 'rgba(0,229,160,0.75)' : 'rgba(255,87,103,0.75)'),
+          borderRadius: 6, borderWidth: 0 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{ display:false }, tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: { label: c => ` Moy: ${Calc.formatPnL(c.parsed.y)} (${counts[c.dataIndex]} trades)` } } },
+        scales: {
+          x: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font }, grid:{ display:false }, border:{ display:false } },
+          y: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font, callback: v => '$'+v }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{ display:false } },
+        },
+      },
+    });
+  }
+
+  // 3. Distribution des R:R (histogramme)
+  function _renderRRDistrib(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const BUCKETS = ['-3+','-2','-1','0','1','2','3','4','5+'];
+    const counts2 = new Array(BUCKETS.length).fill(0);
+    closed.forEach(tr => {
+      const rr = Calc.trade(tr).rr;
+      if (rr === null || rr === undefined) return;
+      if      (rr <= -3)   counts2[0]++;
+      else if (rr <= -2)   counts2[1]++;
+      else if (rr <= -1)   counts2[2]++;
+      else if (rr <= 0)    counts2[3]++;
+      else if (rr <= 1)    counts2[4]++;
+      else if (rr <= 2)    counts2[5]++;
+      else if (rr <= 3)    counts2[6]++;
+      else if (rr <= 4)    counts2[7]++;
+      else                 counts2[8]++;
+    });
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: BUCKETS,
+        datasets: [{ data: counts2,
+          backgroundColor: BUCKETS.map((_, i) => i < 4 ? 'rgba(255,87,103,0.75)' : 'rgba(0,229,160,0.75)'),
+          borderRadius: 4, borderWidth: 0 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{ display:false }, tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: { label: c => ` ${c.raw} trade(s)` } } },
+        scales: {
+          x: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font }, grid:{ display:false }, border:{ display:false } },
+          y: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font, stepSize: 1 }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{ display:false } },
+        },
+      },
+    });
+  }
+
+  // 4. Performance par heure (bar)
+  function _renderByHour(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const sums = {}; const counts3 = {};
+    closed.forEach(tr => {
+      const h = new Date(tr.date).getHours();
+      sums[h]   = (sums[h]   || 0) + (Calc.trade(tr).netPnl || 0);
+      counts3[h]= (counts3[h]|| 0) + 1;
+    });
+    const hours = Object.keys(sums).map(Number).sort((a,b) => a-b);
+    if (!hours.length) { el.parentElement.style.display = 'none'; return; }
+    el.parentElement.style.display = '';
+    const labels = hours.map(h => h + 'h');
+    const avgs2  = hours.map(h => counts3[h] ? +(sums[h]/counts3[h]).toFixed(2) : 0);
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{ data: avgs2, backgroundColor: avgs2.map(v => v >= 0 ? 'rgba(0,229,160,0.75)' : 'rgba(255,87,103,0.75)'),
+          borderRadius: 5, borderWidth: 0 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{ display:false }, tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: { label: c => ` Moy: ${Calc.formatPnL(c.parsed.y)} (${counts3[hours[c.dataIndex]]} trades)` } } },
+        scales: {
+          x: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font }, grid:{ display:false }, border:{ display:false } },
+          y: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font, callback: v => '$'+v }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{ display:false } },
+        },
+      },
+    });
+  }
+
+  // 5. P&L par instrument (barres horizontales)
+  function _renderByInstrument(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const sums = {}; const counts4 = {};
+    closed.forEach(tr => {
+      const k = String(tr.instrument || '?').replace(/[!1]/g,'');
+      sums[k]   = (sums[k]   || 0) + (Calc.trade(tr).netPnl || 0);
+      counts4[k]= (counts4[k]|| 0) + 1;
+    });
+    const sorted = Object.entries(sums).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    if (!sorted.length) { el.parentElement.style.display = 'none'; return; }
+    el.parentElement.style.display = '';
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sorted.map(e => e[0]),
+        datasets: [{ data: sorted.map(e => +e[1].toFixed(2)),
+          backgroundColor: sorted.map(e => e[1] >= 0 ? 'rgba(0,229,160,0.75)' : 'rgba(255,87,103,0.75)'),
+          borderRadius: 5, borderWidth: 0 }],
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{ display:false }, tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: {
+          label: c => { const k = sorted[c.dataIndex][0]; return ` ${Calc.formatPnL(c.parsed.x)} · ${counts4[k]} trades`; }
+        }}},
+        scales: {
+          x: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font, callback: v => '$'+v }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{ display:false } },
+          y: { ticks:{ color:'#b2b5be', font: CHART_DEFAULTS.font }, grid:{ display:false }, border:{ display:false } },
+        },
+      },
+    });
+  }
+
+  // 6. Courbe de drawdown (% over time)
+  function _renderDrawdown(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    if (closed.length < 2) { el.parentElement.style.display = 'none'; return; }
+    el.parentElement.style.display = '';
+    let cum = 0, peak = 0;
+    const labels = ['']; const dds = [0];
+    closed.forEach(tr => {
+      cum += (Calc.trade(tr).netPnl || 0);
+      if (cum > peak) peak = cum;
+      const dd = peak > 0 ? ((peak - cum) / peak) * 100 : 0;
+      labels.push(tr.date ? tr.date.slice(0, 10) : '');
+      dds.push(-+dd.toFixed(2));
+    });
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{ data: dds, borderColor: CHART_DEFAULTS.color.red, borderWidth: 2,
+          fill: true, backgroundColor: 'rgba(255,87,103,0.12)', tension: 0.3,
+          pointRadius: 0, pointHitRadius: 8 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{ display:false }, tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: { label: c => ` DD: ${Math.abs(c.parsed.y).toFixed(1)}%` } } },
+        scales: {
+          x: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font, maxTicksLimit: 8, maxRotation:0 }, grid:{ display:false }, border:{ display:false } },
+          y: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font, callback: v => v + '%' }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{ display:false }, max: 0 },
+        },
+      },
+    });
+  }
+
+  // 7. P&L par semaine (bar) — vue compte
+  function _renderWeeklyPnl(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const byWeek = {};
+    closed.forEach(tr => {
+      const d = new Date(tr.date);
+      // Clé semaine : année + numéro semaine ISO
+      const jan4 = new Date(d.getFullYear(), 0, 4);
+      const week = Math.ceil(((d - jan4) / 86400000 + jan4.getDay() + 1) / 7);
+      const key  = d.getFullYear() + '-W' + String(week).padStart(2,'0');
+      byWeek[key] = (byWeek[key] || 0) + (Calc.trade(tr).netPnl || 0);
+    });
+    const sorted = Object.entries(byWeek).sort((a,b) => a[0] < b[0] ? -1 : 1).slice(-16);
+    if (!sorted.length) { el.parentElement.style.display = 'none'; return; }
+    el.parentElement.style.display = '';
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sorted.map(e => e[0].replace(/\d{4}-/, '')),
+        datasets: [{ data: sorted.map(e => +e[1].toFixed(2)),
+          backgroundColor: sorted.map(e => e[1] >= 0 ? 'rgba(0,229,160,0.75)' : 'rgba(255,87,103,0.75)'),
+          borderRadius: 5, borderWidth: 0 }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend:{ display:false }, tooltip: { ...CHART_DEFAULTS.tooltip, callbacks: { label: c => ` ${Calc.formatPnL(c.parsed.y)}` } } },
+        scales: {
+          x: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font }, grid:{ display:false }, border:{ display:false } },
+          y: { ticks:{ color: CHART_DEFAULTS.color.muted, font: CHART_DEFAULTS.font, callback: v => '$'+v }, grid:{ color:'rgba(255,255,255,0.05)' }, border:{ display:false } },
+        },
+      },
+    });
+  }
+
+  // Block HTML pour la grille de graphiques avancés
+  function _advancedChartsBlock(idSuffix) {
+    return `<div class="adv-charts-grid">
+      <div class="chart-card adv-chart-half">
+        <h3 class="chart-card-title">Répartition Win / Loss / BE</h3>
+        <div class="chart-area chart-area-sm"><canvas id="chartDonut${idSuffix}"></canvas></div>
+      </div>
+      <div class="chart-card adv-chart-half">
+        <h3 class="chart-card-title">P&amp;L moyen par jour</h3>
+        <div class="chart-area chart-area-sm"><canvas id="chartDay${idSuffix}"></canvas></div>
+      </div>
+      <div class="chart-card adv-chart-half">
+        <h3 class="chart-card-title">Distribution des R:R</h3>
+        <div class="chart-area chart-area-sm"><canvas id="chartRR${idSuffix}"></canvas></div>
+      </div>
+      <div class="chart-card adv-chart-half">
+        <h3 class="chart-card-title">Performance par heure</h3>
+        <div class="chart-area chart-area-sm"><canvas id="chartHour${idSuffix}"></canvas></div>
+      </div>
+      <div class="chart-card adv-chart-full">
+        <h3 class="chart-card-title">P&amp;L par instrument</h3>
+        <div class="chart-area chart-area-sm"><canvas id="chartInstr${idSuffix}"></canvas></div>
+      </div>
+      <div class="chart-card adv-chart-full">
+        <h3 class="chart-card-title">Drawdown cumulé (%)</h3>
+        <div class="chart-area chart-area-sm"><canvas id="chartDD${idSuffix}"></canvas></div>
+      </div>
+      <div class="chart-card adv-chart-full">
+        <h3 class="chart-card-title">P&amp;L par semaine</h3>
+        <div class="chart-area chart-area-sm"><canvas id="chartWeek${idSuffix}"></canvas></div>
+      </div>
+    </div>`;
+  }
+
+  function _renderAdvancedCharts(idSuffix, trades) {
+    requestAnimationFrame(() => {
+      _renderDonut      ('chartDonut' + idSuffix, trades);
+      _renderDayOfWeek  ('chartDay'   + idSuffix, trades);
+      _renderRRDistrib  ('chartRR'    + idSuffix, trades);
+      _renderByHour     ('chartHour'  + idSuffix, trades);
+      _renderByInstrument('chartInstr'+ idSuffix, trades);
+      _renderDrawdown   ('chartDD'    + idSuffix, trades);
+      _renderWeeklyPnl  ('chartWeek'  + idSuffix, trades);
+    });
+  }
+
   function goOffers() {
     document.querySelector('[data-page="offers"]').click();
   }
@@ -344,6 +643,7 @@
       const acc     = accs.find(a => a.name === accName);
       if (acc) body = accountCard(acc, trades);
       body += `<div class="chart-card"><h3>${t('dash.pnl.curve')}</h3><div class="chart-area"><canvas id="pnlChart"></canvas></div><div id="pnlStats"></div></div>`;
+      body += _advancedChartsBlock('Acc');
       body += recentTradesBlock(trades);
 
     } else if (dashFilter && (dashFilter.startsWith('grp:') || dashFilter.startsWith('firm:'))) {
@@ -374,6 +674,7 @@
         </div>
         <div class="chart-card"><div class="chart-area"><canvas id="pnlChart"></canvas></div><div id="pnlStats"></div></div>
       </div>`;
+      body += _advancedChartsBlock('Grp');
       body += recentTradesBlock(trades);
 
     } else {
@@ -396,6 +697,7 @@
         </div>
         <div class="chart-card"><div class="chart-area"><canvas id="pnlChart"></canvas></div><div id="pnlStats"></div></div>
       </div>`;
+      body += _advancedChartsBlock('All');
       body += recentTradesBlock(all);
     }
 
@@ -426,14 +728,17 @@
       if (ca) ca.parentElement.innerHTML = '<p style="color:var(--red);font-size:13px;padding:20px 0">⚠ Chart.js non chargé. Recharge avec Cmd+Shift+R.</p>';
     } else {
       requestAnimationFrame(() => {
-        try {
-          renderPnlChart('pnlChart', trades);
-        } catch(e) {
+        try { renderPnlChart('pnlChart', trades); } catch(e) {
           const ca = $('pnlChart');
           if (ca) { const p = document.createElement('p'); p.style.cssText = 'color:var(--red);font-size:12px;padding:20px 0'; p.textContent = '⚠ Erreur : ' + String(e).slice(0, 200); ca.parentElement.innerHTML = ''; ca.parentElement.appendChild(p); }
           console.error('[Chart error]', e);
         }
       });
+      // Graphiques avancés — suffixe selon la vue active
+      const sfx = dashFilter && dashFilter.startsWith('acc:') ? 'Acc'
+                : dashFilter && (dashFilter.startsWith('grp:') || dashFilter.startsWith('firm:')) ? 'Grp'
+                : 'All';
+      _renderAdvancedCharts(sfx, trades);
     }
   };
 })();
