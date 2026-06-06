@@ -196,12 +196,15 @@ function initApp() {
         host.innerHTML = `<div class="fj-news-list">${rows}</div>`;
       }
 
-      // Appel via Cloud Function (pas de CORS, marche partout y compris Safari)
-      const functions = firebase.functions ? firebase.functions() : null;
-      if (!functions) { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; return; }
-      const fn = functions.httpsCallable('getMarketNews');
-      fn({}).then(r => _renderItems(r.data && r.data.items))
-            .catch(() => { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; });
+      // Appel via Cloud Function europe-west1 (même région que toutes les CFs)
+      const fn = (_fbFunctions || (firebase.app && firebase.app().functions('europe-west1')));
+      if (!fn) { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; return; }
+      fn.httpsCallable('getMarketNews')({})
+        .then(r => _renderItems(r.data && r.data.items))
+        .catch(e => {
+          console.warn('[News] CF error:', e && e.message);
+          host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`;
+        });
     }
 
     // Widget NEWS : fetch RSS via rss2json.com (CORS-friendly, aucun widget tiers,

@@ -18,8 +18,8 @@ const UI = (() => {
   } catch {}
 
   // Shared constants (exposed for page files)
-  const OB_CLASS = { win:'ob-win', loss:'ob-loss', be:'ob-be', open:'ob-open' };
-  const OB_LABEL = { win: i18n.t('ob.win'), loss: i18n.t('ob.loss'), be: i18n.t('ob.be'), open: i18n.t('ob.open') };
+  const OB_CLASS = { win:'ob-win', loss:'ob-loss', be:'ob-be', breakeven:'ob-be', open:'ob-open' };
+  const OB_LABEL = { win: i18n.t('ob.win'), loss: i18n.t('ob.loss'), be: i18n.t('ob.be'), breakeven: i18n.t('ob.be'), open: i18n.t('ob.open') };
   const MICRO_RATES = {
     bnc:          { cotis: 24.6, cfp: 0.2, vl: 2.2, abat: 34, labelKey: 'micro.bnc.label' },
     bic_services: { cotis: 21.2, cfp: 0.3, vl: 1.7, abat: 50, labelKey: 'micro.bic.services.label' },
