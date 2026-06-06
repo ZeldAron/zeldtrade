@@ -510,49 +510,357 @@
     });
   }
 
-  // Block HTML pour la grille de graphiques avancés
+  // 8. Rolling win rate (fenêtre glissante N trades)
+  function _renderRollingWinRate(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const N = 15;
+    if (closed.length < N + 1) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const labels = [], vals = [];
+    for (let i = N; i <= closed.length; i++) {
+      const window = closed.slice(i - N, i);
+      const wr = window.filter(t => t.outcome === 'win').length / N * 100;
+      labels.push(closed[i-1].date ? closed[i-1].date.slice(5,10) : '');
+      vals.push(+wr.toFixed(1));
+    }
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'line',
+      data: { labels, datasets: [{
+        data: vals, borderColor: CHART_DEFAULTS.color.blue, borderWidth: 2.5,
+        fill: true, backgroundColor: 'rgba(77,166,255,0.10)', tension: 0.4,
+        pointRadius: 0, pointHitRadius: 10,
+      },{
+        data: new Array(labels.length).fill(50),
+        borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderDash: [4,4],
+        fill: false, pointRadius: 0,
+      }]},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ ...CHART_DEFAULTS.tooltip, filter: i => i.datasetIndex===0, callbacks:{ label: c => ` Win rate (${N}T): ${c.parsed.y}%` }}},
+        scales:{
+          x:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,maxTicksLimit:8,maxRotation:0}, grid:{display:false}, border:{display:false} },
+          y:{ min:0, max:100, ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,callback:v=>v+'%'}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // 9. Rolling profit factor
+  function _renderRollingPF(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const N = 15;
+    if (closed.length < N + 1) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const labels = [], vals = [];
+    for (let i = N; i <= closed.length; i++) {
+      const win  = closed.slice(i-N,i).filter(t=>t.outcome==='win').reduce((s,t)=>s+(Calc.trade(t).netPnl||0),0);
+      const loss = closed.slice(i-N,i).filter(t=>t.outcome==='loss').reduce((s,t)=>s+Math.abs(Calc.trade(t).netPnl||0),0);
+      vals.push(loss>0 ? +Math.min(win/loss,5).toFixed(2) : (win>0?5:1));
+      labels.push(closed[i-1].date ? closed[i-1].date.slice(5,10) : '');
+    }
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'line',
+      data: { labels, datasets: [{
+        data: vals, borderColor: CHART_DEFAULTS.color.amber, borderWidth: 2.5,
+        fill: true, backgroundColor: 'rgba(245,166,35,0.10)', tension: 0.4,
+        pointRadius: 0, pointHitRadius: 10,
+      },{
+        data: new Array(labels.length).fill(1),
+        borderColor: 'rgba(255,255,255,0.15)', borderWidth: 1.5, borderDash: [4,4],
+        fill: false, pointRadius: 0,
+      }]},
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ ...CHART_DEFAULTS.tooltip, filter:i=>i.datasetIndex===0, callbacks:{ label: c => ` PF (${N}T): ${c.parsed.y}` }}},
+        scales:{
+          x:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,maxTicksLimit:8,maxRotation:0}, grid:{display:false}, border:{display:false} },
+          y:{ min:0, ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // 10. Multi-account equity overlay
+  function _renderMultiAccountEquity(containerId, trades, accs) {
+    const el = $(containerId); if (!el) return;
+    if (!accs || accs.length < 2) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const PALETTE = ['#00e5a0','#4da6ff','#f5a623','#ff5767','#c678dd','#56b6c2','#98c379','#e06c75'];
+    const datasets = accs.map((acc, ai) => {
+      const accTrades = trades.filter(tr => tr.apex === acc.name && tr.outcome !== 'open')
+                              .sort((a,b)=>(a.date||'')<(b.date||'')?-1:1);
+      let cum = 0;
+      const pts = [{ x: 0, y: 0 }];
+      accTrades.forEach((tr,i) => { cum += (Calc.trade(tr).netPnl||0); pts.push({ x:i+1, y:+cum.toFixed(2) }); });
+      return {
+        label: acc.name,
+        data: pts, parsing:{ xAxisKey:'x', yAxisKey:'y' },
+        borderColor: PALETTE[ai % PALETTE.length],
+        borderWidth: 2, fill: false, tension: 0.3,
+        pointRadius: 0, pointHitRadius: 8,
+      };
+    });
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'line',
+      data: { datasets },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:true, position:'top', labels:{color:'#b2b5be',font:CHART_DEFAULTS.font,boxWidth:12,padding:14} },
+          tooltip:{ ...CHART_DEFAULTS.tooltip, callbacks:{ label: c => ` ${c.dataset.label}: ${Calc.formatPnL(c.parsed.y)}` }}},
+        scales:{
+          x:{ type:'linear', ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,callback:v=>'T'+v}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+          y:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,callback:v=>'$'+v}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // 11. Long vs Short (grouped bars : win rate + avg PnL)
+  function _renderLongVsShort(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const long_t  = closed.filter(t => t.direction === 'long');
+    const short_t = closed.filter(t => t.direction === 'short');
+    if (!long_t.length && !short_t.length) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const wr  = arr => arr.length ? +(arr.filter(t=>t.outcome==='win').length/arr.length*100).toFixed(1) : 0;
+    const avg = arr => arr.length ? +(arr.reduce((s,t)=>s+(Calc.trade(t).netPnl||0),0)/arr.length).toFixed(2) : 0;
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: ['Win rate (%)', 'PnL moyen ($)'],
+        datasets: [
+          { label:'Long ↑', data:[wr(long_t), avg(long_t)], backgroundColor:'rgba(0,229,160,0.75)', borderRadius:5, borderWidth:0 },
+          { label:'Short ↓', data:[wr(short_t), avg(short_t)], backgroundColor:'rgba(255,87,103,0.75)', borderRadius:5, borderWidth:0 },
+        ],
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:true, position:'top', labels:{color:'#b2b5be',font:CHART_DEFAULTS.font,boxWidth:12,padding:12} },
+          tooltip:{ ...CHART_DEFAULTS.tooltip }},
+        scales:{
+          x:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font}, grid:{display:false}, border:{display:false} },
+          y:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // 12. P&L par setup
+  function _renderBySetup(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades).filter(t => t.setup);
+    if (!closed.length) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const sums={}, counts={};
+    closed.forEach(tr => {
+      const k = tr.setup;
+      sums[k]  = (sums[k]||0)  + (Calc.trade(tr).netPnl||0);
+      counts[k]= (counts[k]||0) + 1;
+    });
+    const sorted = Object.entries(sums).sort((a,b)=>b[1]-a[1]);
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels: sorted.map(e=>e[0]),
+        datasets: [{
+          data: sorted.map(e=>+e[1].toFixed(2)),
+          backgroundColor: sorted.map(e=>e[1]>=0?'rgba(0,229,160,0.75)':'rgba(255,87,103,0.75)'),
+          borderRadius:5, borderWidth:0,
+        }],
+      },
+      options: {
+        indexAxis:'y', responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ ...CHART_DEFAULTS.tooltip, callbacks:{ label:c=>` ${Calc.formatPnL(c.parsed.x)} · ${counts[sorted[c.dataIndex][0]]} trades` }}},
+        scales:{
+          x:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,callback:v=>'$'+v}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+          y:{ ticks:{color:'#b2b5be',font:{...CHART_DEFAULTS.font,size:10}}, grid:{display:false}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // 13. P&L mensuel (12 derniers mois)
+  function _renderMonthlyPnl(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades);
+    const byMonth={};
+    closed.forEach(tr=>{
+      const d = new Date(tr.date);
+      const k = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      byMonth[k]=(byMonth[k]||0)+(Calc.trade(tr).netPnl||0);
+    });
+    const sorted = Object.entries(byMonth).sort((a,b)=>a[0]<b[0]?-1:1).slice(-12);
+    if (!sorted.length) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    _destroyChart(containerId);
+    const MONTHS=['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type:'bar',
+      data:{
+        labels: sorted.map(e=>{ const p=e[0].split('-'); return MONTHS[+p[1]-1]+' '+p[0].slice(2); }),
+        datasets:[{ data:sorted.map(e=>+e[1].toFixed(2)),
+          backgroundColor:sorted.map(e=>e[1]>=0?'rgba(0,229,160,0.75)':'rgba(255,87,103,0.75)'),
+          borderRadius:5, borderWidth:0 }],
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{...CHART_DEFAULTS.tooltip,callbacks:{label:c=>` ${Calc.formatPnL(c.parsed.y)}`}}},
+        scales:{
+          x:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font}, grid:{display:false}, border:{display:false} },
+          y:{ ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,callback:v=>'$'+v}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // 14. Scatter R:R réel vs attendu
+  function _renderRRScatter(containerId, trades) {
+    const el = $(containerId); if (!el) return;
+    const closed = _closedTrades(trades).filter(tr=>tr.entry&&tr.sl&&tr.exitPrice);
+    if (closed.length < 3) { el.parentElement.style.display='none'; return; }
+    el.parentElement.style.display='';
+    const pts_win=[], pts_loss=[], pts_be=[];
+    closed.forEach(tr=>{
+      const risk = Math.abs(tr.entry - tr.sl);
+      if (!risk) return;
+      const planned = tr.tp1 ? Math.abs(tr.tp1 - tr.entry) / risk : null;
+      const actual  = (Calc.trade(tr).rr) || 0;
+      if (planned === null) return;
+      const pt = { x:+planned.toFixed(2), y:+actual.toFixed(2) };
+      if (tr.outcome==='win') pts_win.push(pt);
+      else if (tr.outcome==='loss') pts_loss.push(pt);
+      else pts_be.push(pt);
+    });
+    _destroyChart(containerId);
+    _charts[containerId] = new Chart(el.getContext('2d'), {
+      type:'scatter',
+      data:{ datasets:[
+        { label:'Win',  data:pts_win,  backgroundColor:'rgba(0,229,160,0.7)',  pointRadius:5 },
+        { label:'Loss', data:pts_loss, backgroundColor:'rgba(255,87,103,0.7)', pointRadius:5 },
+        { label:'BE',   data:pts_be,   backgroundColor:'rgba(85,85,106,0.7)',   pointRadius:5 },
+      ]},
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:true, position:'top', labels:{color:'#b2b5be',font:CHART_DEFAULTS.font,boxWidth:10,padding:12} },
+          tooltip:{...CHART_DEFAULTS.tooltip, callbacks:{label:c=>` Prévu: ${c.parsed.x}R  Réel: ${c.parsed.y}R`}}},
+        scales:{
+          x:{ title:{display:true,text:'R:R prévu (vers TP1)',color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font},
+              ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,callback:v=>v+'R'}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+          y:{ title:{display:true,text:'R:R réalisé',color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font},
+              ticks:{color:CHART_DEFAULTS.color.muted,font:CHART_DEFAULTS.font,callback:v=>v+'R'}, grid:{color:'rgba(255,255,255,0.05)'}, border:{display:false} },
+        },
+      },
+    });
+  }
+
+  // 15. Calendar heatmap (90 jours, style GitHub)
+  function _renderCalendarHeatmap(containerId, trades) {
+    const host = $(containerId); if (!host) return;
+    const byDay={};
+    trades.forEach(tr=>{
+      if (!tr.date || tr.outcome==='open') return;
+      const k = tr.date.slice(0,10);
+      byDay[k]=(byDay[k]||0)+(Calc.trade(tr).netPnl||0);
+    });
+    const today = new Date(); today.setHours(0,0,0,0);
+    const DAYS=90;
+    // Commence au lundi précédent le début
+    const start = new Date(today); start.setDate(today.getDate()-DAYS+1);
+    const mondayStart = new Date(start); mondayStart.setDate(start.getDate()-((start.getDay()||7)-1));
+    const cells=[];
+    const cursor=new Date(mondayStart);
+    while(cursor<=today){
+      const k=cursor.toISOString().slice(0,10);
+      cells.push({ date:k, pnl:byDay[k]||null, dow:cursor.getDay() });
+      cursor.setDate(cursor.getDate()+1);
+    }
+    // Max absolu pour scale couleur
+    const vals=Object.values(byDay); const maxAbs=vals.length?Math.max(...vals.map(Math.abs),1):1;
+    function cellColor(pnl){
+      if(pnl===null) return '#1a1b21';
+      const i=Math.min(1,Math.abs(pnl)/maxAbs);
+      if(pnl>=0) return `rgba(0,229,160,${0.15+i*0.85})`;
+      return `rgba(255,87,103,${0.15+i*0.85})`;
+    }
+    const DLABELS=['','L','M','M','J','V',''];
+    // Construire la grille semaines × jours
+    const weeks=[]; let week=[];
+    cells.forEach((c,i)=>{ week.push(c); if(c.dow===0||i===cells.length-1){ weeks.push(week); week=[]; } });
+    let grid='<div class="cal-heatmap">';
+    grid+='<div class="cal-days">';
+    DLABELS.forEach(d=>grid+=`<div class="cal-day-lbl">${d}</div>`);
+    grid+='</div><div class="cal-weeks">';
+    weeks.forEach(wk=>{
+      grid+='<div class="cal-week">';
+      for(let d=1;d<=7;d++){
+        const c=wk.find(x=>x.dow===d%7)||(wk.find(x=>x.dow===0)&&d===7?wk.find(x=>x.dow===0):null);
+        if(c&&c.date<=today.toISOString().slice(0,10)){
+          const tip=c.pnl!==null?`${c.date} : ${c.pnl>=0?'+':''}$${c.pnl.toFixed(0)}`:`${c.date} : aucun trade`;
+          grid+=`<div class="cal-cell" style="background:${cellColor(c.pnl)}" title="${tip}"></div>`;
+        } else { grid+=`<div class="cal-cell cal-cell-empty"></div>`; }
+      }
+      grid+='</div>';
+    });
+    grid+='</div></div>';
+    host.innerHTML=grid;
+  }
+
+  // ── Layout HTML ───────────────────────────────────────────────────────────────
   function _advancedChartsBlock(idSuffix) {
-    return `<div class="adv-charts-grid">
-      <div class="chart-card adv-chart-half">
-        <h3 class="chart-card-title">Répartition Win / Loss / BE</h3>
-        <div class="chart-area chart-area-sm"><canvas id="chartDonut${idSuffix}"></canvas></div>
-      </div>
-      <div class="chart-card adv-chart-half">
-        <h3 class="chart-card-title">P&amp;L moyen par jour</h3>
-        <div class="chart-area chart-area-sm"><canvas id="chartDay${idSuffix}"></canvas></div>
-      </div>
-      <div class="chart-card adv-chart-half">
-        <h3 class="chart-card-title">Distribution des R:R</h3>
-        <div class="chart-area chart-area-sm"><canvas id="chartRR${idSuffix}"></canvas></div>
-      </div>
-      <div class="chart-card adv-chart-half">
-        <h3 class="chart-card-title">Performance par heure</h3>
-        <div class="chart-area chart-area-sm"><canvas id="chartHour${idSuffix}"></canvas></div>
-      </div>
-      <div class="chart-card adv-chart-full">
-        <h3 class="chart-card-title">P&amp;L par instrument</h3>
-        <div class="chart-area chart-area-sm"><canvas id="chartInstr${idSuffix}"></canvas></div>
-      </div>
-      <div class="chart-card adv-chart-full">
-        <h3 class="chart-card-title">Drawdown cumulé (%)</h3>
-        <div class="chart-area chart-area-sm"><canvas id="chartDD${idSuffix}"></canvas></div>
-      </div>
-      <div class="chart-card adv-chart-full">
-        <h3 class="chart-card-title">P&amp;L par semaine</h3>
-        <div class="chart-area chart-area-sm"><canvas id="chartWeek${idSuffix}"></canvas></div>
-      </div>
+    const s = idSuffix;
+    return `
+    <div class="adv-section-hd">📊 Performance</div>
+    <div class="adv-charts-grid">
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Répartition Win / Loss / BE</h3><div class="chart-area chart-area-sm"><canvas id="chartDonut${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">P&amp;L moyen par jour de semaine</h3><div class="chart-area chart-area-sm"><canvas id="chartDay${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Distribution des R:R</h3><div class="chart-area chart-area-sm"><canvas id="chartRR${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Performance par heure</h3><div class="chart-area chart-area-sm"><canvas id="chartHour${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Long ↑ vs Short ↓</h3><div class="chart-area chart-area-sm"><canvas id="chartLvS${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">P&amp;L par setup</h3><div class="chart-area chart-area-sm"><canvas id="chartSetup${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">P&amp;L par instrument</h3><div class="chart-area chart-area-sm"><canvas id="chartInstr${s}"></canvas></div></div>
+    </div>
+    <div class="adv-section-hd">📈 Analyse temporelle</div>
+    <div class="adv-charts-grid">
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Calendrier heatmap P&amp;L (90 jours)</h3><div id="chartCal${s}"></div></div>
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">P&amp;L mensuel (12 derniers mois)</h3><div class="chart-area chart-area-sm"><canvas id="chartMonth${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">P&amp;L par semaine (16 dernières)</h3><div class="chart-area chart-area-sm"><canvas id="chartWeek${s}"></canvas></div></div>
+    </div>
+    <div class="adv-section-hd">🔬 Analyse avancée</div>
+    <div class="adv-charts-grid">
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Win rate glissant (15 trades)</h3><div class="chart-area chart-area-sm"><canvas id="chartRolWR${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-half"><h3 class="chart-card-title">Profit factor glissant (15 trades)</h3><div class="chart-area chart-area-sm"><canvas id="chartRolPF${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Drawdown cumulé (%)</h3><div class="chart-area chart-area-sm"><canvas id="chartDD${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Scatter : R:R prévu vs réalisé</h3><div class="chart-area"><canvas id="chartScatter${s}"></canvas></div></div>
+      <div class="chart-card adv-chart-full"><h3 class="chart-card-title">Courbes d'équité par compte</h3><div class="chart-area"><canvas id="chartMulti${s}"></canvas></div></div>
     </div>`;
   }
 
-  function _renderAdvancedCharts(idSuffix, trades) {
+  function _renderAdvancedCharts(idSuffix, trades, accs) {
+    const s = idSuffix;
     requestAnimationFrame(() => {
-      _renderDonut      ('chartDonut' + idSuffix, trades);
-      _renderDayOfWeek  ('chartDay'   + idSuffix, trades);
-      _renderRRDistrib  ('chartRR'    + idSuffix, trades);
-      _renderByHour     ('chartHour'  + idSuffix, trades);
-      _renderByInstrument('chartInstr'+ idSuffix, trades);
-      _renderDrawdown   ('chartDD'    + idSuffix, trades);
-      _renderWeeklyPnl  ('chartWeek'  + idSuffix, trades);
+      _renderDonut            ('chartDonut'  + s, trades);
+      _renderDayOfWeek        ('chartDay'    + s, trades);
+      _renderRRDistrib        ('chartRR'     + s, trades);
+      _renderByHour           ('chartHour'   + s, trades);
+      _renderLongVsShort      ('chartLvS'    + s, trades);
+      _renderBySetup          ('chartSetup'  + s, trades);
+      _renderByInstrument     ('chartInstr'  + s, trades);
+      _renderCalendarHeatmap  ('chartCal'    + s, trades);
+      _renderMonthlyPnl       ('chartMonth'  + s, trades);
+      _renderWeeklyPnl        ('chartWeek'   + s, trades);
+      _renderRollingWinRate   ('chartRolWR'  + s, trades);
+      _renderRollingPF        ('chartRolPF'  + s, trades);
+      _renderDrawdown         ('chartDD'     + s, trades);
+      _renderRRScatter        ('chartScatter'+ s, trades);
+      _renderMultiAccountEquity('chartMulti' + s, trades, accs || []);
     });
   }
 
@@ -738,7 +1046,7 @@
       const sfx = dashFilter && dashFilter.startsWith('acc:') ? 'Acc'
                 : dashFilter && (dashFilter.startsWith('grp:') || dashFilter.startsWith('firm:')) ? 'Grp'
                 : 'All';
-      _renderAdvancedCharts(sfx, trades);
+      _renderAdvancedCharts(sfx, trades, accs);
     }
   };
 })();
