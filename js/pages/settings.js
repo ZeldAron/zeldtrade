@@ -1542,13 +1542,18 @@
     const modeSel = (cls, dataAttr, val) => `<select class="form-input ${cls}" ${dataAttr} style="max-width:160px">${
       ['off', 'optional', 'required'].map(m => `<option value="${m}"${val === m ? ' selected' : ''}>${UI.escHtml(i18n.t('jf.mode.' + m))}</option>`).join('')
     }</select>`;
-    function render() {
-      const jf = cur();
-      const fieldRows = FIELD_KEYS.map(key =>
+    const PSYCH_KEYS  = ['emotion', 'planFollowed', 'confidence', 'prepQuality', 'tradeGrade'];
+    const MARKET_KEYS = ['sentiment', 'marketStructure', 'macroContext', 'volatility', 'session'];
+    function fieldGroup(keys, jf) {
+      return keys.filter(k => FIELD_KEYS.includes(k)).map(key =>
         `<div style="${rowStyle}">
            <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.' + key + '.label'))}</span>
            ${modeSel('jf-field-mode', `data-jf-field="${key}"`, jf.fields[key] || 'off')}
          </div>`).join('');
+    }
+    const subHd = txt => `<h4 style="margin:18px 0 2px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)">${txt}</h4>`;
+    function render() {
+      const jf = cur();
       el.innerHTML = `
         <div class="settings-section">
           <h3 style="margin:0 0 4px">${UI.escHtml(i18n.t('jf.section.title'))}</h3>
@@ -1566,9 +1571,11 @@
             <span style="font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.rMultiple.label'))}</span>
             <input type="checkbox" id="jfR"${jf.rMultiple ? ' checked' : ''}>
           </label>
-          <h4 style="margin:16px 0 2px;font-size:13px;color:var(--text)">${UI.escHtml(i18n.t('jf.fields.title'))}</h4>
+          ${subHd('🧠 Psychologie')}
           <p style="font-size:11px;color:var(--muted);margin:0 0 4px;line-height:1.5">${UI.escHtml(i18n.t('jf.fields.hint'))}</p>
-          ${fieldRows}
+          ${fieldGroup(PSYCH_KEYS, jf)}
+          ${subHd('🌍 Contexte marché')}
+          ${fieldGroup(MARKET_KEYS, jf)}
         </div>`;
       const pc = $('jfPrices');
       if (pc) pc.addEventListener('change', () => { const jfNow = cur(); jfNow.prices = pc.checked; save(jfNow); });
