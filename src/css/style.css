@@ -5562,3 +5562,16 @@ img { -webkit-user-drag: none; }
 .fj-news-title a { color:var(--text); text-decoration:none; }
 .fj-news-title a:hover { color:var(--accent); }
 .fj-news-src { font-size:10px; color:var(--muted); white-space:nowrap; opacity:.7; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Dashboard — Graphiques avancés (adv-charts-grid)
+   ═══════════════════════════════════════════════════════════════════════════ */
+.adv-charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+.adv-chart-half  { grid-column: span 1; }
+.adv-chart-full  { grid-column: span 2; }
+.chart-card-title { font-size:13px; font-weight:600; color:var(--text); margin:0 0 12px; letter-spacing:.02em; }
+.chart-area-sm   { height:200px; position:relative; }
+@media (max-width: 640px) {
+  .adv-charts-grid { grid-template-columns:1fr; }
+  .adv-chart-half, .adv-chart-full { grid-column: span 1; }
+}
