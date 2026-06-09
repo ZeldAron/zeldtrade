@@ -389,11 +389,10 @@ const Modal = (() => {
       `Respond with ONLY this JSON on one line:\n` +
       `{"entry":NUMBER,"sl":NUMBER,"tp1":NUMBER,"tp2":NUMBER_or_null,"tp3":NUMBER_or_null}`;
 
-    // v0.9.217 — Retiré llama-3.2-vision-preview (deprecated par IA, retourne 404).
-    // Llama 4 Scout/Maverick sont les modèles vision officiels en GA.
+    // v1.0.4 — Retiré Maverick (déprécié par Groq le 20/02/2026 → 404).
+    // Scout = seul modèle vision Groq encore supporté ; fallback Claude côté serveur (tiers payants).
     const AI_MODELS = [
       'meta-llama/llama-4-scout-17b-16e-instruct',
-      'meta-llama/llama-4-maverick-17b-128e-instruct',
     ];
 
     // Appel via Cloud Function (clé IA côté serveur, quota enforce côté serveur)

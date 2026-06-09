@@ -80,11 +80,10 @@ const ADMIN_EMAIL = 'zeldtradepro@gmail.com';
 
 // Liste blanche de modèles Groq (anti-injection — l'utilisateur ne peut pas
 // appeler n'importe quel modèle)
+// v1.0.4 : Maverick déprécié par Groq (20/02/2026, → 404) et llama-3.2-vision retirés.
+// Scout = seul modèle vision Groq supporté (cf. console.groq.com/docs/vision).
 const ALLOWED_MODELS = new Set([
-  'meta-llama/llama-4-maverick-17b-128e-instruct',
   'meta-llama/llama-4-scout-17b-16e-instruct',
-  'llama-3.2-90b-vision-preview',
-  'llama-3.2-11b-vision-preview',
 ]);
 
 /**
