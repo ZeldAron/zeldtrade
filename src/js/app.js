@@ -628,8 +628,8 @@ function initApp() {
             ? 'You\'ve been trading for 2 days — here\'s what you\'re missing'
             : 'Tu trades depuis 2 jours — voilà ce que tu rates'}</div>
           <div style="font-size:12px;color:var(--fg-dim);line-height:1.55">${isEn
-            ? '📊 <b>10 accounts</b> — group Apex + FTMO in one trade &nbsp;·&nbsp; 🤖 <b>20 AI analyses/day</b> instead of 1 &nbsp;·&nbsp; 📄 <b>PDF archive</b> per trade'
-            : '📊 <b>10 comptes</b> — groupe Apex + FTMO en un trade &nbsp;·&nbsp; 🤖 <b>20 analyses IA/jour</b> au lieu de 1 &nbsp;·&nbsp; 📄 <b>Archive PDF</b> par trade'}</div>
+            ? '📊 <b>10 accounts</b> — group Apex + FTMO in one trade &nbsp;·&nbsp; 🤖 <b>7 AI analyses/week</b> instead of 2 &nbsp;·&nbsp; 📄 <b>PDF archive</b> per trade'
+            : '📊 <b>10 comptes</b> — groupe Apex + FTMO en un trade &nbsp;·&nbsp; 🤖 <b>7 analyses IA/semaine</b> au lieu de 2 &nbsp;·&nbsp; 📄 <b>Archive PDF</b> par trade'}</div>
           <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
             <button onclick="document.querySelector('[data-page=\\'offers\\']')?.click();document.getElementById('j2UpsellBanner')?.remove()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">${isEn ? 'See Funded →' : 'Voir Funded →'}</button>
             <span style="font-size:11px;color:var(--fg-mute)">${isEn ? '7-day trial · no card' : 'Essai 7j · sans CB'}</span>

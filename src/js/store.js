@@ -8,6 +8,13 @@ const Store = (() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
   }
+  // v1.0.4 : clé de SEMAINE = date du lundi (fuseau local). Reset auto chaque lundi.
+  function localWeekStart() {
+    const d = new Date();
+    const dow = (d.getDay() + 6) % 7;            // 0=Lun … 6=Dim
+    d.setDate(d.getDate() - dow);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
 
   // ── Données statiques (presets, référence) ───────────────────────────────────
   // v0.9.396 :
@@ -310,10 +317,10 @@ const Store = (() => {
   // Trader gratuit = 0 (l'IA Vision marche encore pour analyser mais l'image
   // n'est PAS uploadée dans Storage au save). Pro = 3 images max.
   const TIER_LIMITS = {
-    trader: { maxAccounts: 1,        maxAiPerDay: 1,        maxScreenshots: 0   },
-    funded: { maxAccounts: 3,        maxAiPerDay: 5,        maxScreenshots: 3   },   // v0.9.342 : resserré (2 comptes groupables + 5 IA/j) → pression upsell vers Elite
-    elite:  { maxAccounts: Infinity, maxAiPerDay: Infinity, maxScreenshots: 3   },   // illimité = la soupape
-    beta:   { maxAccounts: Infinity, maxAiPerDay: Infinity, maxScreenshots: 3   },
+    trader: { maxAccounts: 1,        maxAiPerWeek: 2,        maxScreenshots: 0   },
+    funded: { maxAccounts: 10,       maxAiPerWeek: 7,        maxScreenshots: 3   },   // v1.0.4 : valeur par palier — 10 comptes (0€ à offrir) + 7 IA/semaine (reset lundi)
+    elite:  { maxAccounts: Infinity, maxAiPerWeek: Infinity, maxScreenshots: 3   },   // illimité = la soupape
+    beta:   { maxAccounts: Infinity, maxAiPerWeek: Infinity, maxScreenshots: 3   },
   };
   // Matrice features → tiers qui y ont accès. Si non listée = accès libre.
   const TIER_FEATURES = {
@@ -1379,7 +1386,7 @@ const Store = (() => {
     const fmt = n => n === Infinity ? '∞' : String(n);
     const limit = (k, vf, vt) => { if (vt !== vf) (vt > vf ? gained : lost).push({ k, from: fmt(vf), to: fmt(vt) }); };
     limit('accounts', lf.maxAccounts,    lt.maxAccounts);
-    limit('ai',       lf.maxAiPerDay,    lt.maxAiPerDay);
+    limit('ai',       lf.maxAiPerWeek,   lt.maxAiPerWeek);
     limit('shots',    lf.maxScreenshots, lt.maxScreenshots);
     Object.keys(TIER_FEATURES).forEach(feat => {
       const had = TIER_FEATURES[feat].includes(from);
@@ -1452,13 +1459,15 @@ const Store = (() => {
 
   // ── IA usage ─────────────────────────────────────────────────────────────────
   function getAIUsage()      { return { ..._aiUsage }; }
-  function canAnalyzeToday() {
-    const max = getLimits().maxAiPerDay;
+  // Nombre d'analyses consommées SUR LA SEMAINE en cours (0 si le compteur date d'une autre semaine).
+  function aiUsedThisWeek()  { return (_aiUsage.date === localWeekStart()) ? (_aiUsage.count || 0) : 0; }
+  function canAnalyzeToday() {   // nom historique — quota désormais HEBDOMADAIRE (reset lundi)
+    const max = getLimits().maxAiPerWeek;
     if (!isFinite(max) || max <= 0) return max > 0; // beta = Infinity = true
     if (max === Infinity) return true;
-    const today = localToday();
-    if (typeof _aiUsage.date === 'string' && _aiUsage.date > today) return false;
-    return _aiUsage.date !== today || _aiUsage.count < max;
+    const wk = localWeekStart();
+    if (typeof _aiUsage.date === 'string' && _aiUsage.date > wk) return false;
+    return _aiUsage.date !== wk || _aiUsage.count < max;
   }
   // Refetch aiUsage depuis Firestore (à appeler après une analyse réussie pour
   // que canAnalyzeToday() côté client reste cohérent avec l'état serveur)
@@ -1579,7 +1588,7 @@ const Store = (() => {
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
     getPlanInfo, isPro, getTier, getTierBadge, getLimits, getTierRecap, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,
     isPlanLoaded: () => _planLoaded,
-    activatePro, canAnalyzeToday, refreshAiUsage, canAddAccount,
+    activatePro, canAnalyzeToday, refreshAiUsage, canAddAccount, getAIUsage, aiUsedThisWeek,
     getLastWizardPrefs, setLastWizardPrefs,
     getStats,
   };

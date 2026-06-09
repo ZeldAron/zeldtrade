@@ -98,11 +98,18 @@ const ALLOWED_MODELS = new Set([
  *  - Image taille max 8 MB en base64 (~6 MB binaire)
  *  - Prompt max 2000 chars
  */
-// v0.9.342 — Quota IA journalier PAR PALIER (compteur `aiUsage` partagé Groq+Claude).
-// Aligné sur src/js/store.js TIER_LIMITS.maxAiPerDay. elite/beta = illimité (borne haute
+// v1.0.4 — Quota IA HEBDOMADAIRE PAR PALIER (compteur `aiUsage` partagé Groq+Claude, reset lundi).
+// Aligné sur src/js/store.js TIER_LIMITS.maxAiPerWeek. elite/beta = illimité (borne haute
 // symbolique). Claude (coûteux) reste plafonné en plus par CLAUDE_DAILY_MAX (budget).
-const AI_DAILY_CAP   = { trader: 1, funded: 5, elite: 100000, beta: 100000 };
+const AI_WEEKLY_CAP  = { trader: 2, funded: 7, elite: 100000, beta: 100000 };
 const CLAUDE_DAILY_MAX = 30;
+// Clé de SEMAINE = date du lundi (UTC). Le compteur aiUsage.date stocke ce lundi → reset auto chaque lundi.
+function weekKey() {
+  const d = new Date();
+  const dow = (d.getUTCDay() + 6) % 7;   // 0=Lun … 6=Dim
+  d.setUTCDate(d.getUTCDate() - dow);
+  return d.toISOString().split('T')[0];
+}
 
 // v0.9.355 — Détection serveur des niveaux dans la réponse LLM (mirroir du parser
 // client modal.js). Sert à REMBOURSER le quota si l'IA ne détecte RIEN (entry/SL/TP) :
@@ -184,8 +191,8 @@ exports.analyzeChart = onCall(
       // Admin (ADMIN_EMAIL) : illimité mais re-auth 60 min (cohérent avec Groq).
       const dbC        = admin.firestore();
       const usageRefC  = dbC.doc(`users/${uid}/data/aiUsage`);
-      const todayC     = new Date().toISOString().split('T')[0];
-      const CLAUDE_CAP = Math.min(AI_DAILY_CAP[tier] || 5, CLAUDE_DAILY_MAX);   // v0.9.342 : tier-aware ; Claude borné (budget)
+      const todayC     = weekKey();   // clé de semaine (lundi) — quota hebdo
+      const CLAUDE_CAP = Math.min(AI_WEEKLY_CAP[tier] || 5, CLAUDE_DAILY_MAX);   // v0.9.342 : tier-aware ; Claude borné (budget)
       let skipQuotaC   = false;
       if (request.auth.token.email === ADMIN_EMAIL && request.auth.token.email_verified) {
         const at = (request.auth.token.auth_time || 0) * 1000;
@@ -381,9 +388,9 @@ exports.analyzeChart = onCall(
     const _pd         = planSnap.exists ? (planSnap.data() || {}) : {};
     const planTier    = (_pd.tier === 'funded' || _pd.tier === 'elite' || _pd.tier === 'beta') ? _pd.tier : (_pd.plan === 'pro' ? 'beta' : 'trader');
     const isPro       = _pd.plan === 'pro';
-    const cap         = AI_DAILY_CAP[planTier] || 1;   // v0.9.342 : tier-aware (trader 1 · funded 5 · elite/beta illimité)
+    const cap         = AI_WEEKLY_CAP[planTier] || 1;  // v1.0.4 : hebdo tier-aware (trader 2 · funded 7 · elite/beta illimité)
     const usageRef    = db.doc(`users/${uid}/data/aiUsage`);
-    const today       = new Date().toISOString().split('T')[0];
+    const today       = weekKey();                     // clé de semaine (lundi) — quota hebdo
 
     // v0.9.224 — Admin (zeldtradepro@gmail.com) : quota illimité MAIS re-auth requis
     // toutes les 60 min (anti-abus si token volé). L'auth_time du token Firebase
