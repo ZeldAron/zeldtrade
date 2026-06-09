@@ -60,7 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
   function _initialAuthMode() {
     try {
       const p = new URLSearchParams(location.search);
-      if (p.get('signup') === '1' || location.hash === '#signup' || location.hash === '#register') {
+      // Invitation bêta : ?invite=TOKEN → stocker pour activation post-signup
+      const invite = p.get('invite');
+      if (invite && /^[\w-]{10,60}$/.test(invite)) {
+        try { sessionStorage.setItem('zt_invite', invite); } catch (e) {}
+      }
+      if (p.get('signup') === '1' || p.get('invite') || location.hash === '#signup' || location.hash === '#register') {
+        // Mémoriser l'intention de plan si présente (?plan=funded|elite → pré-sélection offre d'essai)
+        const plan = p.get('plan');
+        if (plan === 'funded' || plan === 'elite') {
+          try { sessionStorage.setItem('zt_plan_intent', plan); } catch (e) {}
+        }
         return 'register';
       }
     } catch (e) { /* ignore */ }
@@ -370,6 +380,30 @@ document.addEventListener('DOMContentLoaded', () => {
           planBadge.textContent = b.label;
           planBadge.className   = 'plan-badge ' + b.cls;
         }
+        // Invitation bêta : racheter le token en attente (signup via lien unique)
+        try {
+          const _invTok = sessionStorage.getItem('zt_invite');
+          if (_invTok && typeof _fbFunctions !== 'undefined') {
+            _fbFunctions.httpsCallable('redeemInviteToken')({ token: _invTok })
+              .then(res => {
+                try { sessionStorage.removeItem('zt_invite'); } catch (e) {}
+                if (res && res.data && res.data.ok && Store.resync) Store.resync();
+              })
+              .catch(() => { try { sessionStorage.removeItem('zt_invite'); } catch (e) {} });
+          }
+        } catch (e) {}
+        // Expiration trial affilié : si trialEnd dépassé → CF rétrograde vers Trader
+        try {
+          const _pi = Store.getPlanInfo ? Store.getPlanInfo() : {};
+          if (_pi.trialEnd && Date.now() > _pi.trialEnd && typeof _fbFunctions !== 'undefined') {
+            _fbFunctions.httpsCallable('expireAffiliateTrial')()
+              .then(() => {
+                // Rafraîchir le plan en mémoire + le badge
+                if (Store.resync) Store.resync();
+              })
+              .catch(() => {});
+          }
+        } catch (e) {}
       } catch {}
       // v0.9.318 : on termine l'animation (snap 100 % + « Prêt ») PUIS fondu de sortie.
       ZTLoader.finish(() => {
@@ -573,13 +607,33 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {}
     try { Store.updateSettings({ trialOfferSeen: true }); } catch (e) {}  // 1× seulement
 
+    // Lire l'intention de plan (?plan=funded|elite depuis la landing → pré-sélection)
+    let planIntent = 'funded';
+    try { planIntent = sessionStorage.getItem('zt_plan_intent') || 'funded'; } catch (e) {}
+    const isElite = planIntent === 'elite';
+
     const en = i18n.getLang() === 'en';
     const $id = id => document.getElementById(id);
     const setTxt = (id, v) => { const e = $id(id); if (e) e.textContent = v; };
     const setHtml = (id, v) => { const e = $id(id); if (e) e.innerHTML = v; };
-    if (en) {
+
+    if (isElite) {
+      if (en) {
+        setTxt('tofTitle', '🚀 Start your Elite 7-day trial');
+        setHtml('tofIntro', 'Go <strong>Elite</strong>: unlimited accounts, unlimited AI Vision, early access to features, 24h support.');
+        setHtml('tofFine', '7 days free, then <strong>€17.99/mo</strong> with code <strong>ZELD40</strong> (−40%). Card required · cancel in 1 click · charged only on day 7.');
+        setTxt('tofStart', 'Start Elite trial →');
+        setTxt('tofSkip', 'Continue for free');
+      } else {
+        setTxt('tofTitle', '🚀 Démarre ton essai Elite 7 jours');
+        setHtml('tofIntro', 'Passe en <strong>Elite</strong> : comptes illimités, IA Vision illimitée, accès anticipé features, support 24h.');
+        setHtml('tofFine', '7 jours gratuits, puis <strong>17,99 €/mois</strong> avec le code <strong>ZELD40</strong> (−40%). Carte requise · annulable en 1 clic · prélevé seulement à J+7.');
+        setTxt('tofStart', "Démarrer l'essai Elite →");
+        setTxt('tofSkip', 'Continuer en gratuit');
+      }
+    } else if (en) {
       setTxt('tofTitle', '🚀 Start your 7-day trial');
-      setHtml('tofIntro', 'Go <strong>Funded</strong>: 2 groupable accounts, 5 AI analyses/day, precise EOD drawdown, PDF archive per trade.');
+      setHtml('tofIntro', 'Go <strong>Funded</strong>: 10 accounts · multi-group, 20 AI analyses/day, precise EOD drawdown, PDF archive per trade.');
       setHtml('tofFine', '7 days free, then <strong>€8.99/mo</strong> with code <strong>ZELD40</strong> (−40%). Card required · cancel in 1 click · charged only on day 7.');
       setTxt('tofStart', 'Start 7-day trial →');
       setTxt('tofSkip', 'Continue for free');
@@ -611,8 +665,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (e) {}
     try {
-      if (window.Analytics) Analytics.track('checkout_started', { label: 'funded_monthly_trialoffer' });
-      const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan: 'funded_monthly' });
+      let _planIntent = 'funded';
+      try { _planIntent = sessionStorage.getItem('zt_plan_intent') || 'funded'; } catch (e) {}
+      const _plan = _planIntent === 'elite' ? 'elite_monthly' : 'funded_monthly';
+      if (window.Analytics) Analytics.track('checkout_started', { label: `${_plan}_trialoffer` });
+      const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan: _plan });
       if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
       if (err) err.textContent = (i18n.t && i18n.t('off.checkout.err')) || 'Erreur lors de la création du paiement — réessaie.';
     } catch (e) {

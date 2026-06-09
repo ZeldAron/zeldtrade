@@ -128,7 +128,7 @@ UI.renderOffers = function () {
   const cardFunded = `
     <div class="pricing-card featured${bF.cls}"${bF.attrs}>
       ${bF.corner}
-      <div class="pricing-badge-row"><span class="pricing-badge">${isBeta ? 'VIP' : t('off.popular')}</span></div>
+      <div class="pricing-badge-row"><span class="pricing-badge">${t('off.popular')}</span></div>
       <div class="pricing-card-name">Funded</div>
       <p class="pricing-card-tagline">${t('off.funded.tag')}</p>
       <div class="pricing-launch">${t('off.launch')}</div>
@@ -155,7 +155,7 @@ UI.renderOffers = function () {
   const cardElite = `
     <div class="pricing-card elite${bE.cls}"${bE.attrs}>
       ${bE.corner}
-      <div class="pricing-badge-row"><span class="pricing-badge-elite">Premium</span></div>
+      <div class="pricing-badge-row"><span class="pricing-badge-elite">${isBeta ? 'VIP' : 'Premium'}</span></div>
       <div class="pricing-card-name">Elite</div>
       <p class="pricing-card-tagline">${t('off.elite.tag')}</p>
       <div class="pricing-launch">${t('off.launch')}</div>
@@ -260,7 +260,6 @@ UI.renderOffers = function () {
         <h3>${t('off.faq.title')}</h3>
         <div class="faq-item"><b>${t('off.faq.1q')}</b><p>${t('off.faq.1a')}</p></div>
         <div class="faq-item"><b>${t('off.faq.2q')}</b><p>${t('off.faq.2a')}</p></div>
-        <div class="faq-item"><b>${t('off.faq.3q')}</b><p>${t('off.faq.3a')}</p></div>
         <div class="faq-item"><b>${t('off.faq.4q')}</b><p>${t('off.faq.4a')}</p></div>
         <div class="faq-item"><b>${t('off.faq.5q')}</b><p>${t('off.faq.5a')}</p></div>
         <div class="faq-item"><b>${t('off.faq.6q')}</b><p>${t('off.faq.6a')}</p></div>

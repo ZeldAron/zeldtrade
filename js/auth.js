@@ -118,6 +118,26 @@ const Auth = (() => {
         }
       } catch {}
 
+      // Invitation bêta (token unique) : racheter si présent (priorité 1)
+      try {
+        const _invTok = sessionStorage.getItem('zt_invite');
+        if (_invTok && _fbFunctions) {
+          _fbFunctions.httpsCallable('redeemInviteToken')({ token: _invTok })
+            .then(() => { try { sessionStorage.removeItem('zt_invite'); } catch (e) {} })
+            .catch(() => {});
+        }
+      } catch (e) {}
+
+      // Lien affilié : activer le trial si un code est en attente (fire-and-forget)
+      try {
+        const _affCode = sessionStorage.getItem('zt_ref');
+        if (_affCode && _fbFunctions) {
+          _fbFunctions.httpsCallable('processAffiliateTrial')({ code: _affCode })
+            .then(() => { try { sessionStorage.removeItem('zt_ref'); } catch (e) {} })
+            .catch(() => {});
+        }
+      } catch (e) {}
+
       return {
         user: { id: cred.user.uid, username: safeName },
         emailSent,

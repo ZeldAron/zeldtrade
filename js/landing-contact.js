@@ -83,10 +83,7 @@
   const errEl   = document.getElementById('lcError');
   const btn     = document.getElementById('lcSend');
 
-  if (!btn) {
-    console.warn('[landing-contact] DOM elements missing — section #contact absente ?');
-    return;
-  }
+  if (!btn) return; // formulaire absent sur cette page (normal hors /faq)
 
   let _lastSubmit = 0;
 

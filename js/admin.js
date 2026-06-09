@@ -209,6 +209,7 @@ const Admin = (() => {
         <td class="cell-actions">
           <button class="ico-btn ico-btn-violet" data-action="grant-elite" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Activer Elite gratuit (accès complet à vie)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
           <button class="ico-btn ico-btn-blue"   data-action="verify" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Forcer email_verified=true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"/><polyline points="4 7 12 13 20 7"/></svg></button>
+          <button class="ico-btn ico-btn-green"  data-action="partner" data-uid="${esc(u.uid)}" data-email="${esc(u.email)}" title="Activer comme partenaire (affiliation / clés)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
           ${deleteBtn}
         </td>
       </tr>`;
@@ -301,6 +302,7 @@ const Admin = (() => {
         if (action === 'grant-elite') grantEliteToUser(uid, email, btn);
         else if (action === 'verify') markUserVerified(uid, email, btn);
         else if (action === 'delete') openDeleteModal(uid, email);
+        else if (action === 'partner') openPartnerModal(uid, email);
       });
     });
     // Clic sur une ligne → drawer détail utilisateur
@@ -345,6 +347,79 @@ const Admin = (() => {
     } finally {
       btn.disabled = false;
       btn.textContent = orig;
+    }
+  }
+
+  // ── Modale partenaire — activation depuis la liste utilisateurs ───────────────
+  const _PACKS = { '5':200, '10':380, '25':902, '50':1715, '100':3258 };
+
+  function _updatePartnerModalFields() {
+    const type = $('prtModalType').value;
+    const hasInvite    = type === 'invite' || type === 'both';
+    const hasAffiliate = type === 'affiliate' || type === 'both';
+    $('prtModalPackWrap').style.display    = hasInvite    ? '' : 'none';
+    $('prtModalAffCodeWrap').style.display = hasAffiliate ? '' : 'none';
+    $('prtModalCommWrap').style.display    = hasAffiliate ? '' : 'none';
+  }
+
+  function openPartnerModal(uid, email) {
+    $('prtModalUid').value         = uid;
+    $('prtModalEmail').textContent = email;
+    $('prtModalType').value        = 'invite';
+    $('prtModalPack').value        = '5';
+    $('prtModalAffCode').value     = '';
+    $('prtModalComm').value        = '25';
+    $('prtModalNotes').value       = '';
+    $('prtModalError').textContent = '';
+    $('btnDoPartner').disabled     = false;
+    $('btnDoPartner').textContent  = 'Activer le partenariat';
+    _updatePartnerModalFields();
+    $('partnerModal').style.display = 'flex';
+    setTimeout(() => $('prtModalNotes').focus(), 50);
+  }
+
+  function closePartnerModal() {
+    $('partnerModal').style.display = 'none';
+  }
+
+  async function doActivatePartner() {
+    const uid     = $('prtModalUid').value;
+    const email   = $('prtModalEmail').textContent;
+    const type    = $('prtModalType').value;
+    const pack    = parseInt($('prtModalPack').value, 10) || 5;
+    const affCode = ($('prtModalAffCode').value || '').trim().toLowerCase();
+    const comm    = parseFloat($('prtModalComm').value) || 0;
+    const notes   = ($('prtModalNotes').value || '').trim();
+    const errEl   = $('prtModalError');
+    const btn     = $('btnDoPartner');
+    const hasInvite    = type === 'invite' || type === 'both';
+    const hasAffiliate = type === 'affiliate' || type === 'both';
+    errEl.textContent = '';
+    if (hasAffiliate && !affCode) {
+      errEl.textContent = 'Code affilié requis pour le type Affiliation.'; return;
+    }
+    if (!_fbFunctions) { errEl.textContent = 'SDK Functions non chargé.'; return; }
+    btn.disabled = true; btn.textContent = 'Activation…';
+    try {
+      // 1. Créer / mettre à jour le profil partenaire
+      await _fbFunctions.httpsCallable('adminSetPartnerProfile')({
+        uid, type, affCode: hasAffiliate ? affCode : '',
+        commission: hasAffiliate ? comm : 0, notes, active: true
+      });
+      // 2. Générer les clés invite si le type le demande
+      if (hasInvite) {
+        btn.textContent = `Génération de ${pack} clés…`;
+        await _fbFunctions.httpsCallable('adminCreateInviteTokens')({ count: pack, ownerUid: uid });
+      }
+      const packLabel = hasInvite ? ` · Pack ${pack} clés généré` : '';
+      toast(`✓ Partenariat activé pour ${email}${packLabel}`);
+      closePartnerModal();
+      if (_affiliateLinks !== null || _inviteTokens !== null) {
+        _affiliateLinks = null; _inviteTokens = null; renderAffiliate();
+      }
+    } catch (e) {
+      errEl.textContent = (e && e.message) || 'Erreur lors de l\'activation.';
+      btn.disabled = false; btn.textContent = 'Activer le partenariat';
     }
   }
 
@@ -684,6 +759,513 @@ const Admin = (() => {
       toast((e && e.message) || 'Erreur lors de la révocation.', true);
     } finally {
       _revokeInFlight = false;
+    }
+  }
+
+  // ── Profils partenaires ───────────────────────────────────────────────────
+  async function _renderPartnerSection(wrap) {
+    wrap.innerHTML = '<h3 style="font-size:15px;font-weight:700;margin-bottom:4px">🤝 Profils partenaires</h3>' +
+      '<p style="font-size:12px;color:var(--muted);margin-bottom:16px">Associe un compte ZeldTrade à un profil partenaire. Le partenaire se connecte sur <strong>/partner</strong>.</p>' +
+      '<div class="admin-loading">Chargement…</div>';
+
+    let partners = [];
+    try {
+      const res = await _fbFunctions.httpsCallable('adminGetPartnerProfiles')();
+      partners = res.data.partners || [];
+    } catch (e) { wrap.innerHTML += '<p class="admin-empty">Erreur de chargement.</p>'; return; }
+
+    // Formulaire création / mise à jour
+    const form = document.createElement('div');
+    form.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:20px';
+    form.innerHTML = `
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Créer / mettre à jour un partenaire</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <label style="font-size:12px;color:var(--muted);grid-column:1/-1">Rechercher un utilisateur *
+          <input id="prtSearch" class="admin-input" placeholder="Email ou pseudo…" autocomplete="off" style="margin-top:4px;width:100%">
+          <div id="prtSearchResults" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-top:2px;display:none;max-height:140px;overflow-y:auto;font-size:12px"></div>
+          <div id="prtSelectedUser" style="margin-top:6px;font-size:12px;color:var(--green);display:none"></div>
+        </label>
+        <input id="prtUid" type="hidden">
+        <label style="font-size:12px;color:var(--muted)">Type *
+          <select id="prtType" class="admin-input" style="margin-top:4px;width:100%">
+            <option value="invite">Clés d'invitation seulement</option>
+            <option value="affiliate">Affiliation seulement</option>
+            <option value="both">Les deux</option>
+          </select>
+        </label>
+        <label style="font-size:12px;color:var(--muted)" id="prtAffCodeWrap">Code affiliation (affiliateLinks)
+          <input id="prtAffCode" class="admin-input" placeholder="ex: kruz" style="margin-top:4px;width:100%;font-family:monospace">
+        </label>
+        <label style="font-size:12px;color:var(--muted)">Commission %
+          <input id="prtComm" class="admin-input" type="number" min="0" max="100" value="0" style="margin-top:4px;width:100%">
+        </label>
+        <label style="font-size:12px;color:var(--muted)" style="grid-column:1/-1">Notes internes
+          <input id="prtNotes" class="admin-input" placeholder="ex: Kruz Discord — partenariat signé 08/06" maxlength="300" style="margin-top:4px;width:100%">
+        </label>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="btnSavePartner" class="btn-primary" style="width:auto;padding:9px 20px">💾 Enregistrer</button>
+        <span id="prtStatus" style="font-size:12px;color:var(--muted)"></span>
+      </div>`;
+
+    // Tableau des partenaires existants
+    const tableWrap = document.createElement('div');
+    const typeLabel = { affiliate: 'Affiliation', invite: 'Clés invite', both: 'Affiliation + Clés' };
+
+    if (partners.length === 0) {
+      tableWrap.innerHTML = '<p class="admin-empty" style="padding:16px 0">Aucun partenaire configuré.</p>';
+    } else {
+      const rows = partners.map(p => {
+        const date = p.createdAt ? new Date(p.createdAt).toLocaleDateString('fr-FR') : '—';
+        const type = typeLabel[p.type] || p.type;
+        const aff  = p.affCode ? `<span style="font-family:monospace;font-size:11px;color:var(--green)">?ref=${p.affCode}</span>` : '—';
+        const status = p.active
+          ? '<span style="color:var(--green)">● Actif</span>'
+          : '<span style="color:var(--muted)">○ Inactif</span>';
+        return `<tr>
+          <td><strong>${p.username || '—'}</strong><br><span style="font-size:11px;color:var(--muted)">${p.email || p.uid}</span></td>
+          <td style="font-size:12px">${type}</td>
+          <td>${aff}</td>
+          <td style="font-size:12px">${p.commission || 0}%</td>
+          <td>${status}</td>
+          <td style="font-size:12px">${date}</td>
+          <td>
+            <button class="admin-btn-sm" data-prt-uid="${p.uid}" data-prt-edit="1" title="Modifier">✏️</button>
+            <button class="admin-btn-sm" data-prt-uid="${p.uid}" data-prt-toggle="${p.active}" title="${p.active ? 'Désactiver' : 'Activer'}">${p.active ? '⏸' : '▶'}</button>
+          </td>
+        </tr>`;
+      }).join('');
+      tableWrap.innerHTML = `<table class="admin-table" style="margin-top:4px">
+        <thead><tr><th>Partenaire</th><th>Type</th><th>Code affilié</th><th>Comm.</th><th>Statut</th><th>Créé</th><th>Actions</th></tr></thead>
+        <tbody>${rows}</tbody></table>`;
+    }
+
+    wrap.innerHTML = wrap.innerHTML.replace('<div class="admin-loading">Chargement…</div>', '');
+    wrap.appendChild(form);
+    wrap.appendChild(tableWrap);
+
+    // ── Recherche email/pseudo → auto-complétion UID ─────────────────────────
+    const searchInput   = form.querySelector('#prtSearch');
+    const searchResults = form.querySelector('#prtSearchResults');
+    const selectedLabel = form.querySelector('#prtSelectedUser');
+    const uidInput      = form.querySelector('#prtUid');
+
+    function _selectUser(u) {
+      uidInput.value = u.uid;
+      selectedLabel.textContent = `✓ ${u.username} — ${u.email}`;
+      selectedLabel.style.display = '';
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    }
+
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.trim().toLowerCase();
+      if (!q || q.length < 2) { searchResults.style.display = 'none'; return; }
+      const users = _cachedUsers || [];
+      const matches = users.filter(u =>
+        (u.email || '').toLowerCase().includes(q) ||
+        (u.username || '').toLowerCase().includes(q)
+      ).slice(0, 8);
+      if (!matches.length) { searchResults.style.display = 'none'; return; }
+      searchResults.innerHTML = matches.map(u =>
+        `<div data-uid="${u.uid}" style="padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--border)">
+          <strong>${u.username}</strong> <span style="color:var(--muted)">${u.email}</span>
+        </div>`
+      ).join('');
+      searchResults.style.display = '';
+      searchResults.querySelectorAll('[data-uid]').forEach(row => {
+        row.addEventListener('click', () => {
+          const u = users.find(x => x.uid === row.dataset.uid);
+          if (u) _selectUser(u);
+        });
+        row.addEventListener('mouseover', () => row.style.background = 'var(--bg3, #2a2a2e)');
+        row.addEventListener('mouseout',  () => row.style.background = '');
+      });
+    });
+
+    // Afficher/masquer le champ affCode
+    const affCodeWrap = form.querySelector('#prtAffCodeWrap');
+    form.querySelector('#prtType').addEventListener('change', e => {
+      affCodeWrap.style.display = e.target.value === 'invite' ? 'none' : '';
+    });
+    affCodeWrap.style.display = form.querySelector('#prtType').value === 'invite' ? 'none' : '';
+
+    // Pré-remplir depuis le tableau (edit)
+    tableWrap.querySelectorAll('[data-prt-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const uid = btn.dataset.prtUid;
+        const p   = partners.find(x => x.uid === uid);
+        if (!p) return;
+        uidInput.value = p.uid;
+        selectedLabel.textContent = `✓ ${p.username || p.email || p.uid}`;
+        selectedLabel.style.display = '';
+        form.querySelector('#prtType').value   = p.type;
+        form.querySelector('#prtAffCode').value = p.affCode || '';
+        form.querySelector('#prtComm').value   = p.commission || 0;
+        form.querySelector('#prtNotes').value  = p.notes || '';
+        affCodeWrap.style.display = p.type === 'invite' ? 'none' : '';
+        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    // Toggle actif/inactif
+    tableWrap.querySelectorAll('[data-prt-toggle]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const uid    = btn.dataset.prtUid;
+        const active = btn.dataset.prtToggle === 'true';
+        btn.disabled = true;
+        try {
+          await _fbFunctions.httpsCallable('adminSetPartnerProfile')({ uid, active: !active, type: partners.find(p => p.uid === uid)?.type || 'invite' });
+          toast(active ? 'Partenaire désactivé.' : 'Partenaire activé.');
+          renderAffiliate();
+        } catch (e) { toast('Erreur : ' + (e.message || e)); btn.disabled = false; }
+      });
+    });
+
+    // Sauvegarde
+    form.querySelector('#btnSavePartner').addEventListener('click', async () => {
+      const uid     = (uidInput.value || '').trim();
+      const type    = form.querySelector('#prtType').value;
+      const affCode = (form.querySelector('#prtAffCode').value || '').trim().toLowerCase();
+      const comm    = parseFloat(form.querySelector('#prtComm').value) || 0;
+      const notes   = (form.querySelector('#prtNotes').value || '').trim();
+      const stat    = form.querySelector('#prtStatus');
+      if (!uid) { stat.textContent = 'Sélectionne un utilisateur via la recherche.'; return; }
+      if ((type === 'affiliate' || type === 'both') && !affCode) { stat.textContent = 'Code affilié requis pour ce type.'; return; }
+      form.querySelector('#btnSavePartner').disabled = true;
+      stat.textContent = 'Enregistrement…';
+      try {
+        await _fbFunctions.httpsCallable('adminSetPartnerProfile')({ uid, type, affCode, commission: comm, notes });
+        toast('Profil partenaire enregistré.');
+        stat.textContent = '';
+        renderAffiliate();
+      } catch (e) {
+        stat.textContent = e.message || 'Erreur.';
+        form.querySelector('#btnSavePartner').disabled = false;
+      }
+    });
+  }
+
+  // ── Invitations bêta ─────────────────────────────────────────────────────
+  let _inviteTokens = null;
+
+  async function _loadInviteTokens() {
+    const fn  = _fbFunctions.httpsCallable('adminGetInviteTokens');
+    const res = await fn();
+    _inviteTokens = res.data.tokens || [];
+  }
+
+  async function _renderInviteSection(container) {
+    const BASE = 'https://zeldtrade.com/app?invite=';
+
+    // Formulaire génération
+    const form = document.createElement('div');
+    form.style.cssText = 'max-width:680px;margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--border)';
+    form.innerHTML = `
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">🎟 Invitations bêta — accès Elite personnel</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Génère des liens à usage unique. L'invité signe up normalement → Elite activé instantanément → lien brûlé.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <label style="font-size:12px;color:var(--muted)">Label (qui est-ce ?) *
+          <input id="invLabel" class="admin-input" placeholder="ex: Kruz Discord" maxlength="100" style="margin-top:4px;width:100%">
+        </label>
+        <label style="font-size:12px;color:var(--muted)">Tier accordé
+          <select id="invTier" class="admin-input" style="margin-top:4px;width:100%">
+            <option value="elite">Elite</option>
+            <option value="beta">VIP / Bêta (illimité)</option>
+            <option value="funded">Funded</option>
+          </select>
+        </label>
+        <label style="font-size:12px;color:var(--muted)">Durée (jours — 0 = illimité)
+          <input id="invDays" class="admin-input" type="number" min="0" max="3650" value="0" style="margin-top:4px;width:100%">
+        </label>
+        <label style="font-size:12px;color:var(--muted)">Nombre de tokens à générer
+          <input id="invCount" class="admin-input" type="number" min="1" max="50" value="1" style="margin-top:4px;width:100%">
+        </label>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <button id="btnGenInvite" class="btn-primary" style="width:auto;padding:9px 20px">⚡ Générer</button>
+        <span id="invStatus" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+      <div id="invNewLinks" style="margin-top:16px"></div>`;
+    container.appendChild(form);
+
+    // Tableau des tokens existants
+    const tableWrap = document.createElement('div');
+    tableWrap.style.cssText = 'max-width:980px;margin-bottom:40px';
+    _renderInviteTable(tableWrap);
+    container.appendChild(tableWrap);
+
+    // Événements formulaire
+    const btnGen = form.querySelector('#btnGenInvite');
+    btnGen.addEventListener('click', async () => {
+      const label = (form.querySelector('#invLabel').value || '').trim();
+      const tier  = form.querySelector('#invTier').value;
+      const days  = parseInt(form.querySelector('#invDays').value) || 0;
+      const count = parseInt(form.querySelector('#invCount').value) || 1;
+      const stat  = form.querySelector('#invStatus');
+      const box   = form.querySelector('#invNewLinks');
+      if (!label) { stat.textContent = 'Label requis.'; return; }
+      btnGen.disabled = true;
+      stat.textContent = 'Génération…';
+      box.innerHTML    = '';
+      try {
+        const fn  = _fbFunctions.httpsCallable('adminCreateInviteTokens');
+        const res = await fn({ label, tier, trialDays: days, count });
+        const tokens = res.data.tokens || [];
+        stat.textContent = `${tokens.length} lien(s) généré(s) — copie-les maintenant !`;
+        const durTxt = days > 0 ? `${days} jours` : 'illimité';
+        box.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px">
+          <div style="font-weight:600;margin-bottom:8px;color:var(--green)">${tier.toUpperCase()} · ${durTxt}</div>
+          ${tokens.map(t => `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <code style="background:var(--bg);padding:4px 8px;border-radius:4px;flex:1;overflow:auto;white-space:nowrap">${BASE}${t}</code>
+            <button class="admin-btn-sm" data-copy-inv="${BASE}${t}">📋</button>
+          </div>`).join('')}
+        </div>`;
+        box.querySelectorAll('[data-copy-inv]').forEach(b => {
+          b.addEventListener('click', () => navigator.clipboard.writeText(b.dataset.copyInv).then(() => toast('Lien copié !')).catch(() => {}));
+        });
+        _inviteTokens = null;
+        _renderInviteTable(tableWrap);
+      } catch (e) { stat.textContent = e.message || 'Erreur.'; }
+      btnGen.disabled = false;
+    });
+  }
+
+  function _renderInviteTable(wrap) {
+    if (!_inviteTokens) {
+      wrap.innerHTML = '<div class="admin-loading">Chargement tokens…</div>';
+      _loadInviteTokens().then(() => _renderInviteTable(wrap)).catch(() => {
+        wrap.innerHTML = '<p class="admin-empty">Erreur de chargement.</p>';
+      });
+      return;
+    }
+    if (_inviteTokens.length === 0) {
+      wrap.innerHTML = '<h3 style="font-size:15px;font-weight:700;margin-bottom:12px">Tokens existants</h3><p class="admin-empty">Aucun token généré.</p>';
+      return;
+    }
+    const rows = _inviteTokens.map(t => {
+      const date   = t.createdAt ? new Date(t.createdAt).toLocaleDateString('fr-FR') : '—';
+      const usedAt = t.usedAt    ? new Date(t.usedAt).toLocaleDateString('fr-FR') : null;
+      const dur    = t.trialDays > 0 ? `${t.trialDays}j` : '∞';
+      const status = t.used
+        ? `<span style="color:var(--muted)">✓ Utilisé<br><span style="font-size:10px">${usedAt} · ${t.usedEmail || ''}</span></span>`
+        : t.active
+          ? '<span style="color:var(--green);font-weight:600">● Disponible</span>'
+          : '<span style="color:var(--red)">✗ Révoqué</span>';
+      const actions = (!t.used && t.active)
+        ? `<button class="admin-btn-sm" data-copy-tok="https://zeldtrade.com/app?invite=${t.token}" title="Copier">📋</button>
+           <button class="admin-btn-sm" data-revoke-tok="${t.token}" title="Révoquer" style="color:var(--red)">✗</button>`
+        : '';
+      return `<tr>
+        <td style="font-size:11px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis">${t.token}</td>
+        <td>${t.label}</td>
+        <td><span style="font-size:12px;text-transform:uppercase;font-weight:600">${t.tier}</span> · ${dur}</td>
+        <td style="font-size:12px">${date}</td>
+        <td>${status}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+
+    wrap.innerHTML = `
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:12px">Tokens existants (${_inviteTokens.length})</h3>
+      <table class="admin-table">
+        <thead><tr><th>Token</th><th>Label</th><th>Tier · Durée</th><th>Créé</th><th>Statut</th><th>Actions</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+
+    wrap.querySelectorAll('[data-copy-tok]').forEach(b => {
+      b.addEventListener('click', () => navigator.clipboard.writeText(b.dataset.copyTok).then(() => toast('Lien copié !')).catch(() => {}));
+    });
+    wrap.querySelectorAll('[data-revoke-tok]').forEach(b => {
+      b.addEventListener('click', async () => {
+        if (!confirm(`Révoquer ce token ? L'invité ne pourra plus l'utiliser.`)) return;
+        b.disabled = true;
+        try {
+          await _fbFunctions.httpsCallable('adminRevokeInviteToken')({ token: b.dataset.revokeTok });
+          toast('Token révoqué.');
+          _inviteTokens = null;
+          _renderInviteTable(wrap);
+        } catch (e) { toast('Erreur : ' + (e.message || e)); b.disabled = false; }
+      });
+    });
+  }
+
+  // ── Affiliation ───────────────────────────────────────────────────────────
+  let _affiliateLinks = null;
+
+  async function renderAffiliate() {
+    const wrap = $('tabAffiliate');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+
+    // Pré-charger les users en arrière-plan (pour la recherche partenaire, non-bloquant)
+    if (!_cachedUsers.length) renderUsers().catch(() => {});
+
+    // ── Section 1 : Invitations bêta (tokens uniques) ──
+    try { await _renderInviteSection(wrap); } catch (e) {
+      wrap.insertAdjacentHTML('beforeend', '<p class="admin-empty">Erreur de chargement des invitations.</p>');
+    }
+
+    // ── Section 2 : Profils partenaires ──
+    const partnerSection = document.createElement('div');
+    partnerSection.style.cssText = 'max-width:900px;margin-bottom:40px;padding-bottom:32px;border-bottom:1px solid var(--border)';
+    wrap.appendChild(partnerSection);
+    try { await _renderPartnerSection(partnerSection); } catch (e) {
+      partnerSection.innerHTML = '<p class="admin-empty">Erreur de chargement des partenaires.</p>';
+    }
+
+    // ── Section 3 : Codes d'affiliation (tracking) ──
+    const affSection = document.createElement('div');
+    wrap.appendChild(affSection);
+
+    try {
+      const fn  = _fbFunctions.httpsCallable('adminGetAffiliateLinks');
+      const res = await fn();
+      _affiliateLinks = res.data.links || [];
+    } catch (e) {
+      affSection.innerHTML = '<p class="admin-empty">Erreur de chargement des codes d\'affiliation.</p>';
+      return;
+    }
+
+    const BASE_URL = 'https://zeldtrade.com/?ref=';
+
+    // ── Formulaire création ──
+    const formHtml = `
+      <div style="max-width:680px;margin-bottom:32px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:16px">Créer un lien</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <label style="font-size:12px;color:var(--muted)">Code (slug URL) *
+            <input id="affCode" class="admin-input" placeholder="ex: kruz" maxlength="30"
+              style="margin-top:4px;width:100%;font-family:monospace"
+              oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')">
+          </label>
+          <label style="font-size:12px;color:var(--muted)">Label (usage interne) *
+            <input id="affLabel" class="admin-input" placeholder="ex: Kruz - Discord" maxlength="100"
+              style="margin-top:4px;width:100%">
+          </label>
+          <label style="font-size:12px;color:var(--muted)">Trial — Tier accordé
+            <select id="affTier" class="admin-input" style="margin-top:4px;width:100%">
+              <option value="">Aucun trial</option>
+              <option value="funded">Funded</option>
+              <option value="elite">Elite</option>
+            </select>
+          </label>
+          <label style="font-size:12px;color:var(--muted)">Trial — Durée (jours)
+            <input id="affDays" class="admin-input" type="number" min="0" max="365" value="7"
+              style="margin-top:4px;width:100%">
+          </label>
+          <label style="font-size:12px;color:var(--muted)">Max signups (0 = illimité)
+            <input id="affMax" class="admin-input" type="number" min="0" value="0"
+              style="margin-top:4px;width:100%">
+          </label>
+        </div>
+        <button id="btnCreateAffiliate" class="btn-primary" style="width:auto;padding:9px 20px">+ Créer le lien</button>
+        <span id="affCreateStatus" style="font-size:12px;margin-left:12px;color:var(--muted)"></span>
+      </div>`;
+
+    // ── Table des liens ──
+    let rows = '';
+    if (_affiliateLinks.length === 0) {
+      rows = '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px">Aucun lien créé</td></tr>';
+    } else {
+      _affiliateLinks.forEach(l => {
+        const url     = BASE_URL + l.code;
+        const trial   = l.trialTier ? `${l.trialTier} · ${l.trialDays}j` : '—';
+        const maxLbl  = l.maxUses > 0 ? l.maxUses : '∞';
+        const date    = l.createdAt ? new Date(l.createdAt).toLocaleDateString('fr-FR') : '—';
+        const status  = l.active
+          ? '<span style="color:var(--green);font-weight:600">● Actif</span>'
+          : '<span style="color:var(--muted)">○ Inactif</span>';
+        rows += `<tr>
+          <td><strong style="font-family:monospace">${l.code}</strong><br><span style="font-size:11px;color:var(--muted)">${l.label}</span></td>
+          <td style="font-size:12px">${date}</td>
+          <td>${status}</td>
+          <td style="font-family:monospace;font-size:13px">${l.clicks}</td>
+          <td style="font-family:monospace;font-size:13px;color:var(--green)">${l.uses} / ${maxLbl}</td>
+          <td style="font-size:12px">${trial}</td>
+          <td>
+            <button class="admin-btn-sm" data-aff-copy="${url}" title="Copier le lien">📋</button>
+            <button class="admin-btn-sm" data-aff-toggle="${l.code}" data-aff-active="${l.active}" title="${l.active ? 'Désactiver' : 'Activer'}">${l.active ? '⏸' : '▶'}</button>
+            <button class="admin-btn-sm" data-aff-delete="${l.code}" title="Supprimer" style="color:var(--red)">🗑</button>
+          </td>
+        </tr>`;
+      });
+    }
+
+    affSection.innerHTML = formHtml + `
+      <div style="max-width:900px">
+        <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;padding-top:32px;border-top:1px solid var(--border)">Codes d'affiliation (tracking)</h3>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Liens réutilisables pour tracker les signups d'un influenceur. Partagés publiquement.</p>
+        <table class="admin-table">
+          <thead><tr>
+            <th>Code / Label</th><th>Créé</th><th>Statut</th>
+            <th>Clics</th><th>Signups</th><th>Trial</th><th>Actions</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+
+    // ── Événements ──
+    const statusEl = affSection.querySelector('#affCreateStatus');
+
+    affSection.querySelectorAll('[data-aff-copy]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(btn.dataset.affCopy).then(() => toast('Lien copié !')).catch(() => {});
+      });
+    });
+
+    affSection.querySelectorAll('[data-aff-toggle]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const code   = btn.dataset.affToggle;
+        const active = btn.dataset.affActive === 'true';
+        btn.disabled = true;
+        try {
+          await _fbFunctions.httpsCallable('adminUpdateAffiliateLink')({ code, active: !active });
+          toast(active ? 'Lien désactivé.' : 'Lien activé.');
+          _affiliateLinks = null;
+          renderAffiliate();
+        } catch (e) { toast('Erreur : ' + (e.message || e)); btn.disabled = false; }
+      });
+    });
+
+    affSection.querySelectorAll('[data-aff-delete]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`Supprimer le lien "${btn.dataset.affDelete}" ? Action irréversible.`)) return;
+        btn.disabled = true;
+        try {
+          await _fbFunctions.httpsCallable('adminDeleteAffiliateLink')({ code: btn.dataset.affDelete });
+          toast('Lien supprimé.');
+          _affiliateLinks = null;
+          renderAffiliate();
+        } catch (e) { toast('Erreur : ' + (e.message || e)); btn.disabled = false; }
+      });
+    });
+
+    const btnCreate = affSection.querySelector('#btnCreateAffiliate');
+    if (btnCreate) {
+      btnCreate.addEventListener('click', async () => {
+        const code  = (affSection.querySelector('#affCode').value || '').trim();
+        const label = (affSection.querySelector('#affLabel').value || '').trim();
+        const tier  = affSection.querySelector('#affTier').value;
+        const days  = parseInt(affSection.querySelector('#affDays').value) || 0;
+        const max   = parseInt(affSection.querySelector('#affMax').value) || 0;
+        if (!code)  { statusEl.textContent = 'Code requis.';  return; }
+        if (!label) { statusEl.textContent = 'Label requis.'; return; }
+        btnCreate.disabled   = true;
+        statusEl.textContent = 'Création…';
+        try {
+          await _fbFunctions.httpsCallable('adminCreateAffiliateLink')({
+            code, label, trialTier: tier, trialDays: days, maxUses: max,
+          });
+          toast(`Lien "?ref=${code}" créé !`);
+          statusEl.textContent = '';
+          _affiliateLinks      = null;
+          renderAffiliate();
+        } catch (e) {
+          statusEl.textContent = e.message || 'Erreur.';
+          btnCreate.disabled   = false;
+        }
+      });
     }
   }
 
@@ -1104,7 +1686,7 @@ const Admin = (() => {
 
   // Rafraîchit TOUTES les données de l'onglet courant (vide les caches + re-fetch).
   function refreshAll() {
-    _cachedUsers = []; _cachedPlans = []; _cachedCodes = []; _actCache = null;
+    _cachedUsers = []; _cachedPlans = []; _cachedCodes = []; _actCache = null; _affiliateLinks = null;
     const btn = $('btnRefresh');
     if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 800); }
     switchTab(_currentTab);
@@ -1113,16 +1695,17 @@ const Admin = (() => {
 
   function switchTab(name) {
     _currentTab = name;
-    ['overview', 'users', 'revenue', 'activity', 'audit', 'config'].forEach(t => {
+    ['overview', 'users', 'revenue', 'activity', 'audit', 'affiliate', 'config'].forEach(t => {
       const btn = $('tab-' + t); if (btn) btn.classList.toggle('tab-active', t === name);
       const div = $('tab' + t.charAt(0).toUpperCase() + t.slice(1)); if (div) div.style.display = t === name ? '' : 'none';
     });
-    if (name === 'overview') renderOverview();
-    if (name === 'users')    renderUsers();
-    if (name === 'revenue')  renderRevenue();
-    if (name === 'activity') renderActivity();
-    if (name === 'audit')    renderAudit();
-    if (name === 'config')   renderConfig();
+    if (name === 'overview')   renderOverview();
+    if (name === 'users')      renderUsers();
+    if (name === 'revenue')    renderRevenue();
+    if (name === 'activity')   renderActivity();
+    if (name === 'audit')      renderAudit();
+    if (name === 'affiliate')  renderAffiliate();
+    if (name === 'config')     renderConfig();
   }
 
   // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -1358,13 +1941,17 @@ const Admin = (() => {
     $('btnCloseMfaEnrollDone').addEventListener('click', mfaCloseEnroll);
     $('btnCopyMfaSecret').addEventListener('click', mfaCopySecret);
     $('mfaEnrollModal').addEventListener('click', e => { if (e.target === $('mfaEnrollModal')) mfaCloseEnroll(); });
-    ['overview', 'users', 'revenue', 'activity', 'audit', 'config'].forEach(t => {
+    ['overview', 'users', 'revenue', 'activity', 'audit', 'affiliate', 'config'].forEach(t => {
       const b = $('tab-' + t); if (b) b.addEventListener('click', () => switchTab(t));
     });
     // v0.9.386 : bindings de la modale génération de code retirés.
     $('btnCloseDelete').addEventListener('click', closeDeleteModal);
     $('btnDoDelete').addEventListener('click', doDeleteUser);
     $('delConfirmInput').addEventListener('input', onConfirmInputChange);
+    if ($('btnClosePartnerModal')) $('btnClosePartnerModal').addEventListener('click', closePartnerModal);
+    if ($('btnDoPartner'))         $('btnDoPartner').addEventListener('click', doActivatePartner);
+    if ($('prtModalType'))         $('prtModalType').addEventListener('change', _updatePartnerModalFields);
+    if ($('partnerModal'))         $('partnerModal').addEventListener('click', e => { if (e.target === $('partnerModal')) closePartnerModal(); });
     $('deleteModal').addEventListener('click', e => { if (e.target === $('deleteModal')) closeDeleteModal(); });
     // Modale création compte de test (v0.9.347)
     const btCl = $('btnCloseTest'); if (btCl) btCl.addEventListener('click', closeTestModal);
