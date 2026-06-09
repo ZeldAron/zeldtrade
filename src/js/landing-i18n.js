@@ -175,7 +175,7 @@
     'pricing.trader.cta':   { fr: 'Commencer — c\'est gratuit →', en: 'Start — it\'s free →' },
     'pricing.funded.desc': { fr: 'Drawdown EOD au tick près · 10 comptes multi-groupes · archive PDF par trade.', en: 'Tick-accurate EOD drawdown · 10 multi-group accounts · PDF archive per trade.' },
     'pricing.funded.f1': { fr: '10 comptes · multi-groupes', en: '10 accounts · multi-group' },
-    'pricing.funded.f2': { fr: '5 analyses IA / jour', en: '5 AI analyses / day' },
+    'pricing.funded.f2': { fr: '20 analyses IA / jour', en: '20 AI analyses / day' },
     'pricing.funded.f3': { fr: 'Drawdown EOD précis', en: 'Precise EOD drawdown' },
     'pricing.funded.f4': { fr: 'Archive PDF par trade', en: 'PDF archive per trade' },
     'pricing.funded.f5': { fr: 'Support prioritaire', en: 'Priority support' },
@@ -186,7 +186,7 @@
     'pricing.elite.f3': { fr: 'Vote décisif sur la roadmap', en: 'Decisive vote on the roadmap' },
     'pricing.elite.f4': { fr: 'Accès bêta aux nouvelles features', en: 'Beta access to new features' },
     'pricing.elite.f5': { fr: 'Support prioritaire 24h', en: 'Priority 24h support' },
-    'pricing.elite.cta':{ fr: 'Essai 7 jours →', en: '7-day trial →' },
+    'pricing.elite.cta':{ fr: 'Tout débloquer — 7 j offerts →', en: 'Unlock everything — 7-day trial →' },
 
     // Discord
     'discord.title': { fr: 'Le Discord. Là où ça parle vraiment trading.', en: 'The Discord. Where trading is actually discussed.' },
