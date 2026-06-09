@@ -574,15 +574,15 @@ const UI = (() => {
         </div>
 
         <div class="levels-row">
-          <div class="level-card lc-entry">
-            <div class="lc-label">Entry</div>
-            <div class="lc-price">${t.entry.toFixed(2)}</div>
-            <div class="lc-ticks">${(t.direction === 'long' ? 'long' : 'short').toUpperCase()}</div>
-          </div>
           <div class="level-card lc-sl">
             <div class="lc-label">SL</div>
             <div class="lc-price">${t.sl.toFixed(2)}</div>
             <div class="lc-ticks">${cfd ? c.riskPts.toFixed(2) + ' pts' : c.riskTicks + ' ticks'}</div>
+          </div>
+          <div class="level-card lc-entry">
+            <div class="lc-label">Entry</div>
+            <div class="lc-price">${t.entry.toFixed(2)}</div>
+            <div class="lc-ticks">${(t.direction === 'long' ? 'long' : 'short').toUpperCase()}</div>
           </div>
           ${tpCards}
           ${t.exitPrice ? `<div class="level-card lc-exit"><div class="lc-label">Exit</div><div class="lc-price">${t.exitPrice.toFixed(2)}</div></div>` : ''}
