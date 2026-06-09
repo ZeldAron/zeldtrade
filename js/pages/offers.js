@@ -187,15 +187,15 @@ UI.renderOffers = function () {
     </div>`;
 
   // ── Comparison table ──────────────────────────────────────────────────────
-  const perDay = isEn ? '/day' : '/jour';
+  const perWeek = isEn ? '/week' : '/semaine';
   const rows = [
     { f: t('off.row.journal'),       tr: '✓',          fu: '✓',     el: '✓' },
     { f: t('off.row.dashboard'),     tr: '✓',          fu: '✓',     el: '✓' },
     { f: t('off.row.calendar'),      tr: '✓',          fu: '✓',     el: '✓' },
     { f: t('off.row.goals'),         tr: '✓',          fu: '✓',     el: '✓' },
     { f: t('off.row.calculators'),   tr: '✓',          fu: '✓',     el: '✓' },
-    { f: t('off.row.accounts'),      tr: '1',          fu: '3',     el: '∞' },
-    { f: t('off.row.ai'),            tr: '1' + perDay, fu: '5' + perDay, el: '∞' },
+    { f: t('off.row.accounts'),      tr: '1',          fu: '10',    el: '∞' },
+    { f: t('off.row.ai'),            tr: '2' + perWeek, fu: '7' + perWeek, el: '∞' },
     { f: t('off.row.groups'),        tr: '✗',          fu: '✓',     el: '✓' },
     { f: t('off.row.pdf'),           tr: '✗',          fu: '✓',     el: '✓' },
     { f: t('off.row.support'),       tr: t('off.row.support.std'),  fu: t('off.row.support.prio'), el: t('off.row.support.elite') },

@@ -136,8 +136,8 @@ const Modal = (() => {
         }
         _upsellPanel.style.display = '';
         _upsellPanel.innerHTML = _isEn
-          ? `<b style="color:var(--fg)">Daily AI quota reached.</b> On Funded you get <b>5 analyses/day</b> + Claude Sonnet fallback for complex charts. <a href="#" id="wAiUpsellOffers" style="color:var(--green);font-weight:600;text-decoration:underline">See Funded →</a>`
-          : `<b style="color:var(--fg)">Quota IA du jour atteint.</b> En Funded tu as <b>5 analyses/jour</b> + fallback Claude Sonnet sur les charts complexes. <a href="#" id="wAiUpsellOffers" style="color:var(--green);font-weight:600;text-decoration:underline">Voir Funded →</a>`;
+          ? `<b style="color:var(--fg)">Weekly AI quota reached.</b> On Funded you get <b>7 analyses/week</b> + Claude Sonnet fallback for complex charts. <a href="#" id="wAiUpsellOffers" style="color:var(--green);font-weight:600;text-decoration:underline">See Funded →</a>`
+          : `<b style="color:var(--fg)">Quota IA de la semaine atteint.</b> En Funded tu as <b>7 analyses/semaine</b> + fallback Claude Sonnet sur les charts complexes. <a href="#" id="wAiUpsellOffers" style="color:var(--green);font-weight:600;text-decoration:underline">Voir Funded →</a>`;
         setTimeout(() => {
           $('wAiUpsellOffers')?.addEventListener('click', e => {
             e.preventDefault();
@@ -147,11 +147,9 @@ const Modal = (() => {
         }, 0);
       } else {
         // v1.0.4 : afficher le compteur quota X/Y dans le badge (ex: "• IA active · 0/1")
-        const _aiU    = typeof Store !== 'undefined' && Store.getAIUsage ? Store.getAIUsage() : { date: '', count: 0 };
-        const _aiLim  = typeof Store !== 'undefined' && Store.getLimits  ? Store.getLimits()  : { maxAiPerDay: 1 };
-        const _aiDay  = new Date().toISOString().slice(0, 10);
-        const _aiUsed = (_aiU.date === _aiDay) ? (_aiU.count || 0) : 0;
-        const _aiMax  = _aiLim.maxAiPerDay;
+        const _aiLim  = typeof Store !== 'undefined' && Store.getLimits  ? Store.getLimits()  : { maxAiPerWeek: 2 };
+        const _aiUsed = (typeof Store !== 'undefined' && Store.aiUsedThisWeek) ? Store.aiUsedThisWeek() : 0;
+        const _aiMax  = _aiLim.maxAiPerWeek;
         const _aiSuffix = isFinite(_aiMax) ? ` · ${_aiUsed}/${_aiMax}` : '';
         aiBadge.textContent = i18n.t('modal.ai.active') + _aiSuffix;
         aiBadge.style.color = 'var(--green)';
