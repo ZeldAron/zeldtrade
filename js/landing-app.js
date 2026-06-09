@@ -1,4 +1,4 @@
-// ─── LANDING APP (v0.9.397) ────────────────────────────────────────────────
+// ─── LANDING APP (v1.0.4) ─────────────────────────────────────────────────
 // Interactivité vanilla de la landing cinématique (port du proto React "zeldaron") :
 // status bar clock, boutons magnétiques, scroll-reveal, dashboard hero live,
 // rotation démo, calculateur EOD interactif, FAQ accordéon, nav mobile,
@@ -12,6 +12,22 @@
   const setHtml = (sel, v) => { const e = $(sel); if (e) e.innerHTML = v; return e; };
   const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const rand = () => Math.random();
+
+  // ── Affiliation : capturer ?ref=CODE au chargement ─────────────────────────
+  (function captureRef() {
+    try {
+      const ref = new URLSearchParams(window.location.search).get('ref');
+      if (!ref || !/^[a-z0-9-]{2,30}$/.test(ref)) return;
+      try { sessionStorage.setItem('zt_ref', ref); } catch (e) {}
+      // Tracker le clic côté serveur (fire-and-forget)
+      if (typeof firebase !== 'undefined' && firebase.functions) {
+        try {
+          const fn = firebase.app().functions('europe-west1').httpsCallable('trackAffiliateClick');
+          fn({ code: ref }).catch(() => {});
+        } catch (e) {}
+      }
+    } catch (e) {}
+  })();
 
   // ── Status bar : horloge UTC ────────────────────────────────────────────────
   (function clock() {
@@ -68,6 +84,14 @@
       });
     };
     requestAnimationFrame(revealInView);
+    // v1.0.4 : scroll listener fallback — révèle les éléments lors d'un scroll rapide
+    // où l'IntersectionObserver peut rater le déclenchement (callback asynchrone).
+    let _scrollRaf = false;
+    window.addEventListener('scroll', function() {
+      if (_scrollRaf) return;
+      _scrollRaf = true;
+      requestAnimationFrame(function() { revealInView(); _scrollRaf = false; });
+    }, { passive: true });
     // Filet de sécurité : si pour une raison quelconque l'observer n'a rien révélé,
     // on garantit que tout le contenu finit visible (jamais de page « vide »).
     setTimeout(() => { if (!$$('.reveal.in').length) showAll(); }, 1500);
@@ -252,6 +276,18 @@
     });
   })();
 
+  // ── Firm-cards : activation clavier (Enter/Space) — WCAG role=button ──────────
+  (function firmCardsA11y() {
+    $$('.firm-card').forEach(card => {
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          card.click();
+        }
+      });
+    });
+  })();
+
   // ── Nav auto-hide (cache au scroll vers le bas, réapparaît vers le haut) ─────
   (function navAutoHide() {
     const nav = $('nav.main');
@@ -363,5 +399,53 @@
     $$('a[href^="/app?signup"]').forEach(a => a.addEventListener('click', () => {
       if (window.ztTrack) window.ztTrack('Lead');
     }));
+  })();
+
+  // ── Tab bar navigation ────────────────────────────────────────────────────
+  (function tabs() {
+    const btns   = $$('.tab-btn[data-tab]');
+    const panels = $$('.tab-panel[id]');
+    if (!btns.length) return;
+
+    function activate(tab) {
+      btns.forEach(b => {
+        const on = b.dataset.tab === tab;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      panels.forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+      // Scroll to tab bar top so content starts visible
+      const bar = $('#tabBar');
+      if (bar) {
+        const y = bar.getBoundingClientRect().top + window.scrollY - 4;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+      // Persist in URL (deep-link) without triggering scroll
+      // v1.0.4 : préserve les autres params (ex: ?lang=fr) au lieu d'écraser tout le query string
+      try { const _u = new URL(location.href); _u.searchParams.set('tab', tab); history.replaceState(null, '', _u.pathname + _u.search); } catch(e) {}
+    }
+
+    btns.forEach(b => b.addEventListener('click', () => activate(b.dataset.tab)));
+
+    // Deep-link on load : ?tab=tarifs
+    const urlTab = new URLSearchParams(window.location.search).get('tab');
+    if (urlTab && btns.some(b => b.dataset.tab === urlTab)) activate(urlTab);
+
+    // Allow anchor links like href="#pricing" to open the right panel
+    document.addEventListener('click', function(e) {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+      const targetId = a.getAttribute('href').slice(1);
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const panel = target.closest('.tab-panel');
+      if (!panel) return;
+      const tab = panel.id.replace('panel-', '');
+      if (btns.some(b => b.dataset.tab === tab)) {
+        e.preventDefault();
+        activate(tab);
+        setTimeout(() => { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 220);
+      }
+    });
   })();
 })();
