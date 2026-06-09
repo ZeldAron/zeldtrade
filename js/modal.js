@@ -738,8 +738,8 @@ const Modal = (() => {
         container.innerHTML = '';
         const PILL_KEYS = new Set(['entry', 'sl', 'tp1', 'tp2', 'tp3']);
         const pills = [
-          { cls: 'wpill wpill-edit',          label: 'Entry', key: 'entry', val: fv(parsedTrade.entry) },
           { cls: 'wpill wpill-sl wpill-edit',  label: 'SL',    key: 'sl',   val: fv(parsedTrade.sl)    },
+          { cls: 'wpill wpill-edit',          label: 'Entry', key: 'entry', val: fv(parsedTrade.entry) },
           { cls: 'wpill wpill-tp wpill-edit',  label: 'TP1',   key: 'tp1',  val: fv(parsedTrade.tp1)   },
           ...(parsedTrade.tp2 ? [{ cls: 'wpill wpill-tp wpill-edit', label: 'TP2', key: 'tp2', val: Number(parsedTrade.tp2) }] : []),
           ...(parsedTrade.tp3 ? [{ cls: 'wpill wpill-tp wpill-edit', label: 'TP3', key: 'tp3', val: Number(parsedTrade.tp3) }] : []),
