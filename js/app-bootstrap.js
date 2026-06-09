@@ -633,7 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } else if (en) {
       setTxt('tofTitle', '🚀 Start your 7-day trial');
-      setHtml('tofIntro', 'Go <strong>Funded</strong>: 10 accounts · multi-group, 20 AI analyses/day, precise EOD drawdown, PDF archive per trade.');
+      setHtml('tofIntro', 'Go <strong>Funded</strong>: 10 accounts · multi-group, 7 AI analyses/week, precise EOD drawdown, PDF archive per trade.');
       setHtml('tofFine', '7 days free, then <strong>€8.99/mo</strong> with code <strong>ZELD40</strong> (−40%). Card required · cancel in 1 click · charged only on day 7.');
       setTxt('tofStart', 'Start 7-day trial →');
       setTxt('tofSkip', 'Continue for free');
