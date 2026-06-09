@@ -8,6 +8,14 @@ const Modal = (() => {
   let capturedImage = null;    // base64
   let _analysisFile = null;    // v0.9.290 : blob original de l'image d'analyse → seed slot 0 du trade
   let parsedTrade   = null;    // { entry, sl, tp1, tp2, tp3, instrument }
+
+  // v1.0.4 : met à jour le badge quota (« · x/y ») après une analyse — quota hebdo
+  function _refreshAiBadgeCount() {
+    const b = document.getElementById('aiStatusBadge');
+    if (!b || typeof Store === 'undefined' || !Store.getLimits || !Store.aiUsedThisWeek) return;
+    const max = Store.getLimits().maxAiPerWeek;
+    if (isFinite(max)) b.textContent = i18n.t('modal.ai.active') + ` · ${Store.aiUsedThisWeek()}/${max}`;
+  }
   let _forceClaude  = false;   // v0.9.223 — set par "Réanalyser" pour forcer Claude direct
   let capital       = 50000;
   let feePerSide    = 2.14;
@@ -634,12 +642,12 @@ const Modal = (() => {
           console.warn('[Claude direct] failed:', e && e.message);
           result = null;
         }
-        Store.refreshAiUsage();
+        Store.refreshAiUsage().then(_refreshAiBadgeCount);
         _forceClaude = false; // reset pour la prochaine analyse
       } else {
         // Route normale : IA d'abord
         result = await analyzeWithAI(capturedImage, null, direction);
-        Store.refreshAiUsage();
+        Store.refreshAiUsage().then(_refreshAiBadgeCount);
 
         // Fallback Claude si IA insuffisant OU résultat aberrant (R:R cassé)
         const aiScore   = _scoreResult(result);
