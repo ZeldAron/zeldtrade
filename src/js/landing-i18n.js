@@ -1,4 +1,4 @@
-// ─── LANDING I18N (FR/EN) — v0.9.397 (refonte design "zeldaron") ────────────
+// ─── LANDING I18N (FR/EN) — v1.0.4 ─────────────────────────────────────────
 // Bilingue FR/EN. Le FR est dans le HTML (défaut + SEO) ; le dictionnaire fournit
 // l'EN (et le FR pour restaurer après une bascule). Une clé absente => texte HTML
 // conservé (dégradation gracieuse).
@@ -11,7 +11,16 @@
   'use strict';
 
   const DICT = {
+    // Tabs
+    'tab.produit': { fr: 'Produit',    en: 'Product' },
+    'tab.tarifs':  { fr: 'Tarifs',     en: 'Pricing' },
+    'tab.faq':     { fr: 'FAQ',        en: 'FAQ' },
+    'tab.equipe':  { fr: 'Équipe',     en: 'Team' },
+
     // Nav
+    'nav.produit': { fr: 'Produit',    en: 'Product' },
+    'nav.faq':     { fr: 'FAQ',        en: 'FAQ' },
+    'nav.equipe':  { fr: 'Équipe',     en: 'Team' },
     'nav.firms':   { fr: 'Prop firms', en: 'Prop firms' },
     'nav.demo':    { fr: 'Démo',       en: 'Demo' },
     'nav.calc':    { fr: 'Calc EOD',   en: 'EOD calc' },
@@ -34,10 +43,10 @@
       en: '<span class="word-reveal"><span>Stop</span></span> <span class="word-reveal"><span>blowing</span></span><br><span class="word-reveal"><span>your</span></span> <span class="word-reveal"><span>funded</span></span> <span class="word-reveal"><span class="accent">accounts.</span></span>',
     },
     'hero.lead': {
-      fr: "Journal de trading avec <b>IA Vision</b> qui détecte entry, SL et TP depuis tes screenshots TradingView. Drawdown trailing EOD précis pour les 5 prop firms majeures — et tout aussi à l'aise en <b>crypto</b> et en <b>fonds propres</b>. Multi-comptes : un trade saisi, tout se réplique.",
-      en: 'Trading journal with <b>AI Vision</b> that detects entry, SL and TP from your TradingView screenshots. Tick-accurate EOD trailing drawdown for the 5 major prop firms — and just as comfortable with <b>crypto</b> and <b>personal funds</b>. Multi-account: log one trade, it replicates everywhere.',
+      fr: "<b>Colle ton screenshot TradingView → l'IA remplit tout.</b> Drawdown EOD au tick près sur Apex, FTMO, Topstep. Multi-comptes : un trade saisi, tout se réplique.",
+      en: "<b>Paste your TradingView screenshot → AI fills everything.</b> Tick-accurate EOD drawdown on Apex, FTMO, Topstep. Multi-account: log once, replicates everywhere.",
     },
-    'hero.cta.signup': { fr: 'Commencer gratuitement', en: 'Start for free' },
+    'hero.cta.signup': { fr: 'Tester ZeldTrade — c\'est gratuit', en: 'Try ZeldTrade — it\'s free' },
     'hero.cta.demo':   { fr: '▶ Tester la démo', en: '▶ Try the live demo' },
     'pricing.billed':  { fr: 'facturé', en: 'billed' },
     'pricing.slashyr': { fr: '/an', en: '/yr' },
@@ -145,6 +154,10 @@
     // Pricing
     'pricing.title': { fr: 'Simple. <span class="accent">Honnête.</span>', en: 'Simple. <span class="accent">Honest.</span>' },
     'pricing.sub':   { fr: 'Trader gratuit à vie. Aucune carte requise pour démarrer. Si tu pars, tu emportes tes données.', en: 'Trader free forever. No card required to start. If you leave, you take your data.' },
+    'midcta.label': { fr: 'Le tracking qui t\'empêche de cramer le suivant.', en: 'The tracking that stops you blowing the next one.' },
+    'midcta.cta':   { fr: 'Commencer gratuitement — sans CB →', en: 'Start for free — no card →' },
+    'pricing.badge':    { fr: '✦ Recommandé', en: '✦ Recommended' },
+    'pricing.reassure': { fr: 'Essai 7 j · sans CB · annulation en 1 clic', en: '7-day trial · no card · cancel anytime' },
     'pricing.monthly': { fr: 'Mensuel', en: 'Monthly' },
     'pricing.yearly':  { fr: 'Annuel <span class="save">−2 mois</span>', en: 'Yearly <span class="save">−2 months</span>' },
     'pricing.forever': { fr: '/ pour toujours', en: '/ forever' },
@@ -152,24 +165,27 @@
     'pricing.year':    { fr: '/ an', en: '/ yr' },
     'pricing.discount':{ fr: 'LANCEMENT −40% · CODE ZELD40 · essai 7 jours', en: 'LAUNCH −40% · CODE ZELD40 · 7-day trial' },
     'pricing.curnote': { fr: 'Affichage indicatif · facturé en euros', en: 'Indicative display · billed in euros' },
-    'pricing.trader.desc': { fr: 'Pour découvrir sans engagement.', en: 'To explore with no commitment.' },
-    'pricing.trader.f1': { fr: '1 compte (prop / crypto / perso)', en: '1 account (prop / crypto / personal)' },
-    'pricing.trader.f2': { fr: '1 analyse IA par jour', en: '1 AI analysis per day' },
-    'pricing.trader.f3': { fr: 'Journal complet · dashboard · analytics', en: 'Full journal · dashboard · analytics' },
-    'pricing.trader.f4': { fr: 'Export RGPD JSON', en: 'GDPR JSON export' },
-    'pricing.trader.cta':{ fr: 'Commencer gratuitement →', en: 'Start for free →' },
-    'pricing.funded.desc': { fr: 'Pour le trader prop firm sérieux.', en: 'For the serious prop firm trader.' },
-    'pricing.funded.f1': { fr: '2 comptes groupables', en: '2 groupable accounts' },
+    'pricing.trader.desc':  { fr: 'Commence gratuitement. Upgrade quand tu es prêt.', en: 'Start free. Upgrade when ready.' },
+    'pricing.trader.f1':    { fr: '1 compte (prop / crypto / perso)', en: '1 account (prop / crypto / personal)' },
+    'pricing.trader.f2':    { fr: '3 analyses IA / jour · 1 screenshot', en: '3 AI analyses / day · 1 screenshot' },
+    'pricing.trader.f3':    { fr: 'Journal · dashboard · analytics · calc EOD', en: 'Journal · dashboard · analytics · EOD calc' },
+    'pricing.trader.f4':    { fr: 'Export RGPD JSON', en: 'GDPR JSON export' },
+    'pricing.trader.lock1': { fr: 'Multi-comptes groupés', en: 'Grouped multi-accounts' },
+    'pricing.trader.lock2': { fr: 'Archive PDF par trade', en: 'PDF archive per trade' },
+    'pricing.trader.cta':   { fr: 'Commencer — c\'est gratuit →', en: 'Start — it\'s free →' },
+    'pricing.funded.desc': { fr: 'Drawdown EOD au tick près · 10 comptes multi-groupes · archive PDF par trade.', en: 'Tick-accurate EOD drawdown · 10 multi-group accounts · PDF archive per trade.' },
+    'pricing.funded.f1': { fr: '10 comptes · multi-groupes', en: '10 accounts · multi-group' },
     'pricing.funded.f2': { fr: '5 analyses IA / jour', en: '5 AI analyses / day' },
     'pricing.funded.f3': { fr: 'Drawdown EOD précis', en: 'Precise EOD drawdown' },
     'pricing.funded.f4': { fr: 'Archive PDF par trade', en: 'PDF archive per trade' },
     'pricing.funded.f5': { fr: 'Support prioritaire', en: 'Priority support' },
     'pricing.funded.cta':{ fr: 'Essai 7 jours →', en: '7-day trial →' },
-    'pricing.elite.desc': { fr: 'Multi-comptes ou coachs.', en: 'Multi-account or coaches.' },
-    'pricing.elite.f1': { fr: 'Comptes illimités', en: 'Unlimited accounts' },
-    'pricing.elite.f2': { fr: 'IA Vision illimitée', en: 'Unlimited AI Vision' },
-    'pricing.elite.f3': { fr: 'Accès anticipé features', en: 'Early access to features' },
-    'pricing.elite.f4': { fr: 'Support 24h', en: '24h support' },
+    'pricing.elite.desc': { fr: 'Tu gères 10+ comptes ou tu coaches des traders. Aucune limite.', en: 'Managing 10+ accounts or coaching traders. Zero limits.' },
+    'pricing.elite.f1': { fr: 'Comptes & groupes illimités', en: 'Unlimited accounts & groups' },
+    'pricing.elite.f2': { fr: 'Analyses IA illimitées · Claude Sonnet', en: 'Unlimited AI analyses · Claude Sonnet' },
+    'pricing.elite.f3': { fr: 'Vote décisif sur la roadmap', en: 'Decisive vote on the roadmap' },
+    'pricing.elite.f4': { fr: 'Accès bêta aux nouvelles features', en: 'Beta access to new features' },
+    'pricing.elite.f5': { fr: 'Support prioritaire 24h', en: 'Priority 24h support' },
     'pricing.elite.cta':{ fr: 'Essai 7 jours →', en: '7-day trial →' },
 
     // Discord
@@ -235,7 +251,18 @@
     });
     document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
       const t = DICT[el.getAttribute('data-i18n-html')];
-      if (t && t[lang] != null) el.innerHTML = t[lang];
+      if (t && t[lang] != null) {
+        el.innerHTML = t[lang];
+        // v1.0.4 : force le restart des animations CSS sur les .word-reveal > span après
+        // remplacement du innerHTML (le browser peut ne pas re-déclencher l'animation sans reflow).
+        if (el.querySelector('.word-reveal')) {
+          el.querySelectorAll('.word-reveal > span').forEach(function(s) {
+            s.style.animation = 'none';
+            void s.offsetHeight; // force reflow
+            s.style.animation = '';
+          });
+        }
+      }
     });
     document.querySelectorAll('[data-i18n-ph]').forEach(function (el) {
       const t = DICT[el.getAttribute('data-i18n-ph')];
@@ -273,6 +300,7 @@
   }
 
   function switchWithLoader(next) {
+    if (next !== 'fr' && next !== 'en') return; // v1.0.4 : guard contre data-lang absent/null
     const ov = document.getElementById('langLoader');
     if (!ov) { applyLang(next); return; }
     ov.style.display = 'flex';
@@ -286,7 +314,7 @@
     document.querySelectorAll('.lang-btn').forEach(function (b) {
       b.addEventListener('click', function () {
         const l = b.getAttribute('data-lang');
-        if (document.documentElement.lang !== l) switchWithLoader(l);
+        if (l && document.documentElement.lang !== l) switchWithLoader(l); // v1.0.4 : guard l null (theme-toggle a aussi class lang-btn)
         // F-09 — referme le menu mobile après le choix de langue
         const links = document.getElementById('navLinks');
         const toggle = document.getElementById('navToggle');

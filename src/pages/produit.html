@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+  <meta name="description" content="Découvre ZeldTrade en détail : support des 5 prop firms majeures (Apex, FTMO, Topstep, Lucid, FP), démo du journal IA et calculateur EOD drawdown interactif.">
+  <meta name="theme-color" content="#070a10">
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=1.0.3">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=1.0.3">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=1.0.3">
+  <link rel="icon" href="/assets/favicon.ico?v=1.0.3" sizes="any">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=1.0.3">
+  <link rel="canonical" href="https://zeldtrade.com/produit">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ZeldTrade">
+  <meta property="og:title" content="ZeldTrade · Produit — Prop firms, Démo &amp; Calc EOD">
+  <meta property="og:description" content="Journal de trading avec IA Vision pour Apex, FTMO, Topstep, Lucid, Funding Pips. Démo interactive et calculateur EOD drawdown au tick près.">
+  <meta property="og:url" content="https://zeldtrade.com/produit">
+  <meta property="og:image" content="https://zeldtrade.com/assets/og-image.png?v=1.0.3">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="ZeldTrade">
+  <title>ZeldTrade · Produit — Prop firms, Démo &amp; Calc EOD</title>
+  <link rel="stylesheet" href="/css/landing.css?v=1.0.3&amp;h=4">
+  <script src="/js/landing-theme.js?v=1.0.3"></script>
+</head>
+<body>
+
+  <a href="#main-content" class="skip-link" data-i18n="a11y.skip">Aller au contenu principal</a>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+
+  <div id="langLoader" aria-hidden="true">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:20px">
+      <span class="brand-mark" style="width:56px;height:56px;font-size:30px;border-radius:14px">Z</span>
+      <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;color:var(--fg)">ZeldTrade</div>
+    </div>
+  </div>
+
+  <div class="statusbar">
+    <div class="statusbar-inner">
+      <span><span class="pulse"></span>&nbsp;SYSTEM&nbsp;<span class="ok">ONLINE</span></span>
+      <span class="sep hide-sm">│</span>
+      <span class="hide-sm" id="sbVersion">v1.0.3</span>
+      <span class="sep hide-sm">│</span>
+      <span id="sbClock">EU-WEST-1 · --:--:-- UTC</span>
+      <span style="margin-left:auto" class="ok" data-i18n="sb.launch">EN LIGNE · MADE IN FRANCE 🇫🇷</span>
+    </div>
+  </div>
+
+  <nav class="main">
+    <a href="/" class="brand"><span class="brand-mark">Z</span> ZeldTrade</a>
+    <div class="nav-links" id="navLinks">
+      <a class="nav-link active" href="/produit" aria-current="page" data-i18n="nav.produit">Produit</a>
+      <a class="nav-link" href="/#pricing" data-i18n="nav.pricing">Tarifs</a>
+      <a class="nav-link" href="/faq" data-i18n="nav.faq">FAQ</a>
+      <a class="nav-link" href="/equipe" data-i18n="nav.equipe">Équipe</a>
+      <a class="nav-link" href="/updates" data-i18n="nav.updates">Nouveautés</a>
+      <a class="btn btn-ghost btn-sm" href="/app" data-i18n="nav.login">Connexion</a>
+      <span class="magnetic" data-magnetic="0.3"><a class="btn btn-primary btn-sm" href="/app?signup=1" data-i18n="nav.signup">Lancer l'app →</a></span>
+      <span class="lang-switch" role="group" aria-label="Langue / Language">
+        <button type="button" class="lang-btn" data-lang="fr" aria-label="Français" title="Français">🇫🇷</button>
+        <button type="button" class="lang-btn" data-lang="en" aria-label="English" title="English">🇬🇧</button>
+        <button type="button" class="lang-btn theme-toggle" id="themeToggle" aria-label="Changer de thème" title="Thème" aria-pressed="false" style="display:none"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+      </span>
+    </div>
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </nav>
+
+  <main id="main-content">
+
+  <!-- ─── Prop firms ──────────────────────────────────────────── -->
+  <section class="block container" id="firms" style="padding-top:100px">
+    <div class="reveal">
+      <div class="section-eyebrow">// SUPPORTED</div>
+      <h1 class="section-title" data-i18n-html="firms.title">Les 5 prop firms majeures. <span class="accent">Leurs règles exactes.</span></h1>
+      <p class="section-sub" data-i18n="firms.sub">Pas une moyenne. Pas une approximation. Chaque firm a son propre moteur de règles, codé à la main et vérifié par les bêta testeurs.</p>
+    </div>
+    <div class="reveal" data-delay="120">
+      <div class="firms-grid">
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Apex Trader Funding" data-i18n-aria="firms.rules.apex">
+          <div class="firm-logo">APEX</div><div class="firm-name">Apex Trader Funding</div>
+          <div class="firm-popover"><h4>Apex Trader Funding</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span>EOD · $2,5K–$7,5K</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span data-i18n="firms.none">Aucune</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>1</span></li><li><span data-i18n="firms.split">Profit split</span><span data-i18n="firms.apex.split">100% jusqu'à $25k</span></li></ul></div>
+        </div>
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles FTMO Challenge" data-i18n-aria="firms.rules.ftmo">
+          <div class="firm-logo">FTMO</div><div class="firm-name">FTMO Challenge</div>
+          <div class="firm-popover"><h4>FTMO Challenge</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span data-i18n="firms.static">Statique · 10%</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span>5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>4</span></li><li><span data-i18n="firms.split">Profit split</span><span>80% / 90%</span></li></ul></div>
+        </div>
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Topstep Combine" data-i18n-aria="firms.rules.tps">
+          <div class="firm-logo">TPS</div><div class="firm-name">Topstep Combine</div>
+          <div class="firm-popover"><h4>Topstep Combine</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span>EOD</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span data-i18n="firms.none">Aucune</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>0</span></li><li><span data-i18n="firms.split">Profit split</span><span>100% / 90%</span></li></ul></div>
+        </div>
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Lucid Trading" data-i18n-aria="firms.rules.lcd">
+          <div class="firm-logo">LCD</div><div class="firm-name">Lucid Trading</div>
+          <div class="firm-popover"><h4>Lucid Trading</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span>EOD</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span data-i18n="firms.none">Aucune (Flex)</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>0</span></li><li><span data-i18n="firms.split">Profit split</span><span data-i18n="firms.upto90">Jusqu'à 90%</span></li></ul></div>
+        </div>
+        <div class="firm-card" tabindex="0" role="button" aria-label="Voir les règles Funding Pips" data-i18n-aria="firms.rules.fnp">
+          <div class="firm-logo">FNP</div><div class="firm-name">Funding Pips</div>
+          <div class="firm-popover"><h4>Funding Pips</h4><ul><li><span data-i18n="firms.trailing">Trailing</span><span data-i18n="firms.staticshort">Statique</span></li><li><span data-i18n="firms.dailyloss">Daily loss</span><span>4–5%</span></li><li><span data-i18n="firms.mindays">Min trading days</span><span>1</span></li><li><span data-i18n="firms.split">Profit split</span><span>80%</span></li></ul></div>
+        </div>
+      </div>
+      <p class="firms-disclaimer" data-i18n="firms.disclaimer">Les marques mentionnées (Apex Trader Funding, FTMO, Topstep, Lucid Trading, Funding Pips) appartiennent à leurs propriétaires respectifs. ZeldTrade n'est ni affilié, ni sponsorisé, ni approuvé par ces sociétés.</p>
+    </div>
+  </section>
+
+  <!-- ─── Demo produit ────────────────────────────────────────── -->
+  <section class="block container" id="demo">
+    <div class="reveal">
+      <div class="section-eyebrow">// PRODUCT</div>
+      <h2 class="section-title" data-i18n-html="demo.title">Un trade saisi. <span class="accent">Tout réplique.</span></h2>
+      <p class="section-sub" style="margin-bottom:56px" data-i18n="demo.sub">Drop un screen TradingView, l'IA Vision détecte entry, SL, TP et taille. Le trade se propage sur tous tes comptes groupés avec les bons ratios. Le journal s'écrit tout seul — prop firm, crypto ou fonds propres.</p>
+    </div>
+    <div class="reveal" data-delay="120">
+      <div class="demo">
+        <aside class="demo-sidebar" id="demoSidebar">
+          <div class="demo-sb-section" data-i18n="demo.sb.accounts">COMPTES</div>
+          <div class="demo-sb-item" data-acc="0"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Apex 150K · funded</span><span class="pnl green"><span aria-hidden="true">▲</span> +12.4%</span></div>
+          <div class="demo-sb-item" data-acc="1"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">FTMO 100K · phase 1</span><span class="pnl green"><span aria-hidden="true">▲</span> +6.8%</span></div>
+          <div class="demo-sb-item" data-acc="2"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Topstep 50K · combine</span><span class="pnl red"><span aria-hidden="true">▼</span> −2.1%</span></div>
+          <div class="demo-sb-item" data-acc="3"><span class="dot"></span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Binance · perp</span><span class="pnl green"><span aria-hidden="true">▲</span> +18.2%</span></div>
+          <div class="demo-sb-section" data-i18n="demo.sb.journal">JOURNAL</div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.today">Aujourd'hui · 3 trades</span></div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.week">Semaine · 14 trades</span></div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.archive">Archive PDF</span></div>
+          <div class="demo-sb-section" data-i18n="demo.sb.tools">OUTILS</div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.calc">Calc. EOD</span></div>
+          <div class="demo-sb-item"><span class="dot"></span> <span data-i18n="demo.sb.import">Import TradingView</span></div>
+        </aside>
+        <div class="demo-main" role="region" aria-label="Aperçu du journal">
+          <div class="demo-toolbar">
+            <h3 data-i18n="demo.today">Journal · Aujourd'hui</h3>
+            <div class="pill-row"><span class="pill active">1D</span><span class="pill">1W</span><span class="pill">1M</span><span class="pill">ALL</span></div>
+          </div>
+          <div class="demo-ai-strip">
+            <div class="ai-icon">AI</div>
+            <div class="ai-text" id="demoAiText"><b>IA Vision · screenshot lu en 1,2s.</b><br>Trade détecté : <span class="tag green">NQ LONG</span> · entry <b>20 847,5</b> · SL <b>20 830,0</b> · TP <b>20 892,0</b> · risque <b>1.2R</b> · clôturé à TP <span class="tag green">+$420</span></div>
+          </div>
+          <div class="demo-trade-card">
+            <div>
+              <div class="head"><span class="ticker" id="dTicker">NQ · Nasdaq</span><span class="side long" id="dSide">LONG</span><span style="color:var(--fg-mute);font-size:11px;margin-left:auto" id="dTime">14:32</span></div>
+              <div class="meta">
+                <div>ENTRY<b id="dEntry">$20 847,5</b></div><div>SL<b id="dSl">$20 830,0</b></div><div>TP<b id="dTp">$20 892,0</b></div>
+                <div>SIZE<b id="dSize">2</b></div><div>R<b id="dR">2.55R</b></div><div>P&amp;L<b id="dPnl" style="color:var(--green)">+$420</b></div>
+              </div>
+            </div>
+            <div class="demo-chart-mini">
+              <div class="label" data-i18n="demo.price">Évolution prix · 1m</div>
+              <svg viewBox="0 0 200 90" preserveAspectRatio="none">
+                <defs><linearGradient id="gradDemo" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="rgba(0,0,0,0.35)"/><stop offset="100%" stop-color="rgba(0,0,0,0)"/></linearGradient></defs>
+                <line x1="0" y1="40" x2="200" y2="40" stroke="var(--green)" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.5"/><text x="2" y="38" fill="var(--green)" font-size="7" font-family="JetBrains Mono">ENTRY</text>
+                <line x1="0" y1="65" x2="200" y2="65" stroke="var(--red)" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.5"/><text x="2" y="73" fill="var(--red)" font-size="7" font-family="JetBrains Mono">SL</text>
+                <line x1="0" y1="18" x2="200" y2="18" stroke="var(--amber)" stroke-width="0.6" stroke-dasharray="2 3" opacity="0.5"/><text x="2" y="15" fill="var(--amber)" font-size="7" font-family="JetBrains Mono">TP</text>
+                <path id="demoMiniArea" d="M 0 60 L 17 56 L 35 58 L 52 50 L 69 46 L 87 48 L 104 40 L 121 36 L 139 30 L 156 34 L 174 26 L 200 22 L 200 90 L 0 90 Z" fill="url(#gradDemo)"/>
+                <path id="demoMiniLine" d="M 0 60 L 17 56 L 35 58 L 52 50 L 69 46 L 87 48 L 104 40 L 121 36 L 139 30 L 156 34 L 174 26 L 200 22" fill="none" stroke="var(--green)" stroke-width="1.2"/>
+              </svg>
+            </div>
+          </div>
+          <div class="demo-stats">
+            <div class="demo-stat"><div class="k">Trades</div><div class="v">14</div></div>
+            <div class="demo-stat"><div class="k" data-i18n="demo.winrate">Win rate</div><div class="v green">71%</div></div>
+            <div class="demo-stat"><div class="k">Avg R</div><div class="v">1.8R</div></div>
+            <div class="demo-stat"><div class="k">Max DD</div><div class="v amber">$1 820</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Calculateur EOD ─────────────────────────────────────── -->
+  <section class="block container" id="calc">
+    <div class="reveal">
+      <div class="section-eyebrow">// TOOL · INTERACTIF</div>
+      <h2 class="section-title" data-i18n-html="calc.title">Calc. EOD drawdown. <span class="accent">Essaye-la.</span></h2>
+      <p class="section-sub" style="margin-bottom:40px" data-i18n="calc.sub">Le même moteur que celui qui tourne dans l'app. Joue avec les curseurs et regarde le buffer évoluer en temps réel.</p>
+    </div>
+    <div class="reveal" data-delay="100">
+      <div class="calc">
+        <div class="calc-side">
+          <h3 data-i18n="calc.params">Paramètres compte</h3>
+          <div class="sub" data-i18n="calc.params.sub">Ajuste les valeurs · le buffer réagit en live.</div>
+          <div class="calc-field">
+            <label><span data-i18n="calc.firm">Prop firm</span> <span class="value" id="cFirmVal">Apex</span></label>
+            <div class="calc-firm-row" id="cFirmRow">
+              <button class="active" data-firm="Apex">Apex</button>
+              <button data-firm="FTMO">FTMO</button>
+              <button data-firm="Topstep">Topstep</button>
+              <button data-firm="Lucid">Lucid</button>
+              <button data-firm="FNP">FNP</button>
+            </div>
+            <div class="calc-firm-note" id="cFirmNote">→ trailing EOD jusqu'au profit target</div>
+          </div>
+          <div class="calc-field"><label for="cSize"><span data-i18n="calc.size">Taille compte initial</span> <span class="value" id="cSizeVal">$150,000</span></label><input type="range" id="cSize" min="25000" max="300000" step="5000" value="150000" aria-label="Taille compte initial" aria-valuemin="25000" aria-valuemax="300000" aria-valuenow="150000"></div>
+          <div class="calc-field"><label for="cHwm"><span data-i18n="calc.hwm">Equity au plus haut (HWM)</span> <span class="value" id="cHwmVal">$155,000</span></label><input type="range" id="cHwm" min="25000" max="330000" step="500" value="155000" aria-label="Equity au plus haut (HWM)" aria-valuemin="25000" aria-valuemax="330000" aria-valuenow="155000"></div>
+          <div class="calc-field"><label for="cPnl"><span data-i18n="calc.openpnl">P&amp;L ouvert</span> <span class="value" id="cPnlVal" style="color:var(--green)">+$420</span></label><input type="range" id="cPnl" min="-2000" max="2000" step="50" value="420" aria-label="P&amp;L ouvert" aria-valuemin="-2000" aria-valuemax="2000" aria-valuenow="420"></div>
+          <div class="calc-field"><label for="cRisk"><span data-i18n="calc.risk">Risque trade prévu</span> <span class="value" id="cRiskVal">$500</span></label><input type="range" id="cRisk" min="100" max="3000" step="50" value="500" aria-label="Risque trade prévu" aria-valuemin="100" aria-valuemax="3000" aria-valuenow="500"></div>
+        </div>
+        <div class="calc-output">
+          <div class="calc-output-status safe" id="cStatus"><i></i> <span data-i18n="calc.safe">SAFE · trade autorisé</span></div>
+          <div>
+            <div class="calc-big safe" id="cBig">$2,767</div>
+            <div class="calc-big-sub" data-i18n="calc.bufafter">// buffer EOD après ce trade</div>
+          </div>
+          <div class="calc-rows">
+            <div class="calc-row"><span data-i18n="calc.floor">EOD floor</span><span id="cFloor">$150,000</span></div>
+            <div class="calc-row"><span data-i18n="calc.equity">Equity actuelle</span><span id="cEquity">$150,420</span></div>
+            <div class="calc-row"><span data-i18n="calc.buffer">Buffer actuel</span><span id="cBuffer" style="color:var(--green)">+$3,267</span></div>
+            <div class="calc-row"><span data-i18n="calc.dist">Distance breach</span><span id="cDist">55.3%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA bas de page ──────────────────────────────────────── -->
+  <section class="block container" style="padding-top:0;padding-bottom:0;text-align:center">
+    <div class="reveal">
+      <div style="padding:48px 24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+        <p style="font-size:15px;color:var(--fg-mute);margin:0 0 20px" data-i18n="midcta.label">Le tracking qui t'empêche de cramer le suivant.</p>
+        <span class="magnetic" data-magnetic="0.3"><a href="/app?signup=1" class="btn btn-primary" data-i18n="midcta.cta">Commencer gratuitement — sans CB →</a></span>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <footer class="main">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="brand"><span class="brand-mark">Z</span> ZeldTrade</a>
+          <p data-i18n="footer.brand">Journal de trading IA pour prop firm, crypto et fonds propres. Indépendant, hébergé en Europe, RGPD-natif. Made in France.</p>
+        </div>
+        <div class="footer-col">
+          <h5 data-i18n="footer.product">Produit</h5>
+          <ul>
+            <li><a href="/produit#firms" data-i18n="nav.firms">Prop firms</a></li>
+            <li><a href="/produit#demo" data-i18n="nav.demo">Démo</a></li>
+            <li><a href="/produit#calc" data-i18n="nav.calc">Calc EOD</a></li>
+            <li><a href="/#pricing" data-i18n="nav.pricing">Tarifs</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5 data-i18n="footer.community">Communauté</h5>
+          <ul>
+            <li><a href="https://discord.gg/w4khB67hSa" target="_blank" rel="noopener noreferrer">Discord</a></li>
+            <li><a href="/updates" data-i18n="nav.updates">Nouveautés</a></li>
+            <li><a href="/faq#contact" data-i18n="footer.contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5 data-i18n="footer.legal">Légal</h5>
+          <ul>
+            <li><a href="/legal" data-i18n="footer.legalmentions">Mentions légales</a></li>
+            <li><a href="/privacy" data-i18n="footer.privacy">Confidentialité</a></li>
+            <li><a href="/cgu" data-i18n="footer.cgu">CGU</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div data-i18n="footer.copy">© 2026 ZELDTRADE · INDÉPENDANT · HÉBERGÉ EN EUROPE</div>
+        <div id="footerVersion">v1.0.3 · MADE IN FRANCE <span aria-hidden="true">🇫🇷</span></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase (visite + cookie banner) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
+  <script src="/js/landing-contact.js?v=1.0.3&amp;h=1"></script>
+  <script src="/js/landing-app.js?v=1.0.3&amp;h=3" defer></script>
+  <script src="/js/landing-i18n.js?v=1.0.3&amp;h=4" defer></script>
+
+  <!-- Cookie banner (RGPD) -->
+  <div id="cookieBanner" style="display:none;position:fixed;bottom:16px;left:16px;right:16px;max-width:560px;margin:0 auto;z-index:9000;background:var(--bg-2);border:1px solid var(--line-2);border-radius:12px;padding:16px 18px;align-items:center;gap:14px;box-shadow:0 20px 60px -20px rgba(0,0,0,0.7);font-size:13px;color:var(--fg-dim)">
+    <span style="flex:1" data-i18n="cookie.text">Cookies essentiels (session, sécurité). Avec ton accord, on ajoute un cookie de mesure publicitaire (Meta) pour améliorer nos pubs. Tu peux refuser.</span>
+    <button id="cookieRefuseBtn" class="btn btn-ghost btn-sm" data-i18n="cookie.refuse">Refuser</button>
+    <button id="cookieAcceptBtn" class="btn btn-primary btn-sm" data-i18n="cookie.accept">Accepter</button>
+  </div>
+
+</body>
+</html>
