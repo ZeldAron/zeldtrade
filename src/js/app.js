@@ -604,6 +604,49 @@ function initApp() {
   UI.renderList();
   UI.updateStats();
 
+  // ── Bannière J+2 freemium (upsell proactif) ───────────────────────────────
+  // Affichée une seule fois à J+2 pour les traders Gratuit.
+  // Montre ce qu'ils ratent concrètement plutôt qu'un mur muet.
+  (function _checkJ2UpsellBanner() {
+    try {
+      if (Store.getTier() !== 'trader') return;
+      const STORAGE_KEY = 'zt_j2_banner_dismissed';
+      if (localStorage.getItem(STORAGE_KEY)) return;
+      const user = _fbAuth.currentUser;
+      if (!user || !user.metadata || !user.metadata.creationTime) return;
+      const daysSince = (Date.now() - new Date(user.metadata.creationTime).getTime()) / 86400000;
+      if (daysSince < 2) return;
+
+      const isEn = i18n.getLang() === 'en';
+      const banner = document.createElement('div');
+      banner.id = 'j2UpsellBanner';
+      banner.style.cssText = 'margin:0 0 20px;padding:14px 16px;background:linear-gradient(135deg,rgba(var(--accent-rgb,99,102,241),0.08),rgba(0,255,136,0.05));border:1px solid rgba(0,255,136,0.2);border-radius:10px;display:flex;align-items:flex-start;gap:12px;position:relative';
+      banner.innerHTML = `
+        <div style="font-size:20px;line-height:1;margin-top:2px">💡</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--fg);margin-bottom:4px">${isEn
+            ? 'You\'ve been trading for 2 days — here\'s what you\'re missing'
+            : 'Tu trades depuis 2 jours — voilà ce que tu rates'}</div>
+          <div style="font-size:12px;color:var(--fg-dim);line-height:1.55">${isEn
+            ? '📊 <b>2nd account</b> — group Apex + FTMO in one trade &nbsp;·&nbsp; 🤖 <b>5 AI analyses/day</b> instead of 1 &nbsp;·&nbsp; 📄 <b>PDF archive</b> per trade'
+            : '📊 <b>2ème compte</b> — groupe Apex + FTMO en un trade &nbsp;·&nbsp; 🤖 <b>5 analyses IA/jour</b> au lieu de 1 &nbsp;·&nbsp; 📄 <b>Archive PDF</b> par trade'}</div>
+          <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+            <button onclick="document.querySelector('[data-page=\\'offers\\']')?.click();document.getElementById('j2UpsellBanner')?.remove()" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">${isEn ? 'See Funded →' : 'Voir Funded →'}</button>
+            <span style="font-size:11px;color:var(--fg-mute)">${isEn ? '7-day trial · no card' : 'Essai 7j · sans CB'}</span>
+          </div>
+        </div>
+        <button id="j2UpsellClose" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--fg-mute);cursor:pointer;font-size:16px;line-height:1;padding:2px 4px" aria-label="Fermer">×</button>`;
+
+      const journalPage = document.getElementById('page-journal');
+      if (journalPage) journalPage.prepend(banner);
+
+      document.getElementById('j2UpsellClose')?.addEventListener('click', () => {
+        banner.remove();
+        localStorage.setItem(STORAGE_KEY, '1');
+      });
+    } catch (e) {}
+  })();
+
   // Redirect post-login if a destination was set (ex: landing Pro button)
   const VALID_PAGES = new Set(['journal','dashboard','analytics','goals','calendar','outils','econ','offers','settings','tutorial']);
   const _goto = sessionStorage.getItem('ztGoto');

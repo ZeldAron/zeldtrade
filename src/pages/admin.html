@@ -320,6 +320,7 @@
     .ico-btn-violet:hover:not(:disabled) { border-color: var(--purple); background: rgba(124,58,237,0.1); }
     .ico-btn-blue:hover:not(:disabled)   { border-color: #58a6ff; background: rgba(56,139,253,0.1); }
     .ico-btn-red:hover:not(:disabled)    { border-color: var(--red); background: rgba(248,81,73,0.1); }
+    .ico-btn-green:hover:not(:disabled)  { border-color: #3fb950; background: rgba(63,185,80,0.1); color: #3fb950; }
 
     .admin-empty-row {
       text-align: center;
@@ -746,6 +747,7 @@
         <button class="admin-tab" id="tab-revenue">Revenu</button>
         <button class="admin-tab" id="tab-activity">Activité</button>
         <button class="admin-tab" id="tab-audit">Audit &amp; emails</button>
+        <button class="admin-tab" id="tab-affiliate">Affiliation</button>
         <button class="admin-tab" id="tab-config">Outils</button>
       </div>
 
@@ -754,6 +756,7 @@
       <div id="tabRevenue" style="display:none"></div>
       <div id="tabActivity" style="display:none"></div>
       <div id="tabAudit" style="display:none"></div>
+      <div id="tabAffiliate" style="display:none"></div>
       <div id="tabConfig" style="display:none"></div>
 
     </main>
@@ -781,6 +784,53 @@
       <div class="modal-actions">
         <button class="btn-secondary" id="btnCloseDelete">Annuler</button>
         <button class="btn-danger" id="btnDoDelete" disabled>Supprimer définitivement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Modale activation partenaire ─────────────────────────────────────── -->
+  <div id="partnerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);align-items:center;justify-content:center;z-index:100">
+    <div class="modal-card" style="min-width:340px;max-width:480px">
+      <h3 style="margin-bottom:4px">🤝 Activer comme partenaire</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Compte : <strong id="prtModalEmail"></strong></p>
+      <input type="hidden" id="prtModalUid">
+      <div style="display:grid;gap:12px">
+        <label style="font-size:12px;color:var(--muted)">Type de partenariat *
+          <select id="prtModalType" class="confirm-input" style="margin-top:4px;width:100%;font-family:var(--font-body)">
+            <option value="invite">Clés d'invitation seulement</option>
+            <option value="affiliate">Affiliation seulement</option>
+            <option value="both">Affiliation + Clés d'invitation</option>
+          </select>
+        </label>
+
+        <!-- Clés : sélecteur de pack -->
+        <label id="prtModalPackWrap" style="font-size:12px;color:var(--muted)">Pack de clés *
+          <select id="prtModalPack" class="confirm-input" style="margin-top:4px;width:100%;font-family:var(--font-body)">
+            <option value="5">Starter — 5 clés (200 €, 40 €/clé)</option>
+            <option value="10">Pro — 10 clés (380 €, 38 €/clé · −5%)</option>
+            <option value="25">Coach — 25 clés (902 €, 36,10 €/clé · −10%)</option>
+            <option value="50">Expert — 50 clés (1 715 €, 34,30 €/clé · −14%)</option>
+            <option value="100">Académie — 100 clés (3 258 €, 32,58 €/clé · −18%)</option>
+          </select>
+          <span style="font-size:11px;color:var(--muted);margin-top:4px;display:block">Les clés seront générées immédiatement et visibles dans le dashboard /partner du partenaire.</span>
+        </label>
+
+        <!-- Affiliation : code + commission -->
+        <label id="prtModalAffCodeWrap" style="font-size:12px;color:var(--muted);display:none">Code affilié <span style="font-weight:400">(lien ?ref=CODE)</span>
+          <input type="text" id="prtModalAffCode" class="confirm-input" placeholder="ex: kruz" maxlength="30" style="margin-top:4px;width:100%;font-family:monospace">
+        </label>
+        <label id="prtModalCommWrap" style="font-size:12px;color:var(--muted);display:none">Commission %
+          <input type="number" id="prtModalComm" class="confirm-input" value="25" min="0" max="100" style="margin-top:4px;width:100%">
+        </label>
+
+        <label style="font-size:12px;color:var(--muted)">Notes internes
+          <input type="text" id="prtModalNotes" class="confirm-input" placeholder="ex: partenariat signé le 08/06" maxlength="300" style="margin-top:4px;width:100%">
+        </label>
+      </div>
+      <div class="gen-error" id="prtModalError" style="margin-top:12px"></div>
+      <div class="modal-actions" style="margin-top:16px">
+        <button class="btn-secondary" id="btnClosePartnerModal">Annuler</button>
+        <button class="btn-primary" id="btnDoPartner">Activer le partenariat</button>
       </div>
     </div>
   </div>
@@ -855,8 +905,8 @@
        pose les shims compat _fbAuth/_fbDb/_fbFunctions sur window AVANT que
        admin.js (classique, init sur DOMContentLoaded) ne les lise.
        L'app principale (index.html) garde firebase.js compat — non impacté. -->
-  <script type="module" src="js/admin-fb.js?v=1.0.3"></script>
-  <script src="js/admin.js?v=1.0.3"></script>
+  <script type="module" src="js/admin-fb.js?v=1.0.4b"></script>
+  <script src="js/admin.js?v=1.0.4b"></script>
 
 </body>
 </html>

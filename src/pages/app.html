@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
     script-src  'self' https://www.gstatic.com https://cdnjs.cloudflare.com https://hcaptcha.com https://*.hcaptcha.com https://www.google.com https://www.recaptcha.net https://www.gstatic.com/recaptcha/ https://apis.google.com https://challenges.cloudflare.com https://connect.facebook.net https://feed.financialjuice.com https://s3.tradingview.com;
@@ -49,7 +49,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600&family=Geist:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=1.0.3&amp;h=2">
+  <link rel="stylesheet" href="css/style.css?v=1.0.4&amp;h=1">
   <!-- v0.9.255 : theme manager en TÊTE du head — applique data-theme="light"
        AVANT le parsing du body pour éviter le FOUC (flash dark → light). -->
   <script src="js/theme.js?v=1.0.3"></script>
@@ -87,9 +87,11 @@
 
         <form id="loginFormEl" autocomplete="on">
           <div class="login-fields">
+            <label for="loginUsername" class="sr-only">Email</label>
             <input type="email" class="form-input" id="loginUsername"
               placeholder="Email" data-i18n-ph="auth.ph.email" autocomplete="email" maxlength="254" required>
             <div class="pwd-toggle-wrap">
+              <label for="loginPassword" class="sr-only">Mot de passe</label>
               <input type="password" class="form-input" id="loginPassword"
                 placeholder="Mot de passe" data-i18n-ph="auth.ph.password" autocomplete="current-password" maxlength="128" required>
               <button type="button" class="pwd-toggle" data-pwd-target="loginPassword" aria-label="Afficher le mot de passe" tabindex="-1">
@@ -98,7 +100,7 @@
               </button>
             </div>
           </div>
-          <div class="login-error" id="loginError"></div>
+          <div class="login-error" id="loginError" role="alert"></div>
           <button type="submit" class="login-btn" data-i18n="auth.login.btn">Se connecter</button>
           <div class="login-switch"><span id="showForgot" data-i18n="auth.forgot.link" style="color:var(--muted);font-size:12px;cursor:pointer">Mot de passe oublié ?</span></div>
           <div class="login-switch" style="margin-top:6px"><span data-i18n="auth.no.account">Pas de compte ?</span> <span id="showRegister" data-i18n="auth.register">Créer un compte</span></div>
@@ -108,18 +110,22 @@
         <form id="forgotFormEl" autocomplete="on" style="display:none">
           <div data-i18n="auth.forgot.intro" style="font-size:12px;color:var(--muted);margin-bottom:12px">Entre ton email pour recevoir un lien de réinitialisation.</div>
           <div class="login-fields">
+            <label for="forgotEmail" class="sr-only">Email</label>
             <input type="email" class="form-input" id="forgotEmail" placeholder="Email" data-i18n-ph="auth.ph.email" autocomplete="email" maxlength="254" required>
           </div>
-          <div class="login-error" id="forgotError"></div>
+          <div class="login-error" id="forgotError" role="alert"></div>
           <button type="submit" class="login-btn" data-i18n="auth.forgot.btn">Envoyer le lien</button>
           <div class="login-switch"><span id="showLoginFromForgot" data-i18n="auth.back.login">← Retour à la connexion</span></div>
         </form>
 
         <form id="registerFormEl" autocomplete="on" novalidate style="display:none">
           <div class="login-fields">
+            <label for="regUsername" class="sr-only">Pseudo</label>
             <input type="text"     class="form-input" id="regUsername"        placeholder="Pseudo"              data-i18n-ph="auth.ph.username"        autocomplete="username"     maxlength="30"  pattern="[a-zA-Z0-9_-]+" minlength="2" required>
+            <label for="regEmail" class="sr-only">Email</label>
             <input type="email"    class="form-input" id="regEmail"           placeholder="Email"               data-i18n-ph="auth.ph.email"           autocomplete="email"        maxlength="254" required>
             <div class="pwd-toggle-wrap">
+              <label for="regPassword" class="sr-only">Mot de passe</label>
               <input type="password" class="form-input" id="regPassword"        placeholder="Mot de passe"        data-i18n-ph="auth.ph.password"        autocomplete="new-password" maxlength="128" minlength="8" aria-describedby="pwdStrengthReqs" required>
               <button type="button" class="pwd-toggle" data-pwd-target="regPassword" aria-label="Afficher le mot de passe" tabindex="-1">
                 <svg class="pwd-icon-eye"   viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -165,7 +171,7 @@
           </div>
           <!-- hCaptcha (sitekey publique pour anti-bot, taille compact pour tenir dans la modal 340px) -->
           <div class="h-captcha" data-captcha="true" data-sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2" data-theme="dark" data-size="compact" style="margin: 12px 0; display: flex; justify-content: center;"></div>
-          <div class="login-error" id="registerError"></div>
+          <div class="login-error" id="registerError" role="alert"></div>
           <button type="submit" class="login-btn" data-i18n="auth.create.btn">Créer le compte</button>
           <div class="login-switch"><span id="showLogin" data-i18n="auth.back.login">← Retour à la connexion</span></div>
         </form>
@@ -194,7 +200,7 @@
             </span>
           </label>
         </div>
-        <div class="login-error" id="consentError"></div>
+        <div class="login-error" id="consentError" role="alert"></div>
         <button type="submit" class="login-btn" id="btnConsentSubmit" data-i18n="consent.submit">Continuer</button>
       </form>
     </div>
@@ -224,7 +230,7 @@
             <span class="consent-label" data-i18n="tpm.crypto" data-i18n-html="true"><strong>Crypto</strong> — Binance, Coinbase… (BTC, ETH…)</span>
           </label>
         </div>
-        <div class="login-error" id="tpmError"></div>
+        <div class="login-error" id="tpmError" role="alert"></div>
         <button type="button" class="login-btn" id="tpmNext1" data-i18n="tpm.submit">Continuer</button>
       </div>
 
@@ -233,7 +239,7 @@
         <h2 class="consent-title" id="tpmTitle2">Tes prop firms</h2>
         <p class="consent-intro" id="tpmIntro2">Sélectionne les prop firms que tu utilises. Tu pourras en ajouter dans les Réglages.</p>
         <div class="instr-pills" id="tpmFirmPills"></div>
-        <div class="login-error" id="tpmError2"></div>
+        <div class="login-error" id="tpmError2" role="alert"></div>
         <div class="tpm-nav">
           <button type="button" class="login-btn login-btn-ghost" id="tpmBack2">Retour</button>
           <button type="button" class="login-btn" id="tpmNext2">Continuer</button>
@@ -245,7 +251,7 @@
         <h2 class="consent-title" id="tpmTitle3">Tes instruments</h2>
         <p class="consent-intro" id="tpmIntro3">Choisis les instruments que tu trades. Seuls ceux-ci apparaîtront au moment de saisir un trade (tu peux les changer dans les Réglages).</p>
         <div id="tpmInstrCats"></div>
-        <div class="login-error" id="tpmError3"></div>
+        <div class="login-error" id="tpmError3" role="alert"></div>
         <div class="tpm-nav">
           <button type="button" class="login-btn login-btn-ghost" id="tpmBack3">Retour</button>
           <button type="button" class="login-btn" id="tpmFinish">Terminer</button>
@@ -258,9 +264,9 @@
   <div id="trialOfferModal" class="consent-modal" style="display:none" role="dialog" aria-modal="true" aria-labelledby="tofTitle">
     <div class="consent-modal-box">
       <h2 id="tofTitle" class="consent-title">🚀 Démarre ton essai 7 jours</h2>
-      <p id="tofIntro" class="consent-intro">Passe en <strong>Funded</strong> : 2 comptes groupables, 5 analyses IA/jour, drawdown EOD précis, archive PDF par trade.</p>
+      <p id="tofIntro" class="consent-intro">Passe en <strong>Funded</strong> : 10 comptes · multi-groupes, 20 analyses IA/jour, drawdown EOD précis, archive PDF par trade.</p>
       <p id="tofFine" class="consent-intro" style="font-size:12.5px">7 jours gratuits, puis <strong>8,99 €/mois</strong> avec le code <strong>ZELD40</strong> (−40%). Carte requise · annulable en 1 clic · prélevé seulement à J+7.</p>
-      <div class="login-error" id="tofError"></div>
+      <div class="login-error" id="tofError" role="alert"></div>
       <button type="button" class="login-btn" id="tofStart">Démarrer l'essai 7 jours →</button>
       <button type="button" class="btn-ghost" id="tofSkip" style="width:100%;margin-top:8px;color:var(--muted)">Continuer en gratuit</button>
     </div>
@@ -274,7 +280,7 @@
       <p class="consent-intro" data-i18n="veg.intro">Nous avons envoyé un lien de vérification à</p>
       <p style="text-align:center;font-weight:600;color:var(--accent-l);margin:4px 0 16px;word-break:break-all" id="vegEmail">—</p>
       <p class="consent-intro" style="font-size:13px;color:var(--muted)" data-i18n="veg.hint">Clique sur le lien dans ton mail (pense à vérifier les <strong>spams</strong>), puis reviens ici et clique sur « J'ai vérifié ».</p>
-      <div class="login-error" id="vegStatus" style="margin-top:12px"></div>
+      <div class="login-error" id="vegStatus" role="status" style="margin-top:12px"></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:18px">
         <button type="button" class="login-btn" id="vegBtnCheck" data-i18n="veg.btn.check">J'ai vérifié — actualiser</button>
         <button type="button" class="btn-ghost" id="vegBtnResend" data-i18n="veg.btn.resend" style="width:100%">Renvoyer l'email</button>
@@ -438,8 +444,11 @@
     </button>
   </aside>
 
+  <!-- Skip link a11y — keyboard users bypass navigation -->
+  <a href="#app-content" class="skip-link">Aller au contenu</a>
+
   <!-- MAIN -->
-  <main class="main">
+  <main class="main" id="app-content">
     <div class="topbar">
       <button class="hamburger-btn" id="btnSidebarToggle" aria-label="Menu">
         <span></span><span></span><span></span>
@@ -1127,7 +1136,7 @@
     </div>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" aria-live="polite" aria-atomic="true"></div>
 
   <!-- Firebase SDK (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" integrity="sha384-ajMUFBUFMCyjh8uxJg6bkGcKe9RTolyjwbxB3yES0QQMenP3Oztj/W9vA2SJPcIh" crossorigin="anonymous"></script>
@@ -1309,5 +1318,12 @@
       </div>
     </div>
   </div>
+  <!-- Trustpilot invitation script (collecte d'avis, déclenché au 3ème trade) -->
+  <script>
+    (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
+      a=d.createElement(s);a.async=1;a.src=r;a.type='text/java'+s;f=d.getElementsByTagName(s)[0];
+      f.parentNode.insertBefore(a,f)})(window,document,'script','https://invitejs.trustpilot.com/tp.min.js','tp');
+    tp('register', '6lI8uce9cyJBz6c8');
+  </script>
 </body>
 </html>

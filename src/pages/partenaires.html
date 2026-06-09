@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+  <meta name="description" content="Programme Partenaires ZeldTrade — Clés Lifetime & Affiliation pour coachs et créateurs trading prop firm. Jusqu'à 100 clés Elite à vie, commission 25% sur les abonnements.">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ZeldTrade · Programme Partenaires</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=1.0.3">
+  <link rel="stylesheet" href="/css/landing.css?v=1.0.3">
+  <script src="/js/landing-theme.js?v=1.0.3"></script>
+  <style>
+    /* ── Partner-specific styles ──────────────────────────── */
+    .partner-hero {
+      padding: 160px 0 100px;
+      text-align: center;
+      position: relative;
+    }
+    .partner-hero .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--green);
+      letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 28px;
+    }
+    .partner-hero h1 {
+      font-family: var(--font-display); font-size: clamp(36px, 5vw, 68px);
+      font-weight: 700; line-height: 1.1; margin-bottom: 24px; color: var(--fg);
+    }
+    .partner-hero h1 .accent { color: var(--green); }
+    .partner-hero .lead {
+      font-size: 18px; color: var(--fg-dim); max-width: 600px;
+      margin: 0 auto 40px; line-height: 1.7;
+    }
+    .partner-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(0,255,136,0.06); border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 100px; padding: 6px 16px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--green);
+      margin-bottom: 20px;
+    }
+    /* ── Offres cards ────────────────────────────────────── */
+    .partner-offers {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+      margin-top: 60px;
+    }
+    @media (max-width: 900px) { .partner-offers { grid-template-columns: 1fr; } }
+    .offer-card {
+      background: var(--bg-1); border: 1px solid var(--line-2);
+      border-radius: 20px; padding: 40px 36px;
+      display: flex; flex-direction: column; gap: 20px;
+      transition: border-color 0.22s, transform 0.22s;
+      position: relative; overflow: hidden;
+    }
+    .offer-card:hover { border-color: var(--line-strong); transform: translateY(-3px); }
+    .offer-card.featured {
+      border-color: var(--green);
+      box-shadow: 0 0 0 1px var(--green), 0 40px 80px -30px rgba(0,0,0,0.3);
+    }
+    .offer-card.featured::before {
+      content: "RECOMMANDÉE";
+      position: absolute; top: 20px; right: 20px;
+      background: var(--green); color: #000;
+      font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+      letter-spacing: 0.12em; padding: 4px 10px; border-radius: 4px;
+    }
+    .offer-tag {
+      font-family: var(--font-mono); font-size: 10px; color: var(--green);
+      letter-spacing: 0.14em; text-transform: uppercase;
+    }
+    .offer-title { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--fg); }
+    .offer-desc { font-size: 15px; color: var(--fg-dim); line-height: 1.6; }
+    .offer-highlight {
+      background: rgba(0,255,136,0.04); border: 1px solid rgba(0,255,136,0.15);
+      border-radius: 10px; padding: 16px 18px;
+      font-family: var(--font-mono); font-size: 13px; color: var(--fg);
+    }
+    .offer-highlight b { color: var(--green); }
+    .offer-features { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .offer-features li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: var(--fg-dim); line-height: 1.5; }
+    .offer-features li .ck { color: var(--green); font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .offer-cta {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 28px; border-radius: 10px; font-size: 15px; font-weight: 600;
+      text-decoration: none; transition: all 0.2s; cursor: pointer;
+      border: 1px solid var(--line-strong); color: var(--fg); background: transparent;
+      margin-top: auto;
+    }
+    .offer-card.featured .offer-cta {
+      background: var(--green); color: #000; border-color: var(--green);
+    }
+    .offer-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+    /* ── Pricing table ───────────────────────────────────── */
+    .pricing-tiers {
+      width: 100%; border-collapse: collapse; margin-top: 28px;
+      font-family: var(--font-mono); font-size: 13px;
+    }
+    .pricing-tiers th {
+      text-align: left; padding: 10px 16px;
+      color: var(--fg-mute); font-weight: 500; font-size: 11px;
+      letter-spacing: 0.08em; border-bottom: 1px solid var(--line);
+    }
+    .pricing-tiers td {
+      padding: 12px 16px; border-bottom: 1px solid var(--line);
+      color: var(--fg-dim);
+    }
+    .pricing-tiers tr:hover td { background: var(--bg-2); }
+    .pricing-tiers td:first-child { color: var(--fg); font-weight: 600; }
+    .pricing-tiers td:last-child { color: var(--green); font-weight: 700; text-align: right; }
+    .pricing-tiers .badge-discount {
+      display: inline-block; background: rgba(0,255,136,0.1);
+      color: var(--green); font-size: 10px; padding: 2px 7px;
+      border-radius: 4px; margin-left: 6px;
+    }
+    /* ── Process steps ───────────────────────────────────── */
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 24px; margin-top: 48px;
+    }
+    .step-card {
+      background: var(--bg-1); border: 1px solid var(--line);
+      border-radius: 14px; padding: 28px 24px;
+    }
+    .step-num {
+      font-family: var(--font-mono); font-size: 11px; color: var(--green);
+      letter-spacing: 0.1em; margin-bottom: 12px;
+    }
+    .step-title { font-size: 15px; font-weight: 600; color: var(--fg); margin-bottom: 8px; }
+    .step-desc { font-size: 13px; color: var(--fg-dim); line-height: 1.6; }
+    /* ── Commission table ────────────────────────────────── */
+    .commission-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 28px;
+    }
+    @media (max-width: 600px) { .commission-grid { grid-template-columns: 1fr; } }
+    .commission-card {
+      background: var(--bg-1); border: 1px solid var(--line); border-radius: 12px;
+      padding: 20px 22px;
+    }
+    .commission-plan { font-family: var(--font-mono); font-size: 11px; color: var(--fg-mute); margin-bottom: 8px; }
+    .commission-amount { font-size: 28px; font-weight: 700; color: var(--green); font-family: var(--font-display); }
+    .commission-sub { font-size: 12px; color: var(--fg-mute); margin-top: 4px; }
+    /* ── Avantages ───────────────────────────────────────── */
+    .avantages-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px; margin-top: 48px;
+    }
+    .avantage-card {
+      background: var(--bg-1); border: 1px solid var(--line); border-radius: 14px;
+      padding: 24px 22px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .avantage-icon { font-size: 22px; }
+    .avantage-title { font-size: 15px; font-weight: 600; color: var(--fg); }
+    .avantage-desc { font-size: 13px; color: var(--fg-dim); line-height: 1.6; }
+    /* ── CTA final ───────────────────────────────────────── */
+    .partner-cta-block {
+      background: linear-gradient(135deg, rgba(0,255,136,0.04), transparent 60%),
+                  var(--bg-1);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 24px; padding: 64px 48px; text-align: center;
+      margin-top: 0;
+    }
+    @media (max-width: 600px) { .partner-cta-block { padding: 40px 24px; } }
+    .partner-cta-block h2 { font-family: var(--font-display); font-size: clamp(26px, 3vw, 42px); font-weight: 700; color: var(--fg); margin-bottom: 16px; }
+    .partner-cta-block p { color: var(--fg-dim); font-size: 16px; max-width: 520px; margin: 0 auto 36px; line-height: 1.7; }
+    .cta-pair { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    /* ── FAQ ─────────────────────────────────────────────── */
+    .pfaq-list { display: flex; flex-direction: column; gap: 0; margin-top: 40px; }
+    .pfaq-item { border-bottom: 1px solid var(--line); }
+    .pfaq-q {
+      width: 100%; background: none; border: none; cursor: pointer;
+      padding: 20px 0; display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--font-body); font-size: 15px; font-weight: 600; color: var(--fg);
+      text-align: left; gap: 16px;
+    }
+    .pfaq-q .ico { color: var(--green); font-size: 20px; flex-shrink: 0; transition: transform 0.2s; }
+    .pfaq-item.open .pfaq-q .ico { transform: rotate(45deg); }
+    .pfaq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+    .pfaq-item.open .pfaq-a { max-height: 300px; }
+    .pfaq-a-inner { padding: 0 0 20px; font-size: 14px; color: var(--fg-dim); line-height: 1.7; }
+    /* ── Contact form ────────────────────────────────────── */
+    .partner-form {
+      background: var(--bg-1); border: 1px solid var(--line-2);
+      border-radius: 16px; padding: 40px 36px;
+      display: flex; flex-direction: column; gap: 20px; max-width: 560px; margin: 40px auto 0;
+    }
+    .partner-form label { font-size: 13px; color: var(--fg-dim); font-weight: 500; display: block; margin-bottom: 6px; }
+    .partner-form input, .partner-form textarea, .partner-form select {
+      width: 100%; background: var(--bg-2); border: 1px solid var(--line);
+      border-radius: 8px; padding: 12px 14px; color: var(--fg); font-size: 14px;
+      font-family: var(--font-body); transition: border-color 0.2s; box-sizing: border-box;
+    }
+    .partner-form input:focus, .partner-form textarea:focus, .partner-form select:focus {
+      outline: none; border-color: var(--green);
+    }
+    .partner-form textarea { resize: vertical; min-height: 120px; }
+  </style>
+</head>
+<body>
+
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+
+  <!-- Nav -->
+  <nav class="main">
+    <a href="/" class="brand"><span class="brand-mark">Z</span> ZeldTrade</a>
+    <div class="nav-links" id="navLinks">
+      <a class="nav-link" href="/#pricing">Tarifs</a>
+      <a class="nav-link" href="/updates">Nouveautés</a>
+      <a class="btn btn-ghost btn-sm" href="/app">Connexion</a>
+      <a class="btn btn-ghost btn-sm" href="/partner" style="border-color:var(--green);color:var(--green)">Espace partenaire →</a>
+      <a class="btn btn-primary btn-sm" href="/app?signup=1">Lancer l'app →</a>
+    </div>
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks"><span></span><span></span><span></span></button>
+  </nav>
+
+  <main id="main-content">
+
+  <!-- ─── Hero ──────────────────────────────────────────── -->
+  <section class="container partner-hero">
+    <div class="reveal">
+      <div class="partner-badge"><span class="pulse"></span> PROGRAMME PARTENAIRES · PLACES LIMITÉES</div>
+      <h1>Tu formes des traders.<br><span class="accent">On les équipe.</span></h1>
+      <p class="lead">Intègre ZeldTrade dans ton programme d'accompagnement. Deux offres : des clés d'accès Elite à vie en pack, ou une commission récurrente sur chaque abonné que tu génères.</p>
+      <div class="cta-row">
+        <a href="#offres" class="btn btn-primary">Voir les offres <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 5v14M5 12l7 7 7-7"/></svg></a>
+        <a href="#contact-partenaire" class="btn btn-ghost">Prendre contact</a>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="reveal" data-delay="150" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:72px;max-width:720px;margin-left:auto;margin-right:auto">
+      <div style="background:var(--bg-1);padding:28px 24px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--fg)">40 €</div>
+        <div style="font-size:12px;color:var(--fg-mute);margin-top:4px">par clé · prix unitaire</div>
+      </div>
+      <div style="background:var(--bg-1);padding:28px 24px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--green)">25 %</div>
+        <div style="font-size:12px;color:var(--fg-mute);margin-top:4px">commission affiliation</div>
+      </div>
+      <div style="background:var(--bg-1);padding:28px 24px;text-align:center">
+        <div style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--fg)">∞</div>
+        <div style="font-size:12px;color:var(--fg-mute);margin-top:4px">accès à vie · 0 abonnement</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Les 2 offres ──────────────────────────────────── -->
+  <section class="block container" id="offres">
+    <div class="reveal">
+      <div class="section-eyebrow">// DEUX OFFRES PARTENAIRES</div>
+      <h2 class="section-title">Choisis ton modèle. <span class="accent">Les deux sont cumulables.</span></h2>
+      <p class="section-sub">Cashflow immédiat avec les clés lifetime, ou revenus récurrents avec l'affiliation. Rien n'empêche de combiner les deux.</p>
+    </div>
+
+    <div class="reveal partner-offers" data-delay="100">
+
+      <!-- OFFRE A -->
+      <div class="offer-card featured">
+        <div class="offer-tag">// OFFRE A</div>
+        <div class="offer-title">Pack Clés Lifetime</div>
+        <div class="offer-desc">Tu achètes un lot de clés d'accès Elite à vie. Chaque clé déverrouille l'app à vie pour un élève — zéro abonnement, zéro date d'expiration. Tu les inclus dans ton programme ou tu les offres à tes meilleurs élèves.</div>
+        <div class="offer-highlight">
+          À partir de <b>40 € / clé</b> · dégressif jusqu'à <b>32,58 €</b> pour 100 clés<br>
+          Accès <b>Elite complet</b> (100 comptes, IA illimitée, tout débloqué)
+        </div>
+        <table class="pricing-tiers">
+          <thead>
+            <tr>
+              <th>Pack</th><th>Clés</th><th>Prix/clé</th><th style="text-align:right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Starter</td><td>5</td><td>40,00 €</td><td>200 €</td></tr>
+            <tr><td>Pro</td><td>10</td><td>38,00 € <span class="badge-discount">−5%</span></td><td>380 €</td></tr>
+            <tr><td>Coach</td><td>25</td><td>36,10 € <span class="badge-discount">−10%</span></td><td>902 €</td></tr>
+            <tr><td>Expert</td><td>50</td><td>34,30 € <span class="badge-discount">−14%</span></td><td>1 715 €</td></tr>
+            <tr><td>Académie</td><td>100</td><td>32,58 € <span class="badge-discount">−18%</span></td><td>3 258 €</td></tr>
+          </tbody>
+        </table>
+        <ul class="offer-features">
+          <li><span class="ck">✓</span> Paiement unique — 0 gestion mensuelle</li>
+          <li><span class="ck">✓</span> Marge libre : revends ou offre les clés à ton prix</li>
+          <li><span class="ck">✓</span> Livraison sous 48h par email</li>
+          <li><span class="ck">✓</span> Dashboard de suivi : vois combien de clés sont activées</li>
+          <li><span class="ck">✓</span> 1 accès Elite offert pour toi dès le Pack Pro</li>
+        </ul>
+        <a href="#contact-partenaire" class="offer-cta">Demander un pack →</a>
+      </div>
+
+      <!-- OFFRE B -->
+      <div class="offer-card">
+        <div class="offer-tag">// OFFRE B</div>
+        <div class="offer-title">Affiliation Récurrente</div>
+        <div class="offer-desc">Tu reçois un code promo exclusif qui donne −40 % à tes élèves. Pour chaque abonné actif via ton code, tu touches 25 % du net encaissé chaque mois — automatiquement.</div>
+        <div class="offer-highlight">
+          <b>25 %</b> de commission sur chaque abonnement actif<br>
+          Code promo exclusif · tracking en temps réel
+        </div>
+        <div style="font-size:12px;color:var(--fg-mute);font-family:var(--font-mono);margin-top:4px">COMMISSIONS ESTIMÉES / ABONNÉ ACTIF</div>
+        <div class="commission-grid">
+          <div class="commission-card">
+            <div class="commission-plan">FUNDED lancement</div>
+            <div class="commission-amount">~2,12 €</div>
+            <div class="commission-sub">/ mois / abonné</div>
+          </div>
+          <div class="commission-card">
+            <div class="commission-plan">FUNDED normal</div>
+            <div class="commission-amount">~3,63 €</div>
+            <div class="commission-sub">/ mois / abonné</div>
+          </div>
+          <div class="commission-card">
+            <div class="commission-plan">ELITE lancement</div>
+            <div class="commission-amount">~4,31 €</div>
+            <div class="commission-sub">/ mois / abonné</div>
+          </div>
+          <div class="commission-card">
+            <div class="commission-plan">ELITE normal</div>
+            <div class="commission-amount">~7,26 €</div>
+            <div class="commission-sub">/ mois / abonné</div>
+          </div>
+        </div>
+        <ul class="offer-features">
+          <li><span class="ck">✓</span> Revenus passifs récurrents chaque mois</li>
+          <li><span class="ck">✓</span> Virement le 5 du mois (minimum 20 €)</li>
+          <li><span class="ck">✓</span> Ton code = deal exclusif pour ta communauté</li>
+          <li><span class="ck">✓</span> Dashboard : abonnés actifs + commissions accumulées</li>
+          <li><span class="ck">✓</span> Accès Elite offert pendant toute la durée</li>
+        </ul>
+        <a href="#contact-partenaire" class="offer-cta">Devenir affilié →</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── Avantages ─────────────────────────────────────── -->
+  <section class="block container" id="avantages">
+    <div class="reveal">
+      <div class="section-eyebrow">// INCLUS POUR TOUS LES PARTENAIRES</div>
+      <h2 class="section-title">Ce que tu obtiens, <span class="accent">en plus.</span></h2>
+    </div>
+    <div class="reveal avantages-grid" data-delay="80">
+      <div class="avantage-card">
+        <div class="avantage-icon">🎯</div>
+        <div class="avantage-title">Accès Elite personnel offert</div>
+        <div class="avantage-desc">Utilise ZeldTrade toi-même avant de le recommander. Accès Elite complet, sans frais, pendant toute la durée du partenariat.</div>
+      </div>
+      <div class="avantage-card">
+        <div class="avantage-icon">📊</div>
+        <div class="avantage-title">Dashboard partenaire</div>
+        <div class="avantage-desc">Vois en temps réel le nombre de clés activées, les abonnés actifs et les commissions accumulées. Données claires, aucune boîte noire.</div>
+      </div>
+      <div class="avantage-card">
+        <div class="avantage-icon">🔒</div>
+        <div class="avantage-title">Contrat signé</div>
+        <div class="avantage-desc">Un contrat en bonne et due forme pour chaque offre. Tes droits, les commissions et les délais sont garantis par écrit.</div>
+      </div>
+      <div class="avantage-card">
+        <div class="avantage-icon">⚡</div>
+        <div class="avantage-title">Support dédié</div>
+        <div class="avantage-desc">Canal Discord privé ou email direct. Réponse sous 24h ouvrées pour toute question technique ou commerciale.</div>
+      </div>
+      <div class="avantage-card">
+        <div class="avantage-icon">🏷️</div>
+        <div class="avantage-title">Places limitées</div>
+        <div class="avantage-desc">Le programme partenaires est volontairement restreint. Une fois le quota atteint, les candidatures sont fermées — garantissant l'exclusivité de chaque partenaire.</div>
+      </div>
+      <div class="avantage-card">
+        <div class="avantage-icon">🇫🇷</div>
+        <div class="avantage-title">100 % francophone</div>
+        <div class="avantage-desc">ZeldTrade est fait pour les traders francophones. L'app, le support, les règles prop firms — tout est pensé pour ta communauté FR/BE/CH.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Comment ça marche ─────────────────────────────── -->
+  <section class="block container" id="process">
+    <div class="reveal">
+      <div class="section-eyebrow">// PROCESS</div>
+      <h2 class="section-title">De la signature à la <span class="accent">première clé activée.</span></h2>
+      <p class="section-sub">En moins de 72 heures, ton partenariat est opérationnel.</p>
+    </div>
+    <div class="reveal steps-grid" data-delay="80">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-title">Prise de contact</div>
+        <div class="step-desc">Tu remplis le formulaire ci-dessous. On te répond sous 24h pour discuter de l'offre la plus adaptée à ton programme.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-title">Signature du contrat</div>
+        <div class="step-desc">On t'envoie le contrat correspondant. Tu le lis, tu le signes, tu le retournes par email. Simple.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-title">Paiement & livraison</div>
+        <div class="step-desc">Pour l'Offre A : un lien Stripe sécurisé. Paiement validé → tes clés arrivent sous 48h. Pour l'Offre B : ton code est activé immédiatement.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-title">Tu distribues, on suit</div>
+        <div class="step-desc">Tes élèves activent leurs accès en un clic. Tu vois tout en temps réel dans ton dashboard partenaire.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FAQ ───────────────────────────────────────────── -->
+  <section class="block container" id="faq-partner">
+    <div class="reveal">
+      <div class="section-eyebrow">// FAQ</div>
+      <h2 class="section-title">Questions fréquentes.</h2>
+    </div>
+    <div class="reveal" data-delay="80">
+      <div class="pfaq-list" id="pfaqList">
+        <div class="pfaq-item open">
+          <button class="pfaq-q" aria-expanded="true" aria-controls="pfaq-a1">
+            Comment fonctionne l'activation d'une clé ?
+            <span class="ico">+</span>
+          </button>
+          <div class="pfaq-a" id="pfaq-a1">
+            <div class="pfaq-a-inner">Ton élève reçoit un lien unique : <code style="font-family:var(--font-mono);font-size:12px;background:var(--bg-2);padding:2px 6px;border-radius:4px">zeldtrade.com/app?activatePro=CODE</code>. Il clique, se connecte ou crée un compte gratuitement, et son accès Elite s'active instantanément. Zéro friction, zéro formulaire à remplir.</div>
+          </div>
+        </div>
+        <div class="pfaq-item">
+          <button class="pfaq-q" aria-expanded="false" aria-controls="pfaq-a2">
+            L'accès est-il vraiment permanent ?
+            <span class="ico">+</span>
+          </button>
+          <div class="pfaq-a" id="pfaq-a2">
+            <div class="pfaq-a-inner">Oui. Les clés lifetime donnent un accès Elite sans aucune date d'expiration, sans abonnement mensuel. ZeldTrade s'engage contractuellement à maintenir ces accès actifs pour la durée de vie de la plateforme.</div>
+          </div>
+        </div>
+        <div class="pfaq-item">
+          <button class="pfaq-q" aria-expanded="false" aria-controls="pfaq-a3">
+            Puis-je mixer Offre A et Offre B ?
+            <span class="ico">+</span>
+          </button>
+          <div class="pfaq-a" id="pfaq-a3">
+            <div class="pfaq-a-inner">Oui. Tu peux utiliser les clés lifetime pour tes programmes premium (accès inclus dans un pack à 997 €, par exemple) et proposer ton code promo −40 % à ta communauté large pour les abonnements récurrents. Les deux offrent des avantages différents et sont gérées indépendamment.</div>
+          </div>
+        </div>
+        <div class="pfaq-item">
+          <button class="pfaq-q" aria-expanded="false" aria-controls="pfaq-a4">
+            Que se passe-t-il si un élève perd accès à son compte ?
+            <span class="ico">+</span>
+          </button>
+          <div class="pfaq-a" id="pfaq-a4">
+            <div class="pfaq-a-inner">L'accès Elite est lié à l'adresse email de l'élève. En cas de mot de passe oublié, la procédure de récupération standard s'applique. L'accès Elite n'est jamais perdu. En cas de problème exceptionnel, le support ZeldTrade traite la demande sous 24h ouvrées.</div>
+          </div>
+        </div>
+        <div class="pfaq-item">
+          <button class="pfaq-q" aria-expanded="false" aria-controls="pfaq-a5">
+            Combien de places partenaires sont disponibles ?
+            <span class="ico">+</span>
+          </button>
+          <div class="pfaq-a" id="pfaq-a5">
+            <div class="pfaq-a-inner">Le programme est volontairement limité pour garantir la qualité des partenariats et l'exclusivité de chaque code promo. Le quota est communiqué lors de la prise de contact. Une fois atteint, les candidatures sont temporairement fermées.</div>
+          </div>
+        </div>
+        <div class="pfaq-item">
+          <button class="pfaq-q" aria-expanded="false" aria-controls="pfaq-a6">
+            Comment sont calculées et versées les commissions (Offre B) ?
+            <span class="ico">+</span>
+          </button>
+          <div class="pfaq-a" id="pfaq-a6">
+            <div class="pfaq-a-inner">25 % du net Stripe encaissé pour chaque abonnement actif issu de ton code, calculé le 1er de chaque mois et versé par virement SEPA le 5 du mois suivant. Minimum 20 € par virement (les montants inférieurs sont cumulés). Tu reçois un récapitulatif détaillé chaque mois.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── Formulaire contact partenaire ─────────────────── -->
+  <section class="block container" id="contact-partenaire">
+    <div class="reveal">
+      <div class="section-eyebrow">// CANDIDATURE</div>
+      <h2 class="section-title">Tu es intéressé ? <span class="accent">Écris-nous.</span></h2>
+      <p class="section-sub">On répond sous 24h. Aucun engagement à cette étape.</p>
+    </div>
+    <div class="reveal" data-delay="80">
+      <form class="partner-form" id="partnerForm" autocomplete="off">
+        <!-- Honeypot anti-bot -->
+        <input type="text" name="website" tabindex="-1" style="position:absolute;left:-9999px;opacity:0" aria-hidden="true">
+        <div>
+          <label for="pfName">Ton nom / pseudo</label>
+          <input type="text" id="pfName" maxlength="100" placeholder="Ex : TradingAvecKruz" required>
+        </div>
+        <div>
+          <label for="pfEmail">Email de contact</label>
+          <input type="email" id="pfEmail" maxlength="200" placeholder="ton@email.com" required>
+        </div>
+        <div>
+          <label for="pfChannel">Tes canaux principaux</label>
+          <input type="text" id="pfChannel" maxlength="200" placeholder="Ex : YouTube 8K · Discord 2K · Instagram 5K">
+        </div>
+        <div>
+          <label for="pfOffer">Offre qui t'intéresse</label>
+          <select id="pfOffer">
+            <option value="A">Offre A — Pack Clés Lifetime</option>
+            <option value="B">Offre B — Affiliation Récurrente</option>
+            <option value="AB">Les deux</option>
+            <option value="unknown">Je ne sais pas encore</option>
+          </select>
+        </div>
+        <div>
+          <label for="pfMessage">Dis-nous en 2 lignes ce que tu proposes à tes élèves</label>
+          <textarea id="pfMessage" maxlength="2000" placeholder="Formation trading prop firm, accompagnement Apex/FTMO, communauté Discord..."></textarea>
+        </div>
+        <div id="pfError" role="alert" style="color:var(--red);font-size:13px;display:none"></div>
+        <button type="submit" class="btn btn-primary" id="pfSend" aria-busy="false">Envoyer ma candidature →</button>
+      </form>
+      <div id="pfSuccess" style="display:none;text-align:center;padding:32px;color:var(--green);font-size:15px">
+        ✓ Candidature reçue. On te répond sous 24h ouvrées.
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="main">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="/" class="brand"><span class="brand-mark">Z</span> ZeldTrade</a>
+          <p>Journal de trading IA pour prop firm, crypto et fonds propres. Indépendant, hébergé en Europe, RGPD-natif.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Produit</h5>
+          <ul>
+            <li><a href="/#firms">Prop firms</a></li>
+            <li><a href="/#pricing">Tarifs</a></li>
+            <li><a href="/updates">Nouveautés</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Partenaires</h5>
+          <ul>
+            <li><a href="#offres">Clés Lifetime</a></li>
+            <li><a href="#offres">Affiliation</a></li>
+            <li><a href="#contact-partenaire">Candidater</a></li>
+            <li><a href="/partner">Dashboard partenaire</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h5>Légal</h5>
+          <ul>
+            <li><a href="/legal">Mentions légales</a></li>
+            <li><a href="/privacy">Confidentialité</a></li>
+            <li><a href="/cgu">CGU</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>© 2026 ZELDTRADE · INDÉPENDANT · HÉBERGÉ EN EUROPE</div>
+        <div>v1.0.3 · MADE IN FRANCE <span aria-hidden="true">🇫🇷</span></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Firebase (form contact partenaire) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
+  <script src="/js/landing-app.js?v=1.0.3&h=2" defer></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // ── FAQ accordion ────────────────────────────────────
+    const pfaqList = document.getElementById('pfaqList');
+    if (pfaqList) {
+      pfaqList.addEventListener('click', e => {
+        const q = e.target.closest('.pfaq-q'); if (!q) return;
+        const item = q.closest('.pfaq-item');
+        const open = item.classList.contains('open');
+        pfaqList.querySelectorAll('.pfaq-item').forEach(it => {
+          it.classList.remove('open');
+          it.querySelector('.pfaq-q').setAttribute('aria-expanded', 'false');
+        });
+        if (!open) { item.classList.add('open'); q.setAttribute('aria-expanded', 'true'); }
+      });
+    }
+
+    // ── Partner contact form ──────────────────────────────
+    const form = document.getElementById('partnerForm');
+    const btn  = document.getElementById('pfSend');
+    const err  = document.getElementById('pfError');
+    const ok   = document.getElementById('pfSuccess');
+    if (form && typeof firebase !== 'undefined') {
+      firebase.initializeApp({
+        apiKey: "AIzaSyBqfNP2yl4hCOJFlwJuLdpFlJIQhJCwPlA",
+        authDomain: "zeldtrade.firebaseapp.com",
+        projectId: "zeldtrade",
+        storageBucket: "zeldtrade.appspot.com",
+        messagingSenderId: "374927461780",
+        appId: "1:374927461780:web:c4c3ac60e30fd28bb2e7e4"
+      });
+      const fns = firebase.app().functions('europe-west1');
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        err.style.display = 'none';
+        btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.textContent = 'Envoi en cours…';
+        const name    = document.getElementById('pfName').value.trim();
+        const email   = document.getElementById('pfEmail').value.trim();
+        const channel = document.getElementById('pfChannel').value.trim();
+        const offer   = document.getElementById('pfOffer').value;
+        const message = document.getElementById('pfMessage').value.trim();
+        if (!name || !email) {
+          err.textContent = 'Merci de renseigner ton nom et ton email.';
+          err.style.display = 'block'; btn.disabled = false; btn.setAttribute('aria-busy', 'false'); btn.textContent = 'Envoyer ma candidature →'; return;
+        }
+        try {
+          const send = fns.httpsCallable('sendContactMessage');
+          await send({ name, message: `[PARTENAIRE · Offre ${offer}]\nCanaux: ${channel}\n\n${message}`, email });
+          form.style.display = 'none'; ok.style.display = 'block';
+        } catch(ex) {
+          err.textContent = 'Erreur lors de l\'envoi. Contacte-nous sur Discord.';
+          err.style.display = 'block'; btn.disabled = false; btn.setAttribute('aria-busy', 'false'); btn.textContent = 'Envoyer ma candidature →';
+        }
+      });
+    }
+  });
+  </script>
+</body>
+</html>

@@ -1642,7 +1642,7 @@
     // first render (plan pas encore chargé depuis Firestore), le bouton reste
     // masqué pour toujours.
     const _rowPdf = document.getElementById('rowExportPdf');
-    if (_rowPdf) _rowPdf.style.display = (Store.isPro && Store.isPro()) ? '' : 'none';
+    if (_rowPdf) _rowPdf.style.display = ''; // v1.0.4 : toujours visible — gate via toast dans btnExportPdf.click
 
     // v0.9.142 : refresh statut email vérifié à chaque render Settings.
     _refreshEmailVerifyStatus();

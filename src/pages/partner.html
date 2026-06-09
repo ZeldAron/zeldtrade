@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5">
+  <meta name="robots" content="noindex, nofollow">
+  <title>ZeldTrade · Dashboard Partenaire</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=1.0.3">
+  <link rel="stylesheet" href="/css/landing.css?v=1.0.3">
+  <script src="/js/landing-theme.js?v=1.0.3"></script>
+  <style>
+    :root { --sidebar-w: 240px; }
+    body { display: flex; min-height: 100vh; }
+
+    /* ── Sidebar ─────────────────────────────────────────── */
+    .p-sidebar {
+      width: var(--sidebar-w); flex-shrink: 0;
+      background: var(--bg-1); border-right: 1px solid var(--line);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 20;
+      overflow-y: auto;
+    }
+    .p-sidebar-brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 24px 20px 16px; border-bottom: 1px solid var(--line);
+    }
+    .p-sidebar-brand .mark {
+      width: 30px; height: 30px; background: var(--green);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 16px; color: #000;
+    }
+    .p-sidebar-brand .text {
+      display: flex; flex-direction: column;
+    }
+    .p-sidebar-brand .text strong { font-size: 14px; color: var(--fg); }
+    .p-sidebar-brand .text small { font-size: 11px; color: var(--fg-mute); font-family: var(--font-mono); }
+    .p-nav { padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .p-nav-link {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; color: var(--fg-dim);
+      text-decoration: none; transition: all 0.15s; cursor: pointer;
+      background: none; border: none; width: 100%; text-align: left;
+    }
+    .p-nav-link:hover, .p-nav-link.active {
+      background: rgba(0,255,136,0.06); color: var(--fg);
+    }
+    .p-nav-link.active { color: var(--green); }
+    .p-nav-link .icon { width: 18px; height: 18px; opacity: 0.7; flex-shrink: 0; }
+    .p-nav-link.active .icon { opacity: 1; }
+    .p-nav-sep { height: 1px; background: var(--line); margin: 8px 0; }
+    .p-sidebar-footer {
+      padding: 16px 20px; border-top: 1px solid var(--line);
+      font-size: 12px; color: var(--fg-mute);
+    }
+    .p-sidebar-footer a { color: var(--green); text-decoration: none; font-size: 12px; }
+
+    /* ── Main area ───────────────────────────────────────── */
+    .p-main {
+      margin-left: var(--sidebar-w); flex: 1;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    .p-topbar {
+      height: 64px; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; background: var(--bg); position: sticky; top: 0; z-index: 10;
+    }
+    .p-topbar-title { font-size: 16px; font-weight: 600; color: var(--fg); }
+    .p-topbar-user {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 13px; color: var(--fg-dim);
+    }
+    .p-topbar-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--green); display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 13px; color: #000;
+    }
+    .p-content { padding: 32px; flex: 1; }
+
+    /* ── Auth gate ───────────────────────────────────────── */
+    #authGate {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; padding: 24px;
+    }
+    #authGate h2 { font-family: var(--font-display); font-size: 28px; font-weight: 700; margin-bottom: 12px; color: var(--fg); }
+    #authGate p { color: var(--fg-dim); margin-bottom: 28px; }
+    #authForm { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
+    #authForm input {
+      background: var(--bg-1); border: 1px solid var(--line); border-radius: 8px;
+      padding: 12px 14px; color: var(--fg); font-size: 14px; font-family: var(--font-body);
+    }
+    #authForm input:focus { outline: none; border-color: var(--green); }
+    #authErr { color: var(--red); font-size: 13px; display: none; }
+
+    /* ── KPI cards ───────────────────────────────────────── */
+    .kpi-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 32px;
+    }
+    .kpi-card {
+      background: var(--bg-1); border: 1px solid var(--line);
+      border-radius: 14px; padding: 22px 24px;
+    }
+    .kpi-label { font-family: var(--font-mono); font-size: 10px; color: var(--fg-mute); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 10px; }
+    .kpi-value { font-family: var(--font-display); font-size: 32px; font-weight: 700; color: var(--fg); }
+    .kpi-value.green { color: var(--green); }
+    .kpi-sub { font-size: 12px; color: var(--fg-mute); margin-top: 4px; }
+
+    /* ── Section card ────────────────────────────────────── */
+    .p-card {
+      background: var(--bg-1); border: 1px solid var(--line);
+      border-radius: 14px; margin-bottom: 24px;
+    }
+    .p-card-header {
+      padding: 18px 24px; border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .p-card-title { font-size: 14px; font-weight: 600; color: var(--fg); }
+    .p-card-body { padding: 24px; }
+
+    /* ── Table ───────────────────────────────────────────── */
+    .p-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .p-table th {
+      text-align: left; padding: 8px 12px;
+      color: var(--fg-mute); font-weight: 500; font-size: 11px;
+      letter-spacing: 0.08em; border-bottom: 1px solid var(--line);
+    }
+    .p-table td { padding: 12px 12px; border-bottom: 1px solid var(--line); color: var(--fg-dim); }
+    .p-table tr:last-child td { border-bottom: none; }
+    .p-table tr:hover td { background: var(--bg-2); }
+    .p-table td:first-child { font-family: var(--font-mono); font-size: 12px; color: var(--fg); }
+    .badge-ok { display: inline-flex; align-items: center; gap: 4px; background: rgba(0,255,136,0.08); color: var(--green); border: 1px solid rgba(0,255,136,0.2); border-radius: 100px; padding: 2px 10px; font-size: 11px; font-family: var(--font-mono); }
+    .badge-no { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,100,100,0.08); color: var(--red); border: 1px solid rgba(255,100,100,0.2); border-radius: 100px; padding: 2px 10px; font-size: 11px; font-family: var(--font-mono); }
+    .badge-pend { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,200,0,0.08); color: #ffcc00; border: 1px solid rgba(255,200,0,0.2); border-radius: 100px; padding: 2px 10px; font-size: 11px; font-family: var(--font-mono); }
+
+    /* ── Empty state ─────────────────────────────────────── */
+    .empty-state { text-align: center; padding: 48px 24px; color: var(--fg-mute); }
+    .empty-state .ico { font-size: 36px; margin-bottom: 16px; }
+    .empty-state p { font-size: 14px; line-height: 1.6; }
+
+    /* ── Responsive ──────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .p-sidebar { transform: translateX(-100%); transition: transform 0.25s; }
+      .p-sidebar.open { transform: translateX(0); }
+      .p-main { margin-left: 0; }
+      .p-content { padding: 16px; }
+      .p-topbar { padding: 0 16px; }
+      .mob-menu-btn { display: flex !important; }
+    }
+    .mob-menu-btn {
+      display: none; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border: 1px solid var(--line);
+      border-radius: 8px; background: none; cursor: pointer; color: var(--fg);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-mesh"></div>
+
+  <!-- ─── Auth gate ─────────────────────────────────────── -->
+  <div id="authGate">
+    <div style="font-family:var(--font-display);font-size:24px;font-weight:700;margin-bottom:8px">
+      <span style="color:var(--green)">Z</span> ZeldTrade
+    </div>
+    <h2>Dashboard Partenaire</h2>
+    <p>Connecte-toi avec ton compte ZeldTrade partenaire.</p>
+    <form id="authForm" autocomplete="on">
+      <input type="email" id="authEmail" placeholder="Email" required autocomplete="email">
+      <input type="password" id="authPass" placeholder="Mot de passe" required autocomplete="current-password">
+      <div id="authErr"></div>
+      <button type="submit" class="btn btn-primary" id="authBtn">Se connecter →</button>
+    </form>
+    <div style="margin-top:16px;font-size:12px;color:var(--fg-mute)">
+      Pas encore partenaire ? <a href="/partenaires" style="color:var(--green)">Voir le programme →</a>
+    </div>
+  </div>
+
+  <!-- ─── Dashboard (hidden until auth) ───────────────────── -->
+  <div id="dashboard" style="display:none;width:100%">
+
+    <!-- Sidebar -->
+    <aside class="p-sidebar" id="pSidebar">
+      <div class="p-sidebar-brand">
+        <div class="mark">Z</div>
+        <div class="text">
+          <strong>ZeldTrade</strong>
+          <small>PARTENAIRE</small>
+        </div>
+      </div>
+      <nav class="p-nav" aria-label="Navigation partenaire">
+        <button class="p-nav-link active" data-page="overview" aria-current="page">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Vue d'ensemble
+        </button>
+        <button class="p-nav-link" data-page="keys">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          Mes clés (Offre A)
+        </button>
+        <button class="p-nav-link" data-page="affiliation">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Abonnés & commissions
+        </button>
+        <button class="p-nav-link" data-page="payouts">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          Virements
+        </button>
+        <div class="p-nav-sep"></div>
+        <a class="p-nav-link" href="/partenaires">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+          Programme partenaires
+        </a>
+        <a class="p-nav-link" href="/app">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          Mon journal
+        </a>
+      </nav>
+      <div class="p-sidebar-footer">
+        <div id="sbUserName" style="font-weight:600;color:var(--fg);margin-bottom:4px"></div>
+        <div id="sbUserEmail" style="margin-bottom:10px;word-break:break-all"></div>
+        <button id="logoutBtn" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:12px;padding:0">Déconnexion</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="p-main">
+      <header class="p-topbar">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="mob-menu-btn" id="mobMenuBtn" aria-label="Menu" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <span class="p-topbar-title" id="pageTitle">Vue d'ensemble</span>
+        </div>
+        <div class="p-topbar-user">
+          <span id="topbarEmail" style="display:none"></span>
+          <div class="p-topbar-avatar" id="topbarAvatar">?</div>
+        </div>
+      </header>
+
+      <main class="p-content" id="pContent">
+        <!-- injected by JS -->
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Scripts Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js" integrity="sha384-zNWIRwt1fz9DMg14Mr01oYdPzrThMnmhSPX2ks9CF8l4VT1kImh7ifGPPoGorI2d" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js" integrity="sha384-0e7kpTFHb+pfUkQJPLWMnYBNSJ8EGnVd0oL7q8W3MdJ5ByRf/Gx0r+A0i5Hh7iu" crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-functions-compat.js"></script>
+
+  <script>
+  (() => {
+    const app  = firebase.initializeApp({
+      apiKey:            "AIzaSyBqfNP2yl4hCOJFlwJuLdpFlJIQhJCwPlA",
+      authDomain:        "zeldtrade.firebaseapp.com",
+      projectId:         "zeldtrade",
+      storageBucket:     "zeldtrade.appspot.com",
+      messagingSenderId: "374927461780",
+      appId:             "1:374927461780:web:c4c3ac60e30fd28bb2e7e4"
+    });
+    const auth  = firebase.auth();
+    const funcs = firebase.app().functions('europe-west1');
+
+    const $   = id => document.getElementById(id);
+    const esc = s  => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const BASE_URL = 'https://zeldtrade.com/app?invite=';
+
+    // ── Auth gate ─────────────────────────────────────────────────────────────
+    $('authForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      $('authErr').style.display = 'none';
+      const btn = $('authBtn');
+      btn.disabled = true; btn.textContent = 'Connexion…';
+      try {
+        await auth.signInWithEmailAndPassword($('authEmail').value, $('authPass').value);
+      } catch {
+        $('authErr').textContent = 'Email ou mot de passe incorrect.';
+        $('authErr').style.display = 'block';
+        btn.disabled = false; btn.textContent = 'Se connecter →';
+      }
+    });
+
+    document.addEventListener('click', e => { if (e.target.id === 'logoutBtn') auth.signOut(); });
+
+    // ── Auth state ────────────────────────────────────────────────────────────
+    auth.onAuthStateChanged(async user => {
+      if (!user) {
+        $('authGate').style.display  = 'flex';
+        $('dashboard').style.display = 'none';
+        return;
+      }
+
+      $('pContent').innerHTML = '<div class="empty-state"><p>Chargement…</p></div>';
+      let dashData;
+      try {
+        const res  = await funcs.httpsCallable('getPartnerDashboard')();
+        dashData   = res.data;
+      } catch (err) {
+        if (err.code === 'not-found' || err.code === 'functions/not-found') {
+          $('authErr').textContent = "Ce compte n'est pas encore partenaire. Contacte-nous sur Discord.";
+          $('authErr').style.display = 'block';
+          auth.signOut();
+          return;
+        }
+        $('pContent').innerHTML = '<div class="empty-state"><p>Erreur de chargement. Réessaie dans quelques secondes.</p></div>';
+        $('authGate').style.display  = 'none';
+        $('dashboard').style.display = 'flex';
+        return;
+      }
+
+      const profile = dashData.profile || {};
+      const type    = profile.type || 'invite';
+      const hasAff  = type === 'affiliate' || type === 'both';
+      const hasInv  = type === 'invite'    || type === 'both';
+
+      // Montrer/masquer les onglets selon le type
+      document.querySelectorAll('[data-page="keys"]').forEach(el => {
+        el.style.display = hasInv ? '' : 'none';
+      });
+      document.querySelectorAll('[data-page="affiliation"], [data-page="payouts"]').forEach(el => {
+        el.style.display = hasAff ? '' : 'none';
+      });
+
+      $('authGate').style.display  = 'none';
+      $('dashboard').style.display = 'flex';
+
+      const name = user.displayName || user.email.split('@')[0];
+      $('topbarAvatar').textContent = name.charAt(0).toUpperCase();
+      $('sbUserName').textContent   = name;
+      $('sbUserEmail').textContent  = user.email;
+
+      // Navigation
+      const defaultPage = hasInv ? 'overview' : 'overview';
+      renderPage(defaultPage, dashData, user);
+      document.querySelectorAll('.p-nav-link[data-page]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.p-nav-link[data-page]').forEach(b => {
+            b.classList.remove('active'); b.removeAttribute('aria-current');
+          });
+          btn.classList.add('active'); btn.setAttribute('aria-current', 'page');
+          renderPage(btn.dataset.page, dashData, user);
+          $('pSidebar').classList.remove('open');
+          $('mobMenuBtn').setAttribute('aria-expanded', 'false');
+        });
+      });
+    });
+
+    $('mobMenuBtn').addEventListener('click', () => {
+      const sb   = $('pSidebar');
+      const open = sb.classList.toggle('open');
+      $('mobMenuBtn').setAttribute('aria-expanded', String(open));
+    });
+
+    // ── Renderers ─────────────────────────────────────────────────────────────
+    const pageTitles = {
+      overview:    'Vue d\'ensemble',
+      keys:        'Mes liens d\'invitation',
+      affiliation: 'Mon affiliation',
+      payouts:     'Virements'
+    };
+
+    function renderPage(page, data, user) {
+      $('pageTitle').textContent = pageTitles[page] || page;
+      const content = $('pContent');
+      if (page === 'overview')    renderOverview(content, data);
+      else if (page === 'keys')        renderKeys(content, data);
+      else if (page === 'affiliation') renderAffiliation(content, data);
+      else if (page === 'payouts')     renderPayouts(content, data);
+    }
+
+    // ── Overview ──────────────────────────────────────────────────────────────
+    function renderOverview(content, data) {
+      const aff  = data.affiliate || {};
+      const toks = data.inviteTokens || [];
+      const prof = data.profile || {};
+      const hasAff = prof.type === 'affiliate' || prof.type === 'both';
+      const hasInv = prof.type === 'invite'    || prof.type === 'both';
+
+      const tokTotal = toks.length;
+      const tokUsed  = toks.filter(t => t.used).length;
+      const tokAvail = toks.filter(t => !t.used && t.active).length;
+
+      let kpis = '';
+      if (hasInv) kpis += `
+        <div class="kpi-card">
+          <div class="kpi-label">Liens envoyés</div>
+          <div class="kpi-value">${tokTotal}</div>
+          <div class="kpi-sub">${tokUsed} activés · ${tokAvail} disponibles</div>
+        </div>`;
+      if (hasAff) kpis += `
+        <div class="kpi-card">
+          <div class="kpi-label">Clics sur ton lien</div>
+          <div class="kpi-value">${aff.clicks || 0}</div>
+          <div class="kpi-sub">depuis le début</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Inscriptions générées</div>
+          <div class="kpi-value green">${aff.uses || 0}</div>
+          <div class="kpi-sub">via ?ref=${esc(prof.affCode || '')}</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Taux de conversion</div>
+          <div class="kpi-value">${aff.clicks > 0 ? Math.round((aff.uses / aff.clicks) * 100) : 0}%</div>
+          <div class="kpi-sub">clics → inscriptions</div>
+        </div>`;
+
+      // Activité récente : derniers signups affilié ou derniers tokens utilisés
+      let recentRows = '';
+      if (hasAff && (aff.signups || []).length > 0) {
+        recentRows = [...(aff.signups || [])].reverse().slice(0, 10).map(s => `
+          <tr>
+            <td>${esc(s.username || '—')}</td>
+            <td style="font-size:11px">${esc(s.email || '—')}</td>
+            <td>Affiliation</td>
+            <td style="font-size:11px">${s.signedUpAt ? new Date(s.signedUpAt).toLocaleDateString('fr-FR') : '—'}</td>
+          </tr>`).join('');
+      }
+      if (hasInv) {
+        recentRows += toks.filter(t => t.used).slice(0, 10).map(t => `
+          <tr>
+            <td>${esc(t.usedEmail ? t.usedEmail.split('@')[0] : '—')}</td>
+            <td style="font-size:11px">${esc(t.usedEmail || '—')}</td>
+            <td>Invitation ${esc(t.tier?.toUpperCase() || '')}</td>
+            <td style="font-size:11px">${t.usedAt ? new Date(t.usedAt).toLocaleDateString('fr-FR') : '—'}</td>
+          </tr>`).join('');
+      }
+      const recentHtml = recentRows
+        ? `<table class="p-table"><thead><tr><th>Pseudo</th><th>Email</th><th>Type</th><th>Date</th></tr></thead><tbody>${recentRows}</tbody></table>`
+        : `<div class="empty-state"><div class="ico">📊</div><p>Aucune activité pour l'instant.</p></div>`;
+
+      content.innerHTML = `
+        <div class="kpi-grid">${kpis}</div>
+        <div class="p-card">
+          <div class="p-card-header"><div class="p-card-title">Activité récente</div></div>
+          <div class="p-card-body" style="padding:${recentRows ? '0' : '24px'}">${recentHtml}</div>
+        </div>`;
+    }
+
+    // ── Liens d'invitation ────────────────────────────────────────────────────
+    function renderKeys(content, data) {
+      const toks = data.inviteTokens || [];
+      if (toks.length === 0) {
+        content.innerHTML = `<div class="p-card">
+          <div class="p-card-header"><div class="p-card-title">Mes liens d'invitation</div></div>
+          <div class="p-card-body"><div class="empty-state">
+            <div class="ico">🔑</div>
+            <p>Tu n'as pas encore de liens d'invitation.<br>Contacte-nous sur Discord pour en recevoir.</p>
+          </div></div></div>`;
+        return;
+      }
+      const available = toks.filter(t => !t.used && t.active);
+      const used      = toks.filter(t => t.used);
+      const revoked   = toks.filter(t => !t.used && !t.active);
+
+      const makeRows = list => list.map(t => {
+        const tier  = t.tier === 'beta' ? 'VIP' : (t.tier || '').toUpperCase();
+        const dur   = t.trialDays > 0 ? `${t.trialDays}j` : '∞';
+        const link  = BASE_URL + t.token;
+        const badge = t.used
+          ? `<span class="badge-no">✓ Utilisé · ${t.usedEmail || ''}</span>`
+          : t.active
+            ? `<span class="badge-ok">● Disponible</span>`
+            : `<span class="badge-no">✗ Révoqué</span>`;
+        const copyBtn = (!t.used && t.active)
+          ? `<button class="btn" style="font-size:12px;padding:5px 12px;background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.2);color:var(--green);border-radius:6px;cursor:pointer"
+              data-copy="${esc(link)}">📋 Copier</button>`
+          : '';
+        return `<tr>
+          <td style="font-size:11px;font-family:var(--font-mono);max-width:100px;overflow:hidden;text-overflow:ellipsis">${t.token.slice(0,12)}…</td>
+          <td>${esc(t.label || '—')}</td>
+          <td><strong>${tier}</strong> · ${dur}</td>
+          <td>${badge}</td>
+          <td>${copyBtn}</td>
+        </tr>`;
+      }).join('');
+
+      content.innerHTML = `
+        <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap">
+          <div class="kpi-card" style="flex:1;min-width:140px">
+            <div class="kpi-label">Disponibles</div>
+            <div class="kpi-value green">${available.length}</div>
+          </div>
+          <div class="kpi-card" style="flex:1;min-width:140px">
+            <div class="kpi-label">Utilisés</div>
+            <div class="kpi-value">${used.length}</div>
+          </div>
+          <div class="kpi-card" style="flex:1;min-width:140px">
+            <div class="kpi-label">Total</div>
+            <div class="kpi-value">${toks.length}</div>
+          </div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-header"><div class="p-card-title">Tous mes liens (${toks.length})</div></div>
+          <div class="p-card-body" style="padding:0">
+            <table class="p-table">
+              <thead><tr><th>Token</th><th>Label</th><th>Tier · Durée</th><th>Statut</th><th>Action</th></tr></thead>
+              <tbody>${makeRows(toks)}</tbody>
+            </table>
+          </div>
+        </div>`;
+
+      // Copie dans presse-papiers
+      content.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          navigator.clipboard.writeText(btn.dataset.copy)
+            .then(() => { btn.textContent = '✓ Copié !'; setTimeout(() => { btn.textContent = '📋 Copier'; }, 2000); })
+            .catch(() => {});
+        });
+      });
+    }
+
+    // ── Affiliation ───────────────────────────────────────────────────────────
+    function renderAffiliation(content, data) {
+      const aff  = data.affiliate || {};
+      const prof = data.profile   || {};
+      if (!aff.code) {
+        content.innerHTML = `<div class="p-card"><div class="p-card-body"><div class="empty-state">
+          <div class="ico">🔗</div><p>Ton code d'affiliation n'est pas encore configuré.<br>Contacte-nous sur Discord.</p>
+        </div></div></div>`;
+        return;
+      }
+      const link      = `https://zeldtrade.com/?ref=${aff.code}`;
+      const taux      = aff.clicks > 0 ? Math.round((aff.uses / aff.clicks) * 100) : 0;
+      const signupRows = (aff.signups || []).length > 0
+        ? [...(aff.signups || [])].reverse().map(s => `<tr>
+            <td>${esc(s.username || '—')}</td>
+            <td style="font-size:11px">${esc(s.email || '—')}</td>
+            <td style="font-size:11px">${s.signedUpAt ? new Date(s.signedUpAt).toLocaleDateString('fr-FR') : '—'}</td>
+          </tr>`).join('')
+        : `<tr><td colspan="3" style="text-align:center;color:var(--fg-mute);padding:24px">Aucune inscription pour l'instant.</td></tr>`;
+
+      content.innerHTML = `
+        <div class="p-card" style="margin-bottom:24px">
+          <div class="p-card-header"><div class="p-card-title">Ton lien d'affiliation</div></div>
+          <div class="p-card-body">
+            <p style="color:var(--fg-dim);font-size:14px;margin-bottom:16px">
+              Partage ce lien à ta communauté. Chaque inscription génère une conversion trackée.
+              ${aff.trialTier ? `<br><strong style="color:var(--green)">Bonus :</strong> tes filleuls reçoivent <strong>${aff.trialDays}j de ${aff.trialTier.toUpperCase()} gratuit</strong> à l'inscription.` : ''}
+            </p>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+              <code id="affLink" style="font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--green);background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);border-radius:8px;padding:10px 16px;flex:1;min-width:200px;word-break:break-all">${esc(link)}</code>
+              <button id="copyAffLink" style="font-size:13px;padding:10px 18px;background:var(--green);color:#000;border:none;border-radius:8px;cursor:pointer;font-weight:600;white-space:nowrap">📋 Copier</button>
+            </div>
+          </div>
+        </div>
+        <div class="kpi-grid" style="margin-bottom:24px">
+          <div class="kpi-card"><div class="kpi-label">Clics</div><div class="kpi-value">${aff.clicks}</div><div class="kpi-sub">sur ton lien</div></div>
+          <div class="kpi-card"><div class="kpi-label">Inscriptions</div><div class="kpi-value green">${aff.uses}</div><div class="kpi-sub">comptes créés</div></div>
+          <div class="kpi-card"><div class="kpi-label">Taux conversion</div><div class="kpi-value">${taux}%</div><div class="kpi-sub">clics → compte</div></div>
+          <div class="kpi-card"><div class="kpi-label">Commission</div><div class="kpi-value">${prof.commission || 0}%</div><div class="kpi-sub">sur abonnements</div></div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-header"><div class="p-card-title">Inscriptions via ton lien (${(aff.signups || []).length} dernières)</div></div>
+          <div class="p-card-body" style="padding:0">
+            <table class="p-table"><thead><tr><th>Pseudo</th><th>Email</th><th>Date</th></tr></thead>
+            <tbody>${signupRows}</tbody></table>
+          </div>
+        </div>`;
+
+      content.querySelector('#copyAffLink').addEventListener('click', () => {
+        navigator.clipboard.writeText(link)
+          .then(() => { const b = content.querySelector('#copyAffLink'); b.textContent = '✓ Copié !'; setTimeout(() => { b.textContent = '📋 Copier'; }, 2000); })
+          .catch(() => {});
+      });
+    }
+
+    // ── Virements ─────────────────────────────────────────────────────────────
+    function renderPayouts(content) {
+      content.innerHTML = `<div class="p-card">
+        <div class="p-card-header"><div class="p-card-title">Virements SEPA</div></div>
+        <div class="p-card-body"><div class="empty-state">
+          <div class="ico">🏦</div>
+          <p>Minimum 20 €, versé le 5 de chaque mois.<br>
+          Envoie ton IBAN à <a href="mailto:contact@zeldtrade.com" style="color:var(--green)">contact@zeldtrade.com</a> pour configurer ton virement.</p>
+        </div></div></div>`;
+    }
+
+  })();
+  </script>
+</body>
+</html>

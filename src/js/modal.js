@@ -120,12 +120,43 @@ const Modal = (() => {
     const aiBadge = $('aiStatusBadge');
     if (aiBadge) {
       // v0.9.357 : la pastille reflète le quota du jour (vert = dispo, rouge = épuisé).
-      if (typeof Store !== 'undefined' && Store.canAnalyzeToday && !Store.canAnalyzeToday()) {
+      const _exhaustedNow = typeof Store !== 'undefined' && Store.canAnalyzeToday && !Store.canAnalyzeToday();
+      if (_exhaustedNow) {
         aiBadge.textContent = i18n.t('modal.ai.exhausted');
         aiBadge.style.color = 'var(--red)';
+        // Upsell contextuel — montre ce que Funded débloque maintenant
+        const _isEn = typeof i18n !== 'undefined' && i18n.getLang() === 'en';
+        let _upsellPanel = $('wAiExhaustedUpsell');
+        if (!_upsellPanel) {
+          _upsellPanel = document.createElement('div');
+          _upsellPanel.id = 'wAiExhaustedUpsell';
+          _upsellPanel.style.cssText = 'margin-top:12px;padding:12px 14px;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.18);border-radius:8px;font-size:12px;line-height:1.55;color:var(--fg-dim)';
+          const dropZone = $('wDropZone');
+          if (dropZone) dropZone.after(_upsellPanel);
+        }
+        _upsellPanel.style.display = '';
+        _upsellPanel.innerHTML = _isEn
+          ? `<b style="color:var(--fg)">Daily AI quota reached.</b> On Funded you get <b>5 analyses/day</b> + Claude Sonnet fallback for complex charts. <a href="#" id="wAiUpsellOffers" style="color:var(--green);font-weight:600;text-decoration:underline">See Funded →</a>`
+          : `<b style="color:var(--fg)">Quota IA du jour atteint.</b> En Funded tu as <b>5 analyses/jour</b> + fallback Claude Sonnet sur les charts complexes. <a href="#" id="wAiUpsellOffers" style="color:var(--green);font-weight:600;text-decoration:underline">Voir Funded →</a>`;
+        setTimeout(() => {
+          $('wAiUpsellOffers')?.addEventListener('click', e => {
+            e.preventDefault();
+            close();
+            document.querySelector('[data-page="offers"]')?.click();
+          });
+        }, 0);
       } else {
-        aiBadge.textContent = i18n.t('modal.ai.active');
+        // v1.0.4 : afficher le compteur quota X/Y dans le badge (ex: "• IA active · 0/1")
+        const _aiU    = typeof Store !== 'undefined' && Store.getAIUsage ? Store.getAIUsage() : { date: '', count: 0 };
+        const _aiLim  = typeof Store !== 'undefined' && Store.getLimits  ? Store.getLimits()  : { maxAiPerDay: 1 };
+        const _aiDay  = new Date().toISOString().slice(0, 10);
+        const _aiUsed = (_aiU.date === _aiDay) ? (_aiU.count || 0) : 0;
+        const _aiMax  = _aiLim.maxAiPerDay;
+        const _aiSuffix = isFinite(_aiMax) ? ` · ${_aiUsed}/${_aiMax}` : '';
+        aiBadge.textContent = i18n.t('modal.ai.active') + _aiSuffix;
         aiBadge.style.color = 'var(--green)';
+        const _p = $('wAiExhaustedUpsell');
+        if (_p) _p.style.display = 'none';
       }
     }
     setTimeout(() => $('wDropZone').focus?.(), 150);
@@ -1138,10 +1169,14 @@ const Modal = (() => {
     const account = Store.getMyAccountByName($('wApex').value);
     if (account) {
       warnEl.textContent   = i18n.t('modal.warn.daily', { name: account.name });
-      warnEl.style.display = c.riskUSD > account.dailyLossLimit ? 'inline' : 'none';
+      // v1.0.4 : guard dailyLossLimit=0/undefined → évite les fausses alertes sur comptes sans limite configurée
+      const _ddl = parseFloat(account.dailyLossLimit) || 0;
+      warnEl.style.display = (_ddl > 0 && c.riskUSD > _ddl) ? 'inline' : 'none';
     } else {
       warnEl.textContent   = i18n.t('modal.warn.apex');
-      warnEl.style.display = c.riskPct > 2 ? 'inline' : 'none';
+      // v1.0.4 : n'afficher la limite 2% que si un compte est attendu (wApex non vide)
+      const _hasApexSel = !!($('wApex') && $('wApex').value);
+      warnEl.style.display = (_hasApexSel && c.riskPct > 2) ? 'inline' : 'none';
     }
   }
 
@@ -1987,6 +2022,55 @@ const Modal = (() => {
         if (screenshotPaths.length) dataWithId.screenshotPaths = screenshotPaths;
         saved = Store.addTrade(dataWithId);
         UI.toast(i18n.t('modal.trade.saved'));
+        // Trustpilot : invitation automatique au 3ème trade (une seule fois)
+        try {
+          const TP_KEY = 'zt_tp_invited';
+          if (
+            !localStorage.getItem(TP_KEY) &&
+            typeof tp !== 'undefined' &&
+            typeof Store !== 'undefined' &&
+            Store.getTrades && Store.getTrades().length === 3
+          ) {
+            const _u = typeof _fbAuth !== 'undefined' && _fbAuth.currentUser;
+            if (_u && _u.email) {
+              tp('createInvitation', {
+                recipientEmail: _u.email,
+                recipientName:  _u.displayName || _u.email.split('@')[0],
+                referenceId:    _u.uid,
+                source:         'InvitationScript'
+              });
+              localStorage.setItem(TP_KEY, '1');
+            }
+          }
+        } catch (e) {}
+        // Nudge upgrade après gros win sur compte Trader (P3 CRO)
+        // Déclenché : outcome=win + pnl>100 + tier=trader + ≥3 trades au total
+        try {
+          if (
+            typeof Store !== 'undefined' &&
+            Store.getTier && Store.getTier() === 'trader' &&
+            dataWithId.outcome === 'win' &&
+            (dataWithId.pnl || 0) > 100 &&
+            Store.getTrades && Store.getTrades().length >= 3
+          ) {
+            const _isEn = typeof i18n !== 'undefined' && i18n.getLang() === 'en';
+            const _pnl = dataWithId.pnl ? `+$${Math.round(dataWithId.pnl)}` : '';
+            setTimeout(() => {
+              const _n = document.createElement('div');
+              _n.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg-2);border:1px solid rgba(0,255,136,0.3);border-radius:10px;padding:14px 18px;max-width:340px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.4);font-size:13px;color:var(--fg-dim);line-height:1.5';
+              _n.innerHTML = _isEn
+                ? `<div style="font-weight:600;color:var(--fg);margin-bottom:4px">Nice win ${_pnl} 🎯</div>Imagine seeing this replicated across your <b>2nd account</b> automatically. That's Funded. <a href="#" style="color:var(--green);font-weight:600;text-decoration:underline" id="_winUpsellLink">Try 7 days →</a>`
+                : `<div style="font-weight:600;color:var(--fg);margin-bottom:4px">Beau trade ${_pnl} 🎯</div>Imagine ce gain répliqué sur ton <b>2ème compte</b> automatiquement. C'est Funded. <a href="#" style="color:var(--green);font-weight:600;text-decoration:underline" id="_winUpsellLink">Essai 7j →</a>`;
+              document.body.appendChild(_n);
+              document.getElementById('_winUpsellLink')?.addEventListener('click', e => {
+                e.preventDefault();
+                _n.remove();
+                document.querySelector('[data-page="offers"]')?.click();
+              });
+              setTimeout(() => _n.remove(), 8000);
+            }, 600);
+          }
+        } catch (e) {}
       }
       // U31 : mémorise le dernier compte/groupe + instrument pour pré-sélection
       // au prochain wizard (mode création uniquement, pas en édition)
@@ -2333,7 +2417,7 @@ const Modal = (() => {
       } else if (outcome === 'loss') {
         $('wExit').value = $('wSL').value || '';
       } else if (outcome === 'be') {
-        $('wExit').value = '';
+        $('wExit').value = $('wEntry').value || ''; // v1.0.4 : BE = sortie au prix d'entrée
       }
       wRecalc();
     });

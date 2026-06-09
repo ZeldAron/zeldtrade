@@ -585,6 +585,7 @@ const i18n = (() => {
       'tier.feat.betaFeatures':'Accès anticipé aux features beta',
       'tier.feat.decisiveVote':'Vote décisif sur la roadmap',
       'tier.feat.partials':'Sorties partielles (scale-out)',
+      'tier.feat.fjNews':  'Financial Juice News',
       'dash.open':         'Ouverts',
       'dash.profit.target':'Objectif profit',
       'dash.drawdown.used':'Drawdown utilisé',
@@ -906,6 +907,11 @@ const i18n = (() => {
       'contact.err.send': 'Envoi échoué : ',
       'contact.ok.title': 'Message envoyé !',
       'contact.ok.sub':   'On vous répond dans les plus brefs délais.',
+      // Section partenaires
+      'partner.eyebrow': '// PROGRAMME PARTENAIRES',
+      'partner.title':   'Tu formes des traders. <span class="accent">On les équipe.</span>',
+      'partner.desc':    'Coachs et créateurs : intègre ZeldTrade dans ton programme. Clés Elite à vie en pack ou commission 25 % sur chaque abonné que tu génères. Places limitées.',
+      'partner.cta':     'Voir le programme →',
       // Toast / errors
       'toast.settings.saved': 'Réglages sauvegardés',
       'toast.import.ok':      'Import réussi',
@@ -1497,6 +1503,7 @@ const i18n = (() => {
       'tier.feat.betaFeatures':'Early access to beta features',
       'tier.feat.decisiveVote':'Decisive vote on the roadmap',
       'tier.feat.partials':'Partial exits (scale-out)',
+      'tier.feat.fjNews':  'Financial Juice News',
       'dash.open':         'Open',
       'dash.profit.target':'Profit target',
       'dash.drawdown.used':'Drawdown used',
@@ -1818,6 +1825,11 @@ const i18n = (() => {
       'contact.err.send': 'Send failed: ',
       'contact.ok.title': 'Message sent!',
       'contact.ok.sub':   'We\'ll get back to you as soon as possible.',
+      // Partner section
+      'partner.eyebrow': '// PARTNER PROGRAM',
+      'partner.title':   'You train traders. <span class="accent">We equip them.</span>',
+      'partner.desc':    'Coaches & creators: integrate ZeldTrade into your program. Lifetime Elite keys in bulk or 25% commission on every subscriber you bring. Limited spots.',
+      'partner.cta':     'See the program →',
       // Toast / errors
       'toast.settings.saved': 'Settings saved',
       'toast.import.ok':      'Import successful',
