@@ -67,6 +67,8 @@ depuis le flux RSS, corrigée ici).
   marché + tags par item. TOUT contenu externe échappé (`UI.escHtml`). Widget TradingView et
   loader FinancialJuice supprimés (plan B = revert git si le feed FF meurt).
 - CSS `.ecal-*` / `.news-tag` (vars existantes, dark/light), responsive ≤ 640 px.
+- **Vue « Aujourd'hui » par défaut** (demande user) : filtre période Aujourd'hui/Toute la semaine
+  (segmented, persisté `zt_ecal_day`), message vide contextuel qui suggère la vue semaine.
 
 ### Vérifié (smoke E2E staging)
 75 événements · filtre High = 13/13 cohérent · filtre USD = USD/ALL only · 30 news, filtre
