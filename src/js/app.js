@@ -514,6 +514,7 @@ function initApp() {
     try { if (currentPage === 'dashboard') UI.renderDashboard(); } catch (err) {}
     try { if (currentPage === 'analytics') UI.renderAnalytics(); } catch (err) {}
     try { if (currentPage === 'calendar')  UI.renderCalendar();  } catch (err) {}
+    try { if (currentPage === 'journal')   UI.renderList();      } catch (err) {}  // v1.0.4 : le journal suit le Focus
   });
 
   renderFocusScopeSelect();
