@@ -37,6 +37,30 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.5 (staging, WIP) — Essai 14j sans CB · Milestone 1 : fondation client
+
+**Type** : feat (chantier modèle commercial — décision : 100% payant + essai 14j, suppression du gratuit)
+**Fichiers** : `src/js/store.js`, `src/pages/app.html`
+
+### Contexte
+Passage au modèle 100% payant + essai 14j sans carte (cf. [[project_launch_offers]]). Build par
+milestones sur staging, Stripe TEST, validation E2E avant toute prod.
+
+### M1 — fondation client (additive, NON cassante)
+- `store.js` : parse `trialEnd` (ms) dans le doc `plan` (whitelist). Helpers : `isTrialActive()`,
+  `trialDaysLeft()`, `getAccessState()` ('paid'|'trialing'|'expired'|'none'), `_effectiveTier()`.
+- Un essai ACTIF → tier effectif = `funded` → `getLimits()`/`canUseFeature()` accordent Funded ;
+  badge « ESSAI ». `getTier()` reste = tier stocké (vérité serveur). Exporté + bump store.js h=6.
+
+### Vérifié (staging)
+gratuit@test.com + trialEnd+14j → access=trialing, badge=ESSAI, maxAccounts=10, econCal/groups=true,
+tier reste 'trader'. demo (VIP) inchangé. Users sans trialEnd = comportement identique à avant.
+
+### Reste (prochains milestones)
+M2 gating serveur (rules + CF lisent trialEnd) · M3 paywall fin d'essai + bannière jours restants ·
+M4 retrait tier gratuit (signup/offers/landing) + retrait essai Stripe 7j-CB · M5 migration existants
+(trialEnd=cutover+14j) · M6 E2E Stripe TEST → puis proposer prod.
+
 ## 2026-06-10 — v1.0.4 (staging) — FIX calendrier + heatmap cassés (collision de classe .cal-cell)
 
 **Type** : fix (bug visuel, présent en prod)
