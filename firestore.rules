@@ -24,6 +24,22 @@ service cloud.firestore {
           && request.auth.token.email_verified == true;
     }
 
+    // v1.0.5 — Entitlement Funded : abonné pro OU essai 14j ACTIF (trialEnd futur).
+    // trialEnd est écrit UNIQUEMENT par CF (Admin SDK) — le client ne peut pas se l'octroyer
+    // (cf. whitelist d'écriture du doc plan). Les get() sont mis en cache par évaluation.
+    function planDoc(userId) {
+      return get(/databases/$(database)/documents/users/$(userId)/data/plan).data;
+    }
+    function planEntitled(userId) {
+      return exists(/databases/$(database)/documents/users/$(userId)/data/plan)
+          && (
+            planDoc(userId).plan == 'pro'
+            || ('trialEnd' in planDoc(userId)
+                && planDoc(userId).trialEnd is int
+                && planDoc(userId).trialEnd > request.time.toMillis())
+          );
+    }
+
     // Fail-closed par défaut : toute collection non explicitement matchée
     // refuse read+write. Toute nouvelle collection doit être ajoutée ci-dessous
     // avec ses propres conditions sinon elle reste inaccessible.
@@ -181,8 +197,7 @@ service cloud.firestore {
                     && (
                       request.resource.data.items.size() <= 1
                       || (
-                        exists(/databases/$(database)/documents/users/$(userId)/data/plan)
-                        && get(/databases/$(database)/documents/users/$(userId)/data/plan).data.plan == 'pro'
+                        planEntitled(userId)
                         && request.resource.data.items.size() <= 100
                       )
                     );
@@ -214,8 +229,7 @@ service cloud.firestore {
                    && request.resource.data.keys().hasOnly(['items'])
                    && request.resource.data.items is list
                    && request.resource.data.items.size() <= 50
-                   && exists(/databases/$(database)/documents/users/$(userId)/data/plan)
-                   && get(/databases/$(database)/documents/users/$(userId)/data/plan).data.plan == 'pro';
+                   && planEntitled(userId);
     }
 
     // ── AI usage — écriture exclusivement par Cloud Function (admin SDK) ─────────

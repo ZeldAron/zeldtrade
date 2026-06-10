@@ -2844,7 +2844,11 @@ exports.syncProClaim = onDocumentWritten(
   async (event) => {
     const uid   = event.params.userId;
     const after = event.data && event.data.after;
-    const isPro = !!(after && after.exists && after.data() && after.data().plan === 'pro');
+    // v1.0.5 : claim `pro` = abonné pro OU essai actif (pour autoriser les uploads storage,
+    // dont les rules ne peuvent pas lire Firestore). Fenêtre stale après expiration purgée au
+    // prochain write du doc plan (ex. CF de fin d'essai).
+    const _pd   = (after && after.exists && after.data()) || {};
+    const isPro = _pd.plan === 'pro' || (typeof _pd.trialEnd === 'number' && Date.now() < _pd.trialEnd);
     try {
       const user   = await admin.auth().getUser(uid);
       const claims = user.customClaims || {};
