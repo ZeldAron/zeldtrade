@@ -2872,6 +2872,25 @@ exports.getMarketNews = onCall(
       'https://www.cnbc.com/id/100003114/device/rss/rss.html',
     ];
 
+    // v1.0.4 : décode les entités RSS courantes + strip tags (le client ré-échappe à l'affichage)
+    function _cleanTxt(s) {
+      return String(s || '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
+        .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&nbsp;/g, ' ')
+        .trim().slice(0, 300);
+    }
+    // v1.0.4 : classification marché côté serveur → filtre par marché dans l'onglet Éco
+    const NEWS_TAGS = [
+      ['usd',     /\b(fed|fomc|powell|dollar|cpi|nfp|payrolls?|treasur(y|ies)|jobless|us econom|inflation)\b/i],
+      ['eur',     /\b(ecb|euro(zone|s)?\b|lagarde|bce)\b/i],
+      ['indices', /\b(s&p ?500?|nasdaq|dow|wall street|stocks?|equit(y|ies)|ftse|dax|cac)\b/i],
+      ['gold',    /\b(gold|xau|bullion|or\b)\b/i],
+      ['energy',  /\b(oil|crude|opec|brent|wti|natural gas|gasoline)\b/i],
+      ['crypto',  /\b(bitcoin|btc|ethereum|eth\b|crypto)\b/i],
+    ];
     function _parseRSS(xml) {
       const items = [];
       const itemRx = /<item>([\s\S]*?)<\/item>/g;
@@ -2879,7 +2898,15 @@ exports.getMarketNews = onCall(
       while ((m = itemRx.exec(xml)) !== null) {
         const block = m[1];
         const t = (tag) => { const r = new RegExp(`<${tag}[^>]*>(?:<\\!\\[CDATA\\[)?([\\s\\S]*?)(?:\\]\\]>)?<\\/${tag}>`); const x = r.exec(block); return x ? x[1].trim() : ''; };
-        items.push({ title: t('title'), link: t('link'), pubDate: t('pubDate'), author: t('author') || t('dc:creator') || '' });
+        const title = _cleanTxt(t('title'));
+        const link  = t('link');
+        items.push({
+          title,
+          link:    /^https?:\/\//.test(link) ? link.slice(0, 500) : '',
+          pubDate: t('pubDate'),
+          author:  _cleanTxt(t('author') || t('dc:creator') || '').slice(0, 80),
+          tags:    NEWS_TAGS.filter(([, rx]) => rx.test(title)).map(([tag]) => tag),
+        });
         if (items.length >= 30) break;
       }
       return items;
@@ -2901,5 +2928,78 @@ exports.getMarketNews = onCall(
     const data = { items, fetchedAt: now };
     exports._newsCache = { ts: now, data };
     return data;
+  }
+);
+
+// ─── getEconCalendar (v1.0.4) ────────────────────────────────────────────────
+// Calendrier économique NATIF pour l'onglet Éco — TOUS les tiers (le calendrier reste libre,
+// remplace le widget TradingView tiers). Source : feed JSON hebdo ForexFactory
+// (nfs.faireconomy.media) — gratuit, sans clé API, impact High/Medium/Low + devise + prévision.
+// ⚠️ Limite éditeur : 2 téléchargements / 5 min / IP → cache agressif OBLIGATOIRE :
+//   1) mémoire d'instance (30 min)  2) Firestore publicStats/econCalendar (30 min, partagé
+//   entre instances, survit aux cold starts)  3) fetch ForexFactory (≈1 hit / 30 min au total).
+//   Feed KO ou "Request Denied" (page HTML) → on sert le stale Firestore (≤ 8 jours).
+const ECON_CAL_URL = 'https://nfs.faireconomy.media/ff_calendar_thisweek.json';
+const ECON_CAL_TTL = 30 * 60 * 1000;
+exports.getEconCalendar = onCall(
+  { region: 'europe-west1', cors: true },
+  async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Auth required');
+    const now = Date.now();
+
+    // 1. Cache mémoire (instance chaude)
+    if (exports._ecoCalCache && (now - exports._ecoCalCache.ts) < ECON_CAL_TTL) {
+      return exports._ecoCalCache.data;
+    }
+
+    // 2. Cache Firestore (partagé / persistant)
+    const ref = admin.firestore().doc('publicStats/econCalendar');
+    let stale = null;
+    try {
+      const snap = await ref.get();
+      if (snap.exists) {
+        stale = snap.data() || null;
+        if (stale && stale.ts && Array.isArray(stale.events) && (now - stale.ts) < ECON_CAL_TTL) {
+          exports._ecoCalCache = { ts: stale.ts, data: { events: stale.events, fetchedAt: stale.ts } };
+          return exports._ecoCalCache.data;
+        }
+      }
+    } catch (_) { /* non bloquant */ }
+
+    // 3. Fetch ForexFactory (validation stricte : la page "Request Denied" est du HTML)
+    let events = null;
+    try {
+      const res = await fetch(ECON_CAL_URL, { signal: AbortSignal.timeout(8000) });
+      if (res.ok) {
+        const txt = await res.text();
+        if (txt.trim().startsWith('[')) {
+          const IMPACTS = { High: 'high', Medium: 'medium', Low: 'low', Holiday: 'holiday' };
+          events = JSON.parse(txt).slice(0, 300).map(e => {
+            const d = new Date(e.date);
+            return {
+              title:    String(e.title || '').replace(/<[^>]*>/g, '').slice(0, 140),
+              country:  String(e.country || '').replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 8),
+              dateUtc:  isFinite(d) ? d.getTime() : null,
+              impact:   IMPACTS[e.impact] || 'low',
+              forecast: String(e.forecast || '').slice(0, 20),
+              previous: String(e.previous || '').slice(0, 20),
+            };
+          }).filter(e => e.dateUtc && e.title);
+        }
+      }
+    } catch (_) { /* feed KO → stale ci-dessous */ }
+
+    if (events && events.length) {
+      const data = { events, fetchedAt: now };
+      exports._ecoCalCache = { ts: now, data };
+      try { await ref.set({ ts: now, events }); } catch (_) { /* cache best-effort */ }
+      return data;
+    }
+
+    // 4. Fallback stale (feed tombé) — un calendrier de la semaine reste utile plusieurs jours
+    if (stale && Array.isArray(stale.events) && (now - (stale.ts || 0)) < 8 * 24 * 3600 * 1000) {
+      return { events: stale.events, fetchedAt: stale.ts, stale: true };
+    }
+    throw new HttpsError('unavailable', 'Calendar unavailable');
   }
 );
