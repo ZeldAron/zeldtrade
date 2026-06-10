@@ -224,12 +224,13 @@ const Auth = (() => {
   function isAccountGoneError(err) {
     if (!err) return false;
     const code = String(err.code || err.message || '');
+    // v1.0.4 : token-expired RETIRÉ — un token expiré = re-login normal, PAS un compte
+    // supprimé. Ne garde que les vraies invalidations (compte absent/désactivé/révoqué).
     return code === 'auth/user-not-found'
         || code === 'auth/user-disabled'
-        || code === 'auth/user-token-expired'
         || code === 'auth/id-token-revoked'
         || code === 'auth/invalid-user-token'
-        || /USER_NOT_FOUND|USER_DISABLED|TOKEN_EXPIRED|TOKEN_REVOKED/i.test(code);
+        || /USER_NOT_FOUND|USER_DISABLED|TOKEN_REVOKED/i.test(code);
   }
 
   async function deleteAccount(email, password) {
