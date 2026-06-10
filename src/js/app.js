@@ -106,30 +106,15 @@ function initApp() {
            <button class="btn-primary" id="econUpsell" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
          </div>`;
 
+    // v1.0.4 : calendrier économique RETIRÉ temporairement (cf. Trello — à réactiver avec une
+    // source fournissant l'« actual » gratuitement). _ecalInit/getEconCalendar conservés, non appelés.
     el.innerHTML = `
       <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
-      <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}
-        <span class="econ-sub">${en ? 'this week · your local time' : 'cette semaine · heure locale'}</span></h3>
-      <div class="ecal-filters" id="ecalFilters" style="display:none">
-        <div class="ecal-seg" id="ecalDay" role="group" aria-label="${en ? 'Period' : 'Période'}">
-          <button type="button" data-day="today">${en ? 'Today' : 'Aujourd’hui'}</button>
-          <button type="button" data-day="week">${en ? 'Whole week' : 'Toute la semaine'}</button>
-        </div>
-        <div class="ecal-seg" id="ecalImp" role="group" aria-label="Impact">
-          <button type="button" data-imp="all">${en ? 'All' : 'Tout'}</button>
-          <button type="button" data-imp="high">${en ? 'High' : 'Fort'}</button>
-          <button type="button" data-imp="medium">${en ? 'Medium' : 'Moyen'}</button>
-          <button type="button" data-imp="low">${en ? 'Low' : 'Faible'}</button>
-        </div>
-        <select class="ecal-cur" id="ecalCur" aria-label="${en ? 'Currency' : 'Devise'}"></select>
-      </div>
-      <div id="ecalList"><div class="econ-loading">${en ? 'Loading calendar…' : 'Chargement du calendrier…'}</div></div>
-      <h3 class="econ-h" style="margin-top:28px">${en ? 'Market news' : 'News marchés'}
+      <h3 class="econ-h">${en ? 'Market news' : 'News marchés'}
         ${hasFjNews ? `<span class="econ-sub">${en ? 'refreshed every 5 min' : 'rafraîchies toutes les 5 min'}</span>` : ''}</h3>
       ${newsBlock}`;
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
-    _ecalInit(el, en);
     if (hasFjNews) _newsInit(el, en);
   }
 
