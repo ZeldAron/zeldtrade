@@ -37,6 +37,35 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Calendrier éco : widget TradingView (ACTUALS en temps réel)
+
+**Type** : feat
+**Fichiers** : `src/js/app.js`, `firebase.json`, `src/pages/app.html`
+
+### Contexte
+User voulait l'« actual » (valeur réelle) comme sur investing.com. Aucune source gratuite ne le
+donne en API (FMP/Finnhub/TE = payant ; JBlanked free = 1 req/jour → actual décalé d'un jour).
+Décision user (AskUserQuestion) : **widget tiers (live)**. Choix du widget : TradingView (thème
+sombre raccord à l'app, domaines déjà en CSP) plutôt qu'investing.com (clair + nouvelle CSP).
+
+### Changements
+- **app.js `renderEcon`** : pour Funded+, le calendrier natif est remplacé par le widget
+  « events » TradingView (`_tvEconInit`) — actual/forecast/previous en temps réel, color-codés,
+  thème suivant `data-theme`, locale FR/EN, countryFilter G10+CN, importance medium+high.
+  Le loader (`s3.tradingview.com/external-embedding/embed-widget-events.js`) est créé via
+  `createElement` (innerHTML n'exécute pas les `<script>`). Le rendu natif `_ecalInit` +
+  CF `getEconCalendar` sont CONSERVÉS mais non appelés (revival possible).
+- **CSP** (firebase.json + meta app.html) : ajout `https://www.tradingview-widget.com` au
+  `frame-src` (domaine de l'iframe du widget). `script-src s3.tradingview.com` déjà présent.
+- Gating inchangé : widget réservé Funded+ (free → upsell). Gating front (le widget est un
+  embed public TradingView, aucune ressource serveur à protéger → pas besoin d'enforce serveur).
+
+### Vérifié (staging, Chromium)
+- iframe chargée depuis `www.tradingview-widget.com`, **0 violation CSP, 0 erreur console**.
+- Events affichés avec 3 valeurs : ex. « Core CPI MM 0,2 % / 0,3 % / 0,4 % » = **identique à
+  investing.com** (actual 0,2 % en rouge). Thème sombre, locale FR.
+- ⚠️ NON testé sur Safari (Playwright = Chromium) → landmine ITP widgets tiers : à confirmer par l'user.
+
 ## 2026-06-10 — v1.0.4 (staging) — Calendrier éco = perk PAYANT (Funded+), plus d'accès gratuit
 
 **Type** : feat (gating)
