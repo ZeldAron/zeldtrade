@@ -1061,6 +1061,25 @@
       return;
     }
 
+    // v1.1.8 fix : la liste de cases « Comptes inclus » est (re)construite à la
+    // volée à l'OUVERTURE du formulaire (Nouveau / Éditer), pas une seule fois au
+    // render de la section. Sinon les comptes ajoutés/chargés (Firestore async ou
+    // ajout dans la même visite Réglages) APRÈS le 1er render restaient invisibles
+    // → un seul compte cochable. Lecture fraîche de Store.getMyAccounts() à chaque
+    // ouverture = tous les comptes actifs cochables simultanément.
+    function buildAccountCheckboxes() {
+      const accs = Store.getMyAccounts();
+      if (!accs.length) {
+        return `<span style="color:var(--muted);font-size:12px">${t('set.grp.no.accounts')}</span>`;
+      }
+      return accs.map(a =>
+        `<label class="grp-check-row">
+          <input type="checkbox" class="grp-acc-check" value="${UI.escHtml(a.id)}">
+          ${UI.escHtml(a.name)}
+        </label>`
+      ).join('');
+    }
+
     function render() {
       const grps = Store.getGroups();
       const accs = Store.getMyAccounts();
@@ -1083,12 +1102,7 @@
           }).join('')
         : `<p style="color:var(--muted);font-size:12px;padding:8px 0">${t('set.grp.empty.hint')}</p>`;
 
-      const checkboxes = accs.map(a =>
-        `<label class="grp-check-row">
-          <input type="checkbox" class="grp-acc-check" value="${a.id}">
-          ${UI.escHtml(a.name)}
-        </label>`
-      ).join('');
+      const checkboxes = buildAccountCheckboxes();
 
       el.innerHTML = `
         <div class="settings-section settings-section--wide">
@@ -1108,7 +1122,7 @@
             </div>
             <div class="form-field" style="margin-bottom:14px">
               <label class="form-label" style="margin-bottom:8px">${t('set.grp.accounts')}</label>
-              <div class="grp-checkboxes">${checkboxes || `<span style="color:var(--muted);font-size:12px">${t('set.grp.no.accounts')}</span>`}</div>
+              <div class="grp-checkboxes">${checkboxes}</div>
             </div>
             <div style="display:flex;gap:8px;justify-content:flex-end">
               <button class="btn-ghost" id="grpBtnCancel">${t('set.grp.cancel')}</button>
@@ -1121,7 +1135,9 @@
         $('grpFormTitle').textContent = t('set.grp.new');
         $('grpEditId').value = '';
         $('grpName').value = '';
-        el.querySelectorAll('.grp-acc-check').forEach(cb => cb.checked = false);
+        // Reconstruit la liste fraîche (tous les comptes actifs actuels), décochée.
+        const box = el.querySelector('.grp-checkboxes');
+        if (box) box.innerHTML = buildAccountCheckboxes();
         $('grpForm').style.display = 'block';
         $('grpName').focus();
       });
@@ -1153,6 +1169,9 @@
           $('grpFormTitle').textContent = t('set.grp.edit');
           $('grpEditId').value = g.id;
           $('grpName').value   = g.name;
+          // Reconstruit la liste fraîche AVANT de cocher les comptes du groupe.
+          const box = el.querySelector('.grp-checkboxes');
+          if (box) box.innerHTML = buildAccountCheckboxes();
           el.querySelectorAll('.grp-acc-check').forEach(cb => {
             cb.checked = (g.accountIds || []).includes(cb.value);
           });
@@ -1792,6 +1811,11 @@
       return s;
     }
     $('btnExportCsv').addEventListener('click', () => {
+      // v1.0.4 : gate Funded+ (même verrou que le PDF — le CSV passait sans check)
+      if (!Store.canUseFeature || !Store.canUseFeature('exportCsv')) {
+        UI.toast(t('set.export.csv.pro.only'), true);
+        return;
+      }
       try {
         const trades = Store.getTrades() || [];
         if (!trades.length) {
