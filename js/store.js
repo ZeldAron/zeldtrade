@@ -376,13 +376,14 @@ const Store = (() => {
   function _isAccountGoneError(err) {
     if (!err) return false;
     const code = String(err.code || err.message || '');
+    // v1.0.4 : token-expired RETIRÉ (cohérent avec auth.js) — un token expiré = re-login,
+    // PAS un compte supprimé. Évite le faux « Compte supprimé » (ex: onglet Réglages → Général).
     return code === 'unauthenticated'
         || code === 'auth/user-not-found'
         || code === 'auth/user-disabled'
-        || code === 'auth/user-token-expired'
         || code === 'auth/id-token-revoked'
         || code === 'auth/invalid-user-token'
-        || /USER_NOT_FOUND|USER_DISABLED|TOKEN_EXPIRED|TOKEN_REVOKED/i.test(code);
+        || /USER_NOT_FOUND|USER_DISABLED|TOKEN_REVOKED/i.test(code);
   }
 
   function lsSet(key, val) {
