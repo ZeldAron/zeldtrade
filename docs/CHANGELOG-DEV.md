@@ -37,6 +37,41 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Onglet Éco : calendrier économique natif + news filtrables
+
+**Type** : feat
+**Fichiers** : `functions/index.js`, `src/js/app.js`, `src/css/style.css`, `src/pages/app.html`
+
+### Contexte
+Refonte du module Éco : le calendrier était un widget TradingView tiers (non filtrable, script
+externe) et les news une liste plate sans filtres (titres injectés NON échappés — XSS potentielle
+depuis le flux RSS, corrigée ici).
+
+### Choix de la source (recherche 2026)
+- **Calendrier : feed JSON hebdo ForexFactory** (`nfs.faireconomy.media/ff_calendar_thisweek.json`)
+  — gratuit, SANS clé API, champs impact (High/Medium/Low/Holiday) + devise + prévision/précédent.
+  ⚠️ Limite éditeur : 2 téléchargements / 5 min / IP → cache serveur agressif obligatoire.
+  Écartés : Alpha Vantage (25 req/jour), Polygon/Massive (payant), Finnhub (calendrier = premium).
+- **News : RSS BBC/CNBC conservés** (sans clé) + tagging marché côté serveur.
+
+### Changements
+- **CF `getEconCalendar`** (tous tiers — le calendrier reste libre) : cache 3 niveaux —
+  mémoire d'instance 30 min → Firestore `publicStats/econCalendar` 30 min (partagé, survit aux
+  cold starts) → fetch FF. Détection de la page « Request Denied » (HTML ≠ JSON). Feed KO →
+  sert le stale Firestore ≤ 8 jours. Normalisation + strip tags côté serveur.
+- **CF `getMarketNews`** : décodage entités + strip tags serveur, liens https only, et `tags`
+  marché par item (usd/eur/indices/gold/energy/crypto, regex sur titre). Gating Funded+ inchangé.
+- **Front `renderEcon` réécrit** : calendrier natif groupé par jour (heure locale, aujourd'hui
+  surligné, passé grisé, dots impact rouge/ambre/gris), filtres impact (segmented) + devise
+  (select, options issues des données), persistés en localStorage. News : chips de filtre par
+  marché + tags par item. TOUT contenu externe échappé (`UI.escHtml`). Widget TradingView et
+  loader FinancialJuice supprimés (plan B = revert git si le feed FF meurt).
+- CSS `.ecal-*` / `.news-tag` (vars existantes, dark/light), responsive ≤ 640 px.
+
+### Vérifié (smoke E2E staging)
+75 événements · filtre High = 13/13 cohérent · filtre USD = USD/ALL only · 30 news, filtre
+marché OK · 0 erreur console · 0 violation CSP.
+
 ## 2026-06-10 — v1.0.4 (staging) — Corrections revue finale GO/NO-GO (7 findings QA)
 
 **Type** : fix
