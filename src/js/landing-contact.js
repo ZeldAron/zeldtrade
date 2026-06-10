@@ -5,7 +5,17 @@
 
 (function () {
   // Init Firebase (clé API publique — sécurité via Firestore rules + CFs)
-  firebase.initializeApp({
+  // v1.0.4 : détection staging — sinon la landing staging pingait recordVisit/getPublicStats
+  // sur la PROD (pollution du compteur de visites prod par les tests).
+  const _IS_STAGING = /(^|\.)zeldtrade-staging\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
+  firebase.initializeApp(_IS_STAGING ? {
+    apiKey:            'AIzaSyDrhhUvHG01ayM5zhxX4kDqAE7OOpTEIJs',
+    authDomain:        'zeldtrade-staging.firebaseapp.com',
+    projectId:         'zeldtrade-staging',
+    storageBucket:     'zeldtrade-staging.firebasestorage.app',
+    messagingSenderId: '396896715351',
+    appId:             '1:396896715351:web:7a7cb7b0267637d3a61912',
+  } : {
     apiKey:            'AIzaSyCX5AWqdFyunxpYV9LgaacHU1osXQDbEss',
     authDomain:        'zeldtrade.firebaseapp.com',
     projectId:         'zeldtrade',

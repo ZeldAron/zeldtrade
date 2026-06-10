@@ -37,6 +37,34 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Corrections revue finale GO/NO-GO (7 findings QA)
+
+**Type** : fix
+**Fichiers** : `functions/index.js`, `src/js/pages/settings.js`, `src/js/ui.js`, `src/js/app.js`, `src/js/store.js`, `src/js/modal.js`, `src/js/i18n.js`, `src/js/landing-contact.js`, `src/pages/index.html`, `src/pages/faq.html`, `src/pages/app.html`, `test/calc.test.js`, `scripts/setup-stripe-staging.js`
+
+### Changements (1 commit par problème)
+1. 🔴 **Checkout Stripe staging 500** : diagnostic = STRIPE_SECRET_KEY staging est un placeholder
+   (`sk_test_*E_ME`) — PAS un bug de code (prod LIVE fonctionne). Au passage : `_wrapCF` loggue
+   désormais TOUJOURS dans Cloud Logging (avant, Discord KO = erreur invisible).
+   → `scripts/setup-stripe-staging.js` (clé TEST + 4 prix TEST + secrets) à lancer par l'user.
+2. 🟠 **Export CSV non gaté Trader** : même verrou que le PDF (`canUseFeature('exportCsv')`) +
+   clés i18n `set.export.csv.pro.only` FR/EN.
+3. 🟠 **Le Journal ignorait le Focus** : `getFiltered()`/compteur/sélection post-suppression passent
+   par `scopedTrades()` ; re-render au changement de Focus ; tooltip mis à jour.
+4. 🟡 **Double-échappement notes/setup à la ré-édition** : `_sanitizeTrade` fait unescape→escape
+   (idempotent) + le prefill d'édition dé-échappe (`Store.unescHtmlStore` exporté).
+5. 🟡 **Test calc US30 périmé** : attendait l'ancien $5/pt — aligné sur v0.9.416 ($1/pt FTMO). 103/103 ✓.
+6. 🟡 **Prix barré EN « / mois »** : wrappé `data-i18n="pricing.month"` (« / mo » en EN).
+7. 🟡 **Badge « quota du jour »** → « quota de la semaine » (FR/EN) + fallback settings.js.
+8. ℹ️ **landing-contact.js initialisait la PROD en dur** → staging pingait recordVisit/getPublicStats
+   sur la prod (pollution stats). Détection staging ajoutée (même pattern que firebase.js).
+9. ℹ️ Objectifs en lecture seule = by design (tracker auto des règles prop firm), pas un bug.
+
+### À surveiller
+- Stripe staging : lancer `STRIPE_TEST_KEY=sk_test_xxx node scripts/setup-stripe-staging.js` puis
+  redéployer createCheckoutSession+stripeWebhook staging.
+- Bug groupes (multi-sélection) toujours ouvert — tâche dédiée.
+
 ## 2026-06-10 — v1.0.4 (staging) — Fix faux « Compte supprimé » sur token expiré + langue FR/EN
 
 **Type** : fix

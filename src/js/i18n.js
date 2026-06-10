@@ -405,7 +405,7 @@ const i18n = (() => {
       'auth.forgot.btn':          'Envoyer le lien',
       // Modal
       'modal.ai.active':    '● IA active',
-      'modal.ai.exhausted': '● IA — quota du jour épuisé',
+      'modal.ai.exhausted': '● IA — quota de la semaine épuisé',
       'modal.ai.nokey':     '⚠ Analyse IA non disponible — clé non configurée',
       'modal.ai.missing':   '⚠ Clé IA manquante',
       'modal.ai.configure': 'Configure ta clé IA dans Réglages → Intelligence Artificielle',
@@ -1326,7 +1326,7 @@ const i18n = (() => {
       'auth.forgot.btn':          'Send the link',
       // Modal
       'modal.ai.active':    '● AI active',
-      'modal.ai.exhausted': '● AI — daily quota reached',
+      'modal.ai.exhausted': '● AI — weekly quota reached',
       'modal.ai.nokey':     '⚠ AI analysis unavailable — key not configured',
       'modal.ai.missing':   '⚠ AI key missing',
       'modal.ai.configure': 'Set up your AI key in Settings → AI Analysis',
