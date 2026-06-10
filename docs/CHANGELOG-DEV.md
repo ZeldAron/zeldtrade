@@ -37,6 +37,29 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Retour au calendrier natif (widget TradingView parké)
+
+**Type** : revert (décision user)
+**Fichiers** : `src/js/app.js`, `src/pages/app.html`
+
+### Contexte
+Recherche actuals (cf. entrée suivante) : aucune API gratuite, les payantes = 22-60 $/mois
+(FMP Starter / EODHD confirmé). Décision user : rester sur le calendrier NATIF (notre design)
+sans actuals en attendant d'avoir du budget pour une API payante.
+
+### Changements
+- `renderEcon` (Funded+) : revient au rendu natif (`_ecalInit` : impact/Prév/Préc, filtres
+  période/impact/devise). Le widget TradingView (`_tvEconInit`) est PARKÉ (non appelé, conservé
+  pour revival). CSP `www.tradingview-widget.com` gardée (revival sans re-toucher la CSP).
+- Gating Funded+ inchangé (free → upsell). Bump app.js h=14.
+
+### Vérifié (staging)
+VIP → calendrier natif 16 lignes, pas de widget TV, 0 erreur · gratuit → upsell, 0 calendrier.
+
+### Plus tard (actuals)
+Brancher FMP Starter (22 $/mois, à confirmer que le calendrier y est) ou EODHD (60 $/mois,
+confirmé : actual/estimate/previous) dans `getEconCalendar` → le slot « Réel » s'affiche. ~2-3 h.
+
 ## 2026-06-10 — v1.0.4 (staging) — Calendrier éco : widget TradingView (ACTUALS en temps réel)
 
 **Type** : feat
