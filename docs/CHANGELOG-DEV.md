@@ -56,6 +56,9 @@ logout — alors que le compte était bien vivant (vérifié via Admin SDK stagi
 
 ### À surveiller
 - Si un user signale encore un faux « Compte supprimé », regarder `invalid-user-token`/`id-token-revoked`.
+- ⚠️ DEUX copies de la logique account-gone : `auth.js` (isAccountGoneError) ET `store.js`
+  (_isAccountGoneError, fired par `fbSet` sur erreur d'écriture). Les deux corrigées (token-expired
+  retiré) — onglet Réglages→Général déclenchait la modale via la copie store.js. À dédupliquer un jour.
 
 ## 2026-06-09 — v1.0.4 (staging) — Recovery prod→git + refonte offres (quota IA hebdo) + fixes IA/CSP
 
