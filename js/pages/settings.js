@@ -1759,9 +1759,9 @@
       // v0.9.229 : la clé IA est gérée côté serveur (Firebase Secret Manager).
       // L'IA est toujours active pour tous les users, indépendamment du tier
       // (le quota par tier est appliqué côté Cloud Function).
-      // v0.9.357 : reflète le quota du jour (rouge si épuisé).
+      // v0.9.357 : reflète le quota (rouge si épuisé) — hebdomadaire depuis v1.0.4.
       if (typeof Store !== 'undefined' && Store.canAnalyzeToday && !Store.canAnalyzeToday()) {
-        statusEl.textContent = t('modal.ai.exhausted') || '● IA — quota du jour épuisé';
+        statusEl.textContent = t('modal.ai.exhausted') || '● IA — quota de la semaine épuisé';
         statusEl.style.color = 'var(--red)';
       } else {
         statusEl.textContent = t('set.ai.ok') || '✓ IA active';
