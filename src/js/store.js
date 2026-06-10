@@ -774,9 +774,11 @@ const Store = (() => {
       direction:  DIRS.has(raw.direction)    ? raw.direction : 'long',
       outcome:    OUTCOMES.has(raw.outcome)  ? raw.outcome   : 'open',
       contracts:  Math.max(0.01, Math.min(999, parseFloat(raw.contracts) || 0.01)),
-      // setup/notes : escape HTML au stockage (fail-safe contre future XSS si un renderer oublie escHtml)
-      setup:      _escHtmlStore(raw.setup).slice(0, 500),
-      notes:      _escHtmlStore(raw.notes).slice(0, 2000),
+      // setup/notes : escape HTML au stockage (fail-safe contre future XSS si un renderer oublie escHtml).
+      // v1.0.4 : unescape AVANT escape → idempotent. Sinon une ré-édition (le prefill recharge la
+      // valeur déjà échappée) double-échappait à chaque save (&lt; → &amp;lt; → …).
+      setup:      _escHtmlStore(_unescHtmlStore(raw.setup)).slice(0, 500),
+      notes:      _escHtmlStore(_unescHtmlStore(raw.notes)).slice(0, 2000),
       apex:       String(raw.apex   || '').replace(/[^A-Za-z0-9 _-]/g, '').slice(0, 100),
       date:       (() => {
         try {
@@ -1582,6 +1584,7 @@ const Store = (() => {
     getMaxScreenshots, canSaveScreenshots,
     getSettings, getTradingTypes, updateSettings, getJournalFields, JOURNAL_CUSTOM_FIELDS,
     getSelectedFirms, isSetupDone, getFocusScope, setFocusScope, getMyFirms, scopedTrades,
+    unescHtmlStore: _unescHtmlStore,   // v1.0.4 : pour le prefill d'édition (setup/notes stockés échappés)
     getAccountTypes, getAccountByName, updateAccountTypes,
     getPropFirms, getPropFirmByKey,
     getMyAccounts, getArchivedAccounts, getMyAccountById, getMyAccountByName, addMyAccount, updateMyAccount, deleteMyAccount, convertEvalToFunded,

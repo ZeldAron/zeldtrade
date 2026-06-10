@@ -1640,8 +1640,11 @@ const Modal = (() => {
       spreadCost   = t.spreadCost != null ? t.spreadCost : (Store.getSpreads()[t.instrument] || 0);
 
       $('wContracts').value  = t.contracts;
-      $('wSetup').value      = t.setup  || '';
-      $('wNotes').value      = t.notes  || '';
+      // v1.0.4 : setup/notes sont stockés HTML-échappés (invariant store) → on dé-échappe
+      // pour l'édition, sinon l'input affiche &lt;b&gt; au lieu de <b>.
+      const _unesc = Store.unescHtmlStore || (s => s);
+      $('wSetup').value      = _unesc(t.setup  || '');
+      $('wNotes').value      = _unesc(t.notes  || '');
       $('wOutcome').value    = t.outcome;
       $('wExit').value       = t.exitPrice || '';
       $('wManualPnl').value  = t.manualPnl != null ? t.manualPnl : '';
