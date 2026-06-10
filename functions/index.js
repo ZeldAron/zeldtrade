@@ -101,6 +101,18 @@ const ALLOWED_MODELS = new Set([
 // Aligné sur src/js/store.js TIER_LIMITS.maxAiPerWeek. elite/beta = illimité (borne haute
 // symbolique). Claude (coûteux) reste plafonné en plus par CLAUDE_DAILY_MAX (budget).
 const AI_WEEKLY_CAP  = { trader: 2, funded: 7, elite: 100000, beta: 100000 };
+// v1.0.5 — Essai 14j sans CB : un essai ACTIF accorde l'entitlement Funded côté serveur
+// (autoritaire). Lit `trialEnd` (ms) du doc plan. Auto-expire (trialEnd passé → plus Funded).
+function _trialActive(planData) {
+  return !!planData && typeof planData.trialEnd === 'number' && Date.now() < planData.trialEnd;
+}
+function _effectiveTier(planData) {
+  const pd = planData || {};
+  const t = (typeof pd.tier === 'string' && pd.tier) || (pd.plan === 'pro' ? 'beta' : 'trader');
+  if (t === 'funded' || t === 'elite' || t === 'beta') return t; // payé / VIP
+  if (_trialActive(pd)) return 'funded';                          // essai actif → Funded
+  return t;                                                       // trader = essai fini / legacy
+}
 const CLAUDE_DAILY_MAX = 30;
 // Clé de SEMAINE = date du lundi (UTC). Le compteur aiUsage.date stocke ce lundi → reset auto chaque lundi.
 function weekKey() {
@@ -178,7 +190,7 @@ exports.analyzeChart = onCall(
       // directement pour faire péter le budget Anthropic).
       const planSnap = await admin.firestore().doc(`users/${uid}/data/plan`).get();
       const planData = planSnap.exists ? planSnap.data() : {};
-      const tier     = (typeof planData.tier === 'string' && planData.tier) || (planData.plan === 'pro' ? 'beta' : 'trader');
+      const tier     = _effectiveTier(planData);   // v1.0.5 : essai actif → Funded
       if (!['funded', 'elite', 'beta'].includes(tier)) {
         throw new HttpsError('permission-denied',
           'Analyse approfondie réservée aux plans Funded et Elite. Upgrade ton plan pour en profiter.');
@@ -385,7 +397,7 @@ exports.analyzeChart = onCall(
     const db          = admin.firestore();
     const planSnap    = await db.doc(`users/${uid}/data/plan`).get();
     const _pd         = planSnap.exists ? (planSnap.data() || {}) : {};
-    const planTier    = (_pd.tier === 'funded' || _pd.tier === 'elite' || _pd.tier === 'beta') ? _pd.tier : (_pd.plan === 'pro' ? 'beta' : 'trader');
+    const planTier    = _effectiveTier(_pd);   // v1.0.5 : essai actif → quota Funded (7/sem)
     const isPro       = _pd.plan === 'pro';
     const cap         = AI_WEEKLY_CAP[planTier] || 1;  // v1.0.4 : hebdo tier-aware (trader 2 · funded 7 · elite/beta illimité)
     const usageRef    = db.doc(`users/${uid}/data/aiUsage`);
@@ -2967,10 +2979,15 @@ exports.getEconCalendar = onCall(
   async (request) => {
     if (!request.auth) throw new HttpsError('unauthenticated', 'Auth required');
     // v1.0.4 : calendrier éco = perk payant (Funded+). Serveur autoritaire (le client n'est que cosmétique).
-    const tier = (request.auth.token && request.auth.token.tier) || 'free';
-    if (!['funded', 'elite', 'beta', 'admin'].includes(tier)) {
-      throw new HttpsError('permission-denied', 'Upgrade required');
+    let _ok = ['funded', 'elite', 'beta', 'admin'].includes((request.auth.token && request.auth.token.tier) || 'free');
+    if (!_ok) {
+      // v1.0.5 : pas Funded+ via claim → essai actif ? (lecture doc plan, seulement dans ce cas)
+      try {
+        const _pd = (await admin.firestore().doc(`users/${request.auth.uid}/data/plan`).get()).data() || {};
+        _ok = _trialActive(_pd);
+      } catch (_) {}
     }
+    if (!_ok) throw new HttpsError('permission-denied', 'Upgrade required');
     const now = Date.now();
 
     // 1. Cache mémoire (instance chaude)

@@ -57,7 +57,7 @@ gratuit@test.com + trialEnd+14j → access=trialing, badge=ESSAI, maxAccounts=10
 tier reste 'trader'. demo (VIP) inchangé. Users sans trialEnd = comportement identique à avant.
 
 ### Reste (prochains milestones)
-M2 gating serveur (rules + CF lisent trialEnd) · M3 paywall fin d'essai + bannière jours restants ·
+M2 ✅ **CF fait** (helper `_effectiveTier`/`_trialActive` → analyzeChart quota+Claude + getEconCalendar accordent Funded si essai actif ; vérifié staging : gratuit+essai → getEconCalendar 200/75 events) ; **reste les rules Firestore** (comptes/groupes/storage gatés `plan=='pro'` → ajouter le check trialEnd) · M3 paywall fin d'essai + bannière jours restants ·
 M4 retrait tier gratuit (signup/offers/landing) + retrait essai Stripe 7j-CB · M5 migration existants
 (trialEnd=cutover+14j) · M6 E2E Stripe TEST → puis proposer prod.
 
