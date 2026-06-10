@@ -620,6 +620,8 @@ const Store = (() => {
           tier:        tier,
           activatedAt: (typeof raw.activatedAt === 'number' && isFinite(raw.activatedAt)) ? raw.activatedAt : null,
           codeHash:    typeof raw.codeHash === 'string' ? raw.codeHash.slice(0, 128) : null,
+          // v1.0.5 : essai 14j sans CB — fin d'essai (timestamp ms). Un essai actif accorde Funded.
+          trialEnd:    (typeof raw.trialEnd === 'number' && isFinite(raw.trialEnd)) ? raw.trialEnd : null,
         };
         if (_plan.tier !== wasTier) {
           window.dispatchEvent(new CustomEvent('store:planChanged'));
@@ -1369,6 +1371,29 @@ const Store = (() => {
   function resync() { return _loadFromFirestore(); }
   // v0.9.211 — Nouveaux helpers tier-aware
   function getTier()     { return VALID_TIERS.has(_plan.tier) ? _plan.tier : 'trader'; }
+  // ─── Essai 14j sans CB (v1.0.5) ──────────────────────────────────────────────
+  // Un essai ACTIF accorde les features/limites Funded. Le tier stocké reste 'trader'
+  // (vérité serveur) ; le gating client utilise le tier EFFECTIF ci-dessous.
+  function _isPaidTier(t) { return t === 'funded' || t === 'elite' || t === 'beta'; }
+  function isTrialActive() {
+    return !_isPaidTier(getTier()) && typeof _plan.trialEnd === 'number' && Date.now() < _plan.trialEnd;
+  }
+  function trialDaysLeft() {
+    if (!isTrialActive()) return 0;
+    return Math.max(0, Math.ceil((_plan.trialEnd - Date.now()) / 86400000));
+  }
+  function _effectiveTier() {
+    const t = getTier();
+    if (_isPaidTier(t)) return t;       // abonné (ou VIP) → son tier
+    if (isTrialActive()) return 'funded'; // essai actif → features Funded
+    return t;                            // 'trader' = essai fini / legacy (géré par le paywall)
+  }
+  // 'paid' | 'trialing' | 'expired' (essai fini, non payé) | 'none' (legacy sans essai)
+  function getAccessState() {
+    if (_isPaidTier(getTier())) return 'paid';
+    if (typeof _plan.trialEnd === 'number') return Date.now() < _plan.trialEnd ? 'trialing' : 'expired';
+    return 'none';
+  }
   // v0.9.256 — Badge plan par tier (label + classe CSS couleur) pour la sidebar
   const TIER_BADGE = {
     trader: { label: 'TRADER', cls: 'plan-basic'  },
@@ -1376,8 +1401,11 @@ const Store = (() => {
     elite:  { label: 'ELITE',  cls: 'plan-elite'  },
     beta:   { label: 'VIP',    cls: 'plan-beta'   },
   };
-  function getTierBadge() { return TIER_BADGE[getTier()] || TIER_BADGE.trader; }
-  function getLimits()   { return TIER_LIMITS[getTier()] || TIER_LIMITS.trader; }
+  function getTierBadge() {
+    if (isTrialActive()) return { label: 'ESSAI', cls: 'plan-funded' };
+    return TIER_BADGE[getTier()] || TIER_BADGE.trader;
+  }
+  function getLimits()   { return TIER_LIMITS[_effectiveTier()] || TIER_LIMITS.trader; }
   // v0.9.376 (TIER-RECAP) : diff des limites + features entre 2 paliers → liste de ce
   // qu'on gagne / perd au changement de palier. Données seulement (l'UI localise via i18n).
   function getTierRecap(from, to) {
@@ -1403,7 +1431,7 @@ const Store = (() => {
   function canUseFeature(feat) {
     const allowed = TIER_FEATURES[feat];
     if (!allowed) return true; // pas listée = accès libre
-    return allowed.includes(getTier());
+    return allowed.includes(_effectiveTier());
   }
 
   let _proAttempts = 0;
@@ -1591,6 +1619,7 @@ const Store = (() => {
     getSpreads, updateSpreads, getSpreadsByFirm, getAllSpreadsByFirm, updateSpreadsByFirm, getCommission,
     getGroups, getGroupById, addGroup, updateGroup, deleteGroup,
     getPlanInfo, isPro, getTier, getTierBadge, getLimits, getTierRecap, canUseFeature, getStripeInfo, resync, TIER_LIMITS, TIER_FEATURES,
+    getAccessState, isTrialActive, trialDaysLeft,
     isPlanLoaded: () => _planLoaded,
     activatePro, canAnalyzeToday, refreshAiUsage, canAddAccount, getAIUsage, aiUsedThisWeek,
     getLastWizardPrefs, setLastWizardPrefs,
