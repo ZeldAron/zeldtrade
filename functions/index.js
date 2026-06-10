@@ -2966,6 +2966,11 @@ exports.getEconCalendar = onCall(
   { region: 'europe-west1', cors: true },
   async (request) => {
     if (!request.auth) throw new HttpsError('unauthenticated', 'Auth required');
+    // v1.0.4 : calendrier éco = perk payant (Funded+). Serveur autoritaire (le client n'est que cosmétique).
+    const tier = (request.auth.token && request.auth.token.tier) || 'free';
+    if (!['funded', 'elite', 'beta', 'admin'].includes(tier)) {
+      throw new HttpsError('permission-denied', 'Upgrade required');
+    }
     const now = Date.now();
 
     // 1. Cache mémoire (instance chaude)

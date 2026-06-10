@@ -37,6 +37,31 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Calendrier éco = perk PAYANT (Funded+), plus d'accès gratuit
+
+**Type** : feat (gating)
+**Fichiers** : `functions/index.js`, `src/js/store.js`, `src/js/i18n.js`, `src/js/app.js`, `src/pages/app.html`
+
+### Contexte
+Demande user : le tier gratuit (Trader) ne doit PLUS avoir accès au calendrier économique.
+La feature `fjNews` était orpheline depuis le retrait des news → renommée `econCal` et
+repurposée pour gater le calendrier.
+
+### Changements
+- **store.js** : `fjNews` → `econCal` dans TIER_FEATURES (`['funded','elite','beta']`).
+- **i18n.js** (FR+EN) : `tier.feat.fjNews` (« Financial Juice News ») → `tier.feat.econCal`
+  (« Calendrier économique » / « Economic calendar »).
+- **app.js** : `econCal` ajouté à la map du tier-recap (apparaît comme perk Funded+) ;
+  `renderEcon` gate le calendrier → gratuit voit un upsell 🔒 « réservé Funded/Elite »
+  (bouton → offres), Funded+ voit le calendrier. `_ecalInit` appelé QUE si `canUseFeature('econCal')`.
+- **getEconCalendar** (CF) : gate serveur autoritaire
+  `if (!['funded','elite','beta','admin'].includes(tier)) → permission-denied`.
+
+### Vérifié (staging, 2 niveaux)
+- CF : `gratuit@test.com` → **403 Upgrade required** · `demo@gmail.com` (VIP) → **200, 75 events**.
+- Front : gratuit → upsell 🔒, **aucun appel getEconCalendar ne fuit** (gate avant l'appel) ;
+  VIP → calendrier 16 lignes, 0 erreur console.
+
 ## 2026-06-10 — v1.0.4 (staging) — Onglet Éco = calendrier seul (news marchés retirées, demande user)
 
 **Type** : feat
