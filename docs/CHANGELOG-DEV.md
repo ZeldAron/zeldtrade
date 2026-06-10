@@ -37,6 +37,26 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Fix faux « Compte supprimé » sur token expiré + langue FR/EN
+
+**Type** : fix
+**Fichiers** : `src/js/auth.js`, `src/js/i18n.js`, `src/pages/app.html`
+
+### Contexte
+QA (10/06) : après création rapide de comptes, la session a affiché « Compte supprimé » puis
+logout — alors que le compte était bien vivant (vérifié via Admin SDK staging). Faux positif.
+
+### Changements
+- **auth.js** `isAccountGoneError()` : `auth/user-token-expired` (+ `TOKEN_EXPIRED` regex) RETIRÉ
+  de la liste « compte supprimé ». Un token expiré = re-login normal, pas un écran alarmant
+  « 🚫 Compte supprimé ». On ne garde que user-not-found / user-disabled / id-token-revoked /
+  invalid-user-token.
+- **i18n.js** (commit précédent même jour) : `?lang=` consommé one-shot (retiré de l'URL) —
+  corrige le mélange FR/EN (badge/messages réanalyse).
+
+### À surveiller
+- Si un user signale encore un faux « Compte supprimé », regarder `invalid-user-token`/`id-token-revoked`.
+
 ## 2026-06-09 — v1.0.4 (staging) — Recovery prod→git + refonte offres (quota IA hebdo) + fixes IA/CSP
 
 **Type** : recover + feat + fix
