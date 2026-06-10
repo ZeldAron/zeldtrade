@@ -769,6 +769,9 @@ function _wrapCF(name, handler) {
       if (e && e.httpErrorCode) {
         throw e;
       }
+      // v1.0.4 : TOUJOURS logger dans Cloud Logging (le report Discord peut être
+      // KO — webhook invalide — et l'erreur devenait invisible, ex: 500 Stripe staging).
+      console.error(`[CF:${name}]`, (e && e.message) || String(e), '\n', (e && e.stack) || '');
       // Vraie erreur serveur → report Discord + re-throw 'internal' au client
       await _reportError({
         fn:      name,
