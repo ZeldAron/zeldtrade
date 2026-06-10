@@ -111,26 +111,40 @@ function initApp() {
       return;
     }
 
+    // v1.0.4 : calendrier = widget « events » TradingView (thème suivant l'app) → actual/forecast/
+    // previous en TEMPS RÉEL, color-codés. Le rendu natif (_ecalInit/getEconCalendar) est conservé
+    // mais non appelé : aucune source gratuite ne donne l'« actual », le widget tiers oui.
+    const light = document.documentElement.getAttribute('data-theme') === 'light';
     el.innerHTML = `
       <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
       <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}
-        <span class="econ-sub">${en ? 'this week · your local time' : 'cette semaine · heure locale'}</span></h3>
-      <div class="ecal-filters" id="ecalFilters" style="display:none">
-        <div class="ecal-seg" id="ecalDay" role="group" aria-label="${en ? 'Period' : 'Période'}">
-          <button type="button" data-day="today">${en ? 'Today' : 'Aujourd’hui'}</button>
-          <button type="button" data-day="week">${en ? 'Whole week' : 'Toute la semaine'}</button>
-        </div>
-        <div class="ecal-seg" id="ecalImp" role="group" aria-label="Impact">
-          <button type="button" data-imp="all">${en ? 'All' : 'Tout'}</button>
-          <button type="button" data-imp="high">${en ? 'High' : 'Fort'}</button>
-          <button type="button" data-imp="medium">${en ? 'Medium' : 'Moyen'}</button>
-          <button type="button" data-imp="low">${en ? 'Low' : 'Faible'}</button>
-        </div>
-        <select class="ecal-cur" id="ecalCur" aria-label="${en ? 'Currency' : 'Devise'}"></select>
-      </div>
-      <div id="ecalList"><div class="econ-loading">${en ? 'Loading calendar…' : 'Chargement du calendrier…'}</div></div>`;
+        <span class="econ-sub">${en ? 'real-time · actual / forecast / previous' : 'temps réel · réel / prévu / précédent'}</span></h3>
+      <div class="tradingview-widget-container" id="tvEconHost" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:520px;background:var(--bg2)">
+        <div class="tradingview-widget-container__widget"></div>
+      </div>`;
+    _tvEconInit(el, en, light);
+  }
 
-    _ecalInit(el, en);
+  // Widget « events » TradingView (officiel). innerHTML n'exécute pas les <script> → on crée le
+  // loader dynamiquement (src s3.tradingview.com déjà en CSP ; iframe www.tradingview-widget.com).
+  function _tvEconInit(root, en, light) {
+    const cont = root.querySelector('.tradingview-widget-container');
+    if (!cont) return;
+    const cfg = {
+      colorTheme: light ? 'light' : 'dark',
+      isTransparent: true,
+      locale: en ? 'en' : 'fr',
+      countryFilter: 'us,eu,jp,gb,ca,ch,au,nz,cn',
+      importanceFilter: '0,1',   // medium + high (-1 = low, masqué pour réduire le bruit)
+      width: '100%',
+      height: 520
+    };
+    const s = document.createElement('script');
+    s.type = 'text/javascript';
+    s.async = true;
+    s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
+    s.textContent = JSON.stringify(cfg);
+    cont.appendChild(s);
   }
 
   // Calendrier : fetch (CF cachée) → filtres impact/devise persistés → rendu groupé par jour.
