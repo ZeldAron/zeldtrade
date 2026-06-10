@@ -179,9 +179,13 @@ function initApp() {
         const hm = e.impact === 'holiday'
           ? '—'
           : d.toLocaleTimeString(en ? 'en-GB' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
-        const fx = (e.forecast || e.previous)
-          ? `<span class="ecal-fx">${e.forecast ? `${en ? 'Fcst' : 'Prév.'} ${esc(e.forecast)}` : ''}${e.forecast && e.previous ? ' · ' : ''}${e.previous ? `${en ? 'Prev' : 'Préc.'} ${esc(e.previous)}` : ''}</span>`
-          : '';
+        // v1.0.4 : valeurs agrandies + slot « Réel » (actual) prêt si la source le fournit
+        const seg = (lbl, val, cls) => val
+          ? `<span class="fxi${cls ? ' ' + cls : ''}"><em>${lbl}</em><b>${esc(val)}</b></span>` : '';
+        const fxSegs = seg(en ? 'Act' : 'Réel', e.actual, 'act')
+                     + seg(en ? 'Fcst' : 'Prév', e.forecast)
+                     + seg(en ? 'Prev' : 'Préc', e.previous);
+        const fx = fxSegs ? `<span class="ecal-fx">${fxSegs}</span>` : '';
         html += `<div class="ecal-row${e.dateUtc < now ? ' past' : ''}">
           <span class="ecal-time">${hm}</span>
           <span class="ecal-dot ${esc(e.impact)}"></span>
