@@ -193,7 +193,7 @@ section('XAUUSD — long, $5 move, 0.5 lot');
   check('rewardUSD', c.rewardUSD, 500);
 }
 
-// ─── 9. CFD — US30 (Dow, $5/pt, 1 lot) ────────────────────────────────────────
+// ─── 9. CFD — US30 (Dow, $1/pt, 1 lot — contract size FTMO = 1 depuis v0.9.416) ─
 section('US30 — long 50 pts, 1 lot');
 {
   const c = Calc.trade({
@@ -203,8 +203,8 @@ section('US30 — long 50 pts, 1 lot');
   });
   check('riskPts',   c.riskPts,   50);
   check('rewardPts', c.rewardPts, 100);
-  check('riskUSD',   c.riskUSD,   250);  // 50 × $5 × 1
-  check('rewardUSD', c.rewardUSD, 500);
+  check('riskUSD',   c.riskUSD,   50);   // 50 × $1 × 1 (v0.9.416 : US30 5→1, contract size FTMO)
+  check('rewardUSD', c.rewardUSD, 100);
 }
 
 // ─── 10. CFD — US500 (S&P 500, $1/pt) ─────────────────────────────────────────
