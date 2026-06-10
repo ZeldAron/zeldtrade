@@ -93,19 +93,9 @@ function initApp() {
     const el = document.getElementById('econContent');
     if (!el) return;
     const en = i18n.getLang && i18n.getLang() === 'en';
-    const hasFjNews = Store.canUseFeature && Store.canUseFeature('fjNews');
 
-    const newsBlock = hasFjNews
-      ? `<div class="news-tags" id="newsTags"></div>
-         <div id="fjNewsHost" style="min-height:120px;border:1px solid var(--border);border-radius:12px;overflow:hidden"></div>`
-      : `<div style="border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;background:var(--bg2)">
-           <div style="font-size:30px;margin-bottom:6px">🔒</div>
-           <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.55">${en
-             ? 'Live market news is reserved for <strong>Funded / Elite</strong> plans.'
-             : 'Les news marchés en direct sont réservées aux plans <strong>Funded / Elite</strong>.'}</p>
-           <button class="btn-primary" id="econUpsell" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
-         </div>`;
-
+    // v1.0.4 : section « News marchés » RETIRÉE de l'onglet Éco (demande user).
+    // Code conservé (_newsInit + CF getMarketNews déployée) → réactivation triviale.
     el.innerHTML = `
       <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
       <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}
@@ -123,14 +113,9 @@ function initApp() {
         </div>
         <select class="ecal-cur" id="ecalCur" aria-label="${en ? 'Currency' : 'Devise'}"></select>
       </div>
-      <div id="ecalList"><div class="econ-loading">${en ? 'Loading calendar…' : 'Chargement du calendrier…'}</div></div>
-      <h3 class="econ-h" style="margin-top:28px">${en ? 'Market news' : 'News marchés'}
-        ${hasFjNews ? `<span class="econ-sub">${en ? 'refreshed every 5 min' : 'rafraîchies toutes les 5 min'}</span>` : ''}</h3>
-      ${newsBlock}`;
+      <div id="ecalList"><div class="econ-loading">${en ? 'Loading calendar…' : 'Chargement du calendrier…'}</div></div>`;
 
-    document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
     _ecalInit(el, en);
-    if (hasFjNews) _newsInit(el, en);
   }
 
   // Calendrier : fetch (CF cachée) → filtres impact/devise persistés → rendu groupé par jour.

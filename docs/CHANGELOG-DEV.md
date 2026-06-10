@@ -37,6 +37,25 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Onglet Éco = calendrier seul (news marchés retirées, demande user)
+
+**Type** : feat
+**Fichiers** : `src/js/app.js`, `src/pages/app.html`
+
+### Contexte
+La section « News marchés » plantait (« Impossible de charger ») sur le compte Admin de l'user
+alors qu'elle marchait sur demo@gmail.com (cache app.js ou spécificité compte). L'user a décidé
+de la RETIRER. L'onglet Éco = calendrier économique seul désormais.
+
+### Changements
+- `renderEcon` : section News supprimée (heading + filtres + host + upsell). Le calendrier
+  économique (filtres période/impact/devise, vue Aujourd'hui défaut) reste. Code conservé :
+  `_newsInit` (front) + CF `getMarketNews` (déployée, résiliente) → réactivation triviale.
+- Feature gating `fjNews` et CF inchangés (juste plus rendus dans Éco).
+
+### Vérifié
+Calendrier 16 lignes · aucune section/titre news · 0 erreur console.
+
 ## 2026-06-10 — v1.0.4 (staging) — News marchés résilientes (fallback stale) + calendrier retiré
 
 **Type** : fix + feat
