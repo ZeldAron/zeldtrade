@@ -193,7 +193,10 @@ function initApp() {
           : (en ? 'No events match these filters.' : 'Aucun événement pour ces filtres.')}</p>`;
         return;
       }
-      let html = '', lastDay = '';
+      // En-tête de colonnes aligné sur la grille (4 cellules vides + Prév / Préc), puis les lignes.
+      let html = `<div class="ecal-head"><span></span><span></span><span></span><span></span>`
+               + `<span>${en ? 'Fcst' : 'Prév'}</span><span>${en ? 'Prev' : 'Préc'}</span></div>`;
+      let lastDay = '';
       for (const e of evs) {
         const d = new Date(e.dateUtc);
         const dayKey = d.toDateString();
@@ -205,19 +208,17 @@ function initApp() {
         const hm = e.impact === 'holiday'
           ? '—'
           : d.toLocaleTimeString(en ? 'en-GB' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
-        // v1.0.4 : valeurs agrandies + slot « Réel » (actual) prêt si la source le fournit
-        const seg = (lbl, val, cls) => val
-          ? `<span class="fxi${cls ? ' ' + cls : ''}"><em>${lbl}</em><b>${esc(val)}</b></span>` : '';
-        const fxSegs = seg(en ? 'Act' : 'Réel', e.actual, 'act')
-                     + seg(en ? 'Fcst' : 'Prév', e.forecast)
-                     + seg(en ? 'Prev' : 'Préc', e.previous);
-        const fx = fxSegs ? `<span class="ecal-fx">${fxSegs}</span>` : '';
+        // Colonnes fixes Prév/Préc (alignées verticalement). Colonne « Réel » à ajouter ici quand
+        // une source payante fournira e.actual.
+        const fcst = e.forecast ? esc(e.forecast) : '';
+        const prev = e.previous ? esc(e.previous) : '';
         html += `<div class="ecal-row${e.dateUtc < now ? ' past' : ''}">
           <span class="ecal-time">${hm}</span>
           <span class="ecal-dot ${esc(e.impact)}"></span>
           <span class="ecal-cur-tag">${esc(e.country)}</span>
           <span class="ecal-title">${esc(e.title)}</span>
-          ${fx}
+          <span class="ecal-val fcst">${fcst}</span>
+          <span class="ecal-val prev">${prev}</span>
         </div>`;
       }
       listEl.innerHTML = html;
