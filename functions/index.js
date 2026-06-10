@@ -2983,6 +2983,8 @@ exports.getEconCalendar = onCall(
               impact:   IMPACTS[e.impact] || 'low',
               forecast: String(e.forecast || '').slice(0, 20),
               previous: String(e.previous || '').slice(0, 20),
+              // L'export FF n'inclut pas l'actual — passthrough prêt si la source évolue/change
+              actual:   String(e.actual || '').slice(0, 20),
             };
           }).filter(e => e.dateUtc && e.title);
         }
