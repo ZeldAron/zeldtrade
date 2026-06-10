@@ -37,6 +37,30 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — News marchés résilientes (fallback stale) + calendrier retiré
+
+**Type** : fix + feat
+**Fichiers** : `functions/index.js`, `src/js/app.js`, `src/pages/app.html`, `docs/TODO.md`
+
+### Contexte
+QA : « Impossible de charger les news » côté user, alors que la CF répondait 200 et que le rendu
+marchait en navigateur frais → cache app.js périmé côté user. MAIS vrai trou : `getMarketNews`
+n'avait aucun fallback — si BBC ET CNBC hoquettent en même temps (ou cold start + timeout),
+l'utilisateur voyait l'erreur.
+
+### Changements
+- **`getMarketNews`** : cache 3 niveaux comme `getEconCalendar` — mémoire instance (5 min) →
+  Firestore `publicStats/marketNews` (5 min, partagé/persistant) → fetch RSS. Sources RSS KO →
+  sert le stale Firestore ≤ 24 h au lieu de throw 'unavailable'. Plus de « Impossible de charger »
+  sur un hoquet transitoire des sources.
+- **Calendrier économique retiré** de l'onglet Éco (demande user — feed FF sans « actual »,
+  pas de source gratuite). Code conservé (`_ecalInit` non appelé + CF `getEconCalendar` déployée).
+  Trello : ECON-CAL pour réactivation. L'onglet Éco = news seules pour l'instant.
+
+### Vérifié
+getMarketNews 200 · 30 items · écriture Firestore confirmée (cache partagé). News rendues 30/30
+en navigateur, 0 erreur. Calendrier absent (0 élément).
+
 ## 2026-06-10 — v1.0.4 (staging) — Onglet Éco : calendrier économique natif + news filtrables
 
 **Type** : feat

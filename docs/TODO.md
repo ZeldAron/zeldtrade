@@ -528,7 +528,22 @@ Audit complet du projet par Explore agent — 46 nouveaux items identifiés, cla
 **Description** : Nouvelles features hard-deploy. Ajouter Firestore `/config/features` + toggle runtime.
 **Effort** : 1-2h
 
+## 🎯 Demandes user 2026-06-10 (à planifier)
+- **ECON-CAL — Réactiver le calendrier économique dans l'onglet Éco.** Retiré le 10/06 : le feed ForexFactory ne fournit pas l'« actual » (valeur réelle) et aucune source gratuite ne le donne sans clé. Code conservé (front `_ecalInit` + CF `getEconCalendar`). À réactiver quand une source à 0€ fournit l'actual (piste : FMP free tier 250 req/j, notre cache 30 min suffit). Pour l'instant l'onglet Éco n'affiche que les news.
+
+---
+
 ## 🎯 Features à terminer / polish
+
+### ECON-CAL — 🟡 MOYEN — Réactiver le calendrier économique (Éco)
+**Description** : Le calendrier éco natif (ForexFactory via CF `getEconCalendar`) a été RETIRÉ de
+l'onglet Éco le 10/06/2026 car le feed FF ne fournit PAS l'« actual » (valeur réelle), et aucune
+source gratuite ne le donne sans clé. Le code est conservé (front `_ecalInit` non appelé + CF
+déployée) → réactivation = décommenter le bloc dans `renderEcon` (src/js/app.js) + rappeler
+`_ecalInit(el, en)`. **Condition** : trouver une source qui fournit l'actual à 0€ (piste : FMP
+free tier 250 req/jour — notre cache 30 min suffit largement) puis fusionner FF (semaine) + actual.
+L'onglet Éco ne montre plus que les NEWS pour l'instant.
+**Effort** : 2-3h (une fois la source choisie)
 
 ### F5 — 🟠 HAUT — Exporteur CSV trades
 **Description** : F3 fait PDF, faut aussi CSV pour Excel. Bouton "Exporter CSV".

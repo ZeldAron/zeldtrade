@@ -2861,11 +2861,25 @@ exports.getMarketNews = onCall(
     const ALLOWED = ['funded', 'elite', 'beta', 'admin'];
     if (!ALLOWED.includes(tier)) throw new HttpsError('permission-denied', 'Upgrade required');
 
-    // Cache en mémoire CF (shared entre invocations chaudes) ~5 min
     const now = Date.now();
-    if (exports._newsCache && (now - exports._newsCache.ts) < 5 * 60 * 1000) {
+    const TTL = 5 * 60 * 1000;
+    // 1. Cache mémoire (instance chaude)
+    if (exports._newsCache && (now - exports._newsCache.ts) < TTL) {
       return exports._newsCache.data;
     }
+    // 2. Cache Firestore (partagé entre instances, survit aux cold starts)
+    const newsRef = admin.firestore().doc('publicStats/marketNews');
+    let staleNews = null;
+    try {
+      const snap = await newsRef.get();
+      if (snap.exists) {
+        staleNews = snap.data() || null;
+        if (staleNews && staleNews.ts && Array.isArray(staleNews.items) && (now - staleNews.ts) < TTL) {
+          exports._newsCache = { ts: staleNews.ts, data: { items: staleNews.items, fetchedAt: staleNews.ts } };
+          return exports._newsCache.data;
+        }
+      }
+    } catch (_) { /* non bloquant */ }
 
     const SOURCES = [
       'https://feeds.bbci.co.uk/news/business/rss.xml',
@@ -2923,11 +2937,18 @@ exports.getMarketNews = onCall(
       } catch (_) { /* try next */ }
     }
 
-    if (!items || !items.length) throw new HttpsError('unavailable', 'No news available');
+    if (items && items.length) {
+      const data = { items, fetchedAt: now };
+      exports._newsCache = { ts: now, data };
+      try { await newsRef.set({ ts: now, items }); } catch (_) { /* cache best-effort */ }
+      return data;
+    }
 
-    const data = { items, fetchedAt: now };
-    exports._newsCache = { ts: now, data };
-    return data;
+    // 4. Fallback stale (sources RSS KO) — mieux vaut des news un peu datées qu'une erreur
+    if (staleNews && Array.isArray(staleNews.items) && (now - (staleNews.ts || 0)) < 24 * 3600 * 1000) {
+      return { items: staleNews.items, fetchedAt: staleNews.ts, stale: true };
+    }
+    throw new HttpsError('unavailable', 'No news available');
   }
 );
 
