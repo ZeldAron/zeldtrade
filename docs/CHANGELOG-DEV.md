@@ -37,6 +37,27 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — Calendrier natif : colonnes alignées (refonte affichage valeurs)
+
+**Type** : style/UX
+**Fichiers** : `src/js/app.js`, `src/css/style.css`, `src/pages/app.html`
+
+### Contexte
+Les valeurs Prév/Préc flottaient à droite avec labels inline (`.ecal-fx`/`.fxi`) → rien ne
+s'alignait d'une ligne à l'autre (« brouillon »).
+
+### Changements
+- `.ecal-row` (+ nouvelle `.ecal-head`) passent en **CSS grid** colonnes fixes :
+  `48px 12px 40px minmax(0,1fr) 78px 92px` (time · dot · devise · event · Prév · Préc).
+- Ligne d'**en-têtes** (PRÉV / PRÉC) alignée sur la même grille. Valeurs `.ecal-val`
+  right-aligned + `tabular-nums` → alignement vertical parfait. Labels inline supprimés.
+- `renderEcon`/`_ecalInit` : rendu en 2 cellules valeur (fcst/prev) au lieu des segments `.fxi`.
+- Mobile (≤640px) : colonnes resserrées (au lieu de masquer les valeurs). Bump app.js h=15 + style.css h=4.
+
+### Vérifié (staging)
+En-tête présent, 75 lignes, **colonne Préc alignée (1 seule position left = 1316px)**, 0 erreur.
+Slot « Réel » (actual) à ajouter comme 3ᵉ colonne quand source payante.
+
 ## 2026-06-10 — v1.0.4 (staging) — Retour au calendrier natif (widget TradingView parké)
 
 **Type** : revert (décision user)
