@@ -273,9 +273,14 @@ const UI = (() => {
   }
 
   // ── Trade list ──────────────────────────────────────────────────────────────
+  // v1.0.4 : le Journal honore le Focus (sélecteur de compte/firm/groupe du header),
+  // comme le dashboard/analytics/calendrier — avant il listait toujours TOUS les comptes.
+  function _journalTrades() {
+    return (Store.scopedTrades ? Store.scopedTrades() : Store.getTrades());
+  }
   function getFiltered() {
     const q = ($('searchInput').value || '').toLowerCase();
-    return Store.getTrades().filter(t => {
+    return _journalTrades().filter(t => {
       const matchFilter = currentFilter === 'all' || t.outcome === currentFilter;
       const matchSearch = !q || [t.instrument, t.setup, t.apex, t.notes]
         .some(s => (s || '').toLowerCase().includes(q));
@@ -286,7 +291,7 @@ const UI = (() => {
   function renderList() {
     const list     = $('tradeList');
     const filtered = getFiltered();
-    const total    = Store.getTrades().length;
+    const total    = _journalTrades().length;
 
     // U24 : compteur "X / N trades" quand un filtre/recherche est actif
     // (escape les nombres via toFixed ou Number — pas de user-controlled string)
@@ -654,7 +659,7 @@ const UI = (() => {
       });
       if (!ok) return;
       Store.deleteTrade(t.id);
-      selectedId = Store.getTrades()[0]?.id || null;
+      selectedId = _journalTrades()[0]?.id || null;  // v1.0.4 : reste dans le scope Focus
       const layout = document.querySelector('.journal-layout');
       if (layout) layout.classList.remove('has-detail');
       renderList();
