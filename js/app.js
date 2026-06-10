@@ -111,22 +111,34 @@ function initApp() {
       return;
     }
 
-    // v1.0.4 : calendrier = widget « events » TradingView (thème suivant l'app) → actual/forecast/
-    // previous en TEMPS RÉEL, color-codés. Le rendu natif (_ecalInit/getEconCalendar) est conservé
-    // mais non appelé : aucune source gratuite ne donne l'« actual », le widget tiers oui.
-    const light = document.documentElement.getAttribute('data-theme') === 'light';
+    // v1.0.4 : calendrier économique NATIF (notre design : impact/Prév/Préc, filtres période/
+    // impact/devise). Pas d'« actual » (aucune source gratuite) → on branchera une API payante
+    // (FMP/EODHD) plus tard, le slot « Réel » est prêt. Widget TradingView (_tvEconInit) parké en
+    // réserve (revival = remplacer _ecalInit par _tvEconInit ; CSP tradingview-widget.com gardée).
     el.innerHTML = `
       <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
       <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}
-        <span class="econ-sub">${en ? 'real-time · actual / forecast / previous' : 'temps réel · réel / prévu / précédent'}</span></h3>
-      <div class="tradingview-widget-container" id="tvEconHost" style="border:1px solid var(--border);border-radius:12px;overflow:hidden;min-height:520px;background:var(--bg2)">
-        <div class="tradingview-widget-container__widget"></div>
-      </div>`;
-    _tvEconInit(el, en, light);
+        <span class="econ-sub">${en ? 'this week · your local time' : 'cette semaine · heure locale'}</span></h3>
+      <div class="ecal-filters" id="ecalFilters" style="display:none">
+        <div class="ecal-seg" id="ecalDay" role="group" aria-label="${en ? 'Period' : 'Période'}">
+          <button type="button" data-day="today">${en ? 'Today' : 'Aujourd’hui'}</button>
+          <button type="button" data-day="week">${en ? 'Whole week' : 'Toute la semaine'}</button>
+        </div>
+        <div class="ecal-seg" id="ecalImp" role="group" aria-label="Impact">
+          <button type="button" data-imp="all">${en ? 'All' : 'Tout'}</button>
+          <button type="button" data-imp="high">${en ? 'High' : 'Fort'}</button>
+          <button type="button" data-imp="medium">${en ? 'Medium' : 'Moyen'}</button>
+          <button type="button" data-imp="low">${en ? 'Low' : 'Faible'}</button>
+        </div>
+        <select class="ecal-cur" id="ecalCur" aria-label="${en ? 'Currency' : 'Devise'}"></select>
+      </div>
+      <div id="ecalList"><div class="econ-loading">${en ? 'Loading calendar…' : 'Chargement du calendrier…'}</div></div>`;
+
+    _ecalInit(el, en);
   }
 
-  // Widget « events » TradingView (officiel). innerHTML n'exécute pas les <script> → on crée le
-  // loader dynamiquement (src s3.tradingview.com déjà en CSP ; iframe www.tradingview-widget.com).
+  // [PARKÉ] Widget « events » TradingView (actuals temps réel) — non appelé. Revival : remplacer
+  // l'appel _ecalInit par _tvEconInit. innerHTML n'exécute pas les <script> → loader créé dynamiquement.
   function _tvEconInit(root, en, light) {
     const cont = root.querySelector('.tradingview-widget-container');
     if (!cont) return;
