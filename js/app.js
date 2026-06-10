@@ -111,6 +111,10 @@ function initApp() {
       <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}
         <span class="econ-sub">${en ? 'this week · your local time' : 'cette semaine · heure locale'}</span></h3>
       <div class="ecal-filters" id="ecalFilters" style="display:none">
+        <div class="ecal-seg" id="ecalDay" role="group" aria-label="${en ? 'Period' : 'Période'}">
+          <button type="button" data-day="today">${en ? 'Today' : 'Aujourd’hui'}</button>
+          <button type="button" data-day="week">${en ? 'Whole week' : 'Toute la semaine'}</button>
+        </div>
         <div class="ecal-seg" id="ecalImp" role="group" aria-label="Impact">
           <button type="button" data-imp="all">${en ? 'All' : 'Tout'}</button>
           <button type="button" data-imp="high">${en ? 'High' : 'Fort'}</button>
@@ -133,28 +137,36 @@ function initApp() {
   function _ecalInit(root, en) {
     const listEl = root.querySelector('#ecalList');
     const filtEl = root.querySelector('#ecalFilters');
+    const dayEl  = root.querySelector('#ecalDay');
     const impEl  = root.querySelector('#ecalImp');
     const curEl  = root.querySelector('#ecalCur');
     const esc    = UI.escHtml;
     const errMsg = `<p class="econ-empty">${en ? 'Calendar unavailable — try again later.' : 'Calendrier indisponible — réessaie plus tard.'}</p>`;
 
+    // v1.0.4 : vue « Aujourd'hui » par DÉFAUT — la semaine entière est opt-in via le filtre.
+    let dayScope = localStorage.getItem('zt_ecal_day') || 'today';
+    if (dayScope !== 'today' && dayScope !== 'week') dayScope = 'today';
     let imp = localStorage.getItem('zt_ecal_imp') || 'all';
     let cur = localStorage.getItem('zt_ecal_cur') || 'all';
 
     function paint() {
       if (!_ecalEvents) return;
+      dayEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.day === dayScope));
       impEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.imp === imp));
       curEl.value = cur;
       const now = Date.now();
+      const todayKey = new Date().toDateString();
       // 'ALL' (événements globaux type OPEC) reste visible quel que soit le filtre devise.
       const evs = _ecalEvents.filter(e =>
+        (dayScope === 'week' || new Date(e.dateUtc).toDateString() === todayKey) &&
         (imp === 'all' || e.impact === imp) &&
         (cur === 'all' || e.country === cur || e.country === 'ALL'));
       if (!evs.length) {
-        listEl.innerHTML = `<p class="econ-empty">${en ? 'No events match these filters.' : 'Aucun événement pour ces filtres.'}</p>`;
+        listEl.innerHTML = `<p class="econ-empty">${dayScope === 'today'
+          ? (en ? 'No events today for these filters — try “Whole week”.' : 'Aucun événement aujourd’hui pour ces filtres — essaie « Toute la semaine ».')
+          : (en ? 'No events match these filters.' : 'Aucun événement pour ces filtres.')}</p>`;
         return;
       }
-      const todayKey = new Date().toDateString();
       let html = '', lastDay = '';
       for (const e of evs) {
         const d = new Date(e.dateUtc);
@@ -191,6 +203,13 @@ function initApp() {
       paint();
     }
 
+    dayEl.addEventListener('click', e => {
+      const b = e.target.closest('button[data-day]');
+      if (!b) return;
+      dayScope = b.dataset.day;
+      try { localStorage.setItem('zt_ecal_day', dayScope); } catch {}
+      paint();
+    });
     impEl.addEventListener('click', e => {
       const b = e.target.closest('button[data-imp]');
       if (!b) return;
