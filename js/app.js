@@ -93,9 +93,24 @@ function initApp() {
     const el = document.getElementById('econContent');
     if (!el) return;
     const en = i18n.getLang && i18n.getLang() === 'en';
+    // v1.0.4 : calendrier éco = perk PAYANT (Funded+). Le gratuit voit un upsell. Section news retirée.
+    const hasEcon = Store.canUseFeature && Store.canUseFeature('econCal');
 
-    // v1.0.4 : section « News marchés » RETIRÉE de l'onglet Éco (demande user).
-    // Code conservé (_newsInit + CF getMarketNews déployée) → réactivation triviale.
+    if (!hasEcon) {
+      el.innerHTML = `
+        <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
+        <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}</h3>
+        <div style="border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;background:var(--bg2)">
+          <div style="font-size:30px;margin-bottom:6px">🔒</div>
+          <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.55">${en
+            ? 'The economic calendar is reserved for <strong>Funded / Elite</strong> plans.'
+            : 'Le calendrier économique est réservé aux plans <strong>Funded / Elite</strong>.'}</p>
+          <button class="btn-primary" id="econUpsell" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
+        </div>`;
+      document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
+      return;
+    }
+
     el.innerHTML = `
       <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
       <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}
@@ -594,7 +609,7 @@ function initApp() {
       accounts: 'tier.feat.accounts', ai: 'tier.feat.ai', shots: 'tier.feat.shots',
       groups: 'tier.feat.groups', exportPdf: 'tier.feat.exportPdf', exportCsv: 'tier.feat.exportCsv',
       prioritySupport: 'tier.feat.prioritySupport', betaFeatures: 'tier.feat.betaFeatures',
-      decisiveVote: 'tier.feat.decisiveVote', partials: 'tier.feat.partials',
+      decisiveVote: 'tier.feat.decisiveVote', partials: 'tier.feat.partials', econCal: 'tier.feat.econCal',
     };
     function lbl(x) {
       let s = i18n.t(FEAT_KEY[x.k] || x.k);
