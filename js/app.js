@@ -81,143 +81,200 @@ function initApp() {
   // v1.0.4 : page « Éco » — calendrier économique (LIBRE, tous) + news Financial Juice
   // (réservé Funded/Elite/VIP via la feature fjNews). Le widget FJ sera branché dès qu'on
   // aura son code embed. Build une seule fois (l'iframe du calendrier persiste).
+  // ── ÉCO (v1.0.4) : calendrier économique NATIF + news marchés filtrables ────
+  // Remplace le widget TradingView tiers par un rendu maison : données ForexFactory
+  // via la CF getEconCalendar (cache serveur 30 min — limite éditeur 2 req/5 min).
+  // Filtres impact (High/Medium/Low) + devise, persistés. News : tags marché calculés
+  // côté serveur (getMarketNews), filtre par marché. Tout contenu externe est échappé.
+  let _ecalEvents = null;   // cache client de session (la CF a son propre cache serveur)
+  let _newsItems  = null;
+
   function renderEcon() {
     const el = document.getElementById('econContent');
     if (!el) return;
-    // On re-render à chaque visite pour réinjecter le widget FJ
-    // (le script FJ se recharge avec un r unique à chaque fois).
     const en = i18n.getLang && i18n.getLang() === 'en';
     const hasFjNews = Store.canUseFeature && Store.canUseFeature('fjNews');
 
-    // Bloc 1 — Calendrier économique TradingView (iframe, gratuit, aucune inscription).
-    // On crée l'iframe via createElement pour éviter le problème d'échappement HTML
-    // des guillemets du JSON dans l'attribut src (qui cassait l'URL).
-    const dark = document.documentElement.getAttribute('data-theme') !== 'light';
-    const calBlock = `<div id="tvCalContainer" style="width:100%;height:600px;border-radius:12px;overflow:hidden;background:var(--bg2)"></div>`;
-
-    // Bloc 2 — News en direct (réservé Funded/Elite/VIP)
     const newsBlock = hasFjNews
-      ? `<div id="fjNewsHost" style="width:100%;min-height:600px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>`
+      ? `<div class="news-tags" id="newsTags"></div>
+         <div id="fjNewsHost" style="min-height:120px;border:1px solid var(--border);border-radius:12px;overflow:hidden"></div>`
       : `<div style="border:1px solid var(--border);border-radius:12px;padding:28px;text-align:center;background:var(--bg2)">
            <div style="font-size:30px;margin-bottom:6px">🔒</div>
            <p style="margin:0 0 14px;font-size:13.5px;color:var(--muted);line-height:1.55">${en
-             ? 'Live news (Financial Juice) is reserved for <strong>Funded / Elite</strong> plans.'
-             : 'Les news en direct (Financial Juice) sont réservées aux plans <strong>Funded / Elite</strong>.'}</p>
+             ? 'Live market news is reserved for <strong>Funded / Elite</strong> plans.'
+             : 'Les news marchés en direct sont réservées aux plans <strong>Funded / Elite</strong>.'}</p>
            <button class="btn-primary" id="econUpsell" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
          </div>`;
 
     el.innerHTML = `
       <div class="page-title">${en ? 'Economy' : 'Économie'}</div>
-      <h3 style="margin:0 0 10px;font-size:15px;color:var(--text)">📅 ${en ? "Today's economic calendar" : 'Calendrier économique'}</h3>
-      ${calBlock}
-      <h3 style="margin:26px 0 10px;font-size:15px;color:var(--text)">📰 ${en ? 'Live news' : 'News en direct'}</h3>
+      <h3 class="econ-h">${en ? 'Economic calendar' : 'Calendrier économique'}
+        <span class="econ-sub">${en ? 'this week · your local time' : 'cette semaine · heure locale'}</span></h3>
+      <div class="ecal-filters" id="ecalFilters" style="display:none">
+        <div class="ecal-seg" id="ecalImp" role="group" aria-label="Impact">
+          <button type="button" data-imp="all">${en ? 'All' : 'Tout'}</button>
+          <button type="button" data-imp="high">${en ? 'High' : 'Fort'}</button>
+          <button type="button" data-imp="medium">${en ? 'Medium' : 'Moyen'}</button>
+          <button type="button" data-imp="low">${en ? 'Low' : 'Faible'}</button>
+        </div>
+        <select class="ecal-cur" id="ecalCur" aria-label="${en ? 'Currency' : 'Devise'}"></select>
+      </div>
+      <div id="ecalList"><div class="econ-loading">${en ? 'Loading calendar…' : 'Chargement du calendrier…'}</div></div>
+      <h3 class="econ-h" style="margin-top:28px">${en ? 'Market news' : 'News marchés'}
+        ${hasFjNews ? `<span class="econ-sub">${en ? 'refreshed every 5 min' : 'rafraîchies toutes les 5 min'}</span>` : ''}</h3>
       ${newsBlock}`;
 
     document.getElementById('econUpsell')?.addEventListener('click', () => switchPage('offers'));
+    _ecalInit(el, en);
+    if (hasFjNews) _newsInit(el, en);
+  }
 
-    // Helper : charge le script FJ (shared entre ECOCAL et NEWS) puis crée le widget.
-    function _loadFJWidget(containerId, widgetType, width) {
-      const container = document.getElementById(containerId);
-      if (!container) return;
-      const r  = Math.floor(Math.random() * (9999 - 0 + 1) + 0);
-      const jo = document.createElement('script');
-      jo.type  = 'text/javascript';
-      jo.id    = 'FJ-Widgets-' + containerId;
-      jo.src   = 'https://feed.financialjuice.com/widgets/widgets.js?r=' + r;
-      jo.onload = function() {
-        try {
-          const options      = {};
-          options.container  = containerId;
-          options.mode       = 'Dark';
-          options.width      = width || '100%';
-          options.height     = '600px';
-          options.backColor  = dark ? '15171c' : 'ffffff';
-          options.fontColor  = dark ? 'b2b5be' : '2a2a2e';
-          options.widgetType = widgetType;
-          new window.FJWidgets.createWidget(options);
-        } catch(e) { console.error('[FJ] ' + widgetType + ' error:', e); }
-      };
-      jo.onerror = function() { console.error('[FJ] failed to load widget: ' + widgetType); };
-      document.getElementsByTagName('head')[0].appendChild(jo);
+  // Calendrier : fetch (CF cachée) → filtres impact/devise persistés → rendu groupé par jour.
+  function _ecalInit(root, en) {
+    const listEl = root.querySelector('#ecalList');
+    const filtEl = root.querySelector('#ecalFilters');
+    const impEl  = root.querySelector('#ecalImp');
+    const curEl  = root.querySelector('#ecalCur');
+    const esc    = UI.escHtml;
+    const errMsg = `<p class="econ-empty">${en ? 'Calendar unavailable — try again later.' : 'Calendrier indisponible — réessaie plus tard.'}</p>`;
+
+    let imp = localStorage.getItem('zt_ecal_imp') || 'all';
+    let cur = localStorage.getItem('zt_ecal_cur') || 'all';
+
+    function paint() {
+      if (!_ecalEvents) return;
+      impEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.imp === imp));
+      curEl.value = cur;
+      const now = Date.now();
+      // 'ALL' (événements globaux type OPEC) reste visible quel que soit le filtre devise.
+      const evs = _ecalEvents.filter(e =>
+        (imp === 'all' || e.impact === imp) &&
+        (cur === 'all' || e.country === cur || e.country === 'ALL'));
+      if (!evs.length) {
+        listEl.innerHTML = `<p class="econ-empty">${en ? 'No events match these filters.' : 'Aucun événement pour ces filtres.'}</p>`;
+        return;
+      }
+      const todayKey = new Date().toDateString();
+      let html = '', lastDay = '';
+      for (const e of evs) {
+        const d = new Date(e.dateUtc);
+        const dayKey = d.toDateString();
+        if (dayKey !== lastDay) {
+          lastDay = dayKey;
+          const lbl = d.toLocaleDateString(en ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+          html += `<div class="ecal-day${dayKey === todayKey ? ' today' : ''}">${esc(lbl)}${dayKey === todayKey ? (en ? ' · today' : ' · aujourd’hui') : ''}</div>`;
+        }
+        const hm = e.impact === 'holiday'
+          ? '—'
+          : d.toLocaleTimeString(en ? 'en-GB' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const fx = (e.forecast || e.previous)
+          ? `<span class="ecal-fx">${e.forecast ? `${en ? 'Fcst' : 'Prév.'} ${esc(e.forecast)}` : ''}${e.forecast && e.previous ? ' · ' : ''}${e.previous ? `${en ? 'Prev' : 'Préc.'} ${esc(e.previous)}` : ''}</span>`
+          : '';
+        html += `<div class="ecal-row${e.dateUtc < now ? ' past' : ''}">
+          <span class="ecal-time">${hm}</span>
+          <span class="ecal-dot ${esc(e.impact)}"></span>
+          <span class="ecal-cur-tag">${esc(e.country)}</span>
+          <span class="ecal-title">${esc(e.title)}</span>
+          ${fx}
+        </div>`;
+      }
+      listEl.innerHTML = html;
     }
 
-    // Widget TradingView Economic Calendar — approche officielle : script src +
-    // config JSON en text content (lu par TradingView via currentScript.text).
-    // s3.tradingview.com est autorisé en CSP script-src.
-    const tvContainer = document.getElementById('tvCalContainer');
-    if (tvContainer && !tvContainer.dataset.loaded) {
-      tvContainer.dataset.loaded = '1';
-      const wrap   = document.createElement('div');
-      wrap.className = 'tradingview-widget-container';
-      wrap.style.cssText = 'width:100%;height:600px';
-      const inner  = document.createElement('div');
-      inner.className = 'tradingview-widget-container__widget';
-      wrap.appendChild(inner);
-      const script = document.createElement('script');
-      script.type  = 'text/javascript';
-      script.src   = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
-      script.async = true;
-      script.text  = JSON.stringify({
-        colorTheme:     dark ? 'dark' : 'light',
-        isTransparent:  false,
-        width:          '100%',
-        height:         '600',
-        locale:         en ? 'en' : 'fr',
-        importanceFilter: '-1,0,1',
-        countryFilter:  'us,eu,fr,gb,de,jp,ca,au,ch,cn'
+    function ready(events) {
+      _ecalEvents = (events || []).slice().sort((a, b) => a.dateUtc - b.dateUtc);
+      const curs = [...new Set(_ecalEvents.map(e => e.country))].filter(c => c && c !== 'ALL').sort();
+      curEl.innerHTML = `<option value="all">${en ? 'All currencies' : 'Toutes devises'}</option>`
+        + curs.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+      if (cur !== 'all' && !curs.includes(cur)) cur = 'all';
+      filtEl.style.display = '';
+      paint();
+    }
+
+    impEl.addEventListener('click', e => {
+      const b = e.target.closest('button[data-imp]');
+      if (!b) return;
+      imp = b.dataset.imp;
+      try { localStorage.setItem('zt_ecal_imp', imp); } catch {}
+      paint();
+    });
+    curEl.addEventListener('change', () => {
+      cur = curEl.value;
+      try { localStorage.setItem('zt_ecal_cur', cur); } catch {}
+      paint();
+    });
+
+    if (_ecalEvents) ready(_ecalEvents);   // rendu instantané depuis le cache de session
+    const fn = (_fbFunctions || (firebase.app && firebase.app().functions('europe-west1')));
+    if (!fn) { if (!_ecalEvents) listEl.innerHTML = errMsg; return; }
+    fn.httpsCallable('getEconCalendar')({})
+      .then(r => ready((r.data && r.data.events) || []))
+      .catch(err => {
+        console.warn('[Ecal] CF error:', err && err.message);
+        if (!_ecalEvents) listEl.innerHTML = errMsg;
       });
-      wrap.appendChild(script);
-      tvContainer.appendChild(wrap);
-    }
+  }
 
-    // Widget FJ ECOCAL (calendrier éco, gratuit — remplacement si TradingView non dispo)
-    // Désactivé pour l'instant : TradingView marche partout sans inscription.
-    // _loadFJWidget('financialjuice-eco-widget-container', 'ECOCAL', '100%');
+  // News : tags marché serveur → filtre client par marché, contenu échappé, liens https only.
+  function _newsInit(root, en) {
+    const host   = root.querySelector('#fjNewsHost');
+    const tagsEl = root.querySelector('#newsTags');
+    const esc    = UI.escHtml;
+    const errMsg = `<p class="econ-empty">${en ? 'Could not load news.' : 'Impossible de charger les news.'}</p>`;
+    const MKTS = [
+      ['all', en ? 'All' : 'Tout'], ['usd', 'USD'], ['eur', 'EUR'],
+      ['indices', 'Indices'], ['gold', en ? 'Gold' : 'Or'],
+      ['energy', en ? 'Energy' : 'Énergie'], ['crypto', 'Crypto'],
+    ];
+    const MKT_LBL = Object.fromEntries(MKTS);
+    let mkt = localStorage.getItem('zt_news_mkt') || 'all';
+    if (!MKT_LBL[mkt]) mkt = 'all';
 
-    // ── RSS News fetcher ─────────────────────────────────────────────────────
-    // Fetch direct via rss2json.com (proxy CORS gratuit, aucun widget tiers,
-    // fonctionne partout incl. Safari ITP/content blockers).
-    // Source primaire : FJ RSS ; fallback : Reuters Business.
-    function _loadFjRssNews(host, isEn) {
-      const errtxt = isEn ? 'Could not load news.' : 'Impossible de charger les news.';
+    tagsEl.innerHTML = MKTS.map(([k, lbl]) => `<button type="button" class="news-tag" data-mkt="${k}">${esc(lbl)}</button>`).join('');
+    const paintTags = () => tagsEl.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.mkt === mkt));
+    tagsEl.addEventListener('click', e => {
+      const b = e.target.closest('button[data-mkt]');
+      if (!b) return;
+      mkt = b.dataset.mkt;
+      try { localStorage.setItem('zt_news_mkt', mkt); } catch {}
+      paintTags(); paintNews();
+    });
 
-      function _renderItems(items) {
-        if (!items || !items.length) { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; return; }
-        const rows = items.map(i => {
-          const d  = new Date(i.pubDate);
-          const hm = isNaN(d) ? '' : d.toLocaleTimeString(isEn ? 'en-US' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
-          const src = i.author || '';
-          return `<div class="fj-news-row">
-            <span class="fj-news-time">${hm}</span>
-            <span class="fj-news-title"><a href="${i.link}" target="_blank" rel="noopener">${i.title}</a></span>
-            ${src ? `<span class="fj-news-src">${src}</span>` : ''}
-          </div>`;
-        }).join('');
-        host.innerHTML = `<div class="fj-news-list">${rows}</div>`;
+    function paintNews() {
+      if (!_newsItems) return;
+      const items = mkt === 'all' ? _newsItems : _newsItems.filter(i => (i.tags || []).includes(mkt));
+      if (!items.length) {
+        host.innerHTML = `<p class="econ-empty">${en ? 'No news for this market right now.' : 'Aucune news pour ce marché actuellement.'}</p>`;
+        return;
       }
-
-      // Appel via Cloud Function europe-west1 (même région que toutes les CFs)
-      const fn = (_fbFunctions || (firebase.app && firebase.app().functions('europe-west1')));
-      if (!fn) { host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`; return; }
-      fn.httpsCallable('getMarketNews')({})
-        .then(r => _renderItems(r.data && r.data.items))
-        .catch(e => {
-          console.warn('[News] CF error:', e && e.message);
-          host.innerHTML = `<p style="padding:16px;color:var(--muted);font-size:13px">${errtxt}</p>`;
-        });
+      const rows = items.map(i => {
+        const d  = new Date(i.pubDate);
+        const hm = isNaN(d) ? '' : d.toLocaleTimeString(en ? 'en-GB' : 'fr-FR', { hour: '2-digit', minute: '2-digit' });
+        const link = /^https:\/\//.test(i.link || '') ? i.link : '';
+        const chips = (i.tags || []).map(tg => `<span class="fj-news-tag">${esc(MKT_LBL[tg] || tg)}</span>`).join('');
+        return `<div class="fj-news-row">
+          <span class="fj-news-time">${esc(hm)}</span>
+          <span class="fj-news-title">${link
+            ? `<a href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(i.title)}</a>`
+            : esc(i.title)}${chips}</span>
+          ${i.author ? `<span class="fj-news-src">${esc(i.author)}</span>` : ''}
+        </div>`;
+      }).join('');
+      host.innerHTML = `<div class="fj-news-list">${rows}</div>`;
     }
 
-    // Widget NEWS : fetch RSS via rss2json.com (CORS-friendly, aucun widget tiers,
-    // marche dans tous les navigateurs dont Safari avec content blocker).
-    // Source : Financial Juice RSS → si indisponible, Reuters Business.
-    if (hasFjNews) {
-      const tw = document.getElementById('fjNewsHost');
-      if (tw && !tw.dataset.loaded) {
-        tw.dataset.loaded = '1';
-        tw.innerHTML = `<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">⏳ ${en ? 'Loading news…' : 'Chargement…'}</div>`;
-        _loadFjRssNews(tw, en);
-      }
-    }
+    paintTags();
+    if (_newsItems) paintNews();
+    else host.innerHTML = `<div class="econ-loading">${en ? 'Loading news…' : 'Chargement des news…'}</div>`;
+
+    const fn = (_fbFunctions || (firebase.app && firebase.app().functions('europe-west1')));
+    if (!fn) { host.innerHTML = errMsg; return; }
+    fn.httpsCallable('getMarketNews')({})
+      .then(r => { _newsItems = (r.data && r.data.items) || []; paintNews(); })
+      .catch(err => {
+        console.warn('[News] CF error:', err && err.message);
+        if (!_newsItems) host.innerHTML = errMsg;
+      });
   }
 
   // ── SIDEBAR TOGGLE ─────────────────────────────────────────────────────────
