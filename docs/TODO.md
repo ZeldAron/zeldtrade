@@ -529,7 +529,7 @@ Audit complet du projet par Explore agent — 46 nouveaux items identifiés, cla
 **Effort** : 1-2h
 
 ## 🎯 Demandes user 2026-06-10 (à planifier)
-- **ECON-CAL — Réactiver le calendrier économique dans l'onglet Éco.** Retiré le 10/06 : le feed ForexFactory ne fournit pas l'« actual » (valeur réelle) et aucune source gratuite ne le donne sans clé. Code conservé (front `_ecalInit` + CF `getEconCalendar`). À réactiver quand une source à 0€ fournit l'actual (piste : FMP free tier 250 req/j, notre cache 30 min suffit). Pour l'instant l'onglet Éco n'affiche que les news.
+- **ECON-CAL — Ajouter la valeur « actual » au calendrier économique (via FMP).** Le calendrier est en place (ForexFactory via CF `getEconCalendar`, filtres impact/devise/période) mais le feed FF ne fournit PAS l'« actual » (valeur réelle publiée). Le rendu a déjà le slot prêt (s'affiche dès que `e.actual` existe). À faire : brancher une source 0€ qui donne l'actual (piste : FMP free tier 250 req/j → notre cache 30 min suffit largement) et fusionner FF (semaine/prévisions) + actual.
 
 ---
 
