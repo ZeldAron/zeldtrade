@@ -132,7 +132,7 @@ function initApp() {
     if (!cont) return;
     const cfg = {
       colorTheme: light ? 'light' : 'dark',
-      isTransparent: true,
+      isTransparent: false,      // fond solide du thème TV (transparent laissait passer du blanc)
       locale: en ? 'en' : 'fr',
       countryFilter: 'us,eu,jp,gb,ca,ch,au,nz,cn',
       importanceFilter: '0,1',   // medium + high (-1 = low, masqué pour réduire le bruit)
