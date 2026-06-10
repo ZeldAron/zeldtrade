@@ -339,8 +339,10 @@ const UI = (() => {
       const pnlHtml = c.pnl !== null && !c.estimated
         ? `<span class="trade-pnl" style="color:${Calc.pnlColor(c.pnl)}">${Calc.formatPnL(c.pnl)}</span>`
         : '';
+      // v1.0.4 : setup/notes sont DÉJÀ échappés au stockage (_escHtmlStore, invariant store,
+      // ré-appliqué même au chargement) → on NE re-échappe PAS (sinon &lt; s'affiche littéralement).
       const setupHtml = t.setup
-        ? `<div class="trade-setup">${escHtml(t.setup)}</div>`
+        ? `<div class="trade-setup">${t.setup}</div>`
         : '';
 
       const safeDir = t.direction === 'long' ? 'long' : 'short';
@@ -506,8 +508,8 @@ const UI = (() => {
            ${partialRow}
            ${rRow}
            ${customRows}
-           ${t.setup ? `<div class="info-row"><span class="info-key">${i18n.t('ui.setup')}</span><span class="info-val">${escHtml(t.setup)}</span></div>` : ''}
-           ${t.notes ? `<div class="info-row"><span class="info-key">${i18n.t('ui.notes')}</span><span class="info-val">${escHtml(t.notes)}</span></div>` : ''}
+           ${t.setup ? `<div class="info-row"><span class="info-key">${i18n.t('ui.setup')}</span><span class="info-val">${t.setup}</span></div>` : ''}
+           ${t.notes ? `<div class="info-row"><span class="info-key">${i18n.t('ui.notes')}</span><span class="info-val">${t.notes}</span></div>` : ''}
          </div>`
       : '';
 
