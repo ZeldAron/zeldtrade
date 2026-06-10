@@ -920,8 +920,8 @@
         const c=wk.find(x=>x.dow===d%7)||(wk.find(x=>x.dow===0)&&d===7?wk.find(x=>x.dow===0):null);
         if(c&&c.date<=today.toISOString().slice(0,10)){
           const tip=c.pnl!==null?`${c.date} : ${c.pnl>=0?'+':''}$${c.pnl.toFixed(0)}`:`${c.date} : aucun trade`;
-          grid+=`<div class="cal-cell" style="background:${cellColor(c.pnl)}" title="${tip}"></div>`;
-        } else { grid+=`<div class="cal-cell cal-cell-empty"></div>`; }
+          grid+=`<div class="cal-hm-cell" style="background:${cellColor(c.pnl)}" title="${tip}"></div>`;
+        } else { grid+=`<div class="cal-hm-cell cal-hm-cell-empty"></div>`; }
       }
       grid+='</div>';
     });

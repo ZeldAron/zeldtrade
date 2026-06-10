@@ -37,6 +37,30 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.4 (staging) — FIX calendrier + heatmap cassés (collision de classe .cal-cell)
+
+**Type** : fix (bug visuel, présent en prod)
+**Fichiers** : `src/js/pages/dashboard.js`, `src/css/style.css`, `src/pages/app.html`
+
+### Bug
+Page Calendrier ET heatmap P&L du Dashboard s'affichaient en **barres verticales** (cellules
+~18×72px au lieu de cases). Cause : **collision de classe** — le calendrier des trades
+(`.cal-cell { min-height:72px }`, ligne ~3246) et la heatmap dashboard
+(`.cal-cell { width:14px; height:14px }`, ligne ~5690) partageaient la même classe `.cal-cell`.
+La cascade contaminait les deux : `min-height:72px` rendait les cases heatmap hautes, et
+`width:14px` écrasait la largeur des cases du calendrier (grille repeat(7,1fr) cassée).
+
+### Fix
+Classes heatmap renommées pour les découpler : `.cal-cell`/`.cal-cell-empty` → `.cal-hm-cell`/
+`.cal-hm-cell-empty` (dashboard.js rendu + style.css). Couleurs heatmap = style inline → non
+affectées. Le calendrier des trades garde `.cal-cell` (intact). Bump dashboard.js h=1 + style.css h=5.
+
+### Vérifié (staging)
+Calendrier : cellule 164×72px (était 18×72) — month grid correct, jours colorés. Heatmap : 14×14px. 0 erreur.
+
+### ⚠️ Prod
+Bug présent en prod (même lignée de code). Fix prêt sur `recover-prod-landing`, **non déployé** (attend go user).
+
 ## 2026-06-10 — v1.0.4 (staging) — Calendrier natif : colonnes alignées (refonte affichage valeurs)
 
 **Type** : style/UX
