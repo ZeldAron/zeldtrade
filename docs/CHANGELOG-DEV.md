@@ -37,6 +37,42 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-09 — v1.0.4 (staging) — Recovery prod→git + refonte offres (quota IA hebdo) + fixes IA/CSP
+
+**Type** : recover + feat + fix
+**Fichiers** : `src/js/store.js`, `functions/index.js`, `src/js/modal.js`, `src/js/ui.js`, `src/js/app.js`, `src/js/i18n.js`, `src/js/landing-i18n.js`, `src/js/pages/offers.js`, `src/js/pages/settings.js`, `src/js/app-bootstrap.js`, `src/pages/app.html`, `src/pages/index.html`, `firebase.json`
+**Versions impactées** : front (v1.0.4 staging), CF `analyzeChart` + `adminGetMetrics` (staging)
+
+### Contexte
+Découverte critique : la prod servait v1.0.4 alors que git s'arrêtait à v1.0.3 — des semaines de
+travail uncommitted ont été perdues localement par un `git restore` (08/06). Le site live restait
+la seule copie. ⚠️ Dégât collatéral : les entrées CHANGELOG-DEV de mi-mai → 06/06 (non commitées)
+ont été effacées par ce restore — irrécupérables.
+
+### Changements
+- **recover** : tout le déployable prod re-téléchargé depuis zeldtrade.com et commité
+  (landing + 13 fichiers JS/CSS/HTML + 2 pages jamais trackées partner/partenaires).
+  `firebase.json` reconstitué à la main (6 hashes CSP inline, domaines Trustpilot, 5 rewrites).
+- **feat(offers)** : quota IA passe de /jour à /SEMAINE (clé = lundi, reset auto) —
+  trader 2/sem · funded 7/sem · elite ∞. Funded 3→10 comptes. `AI_WEEKLY_CAP` serveur +
+  `localWeekStart()`/`aiUsedThisWeek()` client. Copie alignée FR+EN partout (landing, offres,
+  modale essai 7j, upsell J+2, FAQ, settings). Decoy pricing : Elite = carte featured.
+- **fix(ia)** : ordre d'affichage SL → Entry → TP1 (pastilles détection + détail trade).
+  Maverick retiré (déprécié Groq 20/02/2026 → 404 intermittent) ; Scout seul modèle vision,
+  whitelist serveur purgée. Badge quota rafraîchi en live après analyse.
+- **infra QA** : 3 comptes de test par tier (gratuit/funded/elite @test.com, staging),
+  `scripts/create-tier-test-accounts.js`, chart de test outil position longue TV
+  (`scripts/tests/assets/tv-chart-long.png`), script AB test fiabilisé (networkidle→domcontentloaded,
+  tour/cookies neutralisés, vrais sélecteurs).
+
+### À surveiller
+- Release v1.0.4 prod (vendredi) : bump TOUS les ?v= + changelog public + procédure §4 CLAUDE.md.
+- Abonnés Funded existants : 5 IA/j → 7/sem = baisse IA (mais +7 comptes) — grandfathering à trancher si abonnés actifs.
+- Le quota hebdo serveur utilise la semaine UTC, le client la semaine locale (écart bénin de quelques heures au changement de semaine).
+
+### Liens
+- Branche `recover-prod-landing` (9+ commits), QA validé de bout en bout sur staging (rapports 09/06).
+
 ## 2026-05-16 — v0.9.173 — Désinscription newsletter 1-clic (RGPD) + fix toggle Réglages
 
 **Type** : feature + fix

@@ -1845,9 +1845,17 @@ const i18n = (() => {
 
   function getLang() {
     // v0.9.422 — honore ?lang= transmis par la landing (et le persiste), puis localStorage.
+    // v1.0.4 — ONE-SHOT : on consomme ?lang puis on le RETIRE de l'URL, sinon il écrasait
+    // le choix de langue de l'utilisateur (toggle = localStorage) à CHAQUE appel → mélange FR/EN.
     try {
-      const p = new URLSearchParams(location.search).get('lang');
-      if (p === 'en' || p === 'fr') { localStorage.setItem(LANG_KEY, p); return p; }
+      const url = new URL(location.href);
+      const p = url.searchParams.get('lang');
+      if (p === 'en' || p === 'fr') {
+        localStorage.setItem(LANG_KEY, p);
+        url.searchParams.delete('lang');
+        history.replaceState(null, '', url.pathname + url.search + url.hash);
+        return p;
+      }
     } catch (e) {}
     return localStorage.getItem(LANG_KEY) || 'fr';
   }
