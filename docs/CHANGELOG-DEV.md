@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : fixes UX (fermeture / réouverture / focus)
+
+**Type** : fix
+**Fichiers** : `src/js/app-bootstrap.js`, `src/css/style.css`
+
+- **Fermeture intempestive au choix de langue** : le re-render `show('main')` détachait l'élément cliqué → le handler document « clic dehors » (`wrap.contains(target)` faux) fermait le menu. Fix : `e.stopPropagation()` sur les clics internes `[data-acct]`.
+- **Réouverture sur le sous-menu langue** : `openM()` force désormais `show('main')` → rouvre toujours sur la vue principale.
+- **Contour de focus moche au clic** (la pill est un `<button>`) : `:focus:not(:focus-visible) → outline:none` (propre souris, conservé clavier).
+- `.account-menu` : `max-height:calc(100dvh-92px)` + `overflow-y:auto` (anti-débordement sur petit écran). Bump bootstrap h=15 + style h=20.
+- Vérifié staging : choix langue = reste ouvert sur principal (valeur MAJ) ; clic dehors ferme ; réouverture = principal.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : sélecteur de langue (sous-menu)
 
 **Type** : feat UI (demande user)
