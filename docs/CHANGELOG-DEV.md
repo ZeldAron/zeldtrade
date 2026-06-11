@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Gate « carte obligatoire à l'inscription »
+
+**Type** : feat (le dernier morceau du modèle carte-obligatoire)
+**Fichiers** : `functions/index.js`, `src/js/app-bootstrap.js`, `src/css/style.css`, `src/pages/app.html`
+
+- **`notifyNewSignup`** : ne pose **PLUS** de `trialEnd` in-app aux nouveaux inscrits (pivot). → nouvel inscrit = `getAccessState()==='none'`.
+- **`_renderAccessGate`** : nouveau cas **`'none'` → gate d'inscription bloquante** (`#onboardGate`, overlay) : « Plus qu'une étape · essai 14 j · carte requise · annulable, aucun prélèvement avant J15 » + 3 formules (Funded/Elite/Lifetime) → `_gateCheckout(plan)` (createCheckoutSession + loader + redirect Stripe). Seules issues : checkout ou logout. CSS `.onboard-plans`/`.onboard-plan(-reco)`. Bump bootstrap h=12, style h=17.
+- Vérifié staging : compte mis en `'none'` → gate affichée (3 formules), aucune autre gate ; trialing/paid non affectés.
+- ⚠️ **SÉQUENÇAGE GO-LIVE** : lancer la migration `migrateFreeToTrial` (pose trialEnd aux gratuits existants → 'trialing') **AVANT** de pousser cette gate en prod, sinon les gratuits existants (sans trialEnd) seraient bloqués comme des nouveaux.
+
 ## 2026-06-11 — v1.0.5 (staging) — Retrait des mentions « bêta » (l'app est en V1)
 
 **Type** : copie (demande user — l'app n'est plus en bêta)

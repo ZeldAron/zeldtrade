@@ -959,19 +959,10 @@ exports.notifyNewSignup = onCall(
       throw e;
     }
 
-    // v1.0.5 : démarre l'essai 14j sans CB (CF-only → le client ne peut PAS se l'octroyer).
-    // Posé après le flag d'idempotence + la vérif creationTime → garanti 1× par nouveau compte.
-    // Idempotent en plus (ne touche pas si déjà pro ou trialEnd déjà présent).
-    try {
-      const planRef  = db.doc(`users/${uid}/data/plan`);
-      const planSnap = await planRef.get();
-      const pd       = planSnap.exists ? (planSnap.data() || {}) : {};
-      if (pd.plan !== 'pro' && typeof pd.trialEnd !== 'number') {
-        await planRef.set({ trialEnd: Date.now() + 14 * 24 * 60 * 60 * 1000 }, { merge: true });
-      }
-    } catch (e) {
-      console.error('[notifyNewSignup] init essai 14j échoué uid=' + uid.slice(0, 8), e && e.message);
-    }
+    // v1.0.5 PIVOT carte obligatoire : on NE pose PLUS de trialEnd in-app aux nouveaux inscrits.
+    // Sans trialEnd ni abonnement → getAccessState()==='none' → la gate d'inscription (app-bootstrap)
+    // force le passage par Stripe Checkout (carte requise → essai Stripe 14j).
+    // L'essai in-app (trialEnd) reste réservé aux GRATUITS EXISTANTS, via la migration `migrateFreeToTrial`.
 
     // Privacy : le canal #new-users est PUBLIC, donc on ne diffuse PAS l'email.
     // Si l'user n'a pas de displayName, on prend la partie locale de l'email
