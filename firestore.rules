@@ -76,7 +76,12 @@ service cloud.firestore {
                     && (!('username' in request.resource.data) || (request.resource.data.username is string && request.resource.data.username.size() <= 50))
                     && (!('lastSeen' in request.resource.data) || request.resource.data.lastSeen is int)
                     && (!('termsAccepted' in request.resource.data)   || request.resource.data.termsAccepted is map)
-                    && (!('newsletterOptIn' in request.resource.data) || request.resource.data.newsletterOptIn is bool);
+                    && (!('newsletterOptIn' in request.resource.data) || request.resource.data.newsletterOptIn is bool)
+                    // F-2 (audit 2026-06-11) : isTestAccount = marqueur cosmétique posé par adminCreateTestAccount (admin SDK).
+                    // Le client ne peut PAS se l'octroyer ni le modifier (anti-spoof du badge admin) : il doit rester égal à
+                    // l'existant (ou false à la création). Ne casse pas les comptes test (valeur inchangée = OK).
+                    && (!('isTestAccount' in request.resource.data)
+                        || request.resource.data.isTestAccount == (resource != null ? resource.data.get('isTestAccount', false) : false));
     }
 
     // ── Codes Pro (hashes) ───────────────────────────────────────────────────────
@@ -324,6 +329,10 @@ service cloud.firestore {
                     && request.resource.data.type.size() <= 40
                     && request.resource.data.sid is string
                     && request.resource.data.sid.size() <= 24
+                    // H-1 (audit 2026-06-11) : borner page/label (client cape déjà à 40/60) pour empêcher
+                    // l'écriture de docs ~1 Mo en boucle (abus coût/stockage). ts = serverTimestamp → non validé.
+                    && (!('page' in request.resource.data)  || (request.resource.data.page is string  && request.resource.data.page.size()  <= 64))
+                    && (!('label' in request.resource.data) || (request.resource.data.label is string && request.resource.data.label.size() <= 80))
                     && request.resource.data.keys().hasOnly(['type','uid','sid','ts','page','label']);
       allow update, delete: if false;
     }

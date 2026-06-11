@@ -19,7 +19,7 @@ service firebase.storage {
                    && request.auth.uid == userId
                    && request.auth.token.email_verified == true
                    && request.auth.token.pro == true
-                   && filename.matches('screenshot(_[12])?[.](jpe?g|png|webp)')
+                   && filename.matches('^screenshot(_[12])?[.](jpe?g|png|webp)$')
                    && request.resource.size < 2 * 1024 * 1024              // 2 MB max après compression
                    && request.resource.contentType.matches('image/(jpeg|png|webp)');
       allow delete: if request.auth != null && request.auth.uid == userId;
