@@ -37,6 +37,19 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Lifetime = vraie 3ᵉ CARTE (à côté de Funded/Elite)
+
+**Type** : feat (UI, demande user)
+**Fichiers** : `src/js/pages/offers.js`, `src/css/style.css`, `src/pages/index.html`, `src/js/landing-i18n.js`, `src/pages/app.html`
+
+User voulait le lifetime en **carte à côté des offres**, pas en bande dessous. Remplacé la bande par une 3ᵉ carte :
+- **App (offers.js)** : `cardLifetime` (badge « À VIE » violet, 299,90 €/une fois, « Sans abonnement · illimité »,
+  features Elite-à-vie, CTA `#lifetimeCta`). Grille `.pricing-cards` 2→3 colonnes (max-width 1100). Bande supprimée. CSS `.pricing-badge-lifetime` + `.lifetime-card` (bordure violette).
+- **Landing (index.html)** : 3ᵉ `.price-card` lifetime (mirroir d'Elite, prix unique, badge violet). La grille landing.css était déjà `repeat(3,1fr)` → 0 CSS à toucher. Bande supprimée. Clés `pricing.lifetime.*` (badge/unit/tagline/desc/f1-5, FR+EN) ; cta → « Accès à vie ». Bump offers.js h=3 + style.css h=13 + landing-i18n h=10.
+
+### Vérifié (staging)
+App + landing → 3 cartes [Funded · Elite · Lifetime], lifetime 299,90 €/une fois, badge violet, layout propre.
+
 ## 2026-06-11 — v1.0.5 (staging) — Lifetime sur la landing + purge copie « no card » (pivot)
 
 **Type** : feat + fix copie
