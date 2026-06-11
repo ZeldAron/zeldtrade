@@ -37,6 +37,18 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.5 (staging) — Audit UI/UX + fix cibles tactiles (🔴 du go-live)
+
+**Type** : fix (accessibilité / tactile)
+**Fichiers** : `src/css/style.css`, `src/pages/app.html`
+
+Audit UI/UX complet (Playwright, desktop+mobile, compte VIP). Bons fondamentaux (0 h-scroll, zoom
+autorisé, 0 img sans alt, 0 bouton-icône sans label). Fix du seul point 🔴 (cibles tactiles <44px) :
+- `.new-trade-btn` 39→44px (`min-height`) · `.focus-scope-select` 33→40px · `.user-logout-btn` 19→40×40px
+  (padding+min-dims+center) · `.hamburger-btn` 32→44px. Vérifié staging. Bump style.css h=6.
+- Reporté (non bloquant) : micro-labels 9px (motif design, bump risqué), bulle support flottante mobile.
+Étude complète (inachevés + gaps concurrents + checklist go-live) sauvegardée → mémoire project_golive_roadmap.
+
 ## 2026-06-10 — v1.0.5 (staging, WIP) — Essai 14j sans CB · Milestone 1 : fondation client
 
 **Type** : feat (chantier modèle commercial — décision : 100% payant + essai 14j, suppression du gratuit)
