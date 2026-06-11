@@ -322,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function stop() { running = false; cancelAnimationFrame(raf); timers.forEach(clearTimeout); timers = []; }
     return { start, finish, stop };
   })();
+  window.ZTLoader = ZTLoader;   // v1.0.5 : exposé pour réutilisation (loader plein écran au checkout depuis offers.js)
 
   function showLoader(username) {
     closeModal();
