@@ -546,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
       fly.className = 'account-flyout';
       if (kind === 'lang') {
         const cur = e2 ? 'en' : 'fr';
-        const opt = (c, lbl) => `<button class="account-menu-item" type="button" data-acct="set-lang" data-lang="${c}" role="menuitem"><span class="acct-flag">${c === 'fr' ? '🇫🇷' : '🇬🇧'}</span><span>${lbl}</span>${cur === c ? check : ''}</button>`;
+        const opt = (c, lbl) => `<button class="account-menu-item" type="button" data-acct="set-lang" data-lang="${c}" role="menuitem"><span>${lbl}</span>${cur === c ? check : ''}</button>`;
         fly.innerHTML = opt('fr', 'Français (France)') + opt('en', 'English (US)');
       } else {
         fly.innerHTML = li('/cgu', I.doc, e2 ? 'Terms of Service' : 'CGU')

@@ -7,6 +7,15 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : retrait des drapeaux emoji (reco ui-ux-pro-max)
+
+**Type** : fix UI (reco `no-emoji-icons`)
+**Fichier** : `src/js/app-bootstrap.js`
+
+Application de la reco ui-ux-pro-max `no-emoji-icons` / `icon-style-consistent` : retrait des drapeaux emoji
+🇫🇷🇬🇧 du flyout langue (rendus inconsistants sur Windows + clashent avec les icônes SVG du menu). Les items
+deviennent « Français (France) » / « English (US) » + ✓ sur l'actif. Vérifié staging (0 drapeau). Bump bootstrap h=19.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : fix alignement flyout (audit ui-ux-pro-max)
 
 **Type** : fix UI
