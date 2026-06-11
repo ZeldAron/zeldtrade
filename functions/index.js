@@ -1864,8 +1864,9 @@ exports.createCheckoutSession = onCall(
       metadata: { uid, tier: conf.tier, cycle: conf.cycle },
       subscription_data: {
         metadata: { uid, tier: conf.tier, cycle: conf.cycle },
-        // v1.0.5 : essai Stripe 7j-carte RETIRÉ — l'essai 14j sans CB (in-app) le remplace,
-        // le converti paie immédiatement (sinon 14j + 7j = 21j gratuits).
+        // v1.0.5 PIVOT carte obligatoire : essai 14j géré par Stripe (carte collectée à l'inscription,
+        // statut `trialing` → accès, prélèvement auto à J14 sauf annulation).
+        trial_period_days: 14,
       },
       allow_promotion_codes: true,   // coupons Stripe (ZELD40 −40%, 100% partenaires…)
       locale: 'fr',
