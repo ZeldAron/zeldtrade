@@ -823,7 +823,7 @@ const Admin = (() => {
           ? '<span style="color:var(--green)">● Actif</span>'
           : '<span style="color:var(--muted)">○ Inactif</span>';
         return `<tr>
-          <td><strong>${p.username || '—'}</strong><br><span style="font-size:11px;color:var(--muted)">${p.email || p.uid}</span></td>
+          <td><strong>${esc(p.username) || '—'}</strong><br><span style="font-size:11px;color:var(--muted)">${esc(p.email || p.uid)}</span></td>
           <td style="font-size:12px">${type}</td>
           <td>${aff}</td>
           <td style="font-size:12px">${p.commission || 0}%</td>
@@ -868,8 +868,8 @@ const Admin = (() => {
       ).slice(0, 8);
       if (!matches.length) { searchResults.style.display = 'none'; return; }
       searchResults.innerHTML = matches.map(u =>
-        `<div data-uid="${u.uid}" style="padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--border)">
-          <strong>${u.username}</strong> <span style="color:var(--muted)">${u.email}</span>
+        `<div data-uid="${esc(u.uid)}" style="padding:7px 10px;cursor:pointer;border-bottom:1px solid var(--border)">
+          <strong>${esc(u.username)}</strong> <span style="color:var(--muted)">${esc(u.email)}</span>
         </div>`
       ).join('');
       searchResults.style.display = '';
@@ -1048,18 +1048,18 @@ const Admin = (() => {
       const usedAt = t.usedAt    ? new Date(t.usedAt).toLocaleDateString('fr-FR') : null;
       const dur    = t.trialDays > 0 ? `${t.trialDays}j` : '∞';
       const status = t.used
-        ? `<span style="color:var(--muted)">✓ Utilisé<br><span style="font-size:10px">${usedAt} · ${t.usedEmail || ''}</span></span>`
+        ? `<span style="color:var(--muted)">✓ Utilisé<br><span style="font-size:10px">${usedAt} · ${esc(t.usedEmail || '')}</span></span>`
         : t.active
           ? '<span style="color:var(--green);font-weight:600">● Disponible</span>'
           : '<span style="color:var(--red)">✗ Révoqué</span>';
       const actions = (!t.used && t.active)
-        ? `<button class="admin-btn-sm" data-copy-tok="https://zeldtrade.com/app?invite=${t.token}" title="Copier">📋</button>
-           <button class="admin-btn-sm" data-revoke-tok="${t.token}" title="Révoquer" style="color:var(--red)">✗</button>`
+        ? `<button class="admin-btn-sm" data-copy-tok="https://zeldtrade.com/app?invite=${esc(t.token)}" title="Copier">📋</button>
+           <button class="admin-btn-sm" data-revoke-tok="${esc(t.token)}" title="Révoquer" style="color:var(--red)">✗</button>`
         : '';
       return `<tr>
-        <td style="font-size:11px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis">${t.token}</td>
-        <td>${t.label}</td>
-        <td><span style="font-size:12px;text-transform:uppercase;font-weight:600">${t.tier}</span> · ${dur}</td>
+        <td style="font-size:11px;font-family:monospace;max-width:160px;overflow:hidden;text-overflow:ellipsis">${esc(t.token)}</td>
+        <td>${esc(t.label)}</td>
+        <td><span style="font-size:12px;text-transform:uppercase;font-weight:600">${esc(t.tier)}</span> · ${dur}</td>
         <td style="font-size:12px">${date}</td>
         <td>${status}</td>
         <td>${actions}</td>
@@ -1177,7 +1177,7 @@ const Admin = (() => {
           ? '<span style="color:var(--green);font-weight:600">● Actif</span>'
           : '<span style="color:var(--muted)">○ Inactif</span>';
         rows += `<tr>
-          <td><strong style="font-family:monospace">${l.code}</strong><br><span style="font-size:11px;color:var(--muted)">${l.label}</span></td>
+          <td><strong style="font-family:monospace">${esc(l.code)}</strong><br><span style="font-size:11px;color:var(--muted)">${esc(l.label)}</span></td>
           <td style="font-size:12px">${date}</td>
           <td>${status}</td>
           <td style="font-family:monospace;font-size:13px">${l.clicks}</td>
@@ -1185,8 +1185,8 @@ const Admin = (() => {
           <td style="font-size:12px">${trial}</td>
           <td>
             <button class="admin-btn-sm" data-aff-copy="${url}" title="Copier le lien">📋</button>
-            <button class="admin-btn-sm" data-aff-toggle="${l.code}" data-aff-active="${l.active}" title="${l.active ? 'Désactiver' : 'Activer'}">${l.active ? '⏸' : '▶'}</button>
-            <button class="admin-btn-sm" data-aff-delete="${l.code}" title="Supprimer" style="color:var(--red)">🗑</button>
+            <button class="admin-btn-sm" data-aff-toggle="${esc(l.code)}" data-aff-active="${l.active}" title="${l.active ? 'Désactiver' : 'Activer'}">${l.active ? '⏸' : '▶'}</button>
+            <button class="admin-btn-sm" data-aff-delete="${esc(l.code)}" title="Supprimer" style="color:var(--red)">🗑</button>
           </td>
         </tr>`;
       });
