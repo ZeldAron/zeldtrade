@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : fix alignement flyout (audit ui-ux-pro-max)
+
+**Type** : fix UI
+**Fichier** : `src/css/style.css`
+
+Audit ui-ux-pro-max du menu compte + flyout langue. Défaut principal : `.account-menu-item > span { flex:1 }`
+ciblait AUSSI le drapeau et la valeur de droite (tous des `<span>`) → texte centré, écart drapeau→texte énorme,
+coche ✓ chevauchant le texte. **Fix** : `> span:not([class])` → `flex:1` au LIBELLÉ seul ; le drapeau (`.acct-flag`)
+et les valeurs (`.account-menu-right`) reprennent `flex:none`. Corrige aussi l'alignement des valeurs FR/Sombre du menu principal.
+Vérifié staging : écart drapeau→texte 11px, ✓ à 11px du bord droit (plus de chevauchement). Bump style h=25.
+NB (audit) : drapeaux = emoji (caveat rendu Windows) — gardés pour coller au style Claude ; à passer en SVG/texte si besoin cross-platform.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : flyouts au SURVOL (hover)
 
 **Type** : feat UI (demande user)
