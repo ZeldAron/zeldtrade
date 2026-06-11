@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Migration ex-gratuits (préavis 30j) + email de préavis
+
+**Type** : feat (transition commerciale, choix user : « préavis généreux » + email)
+**Fichiers** : `functions/index.js`, `src/js/app-bootstrap.js`, `scripts/email-preavis-gratuits.html`, `src/pages/app.html`
+
+- **CF `migrateFreeToTrial`** (admin only) : pose `trialEnd = now + graceDays` (défaut **30 j** = préavis généreux) sur tous les comptes GRATUITS. **DRY-RUN par défaut** (compte seulement) — n'écrit que si `{ apply:true }`. Idempotent (saute pro/lifetime + ceux déjà en essai). merge → trigger syncProClaim. Déployée staging.
+  - ⚠️ **Invocation publique non accordée** (classifier a bloqué le `run.invoker allUsers`) → à autoriser avant de pouvoir l'appeler (cf. les autres CF callable qui l'ont). À lancer au go-live (dry-run puis apply).
+- **Email de préavis** `scripts/email-preavis-gratuits.html` : annonce passage payant + 30 j gratuits + ajoute carte pour garder compte/données + export toujours possible + offre ZELD40/-40% & lifetime + CTA. Prêt pour Brevo (merge `{{contact.PRENOM}}`).
+- **Copie** : avertissement → retiré « essai 14 j » (embrouillait, les existants ont 30 j de grâce) → « abonnement ou accès à vie ». Bump bootstrap h=11.
+
 ## 2026-06-11 — v1.0.5 (staging) — Paywall : bouton « Exporter toutes mes données » (garde-fou RGPD)
 
 **Type** : feat (conformité RGPD art. 20)

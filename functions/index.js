@@ -2481,6 +2481,61 @@ exports.cleanupOrphanUserEmails = onCall(
  * data = { uid: string }
  * retour = { ok: true, uid, tier: 'elite' }
  */
+/**
+ * migrateFreeToTrial (v1.0.5) — MIGRATION one-shot des ex-gratuits vers l'essai/grâce.
+ * Option « préavis généreux » : pose `trialEnd = now + graceDays` (défaut 30 j) sur tous les comptes
+ * GRATUITS existants → ils basculent en essai (accès Funded) + voient l'avertissement, puis le paywall.
+ * Sécurité : admin only · DRY-RUN par défaut (compte seulement) — écrit UNIQUEMENT si { apply: true }.
+ * Idempotent : saute les comptes pro/lifetime ET ceux ayant déjà un trialEnd (ne réinitialise jamais).
+ * data = { apply?: boolean, graceDays?: number (1-90, défaut 30) }
+ */
+exports.migrateFreeToTrial = onCall(
+  {
+    secrets:        [DISCORD_ERRORS_WEBHOOK],
+    maxInstances:    1,
+    timeoutSeconds:  540,
+    memory:          '512MiB',
+    region:          'europe-west1',
+  },
+  _wrapCF('migrateFreeToTrial', async (request) => {
+    _assertAdmin(request, { fn: 'migrateFreeToTrial' });
+    await _assertAdminRateLimit('migrateFreeToTrial', 10);
+
+    const graceDays = (typeof request.data?.graceDays === 'number' && request.data.graceDays >= 1 && request.data.graceDays <= 90)
+      ? Math.floor(request.data.graceDays) : 30;
+    const apply    = request.data?.apply === true;
+    const trialEnd = Date.now() + graceDays * 24 * 60 * 60 * 1000;
+    const db       = admin.firestore();
+
+    let processed = 0, toMigrate = 0, skippedPro = 0, skippedHasTrial = 0;
+    let pageToken;
+    do {
+      const res = await admin.auth().listUsers(1000, pageToken);
+      for (const u of res.users) {
+        processed++;
+        const ref  = db.doc(`users/${u.uid}/data/plan`);
+        const snap = await ref.get();
+        const pd   = snap.exists ? (snap.data() || {}) : {};
+        if (pd.plan === 'pro')              { skippedPro++;      continue; }   // payant / lifetime → rien
+        if (typeof pd.trialEnd === 'number'){ skippedHasTrial++; continue; }   // déjà en essai/grâce → ne pas reset
+        if (apply) {
+          // merge → trigger syncProClaim (claim `pro` pendant la grâce → uploads OK)
+          await ref.set({
+            trialEnd,
+            trialSource: 'migration-free-2026-06',
+            tier: (typeof pd.tier === 'string' ? pd.tier : 'trader'),
+          }, { merge: true });
+        }
+        toMigrate++;
+      }
+      pageToken = res.pageToken;
+    } while (pageToken);
+
+    await _writeAuditLog('migrateFreeToTrial', request.auth.token.email, { apply, graceDays, processed, toMigrate });
+    return { ok: true, apply, graceDays, processed, toMigrate, skippedPro, skippedHasTrial };
+  })
+);
+
 exports.adminGrantElite = onCall(
   {
     secrets:        [DISCORD_ERRORS_WEBHOOK],

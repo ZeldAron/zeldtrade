@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="paywall-icon">⏳</div>
         <h2>${en ? 'ZeldTrade is now paid' : 'ZeldTrade passe en payant'}</h2>
         <p>${en ? `Your free account has <b>${n} day${n > 1 ? 's' : ''}</b> of trial left.` : `Ton compte gratuit a encore <b>${n} jour${n > 1 ? 's' : ''}</b> d'essai.`}</p>
-        <p>${en ? 'To keep your account and <b>all your data</b>, add your card — 14-day trial, subscription or lifetime.' : "Pour garder ton compte et <b>toutes tes données</b>, ajoute ta carte — essai 14 j, abonnement ou accès à vie."}</p>
+        <p>${en ? 'To keep your account and <b>all your data</b>, add your card — subscription or lifetime.' : "Pour garder ton compte et <b>toutes tes données</b>, ajoute ta carte — abonnement ou accès à vie."}</p>
         <p class="paywall-warn">${en ? 'Without a card: access is locked when the trial ends, then your account may be deleted.' : "Sans carte : accès bloqué à la fin de l'essai, puis ton compte pourra être supprimé."}</p>
         <button class="btn-primary" id="trialNoticeCta" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
         <button class="paywall-logout" id="trialNoticeLater" type="button">${en ? 'Later' : 'Plus tard'}</button>
