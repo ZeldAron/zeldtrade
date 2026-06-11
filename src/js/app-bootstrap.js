@@ -530,8 +530,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const menu = document.createElement('div');
     menu.id = 'accountMenu'; menu.className = 'account-menu'; menu.setAttribute('role', 'menu'); menu.hidden = true;
-    let curFlyout = null;
-    const closeFlyout = () => { const f = menu.querySelector('.account-flyout'); if (f) f.remove(); curFlyout = null; };
+    let curFlyout = null, flyTimer = null;
+    const cancelClose   = () => clearTimeout(flyTimer);
+    const closeFlyout   = () => { clearTimeout(flyTimer); const f = menu.querySelector('.account-flyout'); if (f) f.remove(); curFlyout = null; };
+    const scheduleClose = () => { clearTimeout(flyTimer); flyTimer = setTimeout(closeFlyout, 200); };
     const show = () => { menu.innerHTML = mainHTML(); curFlyout = null; };
     show();
     wrap.appendChild(menu);
@@ -563,14 +565,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => { if (!menu.hidden && !wrap.contains(e.target)) closeM(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeM(); });
 
+    // Survol : ouvre le flyout du sous-menu pointé (façon Claude). Délai de fermeture (200ms) pour
+    // ne pas perdre le panneau quand la souris traverse l'écart entre le menu et le flyout.
+    menu.addEventListener('mouseover', (e) => {
+      if (e.target.closest('.account-flyout')) { cancelClose(); return; }            // sur le flyout → garder ouvert
+      const parent = e.target.closest('[data-acct="lang"]') || e.target.closest('[data-acct="legal"]');
+      if (parent) { cancelClose(); const k = parent.getAttribute('data-acct'); if (curFlyout !== k) openFlyout(k, parent); return; }
+      if (curFlyout && e.target.closest('.account-menu-item')) scheduleClose();      // survol d'un autre item → ferme (différé)
+    });
+    menu.addEventListener('mouseleave', () => { if (curFlyout) scheduleClose(); });  // sort du menu + flyout → ferme
+
     menu.addEventListener('click', (e) => {
       if (e.target.closest('a.account-menu-item')) { closeM(); return; }   // CGU/légal/privacy → nouvel onglet (href natif)
       const it = e.target.closest('[data-acct]');
       if (!it) return;
       e.stopPropagation();   // clic interne → ne pas remonter au handler document
       const act = it.getAttribute('data-acct');
-      if (act === 'lang')     { curFlyout === 'lang'  ? closeFlyout() : openFlyout('lang', it);  return; }   // flyout langue (toggle)
-      if (act === 'legal')    { curFlyout === 'legal' ? closeFlyout() : openFlyout('legal', it); return; }   // flyout légal (toggle)
+      if (act === 'lang')     { openFlyout('lang', it);  return; }   // flyout langue (clic — sinon ouvert au survol)
+      if (act === 'legal')    { openFlyout('legal', it); return; }   // flyout légal
       if (act === 'set-lang') { i18n.setLang(it.getAttribute('data-lang') === 'en' ? 'en' : 'fr'); show(); return; }   // applique + re-render principal (ferme le flyout)
       if (act === 'theme')    { Theme.set(Theme.getResolved() === 'light' ? 'dark' : 'light'); show(); return; }
       closeM();

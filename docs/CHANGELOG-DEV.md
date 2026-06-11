@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : flyouts au SURVOL (hover)
+
+**Type** : feat UI (demande user)
+**Fichiers** : `src/js/app-bootstrap.js`
+
+Les flyouts Langue/Légal s'ouvrent désormais **au survol** (façon Claude), pas seulement au clic :
+- `mouseover` sur le menu → si on pointe « Langue ›»/« Légal ›» → `openFlyout`. Sur le flyout → `cancelClose`. Sur un autre item → `scheduleClose` (200ms, annulable).
+- `mouseleave` du menu (+ flyout) → `scheduleClose`. Le **délai de 200ms** évite de perdre le panneau quand la souris traverse l'écart menu↔flyout.
+- Clic conservé (ouvre aussi — touch/accessibilité). Bump bootstrap h=18.
+- Vérifié staging : survol Langue → flyout ouvert ; survol Thème → flyout fermé.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : sous-menus en FLYOUT latéral (façon Claude)
 
 **Type** : feat UI (demande user)
