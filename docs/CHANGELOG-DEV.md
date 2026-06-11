@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Pied de sidebar : suppression du vide (retour user)
+
+**Type** : fix UI
+**Fichier** : `src/css/style.css`
+
+« L'espace est pas beau » — gros vide entre la pill compte et « Nouveau trade ». Deux causes :
+1. **`#btnLogout` stub caché** (gardé pour compat lors du passage au menu compte) : sa classe `.user-logout-btn`
+   **écrasait l'attribut `hidden`** → un bouton vide de ~40px s'affichait dans le wrap. → `#btnLogout { display:none !important }`.
+2. **`#sidebarUpgrade` (« Voir les offres »)** : redondant (Offres est dans le menu compte) + créait du vide pour les non-pro. → masqué.
+Résultat : écart pill → Nouveau trade **60px → 20px**, pied resserré (stats → pill → bouton). Bump style h=28.
+
 ## 2026-06-11 — v1.0.5 (staging) — FIX : gate d'inscription bloquait à tort un abonné (plan figé)
 
 **Type** : fix (bug critique)
