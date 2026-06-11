@@ -37,6 +37,28 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.5 (staging) — Essai 14j · M4 (2/2) : retrait STRUCTUREL du tier gratuit
+
+**Type** : feat
+**Fichiers** : `src/js/pages/offers.js`, `src/pages/index.html`, `src/css/style.css`, `src/pages/app.html`
+
+- **offers.js** (app) : carte TRADER retirée (`bT`/`cardTrader` supprimés), grille 3→2 cartes
+  (Funded + Elite). Colonne « Trader » retirée du tableau comparatif (header + lignes).
+  Résiliation toujours possible via portail Stripe (Réglages). 
+- **index.html** (landing) : carte `[TRADER]` (0 €) retirée de `.pricing-grid` (suppression sûre par
+  plage vérifiée). Reste 2 cartes.
+- **CSS** : `.pricing-cards` repeat(3)→repeat(2) max-width 1080→760 ; `.offer-compare-row` 4→3 colonnes.
+  Bump offers.js h=1 + style.css h=10.
+- Le tier `trader` reste EN INTERNE = état « expiré/verrouillé » derrière le paywall (jamais offert).
+
+### Vérifié (staging)
+App offers + landing → 2 cartes (Funded/Elite), comparatif 3 colonnes, layout centré propre.
+
+### Reste (copie + migration)
+- **i18n** (FR+EN) : « Trader gratuit à vie » (pricing.sub), « 7 jours/7-day/1 semaine » → **14 jours**
+  (pricing.discount/reassure/cta, off.trial…), « Tout le plan Trader inclus » (off.funded.f1), JSON-LD Trader (index.html:100).
+- **M5** : migration des gratuits existants (CF : trialEnd = J+14).
+
 ## 2026-06-10 — v1.0.5 (staging) — Essai 14j · M4 (1/2) : inscription→essai + retrait essai Stripe 7j
 
 **Type** : feat
