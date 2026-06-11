@@ -958,6 +958,20 @@ exports.notifyNewSignup = onCall(
       throw e;
     }
 
+    // v1.0.5 : démarre l'essai 14j sans CB (CF-only → le client ne peut PAS se l'octroyer).
+    // Posé après le flag d'idempotence + la vérif creationTime → garanti 1× par nouveau compte.
+    // Idempotent en plus (ne touche pas si déjà pro ou trialEnd déjà présent).
+    try {
+      const planRef  = db.doc(`users/${uid}/data/plan`);
+      const planSnap = await planRef.get();
+      const pd       = planSnap.exists ? (planSnap.data() || {}) : {};
+      if (pd.plan !== 'pro' && typeof pd.trialEnd !== 'number') {
+        await planRef.set({ trialEnd: Date.now() + 14 * 24 * 60 * 60 * 1000 }, { merge: true });
+      }
+    } catch (e) {
+      console.error('[notifyNewSignup] init essai 14j échoué uid=' + uid.slice(0, 8), e && e.message);
+    }
+
     // Privacy : le canal #new-users est PUBLIC, donc on ne diffuse PAS l'email.
     // Si l'user n'a pas de displayName, on prend la partie locale de l'email
     // (avant `@`) plutôt que l'email complet — évite de leaker l'adresse.
@@ -1850,7 +1864,8 @@ exports.createCheckoutSession = onCall(
       metadata: { uid, tier: conf.tier, cycle: conf.cycle },
       subscription_data: {
         metadata: { uid, tier: conf.tier, cycle: conf.cycle },
-        trial_period_days: 7,        // v0.9.379 : essai 7 jours annoncé (carte collectée, prélèvement à J+7)
+        // v1.0.5 : essai Stripe 7j-carte RETIRÉ — l'essai 14j sans CB (in-app) le remplace,
+        // le converti paie immédiatement (sinon 14j + 7j = 21j gratuits).
       },
       allow_promotion_codes: true,   // coupons Stripe (ZELD40 −40%, 100% partenaires…)
       locale: 'fr',

@@ -37,6 +37,20 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.5 (staging) — Essai 14j · M4 (1/2) : inscription→essai + retrait essai Stripe 7j
+
+**Type** : feat
+**Fichiers** : `functions/index.js`
+
+- **`notifyNewSignup`** : pose `trialEnd = +14j` sur le doc plan à l'inscription (après le flag
+  d'idempotence + la vérif creationTime < 5 min → 1× par compte ; idempotent : ne touche pas si déjà
+  pro/trialEnd). CF-only (Admin SDK) → le client ne peut pas s'octroyer un essai. syncProClaim → claim pro.
+- **`createCheckoutSession`** : retrait de `trial_period_days: 7` (l'essai 14j sans CB le remplace ;
+  sinon converti = 14+7 = 21j gratuits). `allow_promotion_codes` conservé (coupon ZELD).
+
+### Vérifié (staging)
+Compte frais → notifyNewSignup → plan.trialEnd = +14j, claim pro=true. (Reste M4 2/2 : retrait visuel du gratuit offers/landing.)
+
 ## 2026-06-10 — v1.0.5 (staging) — Essai 14j · M3 : mur de fin d'essai + bannière
 
 **Type** : feat
