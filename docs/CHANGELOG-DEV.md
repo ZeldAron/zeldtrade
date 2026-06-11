@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte bas-gauche (façon Claude) + désencombrement sidebar
+
+**Type** : feat UI (demande user)
+**Fichiers** : `src/pages/app.html`, `src/js/app-bootstrap.js`, `src/css/style.css`
+
+Regroupe le secondaire dans un **popover de compte** (style claude.ai) ouvert depuis la pill en bas de sidebar :
+- **app.html** : `.user-pill` → bouton `#accountBtn` (avatar+nom+badge+chevron) dans `.account-wrap` ; ancien `#btnLogout` conservé caché (compat). Réglages + Offres + leur divider marqués `.acct-moved` (cachés de la sidebar mais gardés dans le DOM → routing intact).
+- **app-bootstrap.js** : `_initAccountMenu()` (appelé dans `_doReveal`) injecte le popover : email + Paramètres · Langue (toggle FR/EN) · Thème (toggle clair/sombre) · Aide · ─ · Offres · Nouveautés · ─ · CGU/Mentions légales/Confidentialité · ─ · Déconnexion. Actions : routing via `[data-page].click()`, `i18n.setLang`, `Theme.set`, `Auth.logout`. Ferme sur clic-dehors + Échap.
+- **style.css** : `.account-menu`/`-item`/`-sep`/`-email`, `.acct-moved`, chevron rotatif. Bump bootstrap h=13 + style h=18.
+- Vérifié staging : menu affiché (style Claude), sidebar sans Réglages/Offres.
+
 ## 2026-06-11 — v1.0.5 (staging) — Gate « carte obligatoire à l'inscription »
 
 **Type** : feat (le dernier morceau du modèle carte-obligatoire)
