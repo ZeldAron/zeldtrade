@@ -486,6 +486,82 @@ document.addEventListener('DOMContentLoaded', () => {
     if (later) later.onclick = () => m.remove();
   }
 
+  // v1.0.5 — Menu compte (bas de sidebar, façon Claude) : regroupe le secondaire
+  // (Réglages, Offres, Langue, Thème, Aide, légal, déconnexion) dans un popover.
+  function _initAccountMenu() {
+    const wrap = document.getElementById('accountWrap');
+    const btn  = document.getElementById('accountBtn');
+    if (!wrap || !btn || document.getElementById('accountMenu')) return;   // une seule fois
+    const en    = (typeof i18n !== 'undefined' && i18n.getLang && i18n.getLang() === 'en');
+    const email = (typeof _fbAuth !== 'undefined' && _fbAuth && _fbAuth.currentUser && _fbAuth.currentUser.email) || '';
+    const esc   = (s) => (typeof UI !== 'undefined' && UI.escHtml) ? UI.escHtml(s) : s;
+    const ic = (p) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+    const I = {
+      settings: ic('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>'),
+      globe:  ic('<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>'),
+      theme:  ic('<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/>'),
+      help:   ic('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>'),
+      up:     ic('<circle cx="12" cy="12" r="10"/><polyline points="8 12 12 8 16 12"/><line x1="12" y1="16" x2="12" y2="8"/>'),
+      spark:  ic('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>'),
+      doc:    ic('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>'),
+      shield: ic('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
+      logout: ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
+    };
+    const tVal = () => (typeof Theme !== 'undefined' && Theme.getResolved && Theme.getResolved() === 'light') ? (en ? 'Light' : 'Clair') : (en ? 'Dark' : 'Sombre');
+    const lVal = () => (i18n.getLang && i18n.getLang() === 'en') ? 'EN' : 'FR';
+    const bi = (act, icon, label, right) => `<button class="account-menu-item" type="button" data-acct="${act}" role="menuitem">${icon}<span>${label}</span>${right ? `<span class="account-menu-right" data-acct-val="${act}">${right}</span>` : ''}</button>`;
+    const li = (href, icon, label) => `<a class="account-menu-item" href="${href}" target="_blank" rel="noopener" role="menuitem">${icon}<span>${label}</span></a>`;
+    const menu = document.createElement('div');
+    menu.id = 'accountMenu'; menu.className = 'account-menu'; menu.setAttribute('role', 'menu'); menu.hidden = true;
+    menu.innerHTML =
+      (email ? `<div class="account-menu-email" title="${esc(email)}">${esc(email)}</div>` : '')
+      + bi('settings', I.settings, en ? 'Settings' : 'Paramètres')
+      + bi('lang',     I.globe,    en ? 'Language' : 'Langue', lVal())
+      + bi('theme',    I.theme,    en ? 'Theme' : 'Thème', tVal())
+      + bi('help',     I.help,     en ? 'Get help' : "Obtenir de l'aide")
+      + '<div class="account-menu-sep"></div>'
+      + bi('offers',   I.up,       en ? 'Upgrade plan' : 'Passer à un plan supérieur')
+      + bi('updates',  I.spark,    en ? "What's new" : 'Nouveautés')
+      + '<div class="account-menu-sep"></div>'
+      + li('/cgu',     I.doc,    en ? 'Terms' : 'CGU')
+      + li('/legal',   I.doc,    en ? 'Legal notice' : 'Mentions légales')
+      + li('/privacy', I.shield, en ? 'Privacy' : 'Confidentialité')
+      + '<div class="account-menu-sep"></div>'
+      + bi('logout',   I.logout,   en ? 'Log out' : 'Se déconnecter');
+    wrap.appendChild(menu);
+
+    const closeM = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+    const openM  = () => { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); };
+    btn.addEventListener('click', (e) => { e.stopPropagation(); menu.hidden ? openM() : closeM(); });
+    document.addEventListener('click', (e) => { if (!menu.hidden && !wrap.contains(e.target)) closeM(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeM(); });
+
+    menu.addEventListener('click', (e) => {
+      if (e.target.closest('a.account-menu-item')) { closeM(); return; }   // CGU/légal/privacy → nouvel onglet (href natif)
+      const it = e.target.closest('[data-acct]');
+      if (!it) return;
+      const act = it.getAttribute('data-acct');
+      if (act === 'lang') {                                                // toggle langue (menu reste ouvert)
+        const next = (i18n.getLang() === 'en') ? 'fr' : 'en';
+        i18n.setLang(next);
+        const v = menu.querySelector('[data-acct-val="lang"]'); if (v) v.textContent = (next === 'en' ? 'EN' : 'FR');
+        return;
+      }
+      if (act === 'theme') {                                               // toggle thème (menu reste ouvert)
+        const next = (Theme.getResolved() === 'light') ? 'dark' : 'light';
+        Theme.set(next);
+        const v = menu.querySelector('[data-acct-val="theme"]'); if (v) v.textContent = (next === 'light' ? (en ? 'Light' : 'Clair') : (en ? 'Dark' : 'Sombre'));
+        return;
+      }
+      closeM();
+      if (act === 'settings')     document.querySelector('[data-page="settings"]')?.click();
+      else if (act === 'offers')  document.querySelector('[data-page="offers"]')?.click();
+      else if (act === 'help')    (document.getElementById('btnTopbarHelp') || document.querySelector('[data-page="tutorial"]'))?.click();
+      else if (act === 'updates') window.open('/updates', '_blank', 'noopener');
+      else if (act === 'logout')  { try { Auth.logout(); } catch (e2) {} }
+    });
+  }
+
   async function launchApp(user) {
     if (appLaunched) return;
 
@@ -546,6 +622,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (e) {}
         // v1.0.5 : gate d'accès essai/payant (bannière si essai actif, mur si expiré).
         try { _renderAccessGate(); } catch (e) {}
+        try { _initAccountMenu(); } catch (e) {}   // v1.0.5 : menu compte (bas de sidebar)
       } catch {}
       // v0.9.318 : on termine l'animation (snap 100 % + « Prêt ») PUIS fondu de sortie.
       ZTLoader.finish(() => {
