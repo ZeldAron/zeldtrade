@@ -5752,8 +5752,8 @@ img { -webkit-user-drag: none; }
 
 /* v1.0.5 — menu compte (bas de sidebar, façon Claude) */
 .acct-moved { display:none !important; }   /* Réglages / Offres déplacés dans le menu compte */
-.account-wrap { position:relative; }
-.user-pill { display:flex; align-items:center; width:100%; cursor:pointer; appearance:none; -webkit-appearance:none; font:inherit; color:inherit; text-align:left; }
+.account-wrap { position:relative; margin:0 8px 8px; }
+.user-pill { display:flex; align-items:center; width:100%; box-sizing:border-box; margin:0; cursor:pointer; appearance:none; -webkit-appearance:none; font:inherit; color:inherit; text-align:left; }
 .user-pill-chevron { margin-left:auto; flex:none; color:var(--muted); transition:transform .15s; }
 #accountBtn[aria-expanded="true"] .user-pill-chevron { transform:rotate(180deg); }
 .account-menu { position:absolute; bottom:calc(100% + 8px); left:0; min-width:262px;
