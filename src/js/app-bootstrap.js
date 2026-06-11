@@ -343,7 +343,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const en = (typeof i18n !== 'undefined' && i18n.getLang && i18n.getLang() === 'en');
     const state = Store.getAccessState();
 
-    // Bannière « X jours d'essai restants »
+    const goOffers = () => { const o = document.querySelector('[data-page="offers"]'); if (o) o.click(); };
+
+    // Bannière persistante « X jours restants — ajoute ta carte pour garder tes données »
     let banner = document.getElementById('trialBanner');
     if (state === 'trialing') {
       const n = (Store.trialDaysLeft && Store.trialDaysLeft()) || 0;
@@ -355,15 +357,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const tb = document.querySelector('.topbar');
         if (tb && tb.parentElement) tb.parentElement.insertBefore(banner, tb.nextSibling);
       }
-      banner.innerHTML = `<span>${en ? 'Free trial' : 'Essai gratuit'} · <b>${daysTxt}</b></span>`
+      banner.classList.toggle('trial-banner-urgent', n <= 3);
+      banner.innerHTML = `<span>${en ? 'Free trial' : 'Essai gratuit'} · <b>${daysTxt}</b> · ${en ? 'add a card to keep your data' : 'ajoute ta carte pour garder tes données'}</span>`
         + `<button type="button" id="trialBannerCta">${en ? 'See plans' : 'Voir les offres'}</button>`;
       const cta = document.getElementById('trialBannerCta');
-      if (cta) cta.onclick = () => { const o = document.querySelector('[data-page="offers"]'); if (o) o.click(); };
+      if (cta) cta.onclick = goOffers;
+      _maybeShowTrialNotice(en, n, goOffers);   // écran d'explication complet, 1×/session
     } else if (banner) {
       banner.remove();
     }
 
-    // Mur de fin d'essai (bloque l'app ; données conservées)
+    // Mur de fin d'essai (bloque l'app ; données conservées ; avertit la suppression)
     let wall = document.getElementById('paywallOverlay');
     if (state === 'expired') {
       if (!wall) {
@@ -372,20 +376,46 @@ document.addEventListener('DOMContentLoaded', () => {
         wall.className = 'paywall-overlay';
         wall.innerHTML = `<div class="paywall-card">
             <div class="paywall-icon">🔒</div>
-            <h2>${en ? 'Your trial has ended' : 'Ton essai est terminé'}</h2>
-            <p>${en ? 'Subscribe to keep using ZeldTrade. Your data is safe — right where you left it.' : 'Abonne-toi pour continuer à utiliser ZeldTrade. Tes données sont conservées, tu les retrouveras intactes.'}</p>
+            <h2>${en ? 'Your free access has ended' : 'Ton accès gratuit est terminé'}</h2>
+            <p>${en ? 'Add a card to keep your account and all your data.' : 'Ajoute ta carte pour garder ton compte et toutes tes données.'}</p>
+            <p class="paywall-warn">${en ? '⚠️ Without a card your account may be deleted. Your data is still here — subscribe to keep it.' : '⚠️ Sans carte, ton compte pourra être supprimé. Tes données sont encore là — abonne-toi pour les conserver.'}</p>
             <button class="btn-primary" id="paywallCta" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
             <button class="paywall-logout" id="paywallLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
           </div>`;
         document.body.appendChild(wall);
         const cta = document.getElementById('paywallCta');
-        if (cta) cta.onclick = () => { wall.remove(); const o = document.querySelector('[data-page="offers"]'); if (o) o.click(); };
+        if (cta) cta.onclick = () => { wall.remove(); goOffers(); };
         const lo = document.getElementById('paywallLogout');
         if (lo) lo.onclick = () => { try { Auth.logout(); } catch (e) {} };
       }
     } else if (wall) {
       wall.remove();
     }
+  }
+
+  // v1.0.5 : "page" d'avertissement complète pour les ex-gratuits en essai (1×/session).
+  // Explique la transition payant + la timeline + le risque de perte de données.
+  function _maybeShowTrialNotice(en, n, goOffers) {
+    try { if (sessionStorage.getItem('zt_trial_notice')) return; } catch (e) {}
+    if (document.getElementById('trialNotice')) return;
+    const m = document.createElement('div');
+    m.id = 'trialNotice';
+    m.className = 'paywall-overlay';
+    m.innerHTML = `<div class="paywall-card">
+        <div class="paywall-icon">⏳</div>
+        <h2>${en ? 'ZeldTrade is now paid' : 'ZeldTrade passe en payant'}</h2>
+        <p>${en ? `Your free account has <b>${n} day${n > 1 ? 's' : ''}</b> of trial left.` : `Ton compte gratuit a encore <b>${n} jour${n > 1 ? 's' : ''}</b> d'essai.`}</p>
+        <p>${en ? 'To keep your account and <b>all your data</b>, add your card — 14-day trial, subscription or lifetime.' : "Pour garder ton compte et <b>toutes tes données</b>, ajoute ta carte — essai 14 j, abonnement ou accès à vie."}</p>
+        <p class="paywall-warn">${en ? 'Without a card: access is locked when the trial ends, then your account may be deleted.' : "Sans carte : accès bloqué à la fin de l'essai, puis ton compte pourra être supprimé."}</p>
+        <button class="btn-primary" id="trialNoticeCta" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
+        <button class="paywall-logout" id="trialNoticeLater" type="button">${en ? 'Later' : 'Plus tard'}</button>
+      </div>`;
+    document.body.appendChild(m);
+    try { sessionStorage.setItem('zt_trial_notice', '1'); } catch (e) {}
+    const cta = document.getElementById('trialNoticeCta');
+    if (cta) cta.onclick = () => { m.remove(); goOffers(); };
+    const later = document.getElementById('trialNoticeLater');
+    if (later) later.onclick = () => m.remove();
   }
 
   async function launchApp(user) {

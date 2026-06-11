@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Avertissement ex-gratuits (transition payant + perte de données)
+
+**Type** : feat (demande user)
+**Fichiers** : `src/js/app-bootstrap.js`, `src/css/style.css`, `src/pages/app.html`
+
+Objectif : que les ex-gratuits SACHENT qu'ils doivent ajouter une carte pour garder accès + données. **Suppression MANUELLE choisie** (aucune CF auto qui supprime).
+- **Écran d'explication** `_maybeShowTrialNotice` (1×/session, ex-gratuits en essai) : « ZeldTrade passe en payant · X j d'essai · ajoute ta carte pour garder toutes tes données · sans carte = accès bloqué puis compte supprimé ». CTA Voir les offres / Plus tard. Réutilise `.paywall-overlay/.paywall-card`.
+- **Bannière** enrichie : « Essai · X j restants · ajoute ta carte pour garder tes données » + classe `.trial-banner-urgent` (rouge) si ≤3 j.
+- **Paywall** (expiré) : avertit la suppression + données (`.paywall-warn` ambre).
+- CSS `.paywall-warn` + `.trial-banner-urgent`. Bump style h=15, bootstrap h=9.
+- **RESTE (go-live)** : migration `trialEnd=now+14j` pour TOUS les ex-gratuits (CF one-shot) + prod. Sans migration, l'avertissement ne s'affiche que pour les comptes ayant déjà un trialEnd.
+
 ## 2026-06-11 — v1.0.5 (staging) — Fix retour Stripe staging→prod + bouton lifetime + loader checkout
 
 **Type** : fix + feat
