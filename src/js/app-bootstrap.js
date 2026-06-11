@@ -380,11 +380,25 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>${en ? 'Add a card to keep your account and all your data.' : 'Ajoute ta carte pour garder ton compte et toutes tes données.'}</p>
             <p class="paywall-warn">${en ? '⚠️ Without a card your account may be deleted. Your data is still here — subscribe to keep it.' : '⚠️ Sans carte, ton compte pourra être supprimé. Tes données sont encore là — abonne-toi pour les conserver.'}</p>
             <button class="btn-primary" id="paywallCta" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
+            <button class="paywall-export" id="paywallExport" type="button">${en ? '⤓ Export all my data' : '⤓ Exporter toutes mes données'}</button>
             <button class="paywall-logout" id="paywallLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
           </div>`;
         document.body.appendChild(wall);
         const cta = document.getElementById('paywallCta');
         if (cta) cta.onclick = () => { wall.remove(); goOffers(); };
+        // RGPD (art. 20) : l'export reste TOUJOURS possible, même bloqué → pas de données « en otage ».
+        const ex = document.getElementById('paywallExport');
+        if (ex) ex.onclick = () => {
+          try {
+            const blob = new Blob([Store.exportFullJSON()], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'zeldtrade-export-' + ((typeof UI !== 'undefined' && UI.localToday) ? UI.localToday() : new Date().toISOString().slice(0, 10)) + '.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Your data has been exported.' : 'Tes données ont été exportées.');
+          } catch (e) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Export failed — try again.' : "Échec de l'export — réessaie.", true); }
+        };
         const lo = document.getElementById('paywallLogout');
         if (lo) lo.onclick = () => { try { Auth.logout(); } catch (e) {} };
       }

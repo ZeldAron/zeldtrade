@@ -7,6 +7,14 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Paywall : bouton « Exporter toutes mes données » (garde-fou RGPD)
+
+**Type** : feat (conformité RGPD art. 20)
+**Fichiers** : `src/js/app-bootstrap.js`, `src/css/style.css`, `src/pages/app.html`
+
+Pour ne jamais retenir les données « en otage » quand l'accès est bloqué : bouton `#paywallExport` sur le mur de fin d'essai → `Store.exportFullJSON()` (export COMPLET : exportedAt, uid, plan, settings, trades, myAccounts, groups, spreadsByFirm) téléchargé en JSON. Réutilise l'export RGPD existant (store.js:1051) + le pattern download. CSS `.paywall-export` (bouton secondaire bordé). Bump style h=16, bootstrap h=10.
+Vérifié E2E (staging) : essai forcé expiré → paywall → clic → JSON complet téléchargé (2 comptes + settings).
+
 ## 2026-06-11 — v1.0.5 (staging) — Avertissement ex-gratuits (transition payant + perte de données)
 
 **Type** : feat (demande user)
