@@ -5696,3 +5696,38 @@ img { -webkit-user-drag: none; }
 .cal-hm-cell       { width:14px; height:14px; border-radius:3px; cursor:default; transition:transform .1s; }
 .cal-hm-cell:hover { transform:scale(1.3); }
 .cal-hm-cell-empty { background:transparent; }
+
+/* ─── v1.0.5 : bannière d'essai + mur de fin d'essai ─────────────────────────── */
+.trial-banner {
+  display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;
+  padding:9px 16px; background:var(--bg2); border-bottom:1px solid var(--border);
+  font-size:13px; color:var(--text);
+}
+.trial-banner b { color:var(--accent); font-weight:700; }
+.trial-banner button {
+  background:var(--accent); color:#fff; border:none; border-radius:8px;
+  padding:6px 14px; min-height:32px; font-size:12.5px; font-weight:600; cursor:pointer;
+  font-family:'Geist',sans-serif; transition:opacity .15s;
+}
+.trial-banner button:hover { opacity:.9; }
+
+.paywall-overlay {
+  position:fixed; inset:0; z-index:5000; padding:24px;
+  background:rgba(8,8,12,0.94); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center; animation:paywallIn .25s ease;
+}
+@keyframes paywallIn { from { opacity:0; } to { opacity:1; } }
+.paywall-card {
+  width:100%; max-width:440px; background:var(--bg2); border:1px solid var(--border);
+  border-radius:18px; padding:36px 30px; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+.paywall-card .paywall-icon { font-size:38px; margin-bottom:10px; }
+.paywall-card h2 { margin:0 0 10px; font-size:21px; color:var(--text); }
+.paywall-card p { margin:0 0 22px; font-size:14px; line-height:1.6; color:var(--muted); }
+/* CTA rempli, thème-correct : bg --accent + texte --on-accent (pas de #fff en dur) */
+.paywall-card .btn-primary { width:100%; min-height:48px; border-radius:12px; font-size:15px; margin-top:4px; background:var(--accent); color:var(--on-accent); border:none; }
+.paywall-logout {
+  margin-top:14px; background:none; border:none; color:var(--muted2);
+  font-size:13px; cursor:pointer; text-decoration:underline; font-family:'Geist',sans-serif;
+}
+.paywall-logout:hover { color:var(--text); }
