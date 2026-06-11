@@ -7,6 +7,15 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : compact + aligné (retour user « trop long »)
+
+**Type** : polish UI
+**Fichiers** : `src/js/app-bootstrap.js`, `src/css/style.css`
+
+- **Sous-menu « Légal › »** : CGU + Mentions légales + Confidentialité regroupées (3 lignes → 1), façon « En savoir plus › » de Claude. `legalHTML()` + vue `legal` dans `show()` + handler `legal`/`legal-back`.
+- **Resserrage** : item padding 9→7px, gap 12→11, icônes 18→17, sep margins 6→4, padding popover 6→5, email aligné à 11px comme les items. → hauteur du menu **~600px → 324px**.
+- Vérifié staging : 8 lignes au principal, sous-menus Langue/Légal OK, alignement uniforme. Bump bootstrap h=16 + style h=21.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : fixes UX (fermeture / réouverture / focus)
 
 **Type** : fix
