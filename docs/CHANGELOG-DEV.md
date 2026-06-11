@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Retrait des mentions « bêta » (l'app est en V1)
+
+**Type** : copie (demande user — l'app n'est plus en bêta)
+**Fichiers** : `landing-i18n.js`, `i18n.js`, `index.html`, `cgu.html`, `legal.html`, `equipe.html`, `produit.html`, `faq.html`, `app.html`
+
+Reformulation de toutes les mentions VISIBLES de « bêta » (l'identifiant technique interne du tier `beta`=VIP est conservé, non affiché) :
+- Landing/sous-pages : `firms.sub` (« vérifié par les bêta testeurs » → « vérifié au tick près »), `about.p3` (retrait « bêta testeurs »), `pricing.elite.f4` (« Accès bêta » → « Accès anticipé aux nouvelles fonctionnalités »), + fallbacks index/equipe/produit + og:description equipe.
+- App : `off.elite.f4`, `off.row.beta`, `off.faq.5a` (FR+EN) → « accès anticipé » sans « beta ».
+- CGU/legal : retrait des clauses « phase bêta » / « en période de bêta » (l'app est fournie « en l'état »).
+- Bump landing-i18n h=11 (uniformisé sur toutes les pages) + i18n h=7. Vérifié déployé : 0 mention visible.
+
 ## 2026-06-11 — v1.0.5 (staging) — CGU/CGV : alignées sur le nouveau modèle
 
 **Type** : legal (contenu)
