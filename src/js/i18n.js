@@ -859,7 +859,7 @@ const i18n = (() => {
       'off.trust.cancel':      'Annulation 1-clic',
       'off.trust.trial':       '14 jours d\'essai gratuit',
       'off.trust.export':      'Export complet RGPD à tout moment',
-      'off.trust.nocb':        'Aucune CB requise pour démarrer',
+      'off.trust.nocb':        'Annulation en 1 clic, sans engagement',
       // v0.9.384 : bannière Founding retirée (mention « Accès Funded à vie en échange de feedback »).
       // FAQ Lot 4
       'off.faq.4q':    'Et si je veux arrêter ?',
@@ -1777,7 +1777,7 @@ const i18n = (() => {
       'off.trust.cancel':      '1-click cancellation',
       'off.trust.trial':       '14-day free trial',
       'off.trust.export':      'Full GDPR export anytime',
-      'off.trust.nocb':        'No credit card needed to start',
+      'off.trust.nocb':        'Cancel anytime, no commitment',
       // Founding scarcity banner
       // v0.9.384 : Founding scarcity banner removed.
       // FAQ Lot 4

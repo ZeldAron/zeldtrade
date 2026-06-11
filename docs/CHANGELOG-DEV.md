@@ -37,6 +37,20 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Lifetime sur la landing + purge copie « no card » (pivot)
+
+**Type** : feat + fix copie
+**Fichiers** : `src/pages/index.html`, `src/js/landing-i18n.js`, `src/js/i18n.js`, `src/pages/app.html`
+
+- **Landing** : ajout de la **bande lifetime** (sous les cartes Funded/Elite) → « Ou l'accès à vie · 299,90 € · à vie · sans abonnement », CTA `/app?signup=1&plan=lifetime`. Styles inline (la landing a son CSS à part). Clés `pricing.lifetime.*` (FR+EN) dans landing-i18n.js.
+- **FIX contradiction du pivot** : le modèle est passé en CARTE OBLIGATOIRE, mais la copie disait encore
+  « sans CB / no credit card / sans carte » (faux + risqué légalement). Purgé partout → « annulation en 1 clic /
+  sans engagement / cancel anytime » : `pricing.sub`, `pricing.reassure`, `hero.cta.nocard`, `midcta.cta`
+  (landing-i18n + fallbacks index.html), `off.trust.nocb` (app i18n FR+EN), JSON-LD. Bump landing-i18n h=9 + i18n h=6.
+
+### Vérifié (staging)
+Landing : bande lifetime affichée, sous-titre « Essai 14 jours. Annulation en 1 clic… », **0 mention « no card »**.
+
 ## 2026-06-11 — v1.0.5 (staging) — Lifetime 299,90€ (one-shot) + Stripe TEST câblé
 
 **Type** : feat
