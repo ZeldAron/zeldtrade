@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : onglet « Paiement » → portail Stripe (demande user)
+
+**Type** : feat UI
+**Fichier** : `src/js/app-bootstrap.js`
+
+Remplacement de « Passer à un plan supérieur » par **« Paiement »** (icône carte) pour gérer son paiement (prochaine échéance, changer la carte, factures, résiliation) :
+- **Contextuel** : si l'user a un `customerId` Stripe (`Store.getStripeInfo()`) → « Paiement » → `createBillingPortalSession({})` (portail Stripe, loader + erreur gérée). Sinon → « Passer à un plan supérieur » → Offres (les non-abonnés gardent le chemin d'achat).
+- Config portail Stripe TEST déjà présente (`bpc_…`). Vérifié staging : portail ouvre (HTTP 200 `billing.stripe.com`), menu affiche « Paiement » pour un customer. Bump bootstrap h=20.
+- ⚠️ Go-live : activer/configurer le portail client en mode **LIVE** (Dashboard Stripe) pour que « Paiement » fonctionne en prod.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : retrait des drapeaux emoji (reco ui-ux-pro-max)
 
 **Type** : fix UI (reco `no-emoji-icons`)
