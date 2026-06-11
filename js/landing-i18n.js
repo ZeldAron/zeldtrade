@@ -32,7 +32,7 @@
 
     // Status bar + promo
     'sb.launch':   { fr: 'EN LIGNE · MADE IN FRANCE 🇫🇷', en: 'ONLINE · MADE IN FRANCE 🇫🇷' },
-    'promo.text':  { fr: "🔥 Lancement : −40% sur Funded & Elite + 1 semaine d'essai", en: '🔥 Launch: −40% on Funded & Elite + 1-week trial' },
+    'promo.text':  { fr: "🔥 Lancement : −40% sur Funded & Elite + essai 14 jours", en: '🔥 Launch: −40% on Funded & Elite + 14-day trial' },
     'promo.copy':  { fr: 'copier', en: 'copy' },
     'promo.aria':  { fr: 'Copier le code promo ZELD40', en: 'Copy promo code ZELD40' },
 
@@ -153,17 +153,17 @@
 
     // Pricing
     'pricing.title': { fr: 'Simple. <span class="accent">Honnête.</span>', en: 'Simple. <span class="accent">Honest.</span>' },
-    'pricing.sub':   { fr: 'Trader gratuit à vie. Aucune carte requise pour démarrer. Si tu pars, tu emportes tes données.', en: 'Trader free forever. No card required to start. If you leave, you take your data.' },
+    'pricing.sub':   { fr: 'Essai 14 jours, sans carte bancaire. Si tu pars, tu emportes tes données.', en: '14-day free trial, no credit card. If you leave, you take your data.' },
     'midcta.label': { fr: 'Le tracking qui t\'empêche de cramer le suivant.', en: 'The tracking that stops you blowing the next one.' },
     'midcta.cta':   { fr: 'Commencer gratuitement — sans CB →', en: 'Start for free — no card →' },
     'pricing.badge':    { fr: '✦ Recommandé', en: '✦ Recommended' },
-    'pricing.reassure': { fr: 'Essai 7 j · sans CB · annulation en 1 clic', en: '7-day trial · no card · cancel anytime' },
+    'pricing.reassure': { fr: 'Essai 14 j · sans CB · annulation en 1 clic', en: '14-day trial · no card · cancel anytime' },
     'pricing.monthly': { fr: 'Mensuel', en: 'Monthly' },
     'pricing.yearly':  { fr: 'Annuel <span class="save">−2 mois</span>', en: 'Yearly <span class="save">−2 months</span>' },
     'pricing.forever': { fr: '/ pour toujours', en: '/ forever' },
     'pricing.month':   { fr: '/ mois', en: '/ mo' },
     'pricing.year':    { fr: '/ an', en: '/ yr' },
-    'pricing.discount':{ fr: 'LANCEMENT −40% · CODE ZELD40 · essai 7 jours', en: 'LAUNCH −40% · CODE ZELD40 · 7-day trial' },
+    'pricing.discount':{ fr: 'LANCEMENT −40% · CODE ZELD40 · essai 14 jours', en: 'LAUNCH −40% · CODE ZELD40 · 14-day trial' },
     'pricing.curnote': { fr: 'Affichage indicatif · facturé en euros', en: 'Indicative display · billed in euros' },
     'pricing.trader.desc':  { fr: 'Commence gratuitement. Upgrade quand tu es prêt.', en: 'Start free. Upgrade when ready.' },
     'pricing.trader.f1':    { fr: '1 compte (prop / crypto / perso)', en: '1 account (prop / crypto / personal)' },
@@ -179,14 +179,14 @@
     'pricing.funded.f3': { fr: 'Drawdown EOD précis', en: 'Precise EOD drawdown' },
     'pricing.funded.f4': { fr: 'Archive PDF par trade', en: 'PDF archive per trade' },
     'pricing.funded.f5': { fr: 'Support prioritaire', en: 'Priority support' },
-    'pricing.funded.cta':{ fr: 'Essai 7 jours →', en: '7-day trial →' },
+    'pricing.funded.cta':{ fr: 'Essai 14 jours →', en: '14-day trial →' },
     'pricing.elite.desc': { fr: 'Tu gères 10+ comptes ou tu coaches des traders. Aucune limite.', en: 'Managing 10+ accounts or coaching traders. Zero limits.' },
     'pricing.elite.f1': { fr: 'Comptes & groupes illimités', en: 'Unlimited accounts & groups' },
     'pricing.elite.f2': { fr: 'Analyses IA illimitées · Claude Sonnet', en: 'Unlimited AI analyses · Claude Sonnet' },
     'pricing.elite.f3': { fr: 'Vote décisif sur la roadmap', en: 'Decisive vote on the roadmap' },
     'pricing.elite.f4': { fr: 'Accès bêta aux nouvelles features', en: 'Beta access to new features' },
     'pricing.elite.f5': { fr: 'Support prioritaire 24h', en: 'Priority 24h support' },
-    'pricing.elite.cta':{ fr: 'Tout débloquer — 7 j offerts →', en: 'Unlock everything — 7-day trial →' },
+    'pricing.elite.cta':{ fr: 'Tout débloquer — 14 j offerts →', en: 'Unlock everything — 14-day trial →' },
 
     // Discord
     'discord.title': { fr: 'Le Discord. Là où ça parle vraiment trading.', en: 'The Discord. Where trading is actually discussed.' },

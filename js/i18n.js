@@ -797,7 +797,7 @@ const i18n = (() => {
       'off.trader.f8':  'Groupes multi-comptes',
       'off.trader.f9':  'Export PDF avec screenshots',
       // Funded (14.99 €/mois) — bénéfices
-      'off.funded.f1':  'Tout le plan Trader inclus',
+      'off.funded.f1':  'Toutes les bases : journal, dashboard, analytics',
       'off.funded.f2':  '10 comptes (prop / crypto / personnel), groupables en 1 trade',
       'off.funded.f3':  'IA Vision standard + IA avancée en fallback — 7 analyses / semaine',
       'off.funded.f4':  '1 trade saisi → répliqué sur tes comptes groupés en 1 sauvegarde',
@@ -849,7 +849,7 @@ const i18n = (() => {
       'off.billing.save':      'Économise 2 mois',
       'off.funded.yearly':     '<s class="price-old">149 €</s> 89 €/an',
       'off.launch':            'Offre de lancement · −40%',
-      'off.trial':             '1 semaine d\'essai gratuite',
+      'off.trial':             '14 jours d\'essai gratuit',
       'off.funded.yearly.save':'soit 12,42 €/mois — économie 30 €',
       'off.elite.yearly':      '<s class="price-old">299 €</s> 179 €/an',
       'off.elite.yearly.save': 'soit 24,92 €/mois — économie 61 €',
@@ -857,7 +857,7 @@ const i18n = (() => {
       'off.year':              'an',
       // Lot 4 — Trust & risk reversal
       'off.trust.cancel':      'Annulation 1-clic',
-      'off.trust.trial':       '7 jours d\'essai gratuit',
+      'off.trust.trial':       '14 jours d\'essai gratuit',
       'off.trust.export':      'Export complet RGPD à tout moment',
       'off.trust.nocb':        'Aucune CB requise pour démarrer',
       // v0.9.384 : bannière Founding retirée (mention « Accès Funded à vie en échange de feedback »).
@@ -1716,7 +1716,7 @@ const i18n = (() => {
       'off.trader.f8':  'Multi-account groups',
       'off.trader.f9':  'PDF export with screenshots',
       // Funded (€14.99/mo) — benefits
-      'off.funded.f1':  'Everything in Trader',
+      'off.funded.f1':  'All the essentials: journal, dashboard, analytics',
       'off.funded.f2':  '10 accounts (prop / crypto / personal), groupable into 1 trade',
       'off.funded.f3':  'AI Vision standard + advanced AI fallback — 7 analyses / week',
       'off.funded.f4':  '1 trade entered → replicated across your grouped accounts in 1 save',
@@ -1767,7 +1767,7 @@ const i18n = (() => {
       'off.billing.save':      'Save 2 months',
       'off.funded.yearly':     '<s class="price-old">€149</s> €89/year',
       'off.launch':            'Launch offer · −40%',
-      'off.trial':             '1-week free trial',
+      'off.trial':             '14-day free trial',
       'off.funded.yearly.save':'€12.42/mo — save €30',
       'off.elite.yearly':      '<s class="price-old">€299</s> €179/year',
       'off.elite.yearly.save': '€24.92/mo — save €61',
@@ -1775,7 +1775,7 @@ const i18n = (() => {
       'off.year':              'year',
       // Lot 4 — Trust & risk reversal
       'off.trust.cancel':      '1-click cancellation',
-      'off.trust.trial':       '7-day free trial',
+      'off.trust.trial':       '14-day free trial',
       'off.trust.export':      'Full GDPR export anytime',
       'off.trust.nocb':        'No credit card needed to start',
       // Founding scarcity banner
