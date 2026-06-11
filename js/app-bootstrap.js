@@ -524,11 +524,17 @@ document.addEventListener('DOMContentLoaded', () => {
         + bi('offers',   I.up,       e2 ? 'Upgrade plan' : 'Passer à un plan supérieur')
         + bi('updates',  I.spark,    e2 ? "What's new" : 'Nouveautés')
         + '<div class="account-menu-sep"></div>'
-        + li('/cgu',     I.doc,    e2 ? 'Terms' : 'CGU')
-        + li('/legal',   I.doc,    e2 ? 'Legal notice' : 'Mentions légales')
-        + li('/privacy', I.shield, e2 ? 'Privacy' : 'Confidentialité')
+        + `<button class="account-menu-item" type="button" data-acct="legal" role="menuitem">${I.doc}<span>${e2 ? 'Legal' : 'Légal'}</span>${chev}</button>`
         + '<div class="account-menu-sep"></div>'
         + bi('logout',   I.logout,   e2 ? 'Log out' : 'Se déconnecter');
+    }
+    function legalHTML() {
+      const e2 = (i18n.getLang && i18n.getLang() === 'en');
+      return `<button class="account-menu-item account-menu-back" type="button" data-acct="legal-back" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg><span>${e2 ? 'Legal' : 'Légal'}</span></button>`
+        + '<div class="account-menu-sep"></div>'
+        + li('/cgu',     I.doc,    e2 ? 'Terms of Service' : 'CGU')
+        + li('/legal',   I.doc,    e2 ? 'Legal notice' : 'Mentions légales')
+        + li('/privacy', I.shield, e2 ? 'Privacy policy' : 'Confidentialité');
     }
     function langHTML() {
       const cur = (i18n.getLang && i18n.getLang() === 'en') ? 'en' : 'fr';
@@ -540,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const menu = document.createElement('div');
     menu.id = 'accountMenu'; menu.className = 'account-menu'; menu.setAttribute('role', 'menu'); menu.hidden = true;
-    const show = (view) => { menu.innerHTML = (view === 'lang') ? langHTML() : mainHTML(); };
+    const show = (view) => { menu.innerHTML = (view === 'lang') ? langHTML() : (view === 'legal' ? legalHTML() : mainHTML()); };
     show('main');
     wrap.appendChild(menu);
 
@@ -557,7 +563,8 @@ document.addEventListener('DOMContentLoaded', () => {
       e.stopPropagation();   // clic interne → ne pas remonter au handler document (qui fermerait le menu après le re-render)
       const act = it.getAttribute('data-acct');
       if (act === 'lang')      { show('lang'); return; }                   // ouvre le sous-menu langue
-      if (act === 'lang-back') { show('main'); return; }                   // retour au menu principal
+      if (act === 'legal')     { show('legal'); return; }                  // ouvre le sous-menu légal
+      if (act === 'lang-back' || act === 'legal-back') { show('main'); return; }  // retour au menu principal
       if (act === 'set-lang')  { i18n.setLang(it.getAttribute('data-lang') === 'en' ? 'en' : 'fr'); show('main'); return; }  // choisit la langue (menu reste ouvert)
       if (act === 'theme')     { Theme.set(Theme.getResolved() === 'light' ? 'dark' : 'light'); show('main'); return; }      // toggle thème (menu reste ouvert)
       closeM();
