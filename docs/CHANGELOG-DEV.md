@@ -7,6 +7,19 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — CGU/CGV : alignées sur le nouveau modèle
+
+**Type** : legal (contenu)
+**Fichier** : `src/pages/cgu.html`
+
+Mise à jour des CGV pour le modèle payant + essai carte requise :
+- **Art. 11 & 12** : essai 7 j → **14 j** + **moyen de paiement requis dès l'inscription** + prélèvement auto à J14 sauf résiliation (divulgation claire, droit conso).
+- **Art. 9 (grille)** : retrait du tier « Gratuit » permanent, ajout carte **Lifetime 299,90 €**.
+- **Art. 10 bis** : résiliation / échec de paiement → l'accès prend fin (plus de « repasse au gratuit ») ; **données conservées + exportables**.
+- **Art. 12 bis** (Lifetime : paiement unique, usage raisonnable, non remboursable) + **12 ter** (comptes gratuits existants : **préavis 30 j** → pause → suppression après notif, export toujours possible).
+- Art. 6 bis (plafond resp.) reformulé ; date → 11 juin 2026. Vérifié staging (/cgu).
+- ⚠️ Texte rédigé par Claude — **à faire relire par un pro** avant prod (rappel à l'user).
+
 ## 2026-06-11 — v1.0.5 (staging) — Migration ex-gratuits (préavis 30j) + email de préavis
 
 **Type** : feat (transition commerciale, choix user : « préavis généreux » + email)
