@@ -545,7 +545,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wrap.appendChild(menu);
 
     const closeM = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
-    const openM  = () => { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); };
+    const openM  = () => { show('main'); menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); };   // toujours rouvrir sur la vue principale
     btn.addEventListener('click', (e) => { e.stopPropagation(); menu.hidden ? openM() : closeM(); });
     document.addEventListener('click', (e) => { if (!menu.hidden && !wrap.contains(e.target)) closeM(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeM(); });
@@ -554,6 +554,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target.closest('a.account-menu-item')) { closeM(); return; }   // CGU/légal/privacy → nouvel onglet (href natif)
       const it = e.target.closest('[data-acct]');
       if (!it) return;
+      e.stopPropagation();   // clic interne → ne pas remonter au handler document (qui fermerait le menu après le re-render)
       const act = it.getAttribute('data-acct');
       if (act === 'lang')      { show('lang'); return; }                   // ouvre le sous-menu langue
       if (act === 'lang-back') { show('main'); return; }                   // retour au menu principal
