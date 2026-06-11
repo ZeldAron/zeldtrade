@@ -97,8 +97,7 @@
         "url": "https://zeldtrade.com/app",
         "description": "Journal de trading complet fait par un trader pour les traders. Spécialisé prop firms (Apex, FTMO, Topstep, Lucid, Funding Pips), avec crypto et fonds propres. Analyse IA, drawdown EOD précis, multi-comptes.",
         "offers": [
-          { "@type": "Offer", "name": "Trader", "price": "0",  "priceCurrency": "EUR", "description": "Plan gratuit pour démarrer" },
-          { "@type": "Offer", "name": "Funded", "price": "14.99", "priceCurrency": "EUR", "description": "Plan mensuel pour traders prop firm" },
+          { "@type": "Offer", "name": "Funded", "price": "14.99", "priceCurrency": "EUR", "description": "Plan mensuel pour traders prop firm · essai 14 jours sans CB" },
           { "@type": "Offer", "name": "Elite",  "price": "29.99", "priceCurrency": "EUR", "description": "Plan mensuel power user : comptes illimités, IA illimitée" }
         ],
         "featureList": [
@@ -176,7 +175,7 @@
 
   <!-- ─── Promo bar ───────────────────────────────────────────── -->
   <div class="promo-bar">
-    <span data-i18n="promo.text"><span aria-hidden="true">🔥</span> Lancement : −40% sur Funded &amp; Elite + 1 semaine d'essai</span>
+    <span data-i18n="promo.text"><span aria-hidden="true">🔥</span> Lancement : −40% sur Funded &amp; Elite + essai 14 jours</span>
     <button class="promo-code" id="promoCode" type="button" data-code="ZELD40" title="Copier le code" aria-label="Copier le code promo ZELD40" data-i18n-aria="promo.aria" aria-live="polite">ZELD40 <span class="copy" data-i18n="promo.copy">copier</span></button>
   </div>
 
@@ -339,7 +338,7 @@
     <div class="reveal">
       <div class="section-eyebrow">// PRICING</div>
       <h2 class="section-title" data-i18n-html="pricing.title">Simple. <span class="accent">Honnête.</span></h2>
-      <p class="section-sub" style="margin-bottom:32px" data-i18n="pricing.sub">Trader gratuit à vie. Aucune carte requise pour démarrer. Si tu pars, tu emportes tes données.</p>
+      <p class="section-sub" style="margin-bottom:32px" data-i18n="pricing.sub">Essai 14 jours, sans carte bancaire. Si tu pars, tu emportes tes données.</p>
     </div>
     <div class="reveal" data-delay="80" style="display:flex;flex-direction:column;align-items:center">
       <div class="pricing-toggles">
@@ -359,7 +358,7 @@
           <div class="price-amount"><span data-lp-price-monthly><span class="amt" data-eur="8.99">8,99 €</span><span class="unit" data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="7.42">7,42 €</span><span class="unit" data-i18n="pricing.month">/ mois</span></span></div>
           <div class="price-old"><span data-lp-price-monthly><span class="amt" data-eur="14.99">14,99 €</span> <span data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="12.42">12,42 €</span> <span data-i18n="pricing.month">/ mois</span></span></div>
           <div class="price-billed" data-lp-price-yearly style="display:none"><span data-i18n="pricing.billed">facturé</span> <span class="amt" data-eur="89">89 €</span><span data-i18n="pricing.slashyr">/an</span></div>
-          <div class="price-discount" data-i18n="pricing.discount">LANCEMENT −40% · CODE ZELD40 · essai 7 jours</div>
+          <div class="price-discount" data-i18n="pricing.discount">LANCEMENT −40% · CODE ZELD40 · essai 14 jours</div>
           <p class="price-desc" data-i18n="pricing.funded.desc">Pour le trader prop firm sérieux.</p>
           <ul class="price-features">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span data-i18n="pricing.funded.f1">10 comptes · multi-groupes</span></li>
@@ -371,8 +370,8 @@
             <li class="price-feature-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span data-i18n="pricing.elite.f2">Analyses IA illimitées · Claude Sonnet</span> <span class="lock-badge">Elite</span></li>
             <li class="price-feature-locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span data-i18n="pricing.elite.f3">Vote décisif sur la roadmap</span> <span class="lock-badge">Elite</span></li>
           </ul>
-          <span class="magnetic" data-magnetic="0.15"><a href="/app?signup=1&amp;plan=funded" class="price-cta" data-i18n="pricing.funded.cta">Essai 7 jours →</a></span>
-          <div class="price-reassure" data-i18n="pricing.reassure">Essai 7 j · sans CB · annulation en 1 clic</div>
+          <span class="magnetic" data-magnetic="0.15"><a href="/app?signup=1&amp;plan=funded" class="price-cta" data-i18n="pricing.funded.cta">Essai 14 jours →</a></span>
+          <div class="price-reassure" data-i18n="pricing.reassure">Essai 14 j · sans CB · annulation en 1 clic</div>
         </div>
         <div class="price-card featured">
           <div class="price-badge" data-i18n="pricing.badge">✦ Recommandé</div>
@@ -380,7 +379,7 @@
           <div class="price-amount"><span data-lp-price-monthly><span class="amt" data-eur="17.99">17,99 €</span><span class="unit" data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="14.92">14,92 €</span><span class="unit" data-i18n="pricing.month">/ mois</span></span></div>
           <div class="price-old"><span data-lp-price-monthly><span class="amt" data-eur="29.99">29,99 €</span> <span data-i18n="pricing.month">/ mois</span></span><span data-lp-price-yearly style="display:none"><span class="amt" data-eur="24.92">24,92 €</span> <span data-i18n="pricing.month">/ mois</span></span></div>
           <div class="price-billed" data-lp-price-yearly style="display:none"><span data-i18n="pricing.billed">facturé</span> <span class="amt" data-eur="179">179 €</span><span data-i18n="pricing.slashyr">/an</span></div>
-          <div class="price-discount" data-i18n="pricing.discount">LANCEMENT −40% · CODE ZELD40 · essai 7 jours</div>
+          <div class="price-discount" data-i18n="pricing.discount">LANCEMENT −40% · CODE ZELD40 · essai 14 jours</div>
           <p class="price-desc" data-i18n="pricing.elite.desc">Multi-comptes ou coachs.</p>
           <ul class="price-features">
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span data-i18n="pricing.elite.f1">Comptes &amp; groupes illimités</span></li>
@@ -389,8 +388,8 @@
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span data-i18n="pricing.elite.f4">Accès bêta aux nouvelles features</span></li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg><span data-i18n="pricing.elite.f5">Support prioritaire 24h</span></li>
           </ul>
-          <span class="magnetic" data-magnetic="0.15"><a href="/app?signup=1&amp;plan=elite" class="price-cta" data-i18n="pricing.elite.cta">Essai 7 jours →</a></span>
-          <div class="price-reassure" data-i18n="pricing.reassure">Essai 7 j · sans CB · annulation en 1 clic</div>
+          <span class="magnetic" data-magnetic="0.15"><a href="/app?signup=1&amp;plan=elite" class="price-cta" data-i18n="pricing.elite.cta">Essai 14 jours →</a></span>
+          <div class="price-reassure" data-i18n="pricing.reassure">Essai 14 j · sans CB · annulation en 1 clic</div>
         </div>
       </div>
     </div>
@@ -470,7 +469,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-functions-compat.js" integrity="sha384-dl8gTN2pDiuvgHrzW5Zb1btHv3Y2g2RAGe+oZPnyV8yqolnsEg/TBN/fKf97tmac" crossorigin="anonymous"></script>
   <script src="js/landing-contact.js?v=1.0.3&amp;h=2"></script>
   <script src="js/landing-app.js?v=1.0.4&amp;h=4" defer></script>
-  <script src="js/landing-i18n.js?v=1.0.4&amp;h=7" defer></script>
+  <script src="js/landing-i18n.js?v=1.0.4&amp;h=8" defer></script>
   <!-- TrustBox widget -->
   <script type="text/javascript" src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js" async></script>
   <!-- Trustpilot domain verification + invitations -->

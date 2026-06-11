@@ -37,6 +37,22 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.5 (staging) — Essai 14j · copie i18n (7j→14j, retrait « gratuit à vie »)
+
+**Type** : copy/i18n
+**Fichiers** : `src/js/landing-i18n.js`, `src/js/i18n.js`, `src/pages/index.html`, `src/pages/app.html`
+
+Mise en cohérence de toute la copie avec le modèle (essai 14j, plus de gratuit) :
+- **landing-i18n.js** (FR+EN) : promo.text, pricing.sub (« gratuit à vie » → « essai 14j sans CB »),
+  pricing.reassure/discount/funded.cta/elite.cta → « 14 jours / 14-day ».
+- **i18n.js** (app, FR+EN) : off.trial + off.trust.trial → 14j ; off.funded.f1 « Tout le plan Trader inclus »
+  → « Toutes les bases : journal, dashboard, analytics ».
+- **index.html** : fallbacks hardcodés 7j→14j + sous-titre ; **JSON-LD : offre Trader 0€ retirée** (SEO).
+- Bump landing-i18n h=8 + i18n h=5. (Clés `pricing.trader.*` devenues mortes — inoffensives, laissées.)
+
+### Vérifié (staging)
+Landing FR/EN + app offers → « 14 jours / 14-day » partout, 0 mention « gratuit à vie / 7 jours ».
+
 ## 2026-06-10 — v1.0.5 (staging) — Essai 14j · M4 (2/2) : retrait STRUCTUREL du tier gratuit
 
 **Type** : feat
