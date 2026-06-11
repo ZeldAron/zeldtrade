@@ -1777,7 +1777,11 @@ const PLAN_TO_PRICE = {
   elite_yearly:   { secret: STRIPE_PRICE_ELITE_YEARLY,   tier: 'elite',  cycle: 'yearly'  },
 };
 
-const PUBLIC_SITE_URL = "https://zeldtrade.com";
+// v1.0.5 : URL publique selon l'ENVIRONNEMENT — sinon les retours Stripe (success/cancel) + les
+// liens emails de STAGING pointent vers la prod (bug observé : back Stripe staging → zeldtrade.com).
+const PUBLIC_SITE_URL = ((process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT) === 'zeldtrade-staging')
+  ? "https://zeldtrade-staging.web.app"
+  : "https://zeldtrade.com";
 const STRIPE_PRICE_SECRETS = [
   STRIPE_PRICE_FUNDED_MONTHLY, STRIPE_PRICE_FUNDED_YEARLY,
   STRIPE_PRICE_ELITE_MONTHLY, STRIPE_PRICE_ELITE_YEARLY,

@@ -7,6 +7,15 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Fix retour Stripe staging→prod + bouton lifetime + loader checkout
+
+**Type** : fix + feat
+**Fichiers** : `functions/index.js`, `src/css/style.css`, `src/js/pages/offers.js`, `src/js/app-bootstrap.js`, `src/pages/app.html`
+
+- **FIX retour Stripe** : `PUBLIC_SITE_URL` codé en dur sur la prod → depuis staging, le retour après checkout (success/cancel) + liens emails pointaient vers zeldtrade.com. Rendu **dépendant de l'environnement** (`process.env.GCLOUD_PROJECT/GOOGLE_CLOUD_PROJECT === 'zeldtrade-staging'`). Vérifié : success/cancel_url = zeldtrade-staging.web.app.
+- **Bouton lifetime** : était gris (`.pricing-cta` nu) → variante `.pricing-cta.lifetime` (dégradé violet #7c3aed→#a78bfa, texte blanc).
+- **Loader checkout** : `ZTLoader` exposé en `window.ZTLoader` → handlers checkout (abo + lifetime) affichent le loader plein écran pendant la création de session. Bump style h=14, offers h=4, bootstrap h=8.
+
 ## Format des entrées
 
 ```markdown

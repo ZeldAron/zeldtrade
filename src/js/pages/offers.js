@@ -172,7 +172,7 @@ UI.renderOffers = function () {
         <li>${isEn ? 'All future features included' : 'Toutes les futures features'}</li>
         <li>${isEn ? 'One payment, no renewal' : 'Un paiement, zéro renouvellement'}</li>
       </ul>
-      <button type="button" id="lifetimeCta" class="pricing-cta">${isEn ? 'Get lifetime →' : 'Accès à vie →'}</button>
+      <button type="button" id="lifetimeCta" class="pricing-cta lifetime">${isEn ? 'Get lifetime →' : 'Accès à vie →'}</button>
     </div>`;
 
   // ── Trust banner ───────────────────────────────────────────────────────────
@@ -339,14 +339,17 @@ UI.renderOffers = function () {
       btn.disabled = true;
       btn.textContent = '…';
       if (window.Analytics) Analytics.track('checkout_started', { label: plan });
+      if (window.ZTLoader) window.ZTLoader.start();   // v1.0.5 : loader plein écran pendant la création de session
       try {
         const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan });
         if (res && res.data && res.data.url) {
           window.location.href = res.data.url;   // redirection vers Stripe Checkout
           return;                                 // pas de reset (on quitte la page)
         }
+        if (window.ZTLoader) window.ZTLoader.stop();
         UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
       } catch (e) {
+        if (window.ZTLoader) window.ZTLoader.stop();
         const code = (e && (e.code || e.message)) || '';
         if (/unauthenticated/.test(code)) {
           UI.toast(t('off.checkout.login') || 'Connecte-toi pour souscrire.', true);
@@ -390,11 +393,14 @@ UI.renderOffers = function () {
       if (typeof _fbAuth !== 'undefined' && _fbAuth && _fbAuth.currentUser) { await _fbAuth.currentUser.reload(); await _fbAuth.currentUser.getIdToken(true); }
     } catch (e) { /* non bloquant */ }
     if (window.Analytics) Analytics.track('checkout_started', { label: 'lifetime' });
+    if (window.ZTLoader) window.ZTLoader.start();
     try {
       const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan: 'lifetime' });
       if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+      if (window.ZTLoader) window.ZTLoader.stop();
       UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
     } catch (e) {
+      if (window.ZTLoader) window.ZTLoader.stop();
       const code = (e && (e.code || e.message)) || '';
       if (/failed-precondition/.test(code)) UI.toast(t('off.checkout.verify') || 'Vérifie ton email avant de payer.', true);
       else UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);

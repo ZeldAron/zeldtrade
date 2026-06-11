@@ -3952,6 +3952,8 @@ button.pricing-cta { border: none; cursor: pointer; font-family: inherit; }
   color: #fff; box-shadow: 0 6px 18px rgba(140,140,150,.35);
 }
 .pricing-cta.primary:hover { opacity: .92; }
+.pricing-cta.lifetime { background: linear-gradient(135deg, #7c3aed, #a78bfa); color: #fff; box-shadow: 0 6px 18px rgba(124,58,237,.35); }
+.pricing-cta.lifetime:hover { opacity: .92; }
 .pricing-cta.ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
 .pricing-cta.ghost:hover { border-color: var(--accent); }
 .pricing-cta.ghost-elite { background: transparent; border: 1px solid rgba(245,158,11,.45); color: #fbbf24; }
