@@ -7,6 +7,20 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — FIX CRITIQUE : calendrier éco + news refusés aux funded/elite
+
+**Type** : fix (bug critique — touche TOUS les abonnés payants)
+**Fichier** : `functions/index.js` (getEconCalendar, getMarketNews)
+
+Bug : « Calendrier indisponible » pour un compte **funded**. Cause racine : `getEconCalendar` (l.3101) ET
+`getMarketNews` (l.2991) gataient sur le claim **`token.tier`** ∈ [funded,elite,beta,admin]. Or `syncProClaim`
+ne pose QUE le claim **`pro`** (l.2971), jamais `tier`. Donc funded/elite (claim `{pro:true}` sans `tier`) →
+`token.tier` absent → refusés (`permission-denied`). Seuls beta/admin (tier posé à la main) + essais (getEcon a
+un fallback doc plan) passaient. getMarketNews n'avait même pas le fallback → essais AUSSI refusés.
+**Fix** : accepter `token.pro === true` (posé pour tout plan payant + essai) en plus du claim `tier`.
+`analyzeChart` n'est PAS touché (il lit le doc plan via `_effectiveTier`, pas le claim).
+Déployé staging + vérifié : user `pro:true` (sans claim tier) → getEconCalendar 200 (75 évts), getMarketNews 200 (30 news).
+
 ## 2026-06-11 — v1.0.5 (staging) — FIX : changement de langue ne basculait pas le site
 
 **Type** : fix

@@ -2990,7 +2990,9 @@ exports.getMarketNews = onCall(
     const claims = auth.token || {};
     const tier   = claims.tier || 'free';
     const ALLOWED = ['funded', 'elite', 'beta', 'admin'];
-    if (!ALLOWED.includes(tier)) throw new HttpsError('permission-denied', 'Upgrade required');
+    // pro:true posé par syncProClaim pour TOUT plan payant (funded/elite/beta/lifetime) + essais.
+    // Le claim `tier` n'est PAS posé pour funded/elite → sans ça, tous les payants seraient refusés.
+    if (claims.pro !== true && !ALLOWED.includes(tier)) throw new HttpsError('permission-denied', 'Upgrade required');
 
     const now = Date.now();
     const TTL = 5 * 60 * 1000;
@@ -3098,7 +3100,10 @@ exports.getEconCalendar = onCall(
   async (request) => {
     if (!request.auth) throw new HttpsError('unauthenticated', 'Auth required');
     // v1.0.4 : calendrier éco = perk payant (Funded+). Serveur autoritaire (le client n'est que cosmétique).
-    let _ok = ['funded', 'elite', 'beta', 'admin'].includes((request.auth.token && request.auth.token.tier) || 'free');
+    // pro:true est posé par syncProClaim pour TOUT plan payant (funded/elite/beta/lifetime) ET les essais —
+    // mais le claim `tier` n'est PAS posé pour funded/elite. On accepte donc pro:true (sinon funded/elite refusés).
+    const _tok = (request.auth && request.auth.token) || {};
+    let _ok = _tok.pro === true || ['funded', 'elite', 'beta', 'admin'].includes(_tok.tier || 'free');
     if (!_ok) {
       // v1.0.5 : pas Funded+ via claim → essai actif ? (lecture doc plan, seulement dans ce cas)
       try {
