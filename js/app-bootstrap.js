@@ -338,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // v1.0.5 — Gate d'accès essai/payant : bannière (essai actif) + mur (essai expiré).
   // Idempotent : appelé au reveal + à chaque store:planChanged. Le serveur (M2) reste
   // autoritaire ; ceci n'est que l'UX (info essai + invitation à s'abonner). FR/EN inline.
+  let _acctGateResynced = false;   // garde-fou anti-boucle pour la resync de la gate
   function _renderAccessGate() {
     if (typeof Store === 'undefined' || !Store.getAccessState) return;
     const en = (typeof i18n !== 'undefined' && i18n.getLang && i18n.getLang() === 'en');
@@ -411,7 +412,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // formule (→ checkout direct) ou se déconnecter. (Les gratuits EXISTANTS ont un trialEnd → 'trialing'.)
     let gate = document.getElementById('onboardGate');
     if (state === 'none') {
-      if (!gate) {
+      // SÉCURITÉ : ne JAMAIS bloquer un user qui a déjà un customerId Stripe (= a payé / un abo).
+      // 'none' + customerId = plan momentanément non synchronisé après un checkout (chargé one-shot) → resync au lieu de gater.
+      const _sinfo = (typeof Store !== 'undefined' && Store.getStripeInfo) ? (Store.getStripeInfo() || {}) : {};
+      if (_sinfo.customerId) {
+        if (gate) gate.remove();
+        if (!_acctGateResynced && Store.resync) { _acctGateResynced = true; Store.resync().catch(() => {}); }
+      } else if (!gate) {
         gate = document.createElement('div');
         gate.id = 'onboardGate';
         gate.className = 'paywall-overlay';
