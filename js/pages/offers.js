@@ -99,30 +99,10 @@ UI.renderOffers = function () {
          + `<div class="pricing-cta included" data-owned-other style="display:none">${otherLabel}</div>`,
     };
   };
-  const bT = cardBits('trader'), bF = cardBits('funded'), bE = cardBits('elite');
+  const bF = cardBits('funded'), bE = cardBits('elite');   // v1.0.5 : carte Trader (gratuit) retirée
 
-  // ── Card : TRADER (gratuit) ───────────────────────────────────────────────
-  const cardTrader = `
-    <div class="pricing-card${bT.cls}"${bT.attrs}>
-      ${bT.corner}
-      <div class="pricing-badge-row"><span class="pricing-badge-free">✓ ${isEn ? 'Free for life' : 'Gratuit à vie'}</span></div>
-      <div class="pricing-card-name">Trader</div>
-      <p class="pricing-card-tagline">${t('off.trader.tag')}</p>
-      <div class="pricing-card-price">0 €<span class="price-suffix">/ ${t('off.forever')}</span></div>
-      <div class="pricing-card-perday" aria-hidden="true">&nbsp;</div>
-      <ul class="pricing-features">
-        <li>${t('off.trader.f1')}</li>
-        <li>${t('off.trader.f2')}</li>
-        <li>${t('off.trader.f3')}</li>
-        <li>${t('off.trader.f4')}</li>
-        <li>${t('off.trader.f5')}</li>
-        <li>${t('off.trader.f6')}</li>
-        <li>${t('off.trader.f7')}</li>
-        <li class="muted">${t('off.trader.f8')}</li>
-        <li class="muted">${t('off.trader.f9')}</li>
-      </ul>
-      ${bT.cta}
-    </div>`;
+  // v1.0.5 : carte TRADER (gratuit) retirée — modèle 100% payant + essai 14j. cardBits('trader')
+  // n'est plus appelé ; la résiliation passe par le portail Stripe (Réglages / flow cancel).
 
   // ── Card : FUNDED (14.99 €/mois — featured) ──────────────────────────────
   const cardFunded = `
@@ -212,7 +192,6 @@ UI.renderOffers = function () {
   const compareRows = rows.map(r => `
     <div class="offer-compare-row">
       <span class="offer-compare-feature">${r.f}</span>
-      <span class="offer-compare-basic" style="color:${colColor(r.tr, false)}">${r.tr}</span>
       <span class="offer-compare-pro"   style="color:${colColor(r.fu, false)}">${r.fu}</span>
       <span class="offer-compare-lt"    style="color:${colColor(r.el, true)}">${r.el}</span>
     </div>`).join('');
@@ -236,7 +215,6 @@ UI.renderOffers = function () {
       ${billingToggle}
 
       <div class="pricing-cards">
-        ${cardTrader}
         ${cardFunded}
         ${cardElite}
       </div>
@@ -249,7 +227,6 @@ UI.renderOffers = function () {
         <div class="offer-compare-title">${t('off.compare.full')}</div>
         <div class="offer-compare-row offer-compare-header">
           <span>${t('off.compare.feat')}</span>
-          <span class="offer-compare-basic">Trader</span>
           <span class="offer-compare-pro">Funded</span>
           <span class="offer-compare-lt">Elite</span>
         </div>
