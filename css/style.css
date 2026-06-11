@@ -5733,6 +5733,8 @@ img { -webkit-user-drag: none; }
   font-size:13px; cursor:pointer; text-decoration:underline; font-family:'Geist',sans-serif;
 }
 .paywall-logout:hover { color:var(--text); }
+.paywall-warn { color:#f59e0b; font-size:13px; line-height:1.45; margin-top:2px; }
+.trial-banner-urgent { background:rgba(239,68,68,0.14); }
 
 /* v1.0.5 — carte Lifetime (page Offres) */
 .pricing-badge-lifetime { background:#7c3aed; color:#fff; font-size:10px; font-weight:800; letter-spacing:.08em; padding:3px 10px; border-radius:999px; text-transform:uppercase; }
