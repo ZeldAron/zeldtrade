@@ -458,6 +458,7 @@ a, button, [role="button"], [tabindex] {
   border: none;
   border-radius: var(--r);
   padding: 10px 0;
+  min-height: 44px;
   box-shadow: 0 4px 14px rgba(140,140,150,0.35);
   font-family: 'Geist', sans-serif;
   font-size: 13px;
@@ -1150,6 +1151,7 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   font-size: 12.5px;
   font-weight: 600;
   padding: 7px 30px 7px 12px;
+  min-height: 40px;
   cursor: pointer;
   outline: none;
   appearance: none;
@@ -2627,11 +2629,14 @@ textarea.form-input { resize: vertical; min-height: 72px; line-height: 1.5; }
   border: none;
   color: var(--muted);
   cursor: pointer;
-  padding: 3px;
+  padding: 8px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
   flex-shrink: 0;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: color 0.2s, background 0.2s;
 }
 .user-logout-btn:hover { color: var(--red); background: var(--red-dim); }
@@ -4553,9 +4558,9 @@ button.pricing-cta { border: none; cursor: pointer; font-family: inherit; }
   flex-direction: column;
   justify-content: center;
   gap: 4px;
-  width: 32px;
-  height: 32px;
-  padding: 6px;
+  width: 44px;
+  height: 44px;
+  padding: 11px;
   background: transparent;
   border: none;
   cursor: pointer;
