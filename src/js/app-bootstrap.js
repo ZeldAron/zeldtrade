@@ -334,6 +334,59 @@ document.addEventListener('DOMContentLoaded', () => {
   ZTLoader.start();
 
   // ── Launch app ──────────────────────────────────────────────────────────────
+  // v1.0.5 — Gate d'accès essai/payant : bannière (essai actif) + mur (essai expiré).
+  // Idempotent : appelé au reveal + à chaque store:planChanged. Le serveur (M2) reste
+  // autoritaire ; ceci n'est que l'UX (info essai + invitation à s'abonner). FR/EN inline.
+  function _renderAccessGate() {
+    if (typeof Store === 'undefined' || !Store.getAccessState) return;
+    const en = (typeof i18n !== 'undefined' && i18n.getLang && i18n.getLang() === 'en');
+    const state = Store.getAccessState();
+
+    // Bannière « X jours d'essai restants »
+    let banner = document.getElementById('trialBanner');
+    if (state === 'trialing') {
+      const n = (Store.trialDaysLeft && Store.trialDaysLeft()) || 0;
+      const daysTxt = en ? `${n} day${n > 1 ? 's' : ''} left` : `${n} jour${n > 1 ? 's' : ''} restant${n > 1 ? 's' : ''}`;
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'trialBanner';
+        banner.className = 'trial-banner';
+        const tb = document.querySelector('.topbar');
+        if (tb && tb.parentElement) tb.parentElement.insertBefore(banner, tb.nextSibling);
+      }
+      banner.innerHTML = `<span>${en ? 'Free trial' : 'Essai gratuit'} · <b>${daysTxt}</b></span>`
+        + `<button type="button" id="trialBannerCta">${en ? 'See plans' : 'Voir les offres'}</button>`;
+      const cta = document.getElementById('trialBannerCta');
+      if (cta) cta.onclick = () => { const o = document.querySelector('[data-page="offers"]'); if (o) o.click(); };
+    } else if (banner) {
+      banner.remove();
+    }
+
+    // Mur de fin d'essai (bloque l'app ; données conservées)
+    let wall = document.getElementById('paywallOverlay');
+    if (state === 'expired') {
+      if (!wall) {
+        wall = document.createElement('div');
+        wall.id = 'paywallOverlay';
+        wall.className = 'paywall-overlay';
+        wall.innerHTML = `<div class="paywall-card">
+            <div class="paywall-icon">🔒</div>
+            <h2>${en ? 'Your trial has ended' : 'Ton essai est terminé'}</h2>
+            <p>${en ? 'Subscribe to keep using ZeldTrade. Your data is safe — right where you left it.' : 'Abonne-toi pour continuer à utiliser ZeldTrade. Tes données sont conservées, tu les retrouveras intactes.'}</p>
+            <button class="btn-primary" id="paywallCta" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
+            <button class="paywall-logout" id="paywallLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
+          </div>`;
+        document.body.appendChild(wall);
+        const cta = document.getElementById('paywallCta');
+        if (cta) cta.onclick = () => { wall.remove(); const o = document.querySelector('[data-page="offers"]'); if (o) o.click(); };
+        const lo = document.getElementById('paywallLogout');
+        if (lo) lo.onclick = () => { try { Auth.logout(); } catch (e) {} };
+      }
+    } else if (wall) {
+      wall.remove();
+    }
+  }
+
   async function launchApp(user) {
     if (appLaunched) return;
 
@@ -392,18 +445,8 @@ document.addEventListener('DOMContentLoaded', () => {
               .catch(() => { try { sessionStorage.removeItem('zt_invite'); } catch (e) {} });
           }
         } catch (e) {}
-        // Expiration trial affilié : si trialEnd dépassé → CF rétrograde vers Trader
-        try {
-          const _pi = Store.getPlanInfo ? Store.getPlanInfo() : {};
-          if (_pi.trialEnd && Date.now() > _pi.trialEnd && typeof _fbFunctions !== 'undefined') {
-            _fbFunctions.httpsCallable('expireAffiliateTrial')()
-              .then(() => {
-                // Rafraîchir le plan en mémoire + le badge
-                if (Store.resync) Store.resync();
-              })
-              .catch(() => {});
-          }
-        } catch (e) {}
+        // v1.0.5 : gate d'accès essai/payant (bannière si essai actif, mur si expiré).
+        try { _renderAccessGate(); } catch (e) {}
       } catch {}
       // v0.9.318 : on termine l'animation (snap 100 % + « Prêt ») PUIS fondu de sortie.
       ZTLoader.finish(() => {
@@ -444,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
       _doReveal();
     }
     window.addEventListener('store:planChanged', revealApp, { once: true });
+    window.addEventListener('store:planChanged', _renderAccessGate);  // v1.0.5 : MAJ bannière/mur à chaque changement de plan
     window.addEventListener('store:synced',      revealApp, { once: true });
     setTimeout(revealApp, 5000);   // fallback : ne jamais laisser le loader bloqué
   }

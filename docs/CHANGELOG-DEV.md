@@ -37,6 +37,26 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-10 — v1.0.5 (staging) — Essai 14j · M3 : mur de fin d'essai + bannière
+
+**Type** : feat
+**Fichiers** : `src/js/app-bootstrap.js`, `src/css/style.css`, `src/pages/app.html`
+
+### M3 — UX essai/expiré
+- `_renderAccessGate()` (app-bootstrap) : idempotent, appelé au reveal + à chaque `store:planChanged`.
+  - `getAccessState()==='trialing'` → **bannière** « Essai gratuit · X jour(s) restant(s) · Voir les offres » (insérée sous la topbar).
+  - `getAccessState()==='expired'` → **mur** plein écran (overlay z-5000, blur) : « Ton essai est terminé », CTA rempli « Voir les offres » + « Se déconnecter ». Données conservées.
+  - sinon → retire bannière/mur.
+- Remplace le bloc MORT `expireAffiliateTrial` (l.395 — la CF n'existe pas, appel avalé par .catch ; `trialEnd` n'était posé nulle part). FR/EN inline (pattern Éco).
+- CSS `.trial-banner` + `.paywall-*` (vars thème ; CTA `background:var(--accent);color:var(--on-accent)` → rempli/lisible dans les 2 thèmes). Bump app-bootstrap h=7 + style.css h=9.
+
+### Landmines rencontrées
+- `if (!window.Store ...)` sortait tôt : `Store` est un global lexical (`const`), pas `window.Store` → garde corrigé en `typeof Store`.
+- CTA d'abord invisible (`color:#fff` en dur sur `--accent` blanc) puis contouré → fixé via `var(--on-accent)`.
+
+### Vérifié (staging)
+gratuit + essai actif → bannière 14j ; gratuit + trialEnd passé → mur plein écran, CTA rempli (bg #fff, texte #000 en dark). 0 erreur.
+
 ## 2026-06-10 — v1.0.5 (staging) — Audit UI/UX + fix cibles tactiles (🔴 du go-live)
 
 **Type** : fix (accessibilité / tactile)
