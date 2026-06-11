@@ -7,6 +7,19 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — FIX : gate d'inscription bloquait à tort un abonné (plan figé)
+
+**Type** : fix (bug critique)
+**Fichier** : `src/js/app-bootstrap.js`
+
+Bug : un user **funded** (abonné via Stripe) voyait la gate « Plus qu'une étape ». Cause : le plan est chargé
+**one-shot** (`userDoc('plan').get()`) ; après un checkout, le client pouvait rester figé sur l'ancien plan
+`'none'` → la gate (qui s'affiche sur `'none'`) bloquait alors qu'il a payé.
+**Garde-fou** : dans `_renderAccessGate`, si `state==='none'` MAIS `Store.getStripeInfo().customerId` existe
+(= a déjà payé / un abo) → on **n'affiche PAS la gate** + `Store.resync()` (flag anti-boucle) pour recharger le
+vrai plan. La gate ne bloque donc plus que les VRAIS nouveaux inscrits sans aucun moyen de paiement.
+Vérifié staging : compte 'none' + customerId → gate non affichée. Bump bootstrap h=21.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : onglet « Paiement » → portail Stripe (demande user)
 
 **Type** : feat UI
