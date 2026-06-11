@@ -37,6 +37,22 @@ Pourquoi cette modif, quelle était le problème.
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Lifetime 299,90€ (one-shot) + Stripe TEST câblé
+
+**Type** : feat
+**Fichiers** : `functions/index.js`, `src/js/pages/offers.js`, `src/css/style.css`, `src/pages/app.html`
+
+### Lifetime (paiement unique)
+- **`createCheckoutSession`** : branche `plan==='lifetime'` → Stripe `mode:'payment'` (one-shot), prix
+  `STRIPE_PRICE_LIFETIME`, **sans coupon ZELD** (`allow_promotion_codes:false` — réservé aux abos). Vérifié : session mode=payment, 299,90€, aucun abonnement.
+- **`stripeWebhook` checkout.session.completed** : si `mode==='payment'` (ou `metadata.kind==='lifetime'`)
+  → accès À VIE = `plan:pro, tier:beta, lifetime:true` (illimité ; marqueur pour fair-use 300 IA/mois à venir).
+- **Offres** (`offers.js`) : bande lifetime « 299,90 € · à vie · sans abonnement » + handler dédié (one-shot, hors logique abo/portail). CSS `.lifetime-band`. Bump offers.js h=2 + style.css h=11.
+
+### Stripe TEST staging (câblé, via API avec la clé TEST de l'user)
+- `STRIPE_SECRET_KEY` v2 (clé TEST réelle). 4 prix TEST créés (Funded 14,99/89 · Elite 29,99/179) + `STRIPE_PRICE_LIFETIME` (299,90). Webhook TEST créé (6 events) + secret posé (ancien doublon supprimé).
+- Vérifié : 4 plans abo → checkout 200 (essai 14j) ; lifetime → checkout 200 (one-shot 299,90€).
+
 ## 2026-06-10 — v1.0.5 (staging) — Essai 14j · copie i18n (7j→14j, retrait « gratuit à vie »)
 
 **Type** : copy/i18n

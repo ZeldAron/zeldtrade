@@ -49,6 +49,7 @@ const STRIPE_PRICE_FUNDED_MONTHLY = defineSecret('STRIPE_PRICE_FUNDED_MONTHLY');
 const STRIPE_PRICE_FUNDED_YEARLY  = defineSecret('STRIPE_PRICE_FUNDED_YEARLY');
 const STRIPE_PRICE_ELITE_MONTHLY  = defineSecret('STRIPE_PRICE_ELITE_MONTHLY');
 const STRIPE_PRICE_ELITE_YEARLY   = defineSecret('STRIPE_PRICE_ELITE_YEARLY');
+const STRIPE_PRICE_LIFETIME       = defineSecret('STRIPE_PRICE_LIFETIME');   // v1.0.5 : lifetime 299,90€ (one-shot)
 
 // v0.9.253 : emails exclus du compteur public d'inscrits (landing).
 // = compte admin + comptes internes/test qui ne sont PAS des bêta testeurs réels.
@@ -1780,6 +1781,7 @@ const PUBLIC_SITE_URL = "https://zeldtrade.com";
 const STRIPE_PRICE_SECRETS = [
   STRIPE_PRICE_FUNDED_MONTHLY, STRIPE_PRICE_FUNDED_YEARLY,
   STRIPE_PRICE_ELITE_MONTHLY, STRIPE_PRICE_ELITE_YEARLY,
+  STRIPE_PRICE_LIFETIME,
 ];
 
 /**
@@ -1820,6 +1822,39 @@ exports.createCheckoutSession = onCall(
 
     // 3. Le client n'envoie QUE la clé plan (whitelist). Prix mappé serveur.
     const plan = String(request.data?.plan || '').trim();
+
+    // v1.0.5 — LIFETIME : paiement UNIQUE (mode:'payment'), pas un abonnement → branche dédiée.
+    // Pas de coupon ZELD (réservé aux abos). Le webhook (checkout.session.completed, mode=payment)
+    // accorde l'accès à vie.
+    if (plan === 'lifetime') {
+      const ltPrice = STRIPE_PRICE_LIFETIME.value();
+      if (!ltPrice || !ltPrice.startsWith('price_')) {
+        throw new HttpsError('failed-precondition', 'Prix Lifetime non configuré.');
+      }
+      const stripeLt = new Stripe(STRIPE_SECRET_KEY.value(), { apiVersion: '2024-06-20' });
+      let ltCust = null;
+      try {
+        const sd = (await admin.firestore().doc(`users/${uid}/data/stripe`).get()).data();
+        if (sd && sd.customerId) ltCust = sd.customerId;
+      } catch { /* non bloquant */ }
+      const ltSession = await stripeLt.checkout.sessions.create({
+        mode: 'payment',
+        payment_method_types: ['card'],
+        line_items: [{ price: ltPrice, quantity: 1 }],
+        ...(ltCust ? { customer: ltCust } : { customer_email: email }),
+        client_reference_id: uid,
+        metadata: { uid, kind: 'lifetime' },
+        payment_intent_data: { metadata: { uid, kind: 'lifetime' } },
+        allow_promotion_codes: false,   // lifetime hors coupon ZELD (-40% abos uniquement)
+        locale: 'fr',
+        success_url: PUBLIC_SITE_URL + '/app?payment=success',
+        cancel_url:  PUBLIC_SITE_URL + '/app?payment=cancel',
+      });
+      await _writeAuditLog('createCheckoutSession', email, { uid, plan: 'lifetime', sessionId: ltSession.id });
+      return { url: ltSession.url };
+    }
+
+    // Abonnements (funded/elite × mensuel/annuel) — prix mappé serveur.
     const conf = PLAN_TO_PRICE[plan];
     if (!conf) {
       throw new HttpsError('invalid-argument', 'Plan invalide.');
@@ -2087,6 +2122,20 @@ exports.stripeWebhook = onRequest(
           // Hardening v0.9.140 : valider strictement uid + tier avant écriture Firestore
           if (!_validUid(uid)) {
             console.warn("[stripeWebhook] invalid uid in session", s.id);
+            break;
+          }
+          // v1.0.5 — LIFETIME : paiement UNIQUE (mode=payment) → accès À VIE, tier beta (illimité),
+          // marqueur lifetime:true (pour le fair-use 300 IA/mois + reporting). Pas d'abonnement.
+          if (s.mode === 'payment' || s.metadata?.kind === 'lifetime') {
+            const cusLt = _validCusId(s.customer) ? (s.customer || null) : null;
+            if (!(await _checkCustomerMatch(uid, cusLt))) break;
+            await db.doc(`users/${uid}/data/plan`).set({
+              plan: "pro", tier: "beta", lifetime: true, activatedAt: Date.now(), source: "stripe-lifetime",
+            }, { merge: false });
+            await db.doc(`users/${uid}/data/stripe`).set({
+              customerId: cusLt, lifetime: true, checkoutAt: Date.now(),
+            }, { merge: true });
+            await _writeAuditLog("stripeLifetimePurchase", "stripe-webhook", { uid, sessionId: s.id });
             break;
           }
           // v0.9.255 : mappe les legacy monthly/yearly/lifetime → funded par défaut

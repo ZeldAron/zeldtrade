@@ -221,6 +221,14 @@ UI.renderOffers = function () {
 
       ${trustBanner}
 
+      <div class="lifetime-band">
+        <div>
+          <div class="lifetime-band-title">${isEn ? 'Or go lifetime' : "Ou l'accès à vie"}</div>
+          <div class="lifetime-band-sub">${isEn ? 'Pay once, yours forever — unlimited, no subscription.' : "Tu paies une fois, c'est à toi à vie — illimité, sans abonnement."}</div>
+        </div>
+        <button type="button" id="lifetimeCta" class="btn-primary lifetime-cta">${isEn ? 'Lifetime — €299.90 →' : 'Lifetime — 299,90 € →'}</button>
+      </div>
+
       ${promoSection}
 
       <div class="offer-compare">
@@ -360,6 +368,26 @@ UI.renderOffers = function () {
         UI.toast(t('off.changeplan') || 'Pour résilier, va dans Réglages → Gérer mon abonnement.', true);
       } finally { btn.disabled = false; btn.textContent = o0; }
     });
+  });
+
+  // v1.0.5 — Lifetime : paiement UNIQUE (handler dédié, hors logique abo/portail).
+  el.querySelector('#lifetimeCta')?.addEventListener('click', async () => {
+    const btn = el.querySelector('#lifetimeCta');
+    if (typeof _fbFunctions === 'undefined' || !_fbFunctions) { UI.toast(t('off.checkout.err') || 'Service indisponible — recharge la page.', true); return; }
+    const o0 = btn.textContent; btn.disabled = true; btn.textContent = '…';
+    try {
+      if (typeof _fbAuth !== 'undefined' && _fbAuth && _fbAuth.currentUser) { await _fbAuth.currentUser.reload(); await _fbAuth.currentUser.getIdToken(true); }
+    } catch (e) { /* non bloquant */ }
+    if (window.Analytics) Analytics.track('checkout_started', { label: 'lifetime' });
+    try {
+      const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan: 'lifetime' });
+      if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+      UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
+    } catch (e) {
+      const code = (e && (e.code || e.message)) || '';
+      if (/failed-precondition/.test(code)) UI.toast(t('off.checkout.verify') || 'Vérifie ton email avant de payer.', true);
+      else UI.toast(t('off.checkout.err') || 'Erreur lors de la création du paiement.', true);
+    } finally { btn.disabled = false; btn.textContent = o0; }
   });
 
   // v0.9.384 : handler `btnFoundingApply` retiré (bannière Founding supprimée).
