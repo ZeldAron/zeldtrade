@@ -594,7 +594,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const act = it.getAttribute('data-acct');
       if (act === 'lang')     { openFlyout('lang', it);  return; }   // flyout langue (clic — sinon ouvert au survol)
       if (act === 'legal')    { openFlyout('legal', it); return; }   // flyout légal
-      if (act === 'set-lang') { i18n.setLang(it.getAttribute('data-lang') === 'en' ? 'en' : 'fr'); show(); return; }   // applique + re-render principal (ferme le flyout)
+      if (act === 'set-lang') { i18n.setLang(it.getAttribute('data-lang') === 'en' ? 'en' : 'fr'); location.reload(); return; }   // setLang ne fait que persister → reload pour re-rendre tout le site dans la nouvelle langue
       if (act === 'theme')    { Theme.set(Theme.getResolved() === 'light' ? 'dark' : 'light'); show(); return; }
       closeM();
       if (act === 'settings')     document.querySelector('[data-page="settings"]')?.click();
