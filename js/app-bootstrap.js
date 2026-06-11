@@ -502,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
       theme:  ic('<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/>'),
       help:   ic('<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>'),
       up:     ic('<circle cx="12" cy="12" r="10"/><polyline points="8 12 12 8 16 12"/><line x1="12" y1="16" x2="12" y2="8"/>'),
+      card:   ic('<rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>'),
       spark:  ic('<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/>'),
       doc:    ic('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/>'),
       shield: ic('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
@@ -515,13 +516,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const check = '<svg class="acct-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
     function mainHTML() {
       const e2 = (i18n.getLang && i18n.getLang() === 'en');
+      const hasCustomer = !!((typeof Store !== 'undefined' && Store.getStripeInfo && (Store.getStripeInfo() || {}).customerId));
       return (email ? `<div class="account-menu-email" title="${esc(email)}">${esc(email)}</div>` : '')
         + bi('settings', I.settings, e2 ? 'Settings' : 'Paramètres')
         + `<button class="account-menu-item" type="button" data-acct="lang" role="menuitem">${I.globe}<span>${e2 ? 'Language' : 'Langue'}</span><span class="account-menu-right">${lVal()}</span>${chev}</button>`
         + bi('theme',    I.theme,    e2 ? 'Theme' : 'Thème', tVal())
         + bi('help',     I.help,     e2 ? 'Get help' : "Obtenir de l'aide")
         + '<div class="account-menu-sep"></div>'
-        + bi('offers',   I.up,       e2 ? 'Upgrade plan' : 'Passer à un plan supérieur')
+        + (hasCustomer
+            ? bi('billing', I.card, e2 ? 'Billing' : 'Paiement')
+            : bi('offers',  I.up,   e2 ? 'Upgrade plan' : 'Passer à un plan supérieur'))
         + bi('updates',  I.spark,    e2 ? "What's new" : 'Nouveautés')
         + '<div class="account-menu-sep"></div>'
         + `<button class="account-menu-item" type="button" data-acct="legal" role="menuitem">${I.doc}<span>${e2 ? 'Legal' : 'Légal'}</span>${chev}</button>`
@@ -590,6 +594,15 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (act === 'offers')  document.querySelector('[data-page="offers"]')?.click();
       else if (act === 'help')    (document.getElementById('btnTopbarHelp') || document.querySelector('[data-page="tutorial"]'))?.click();
       else if (act === 'updates') window.open('/updates', '_blank', 'noopener');
+      else if (act === 'billing') {                                        // portail Stripe : carte, prochaine échéance, factures, résiliation
+        const s = (Store.getStripeInfo && Store.getStripeInfo()) || {};
+        if (!s.customerId) { document.querySelector('[data-page="offers"]')?.click(); return; }
+        const en2 = (i18n.getLang && i18n.getLang() === 'en');
+        if (window.ZTLoader) window.ZTLoader.start();
+        _fbFunctions.httpsCallable('createBillingPortalSession')({})
+          .then((res) => { if (res && res.data && res.data.url) { window.location.href = res.data.url; return; } if (window.ZTLoader) window.ZTLoader.stop(); if (typeof UI !== 'undefined' && UI.toast) UI.toast(en2 ? 'Could not open billing — try again.' : "Impossible d'ouvrir la facturation — réessaie.", true); })
+          .catch(() => { if (window.ZTLoader) window.ZTLoader.stop(); if (typeof UI !== 'undefined' && UI.toast) UI.toast(en2 ? 'Could not open billing — try again.' : "Impossible d'ouvrir la facturation — réessaie.", true); });
+      }
       else if (act === 'logout')  { try { Auth.logout(); } catch (e2) {} }
     });
   }
