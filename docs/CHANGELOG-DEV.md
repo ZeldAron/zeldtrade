@@ -7,6 +7,18 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : sous-menus en FLYOUT latéral (façon Claude)
+
+**Type** : feat UI (demande user)
+**Fichiers** : `src/js/app-bootstrap.js`, `src/css/style.css`
+
+Langue/Légal passent du « drill-in » (remplacement de contenu) au **flyout latéral** (panneau à droite du menu, façon Claude) :
+- `openFlyout(kind, anchor)` / `closeFlyout()` : panneau `.account-flyout` ajouté au menu, `left:calc(100%+6px)`, `top` aligné sur l'item cliqué (clampé), **bascule à gauche** si débordement droite (petit écran). Toggle au re-clic.
+- **Langue** : 🇫🇷 Français (France) + 🇬🇧 English (US) avec ✓ (les 2 seules langues traduites — FR+EN). Choix → `i18n.setLang` + re-render principal.
+- **Légal** : CGU/Mentions légales/Confidentialité (liens nouvel onglet).
+- ⚠️ Fix : `.account-menu` repassé en `overflow:visible` (l'`overflow-y:auto` rognait le flyout). `.account-flyout` min-width 244 + nowrap (« Français (France) » sur 1 ligne). Bump bootstrap h=17 + style h=24.
+- Vérifié staging : flyout à droite (flyLeft 267 > menuRight 262), FR/EN + ✓, 1 ligne.
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte : compact + aligné (retour user « trop long »)
 
 **Type** : polish UI

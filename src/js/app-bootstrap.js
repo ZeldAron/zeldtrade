@@ -528,30 +528,37 @@ document.addEventListener('DOMContentLoaded', () => {
         + '<div class="account-menu-sep"></div>'
         + bi('logout',   I.logout,   e2 ? 'Log out' : 'Se déconnecter');
     }
-    function legalHTML() {
-      const e2 = (i18n.getLang && i18n.getLang() === 'en');
-      return `<button class="account-menu-item account-menu-back" type="button" data-acct="legal-back" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg><span>${e2 ? 'Legal' : 'Légal'}</span></button>`
-        + '<div class="account-menu-sep"></div>'
-        + li('/cgu',     I.doc,    e2 ? 'Terms of Service' : 'CGU')
-        + li('/legal',   I.doc,    e2 ? 'Legal notice' : 'Mentions légales')
-        + li('/privacy', I.shield, e2 ? 'Privacy policy' : 'Confidentialité');
-    }
-    function langHTML() {
-      const cur = (i18n.getLang && i18n.getLang() === 'en') ? 'en' : 'fr';
-      const e2  = cur === 'en';
-      const opt = (code, label) => `<button class="account-menu-item" type="button" data-acct="set-lang" data-lang="${code}" role="menuitem"><span class="acct-flag">${code === 'fr' ? '🇫🇷' : '🇬🇧'}</span><span>${label}</span>${cur === code ? check : ''}</button>`;
-      return `<button class="account-menu-item account-menu-back" type="button" data-acct="lang-back" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg><span>${e2 ? 'Language' : 'Langue'}</span></button>`
-        + '<div class="account-menu-sep"></div>'
-        + opt('fr', 'Français') + opt('en', 'English');
-    }
     const menu = document.createElement('div');
     menu.id = 'accountMenu'; menu.className = 'account-menu'; menu.setAttribute('role', 'menu'); menu.hidden = true;
-    const show = (view) => { menu.innerHTML = (view === 'lang') ? langHTML() : (view === 'legal' ? legalHTML() : mainHTML()); };
-    show('main');
+    let curFlyout = null;
+    const closeFlyout = () => { const f = menu.querySelector('.account-flyout'); if (f) f.remove(); curFlyout = null; };
+    const show = () => { menu.innerHTML = mainHTML(); curFlyout = null; };
+    show();
     wrap.appendChild(menu);
 
-    const closeM = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
-    const openM  = () => { show('main'); menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); };   // toujours rouvrir sur la vue principale
+    // Flyout latéral (façon Claude) : Langue / Légal ouvrent un panneau à droite du menu.
+    function openFlyout(kind, anchor) {
+      closeFlyout();
+      const e2 = (i18n.getLang && i18n.getLang() === 'en');
+      const fly = document.createElement('div');
+      fly.className = 'account-flyout';
+      if (kind === 'lang') {
+        const cur = e2 ? 'en' : 'fr';
+        const opt = (c, lbl) => `<button class="account-menu-item" type="button" data-acct="set-lang" data-lang="${c}" role="menuitem"><span class="acct-flag">${c === 'fr' ? '🇫🇷' : '🇬🇧'}</span><span>${lbl}</span>${cur === c ? check : ''}</button>`;
+        fly.innerHTML = opt('fr', 'Français (France)') + opt('en', 'English (US)');
+      } else {
+        fly.innerHTML = li('/cgu', I.doc, e2 ? 'Terms of Service' : 'CGU')
+          + li('/legal', I.doc, e2 ? 'Legal notice' : 'Mentions légales')
+          + li('/privacy', I.shield, e2 ? 'Privacy policy' : 'Confidentialité');
+      }
+      menu.appendChild(fly);
+      fly.style.top = Math.max(2, Math.min(anchor.offsetTop, menu.clientHeight - fly.offsetHeight - 2)) + 'px';
+      if (fly.getBoundingClientRect().right > window.innerWidth - 8) { fly.style.left = 'auto'; fly.style.right = 'calc(100% + 6px)'; }  // anti-débordement → bascule à gauche
+      curFlyout = kind;
+    }
+
+    const closeM = () => { closeFlyout(); menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
+    const openM  = () => { show(); menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); };
     btn.addEventListener('click', (e) => { e.stopPropagation(); menu.hidden ? openM() : closeM(); });
     document.addEventListener('click', (e) => { if (!menu.hidden && !wrap.contains(e.target)) closeM(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeM(); });
@@ -560,13 +567,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target.closest('a.account-menu-item')) { closeM(); return; }   // CGU/légal/privacy → nouvel onglet (href natif)
       const it = e.target.closest('[data-acct]');
       if (!it) return;
-      e.stopPropagation();   // clic interne → ne pas remonter au handler document (qui fermerait le menu après le re-render)
+      e.stopPropagation();   // clic interne → ne pas remonter au handler document
       const act = it.getAttribute('data-acct');
-      if (act === 'lang')      { show('lang'); return; }                   // ouvre le sous-menu langue
-      if (act === 'legal')     { show('legal'); return; }                  // ouvre le sous-menu légal
-      if (act === 'lang-back' || act === 'legal-back') { show('main'); return; }  // retour au menu principal
-      if (act === 'set-lang')  { i18n.setLang(it.getAttribute('data-lang') === 'en' ? 'en' : 'fr'); show('main'); return; }  // choisit la langue (menu reste ouvert)
-      if (act === 'theme')     { Theme.set(Theme.getResolved() === 'light' ? 'dark' : 'light'); show('main'); return; }      // toggle thème (menu reste ouvert)
+      if (act === 'lang')     { curFlyout === 'lang'  ? closeFlyout() : openFlyout('lang', it);  return; }   // flyout langue (toggle)
+      if (act === 'legal')    { curFlyout === 'legal' ? closeFlyout() : openFlyout('legal', it); return; }   // flyout légal (toggle)
+      if (act === 'set-lang') { i18n.setLang(it.getAttribute('data-lang') === 'en' ? 'en' : 'fr'); show(); return; }   // applique + re-render principal (ferme le flyout)
+      if (act === 'theme')    { Theme.set(Theme.getResolved() === 'light' ? 'dark' : 'light'); show(); return; }
       closeM();
       if (act === 'settings')     document.querySelector('[data-page="settings"]')?.click();
       else if (act === 'offers')  document.querySelector('[data-page="offers"]')?.click();
