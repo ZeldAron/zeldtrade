@@ -5778,6 +5778,10 @@ img { -webkit-user-drag: none; }
 .account-menu-item .acct-check { width:17px; height:17px; color:var(--accent); flex:none; margin-left:auto; }
 .acct-flag { font-size:15px; width:18px; flex:none; text-align:center; }
 .account-menu-back span { font-weight:600; }
+/* v1.0.5 — bouton « Voir les offres » de la sidebar retiré (redondant : Offres est dans le menu compte) → pied resserré */
+#sidebarUpgrade { display:none !important; }
+/* #btnLogout est un stub caché (compat) — la classe .user-logout-btn écrasait [hidden] → bouton vide 40px. On force le masquage. */
+#btnLogout { display:none !important; }
 
 /* v1.0.5 — carte Lifetime (page Offres) */
 .pricing-badge-lifetime { background:#7c3aed; color:#fff; font-size:10px; font-weight:800; letter-spacing:.08em; padding:3px 10px; border-radius:999px; text-transform:uppercase; }
