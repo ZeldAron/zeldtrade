@@ -7,6 +7,17 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — FIX : changement de langue ne basculait pas le site
+
+**Type** : fix
+**Fichier** : `src/js/app-bootstrap.js`
+
+Bug : cliquer « English » dans le flyout langue ne changeait pas la langue du site. Cause : `i18n.setLang()`
+ne fait QUE persister en localStorage (i18n.js:1866) — il ne ré-applique rien, et l'app rend tout son contenu
+en JS via `i18n.t()` au moment du rendu (donc un `apply()` ne suffirait pas non plus). Fix : le handler `set-lang`
+**recharge la page** (`location.reload()`) après `setLang` → tout le site se re-rend dans la nouvelle langue.
+Vérifié staging : clic English → lang fr→en, « Nouveau trade » → « New trade ». Bump bootstrap h=22.
+
 ## 2026-06-11 — v1.0.5 (staging) — Pied de sidebar : suppression du vide (retour user)
 
 **Type** : fix UI
