@@ -5705,7 +5705,7 @@ img { -webkit-user-drag: none; }
 }
 .trial-banner b { color:var(--accent); font-weight:700; }
 .trial-banner button {
-  background:var(--accent); color:#fff; border:none; border-radius:8px;
+  background:var(--accent); color:var(--on-accent); border:none; border-radius:8px;
   padding:6px 14px; min-height:32px; font-size:12.5px; font-weight:600; cursor:pointer;
   font-family:'Geist',sans-serif; transition:opacity .15s;
 }
