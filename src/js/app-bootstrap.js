@@ -507,27 +507,41 @@ document.addEventListener('DOMContentLoaded', () => {
       shield: ic('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'),
       logout: ic('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>'),
     };
-    const tVal = () => (typeof Theme !== 'undefined' && Theme.getResolved && Theme.getResolved() === 'light') ? (en ? 'Light' : 'Clair') : (en ? 'Dark' : 'Sombre');
+    const tVal = () => { const e2 = (i18n.getLang && i18n.getLang() === 'en'); return (typeof Theme !== 'undefined' && Theme.getResolved && Theme.getResolved() === 'light') ? (e2 ? 'Light' : 'Clair') : (e2 ? 'Dark' : 'Sombre'); };
     const lVal = () => (i18n.getLang && i18n.getLang() === 'en') ? 'EN' : 'FR';
     const bi = (act, icon, label, right) => `<button class="account-menu-item" type="button" data-acct="${act}" role="menuitem">${icon}<span>${label}</span>${right ? `<span class="account-menu-right" data-acct-val="${act}">${right}</span>` : ''}</button>`;
     const li = (href, icon, label) => `<a class="account-menu-item" href="${href}" target="_blank" rel="noopener" role="menuitem">${icon}<span>${label}</span></a>`;
+    const chev  = '<svg class="acct-chevr" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+    const check = '<svg class="acct-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    function mainHTML() {
+      const e2 = (i18n.getLang && i18n.getLang() === 'en');
+      return (email ? `<div class="account-menu-email" title="${esc(email)}">${esc(email)}</div>` : '')
+        + bi('settings', I.settings, e2 ? 'Settings' : 'Paramètres')
+        + `<button class="account-menu-item" type="button" data-acct="lang" role="menuitem">${I.globe}<span>${e2 ? 'Language' : 'Langue'}</span><span class="account-menu-right">${lVal()}</span>${chev}</button>`
+        + bi('theme',    I.theme,    e2 ? 'Theme' : 'Thème', tVal())
+        + bi('help',     I.help,     e2 ? 'Get help' : "Obtenir de l'aide")
+        + '<div class="account-menu-sep"></div>'
+        + bi('offers',   I.up,       e2 ? 'Upgrade plan' : 'Passer à un plan supérieur')
+        + bi('updates',  I.spark,    e2 ? "What's new" : 'Nouveautés')
+        + '<div class="account-menu-sep"></div>'
+        + li('/cgu',     I.doc,    e2 ? 'Terms' : 'CGU')
+        + li('/legal',   I.doc,    e2 ? 'Legal notice' : 'Mentions légales')
+        + li('/privacy', I.shield, e2 ? 'Privacy' : 'Confidentialité')
+        + '<div class="account-menu-sep"></div>'
+        + bi('logout',   I.logout,   e2 ? 'Log out' : 'Se déconnecter');
+    }
+    function langHTML() {
+      const cur = (i18n.getLang && i18n.getLang() === 'en') ? 'en' : 'fr';
+      const e2  = cur === 'en';
+      const opt = (code, label) => `<button class="account-menu-item" type="button" data-acct="set-lang" data-lang="${code}" role="menuitem"><span class="acct-flag">${code === 'fr' ? '🇫🇷' : '🇬🇧'}</span><span>${label}</span>${cur === code ? check : ''}</button>`;
+      return `<button class="account-menu-item account-menu-back" type="button" data-acct="lang-back" role="menuitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg><span>${e2 ? 'Language' : 'Langue'}</span></button>`
+        + '<div class="account-menu-sep"></div>'
+        + opt('fr', 'Français') + opt('en', 'English');
+    }
     const menu = document.createElement('div');
     menu.id = 'accountMenu'; menu.className = 'account-menu'; menu.setAttribute('role', 'menu'); menu.hidden = true;
-    menu.innerHTML =
-      (email ? `<div class="account-menu-email" title="${esc(email)}">${esc(email)}</div>` : '')
-      + bi('settings', I.settings, en ? 'Settings' : 'Paramètres')
-      + bi('lang',     I.globe,    en ? 'Language' : 'Langue', lVal())
-      + bi('theme',    I.theme,    en ? 'Theme' : 'Thème', tVal())
-      + bi('help',     I.help,     en ? 'Get help' : "Obtenir de l'aide")
-      + '<div class="account-menu-sep"></div>'
-      + bi('offers',   I.up,       en ? 'Upgrade plan' : 'Passer à un plan supérieur')
-      + bi('updates',  I.spark,    en ? "What's new" : 'Nouveautés')
-      + '<div class="account-menu-sep"></div>'
-      + li('/cgu',     I.doc,    en ? 'Terms' : 'CGU')
-      + li('/legal',   I.doc,    en ? 'Legal notice' : 'Mentions légales')
-      + li('/privacy', I.shield, en ? 'Privacy' : 'Confidentialité')
-      + '<div class="account-menu-sep"></div>'
-      + bi('logout',   I.logout,   en ? 'Log out' : 'Se déconnecter');
+    const show = (view) => { menu.innerHTML = (view === 'lang') ? langHTML() : mainHTML(); };
+    show('main');
     wrap.appendChild(menu);
 
     const closeM = () => { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); };
@@ -541,18 +555,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const it = e.target.closest('[data-acct]');
       if (!it) return;
       const act = it.getAttribute('data-acct');
-      if (act === 'lang') {                                                // toggle langue (menu reste ouvert)
-        const next = (i18n.getLang() === 'en') ? 'fr' : 'en';
-        i18n.setLang(next);
-        const v = menu.querySelector('[data-acct-val="lang"]'); if (v) v.textContent = (next === 'en' ? 'EN' : 'FR');
-        return;
-      }
-      if (act === 'theme') {                                               // toggle thème (menu reste ouvert)
-        const next = (Theme.getResolved() === 'light') ? 'dark' : 'light';
-        Theme.set(next);
-        const v = menu.querySelector('[data-acct-val="theme"]'); if (v) v.textContent = (next === 'light' ? (en ? 'Light' : 'Clair') : (en ? 'Dark' : 'Sombre'));
-        return;
-      }
+      if (act === 'lang')      { show('lang'); return; }                   // ouvre le sous-menu langue
+      if (act === 'lang-back') { show('main'); return; }                   // retour au menu principal
+      if (act === 'set-lang')  { i18n.setLang(it.getAttribute('data-lang') === 'en' ? 'en' : 'fr'); show('main'); return; }  // choisit la langue (menu reste ouvert)
+      if (act === 'theme')     { Theme.set(Theme.getResolved() === 'light' ? 'dark' : 'light'); show('main'); return; }      // toggle thème (menu reste ouvert)
       closeM();
       if (act === 'settings')     document.querySelector('[data-page="settings"]')?.click();
       else if (act === 'offers')  document.querySelector('[data-page="offers"]')?.click();

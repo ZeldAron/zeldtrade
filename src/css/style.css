@@ -5769,6 +5769,10 @@ img { -webkit-user-drag: none; }
 .account-menu-item > span { flex:1; min-width:0; }
 .account-menu-right { flex:none; font-size:12px; color:var(--muted); font-weight:600; }
 .account-menu-sep { height:1px; background:var(--border); margin:6px 8px; }
+.account-menu-item .acct-chevr { width:15px; height:15px; color:var(--muted); flex:none; margin-left:2px; }
+.account-menu-item .acct-check { width:17px; height:17px; color:var(--accent); flex:none; margin-left:auto; }
+.acct-flag { font-size:15px; width:18px; flex:none; text-align:center; }
+.account-menu-back span { font-weight:600; }
 
 /* v1.0.5 — carte Lifetime (page Offres) */
 .pricing-badge-lifetime { background:#7c3aed; color:#fff; font-size:10px; font-weight:800; letter-spacing:.08em; padding:3px 10px; border-radius:999px; text-transform:uppercase; }

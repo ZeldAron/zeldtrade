@@ -7,6 +7,16 @@
 
 ---
 
+## 2026-06-11 — v1.0.5 (staging) — Menu compte : sélecteur de langue (sous-menu)
+
+**Type** : feat UI (demande user)
+**Fichiers** : `src/js/app-bootstrap.js`, `src/css/style.css`
+
+L'item « Langue » du menu compte (avant : toggle FR↔EN au clic) devient un **sous-menu** façon Claude :
+- Vue principale ↔ vue langue via `show('main'|'lang')` (swap de `menu.innerHTML`). « Langue › » (chevron) ouvre la liste : « ‹ Langue » (retour) + 🇫🇷 Français + 🇬🇧 English, avec ✓ sur la langue active.
+- Clic langue → `i18n.setLang()` + retour au menu principal (re-rendu dans la nouvelle langue, menu reste ouvert). Thème idem (toggle + re-render). Fix : libellé du thème (Sombre/Clair ↔ Dark/Light) recalcule la langue courante.
+- CSS `.acct-chevr` / `.acct-check` / `.acct-flag` / `.account-menu-back`. Bump bootstrap h=14 + style h=19. Vérifié staging (Français ✓ / English).
+
 ## 2026-06-11 — v1.0.5 (staging) — Menu compte bas-gauche (façon Claude) + désencombrement sidebar
 
 **Type** : feat UI (demande user)
