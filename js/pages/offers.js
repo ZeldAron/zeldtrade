@@ -157,6 +157,24 @@ UI.renderOffers = function () {
       ${bE.cta}
     </div>`;
 
+  // ── Card : LIFETIME (299,90 € — paiement unique) ─────────────────────────────
+  const cardLifetime = `
+    <div class="pricing-card lifetime-card">
+      <div class="pricing-badge-row"><span class="pricing-badge-lifetime">${isEn ? 'LIFETIME' : 'À VIE'}</span></div>
+      <div class="pricing-card-name">Lifetime</div>
+      <p class="pricing-card-tagline">${isEn ? 'Pay once. Yours forever.' : 'Tu paies une fois. À toi pour toujours.'}</p>
+      <div class="pricing-card-price">299,90 €<span class="price-suffix">/ ${isEn ? 'one-time' : 'une fois'}</span></div>
+      <div class="pricing-card-perday"><span style="color:#a78bfa;font-weight:600">${isEn ? 'No subscription · unlimited' : 'Sans abonnement · illimité'}</span></div>
+      <ul class="pricing-features">
+        <li>${isEn ? 'Everything in Elite, forever' : 'Tout Elite, à vie'}</li>
+        <li>${isEn ? 'Unlimited accounts & groups' : 'Comptes & groupes illimités'}</li>
+        <li>${isEn ? 'Unlimited AI · Claude Sonnet' : 'IA illimitée · Claude Sonnet'}</li>
+        <li>${isEn ? 'All future features included' : 'Toutes les futures features'}</li>
+        <li>${isEn ? 'One payment, no renewal' : 'Un paiement, zéro renouvellement'}</li>
+      </ul>
+      <button type="button" id="lifetimeCta" class="pricing-cta">${isEn ? 'Get lifetime →' : 'Accès à vie →'}</button>
+    </div>`;
+
   // ── Trust banner ───────────────────────────────────────────────────────────
   const trustBanner = `
     <div class="trust-banner">
@@ -217,17 +235,10 @@ UI.renderOffers = function () {
       <div class="pricing-cards">
         ${cardFunded}
         ${cardElite}
+        ${cardLifetime}
       </div>
 
       ${trustBanner}
-
-      <div class="lifetime-band">
-        <div>
-          <div class="lifetime-band-title">${isEn ? 'Or go lifetime' : "Ou l'accès à vie"}</div>
-          <div class="lifetime-band-sub">${isEn ? 'Pay once, yours forever — unlimited, no subscription.' : "Tu paies une fois, c'est à toi à vie — illimité, sans abonnement."}</div>
-        </div>
-        <button type="button" id="lifetimeCta" class="btn-primary lifetime-cta">${isEn ? 'Lifetime — €299.90 →' : 'Lifetime — 299,90 € →'}</button>
-      </div>
 
       ${promoSection}
 
