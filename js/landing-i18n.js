@@ -75,7 +75,7 @@
 
     // Firms
     'firms.title': { fr: 'Les 5 prop firms majeures. <span class="accent">Leurs règles exactes.</span>', en: 'The 5 major prop firms. <span class="accent">Their exact rules.</span>' },
-    'firms.sub':   { fr: "Pas une moyenne. Pas une approximation. Chaque firm a son propre moteur de règles, codé à la main et vérifié par les bêta testeurs.", en: 'No average. No approximation. Each firm has its own rules engine, hand-coded and verified by beta testers.' },
+    'firms.sub':   { fr: "Pas une moyenne. Pas une approximation. Chaque firm a son propre moteur de règles, codé à la main et vérifié au tick près.", en: 'No average. No approximation. Each firm has its own rules engine, hand-coded and verified to the tick.' },
     'firms.none':   { fr: 'Aucune', en: 'None' },
     'firms.mindays':{ fr: 'Jours de trading min.', en: 'Min trading days' },
     'firms.trailing':  { fr: 'Trailing', en: 'Trailing' },
@@ -131,7 +131,7 @@
     'about.photo': { fr: '[ Photo ]<br>indé · France', en: '[ Photo ]<br>indie · France' },
     'about.p1': { fr: "Salut, c'est <strong>l'équipe ZeldTrade</strong> (enfin… surtout une personne). Dev qui trade sur prop firm depuis 2023.", en: "Hi, this is the <strong>ZeldTrade team</strong> (well… mostly one person). A dev trading prop firms since 2023." },
     'about.p2': { fr: "La première année, deux comptes Apex cramés faute d'avoir compris le trailing drawdown EOD. Aucun outil ne traitait vraiment les règles d'une prop firm. Du coup, celui que j'aurais voulu utiliser dès le début a été codé — et élargi à la crypto et aux fonds propres.", en: 'The first year, two Apex accounts blown for not understanding EOD trailing drawdown. No tool truly handled a prop firm\'s rules. So the one I wished I\'d had got built — then extended to crypto and personal funds.' },
-    'about.p3': { fr: "Dev solo, bêta testeurs, zéro pub, zéro investisseur. <strong>Si tu écris, c'est une vraie personne qui répond.</strong>", en: 'Solo dev, beta testers, zero ads, zero investors. <strong>If you write, a real person answers.</strong>' },
+    'about.p3': { fr: "Dev solo, zéro pub, zéro investisseur. <strong>Si tu écris, c'est une vraie personne qui répond.</strong>", en: 'Solo dev, zero ads, zero investors. <strong>If you write, a real person answers.</strong>' },
     'about.loc': { fr: 'France 🇫🇷 · <b>indé · hébergé en Europe</b>', en: 'France 🇫🇷 · <b>indie · hosted in Europe</b>' },
     'about.changelog': { fr: 'Nouveautés', en: "What's new" },
 
@@ -196,7 +196,7 @@
     'pricing.elite.f1': { fr: 'Comptes & groupes illimités', en: 'Unlimited accounts & groups' },
     'pricing.elite.f2': { fr: 'Analyses IA illimitées · Claude Sonnet', en: 'Unlimited AI analyses · Claude Sonnet' },
     'pricing.elite.f3': { fr: 'Vote décisif sur la roadmap', en: 'Decisive vote on the roadmap' },
-    'pricing.elite.f4': { fr: 'Accès bêta aux nouvelles features', en: 'Beta access to new features' },
+    'pricing.elite.f4': { fr: 'Accès anticipé aux nouvelles fonctionnalités', en: 'Early access to new features' },
     'pricing.elite.f5': { fr: 'Support prioritaire 24h', en: 'Priority 24h support' },
     'pricing.elite.cta':{ fr: 'Tout débloquer — 14 j offerts →', en: 'Unlock everything — 14-day trial →' },
 
