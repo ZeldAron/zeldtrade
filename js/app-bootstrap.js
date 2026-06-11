@@ -405,6 +405,60 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (wall) {
       wall.remove();
     }
+
+    // Gate d'INSCRIPTION (carte obligatoire) : nouvel inscrit sans carte ni essai (state 'none')
+    // → bloqué tant qu'il n'a pas démarré son essai via Stripe Checkout. Seules issues : choisir une
+    // formule (→ checkout direct) ou se déconnecter. (Les gratuits EXISTANTS ont un trialEnd → 'trialing'.)
+    let gate = document.getElementById('onboardGate');
+    if (state === 'none') {
+      if (!gate) {
+        gate = document.createElement('div');
+        gate.id = 'onboardGate';
+        gate.className = 'paywall-overlay';
+        gate.innerHTML = `<div class="paywall-card">
+            <div class="paywall-icon">🚀</div>
+            <h2>${en ? 'One last step' : "Plus qu'une étape"}</h2>
+            <p>${en ? 'Start your <b>14-day free trial</b> — pick a plan and add your card. No charge before day&nbsp;15, cancel in 1 click.' : "Démarre ton <b>essai gratuit de 14 jours</b> — choisis ta formule et ajoute ta carte. Aucun prélèvement avant le 15ᵉ jour, annulable en 1 clic."}</p>
+            <div class="onboard-plans">
+              <button type="button" class="onboard-plan" data-gate-plan="funded_monthly"><span>Funded</span><small>${en ? '14-day trial, then €14.99/mo' : 'essai 14 j, puis 14,99 €/mois'}</small></button>
+              <button type="button" class="onboard-plan onboard-plan-reco" data-gate-plan="elite_monthly"><span>Elite</span><small>${en ? '14-day trial, then €29.99/mo' : 'essai 14 j, puis 29,99 €/mois'}</small></button>
+              <button type="button" class="onboard-plan" data-gate-plan="lifetime"><span>${en ? 'Lifetime' : 'Accès à vie'}</span><small>${en ? '€299.90 once, no subscription' : '299,90 € une fois, sans abonnement'}</small></button>
+            </div>
+            <button class="paywall-logout" id="gateLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
+          </div>`;
+        document.body.appendChild(gate);
+        gate.querySelectorAll('[data-gate-plan]').forEach((btn) => {
+          btn.onclick = () => _gateCheckout(btn.getAttribute('data-gate-plan'), en);
+        });
+        const glo = document.getElementById('gateLogout');
+        if (glo) glo.onclick = () => { try { Auth.logout(); } catch (e) {} };
+      }
+    } else if (gate) {
+      gate.remove();
+    }
+  }
+
+  // v1.0.5 : déclenche le Stripe Checkout depuis la gate d'inscription (carte obligatoire).
+  async function _gateCheckout(plan, en) {
+    if (typeof _fbFunctions === 'undefined' || !_fbFunctions) return;
+    if (window.ZTLoader) window.ZTLoader.start();
+    try {
+      if (typeof _fbAuth !== 'undefined' && _fbAuth && _fbAuth.currentUser) {
+        await _fbAuth.currentUser.reload();
+        await _fbAuth.currentUser.getIdToken(true);
+      }
+    } catch (e) { /* non bloquant */ }
+    try {
+      const res = await _fbFunctions.httpsCallable('createCheckoutSession')({ plan });
+      if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+      if (window.ZTLoader) window.ZTLoader.stop();
+      if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Checkout error — try again.' : 'Erreur de paiement — réessaie.', true);
+    } catch (e) {
+      if (window.ZTLoader) window.ZTLoader.stop();
+      const code = (e && (e.code || e.message)) || '';
+      if (/failed-precondition/.test(code) && typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Verify your email first.' : "Vérifie d'abord ton email.", true);
+      else if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Checkout error — try again.' : 'Erreur de paiement — réessaie.', true);
+    }
   }
 
   // v1.0.5 : "page" d'avertissement complète pour les ex-gratuits en essai (1×/session).
