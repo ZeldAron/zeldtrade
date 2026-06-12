@@ -346,6 +346,60 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const goOffers = () => { const o = document.querySelector('[data-page="offers"]'); if (o) o.click(); };
 
+    // ── Paiement échoué (past_due / unpaid) — PRIORITAIRE sur tout le reste ──────
+    // Le prélèvement (essai J14 ou renouvellement) a échoué → Stripe retente quelques jours (dunning).
+    // Écran clair « mets à jour ta carte » → portail Stripe (au lieu de la gate générique / d'une limitation muette).
+    const _si = (typeof Store !== 'undefined' && Store.getStripeInfo) ? (Store.getStripeInfo() || {}) : {};
+    let payFail = document.getElementById('payFailOverlay');
+    if (_si.subscriptionStatus === 'past_due' || _si.subscriptionStatus === 'unpaid') {
+      // Cet écran prime : on retire les autres overlays éventuels.
+      ['trialBanner', 'paywallOverlay', 'onboardGate'].forEach((id) => { const e = document.getElementById(id); if (e) e.remove(); });
+      if (!payFail) {
+        payFail = document.createElement('div');
+        payFail.id = 'payFailOverlay';
+        payFail.className = 'paywall-overlay';
+        payFail.innerHTML = `<div class="paywall-card">
+            <div class="paywall-icon">💳</div>
+            <h2>${en ? 'Payment failed' : 'Paiement échoué'}</h2>
+            <p>${en ? "We couldn't charge your card for your subscription. Update your payment method to keep your access — your data is safe." : "Le prélèvement de ton abonnement a échoué. Mets à jour ta carte pour conserver ton accès — tes données sont intactes."}</p>
+            <button class="btn-primary" id="payFailCta" type="button">${en ? 'Update my card →' : 'Mettre à jour ma carte →'}</button>
+            <button class="paywall-export" id="payFailExport" type="button">${en ? '⤓ Export all my data' : '⤓ Exporter toutes mes données'}</button>
+            <button class="paywall-logout" id="payFailLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
+          </div>`;
+        document.body.appendChild(payFail);
+        const cta = document.getElementById('payFailCta');
+        if (cta) cta.onclick = () => {
+          if (window.ZTLoader) window.ZTLoader.start();
+          cta.disabled = true;
+          _fbFunctions.httpsCallable('createBillingPortalSession')({})
+            .then((res) => {
+              if (res && res.data && res.data.url) { window.location.href = res.data.url; return; }
+              if (window.ZTLoader) window.ZTLoader.stop(); cta.disabled = false;
+              if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Could not open billing — try again.' : "Impossible d'ouvrir la facturation — réessaie.", true);
+            })
+            .catch(() => {
+              if (window.ZTLoader) window.ZTLoader.stop(); cta.disabled = false;
+              if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Could not open billing — try again.' : "Impossible d'ouvrir la facturation — réessaie.", true);
+            });
+        };
+        const ex = document.getElementById('payFailExport');   // RGPD : export toujours possible
+        if (ex) ex.onclick = () => {
+          try {
+            const blob = new Blob([Store.exportFullJSON()], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = 'zeldtrade-export-' + ((typeof UI !== 'undefined' && UI.localToday) ? UI.localToday() : new Date().toISOString().slice(0, 10)) + '.json';
+            a.click(); URL.revokeObjectURL(a.href);
+            if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Your data has been exported.' : 'Tes données ont été exportées.');
+          } catch (e) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Export failed — try again.' : "Échec de l'export — réessaie.", true); }
+        };
+        const lo = document.getElementById('payFailLogout');
+        if (lo) lo.onclick = () => { try { Auth.logout(); } catch (e) {} };
+      }
+      return;   // prioritaire : on ne rend aucun autre overlay tant que le paiement n'est pas régularisé
+    } else if (payFail) {
+      payFail.remove();
+    }
+
     // Bannière persistante « X jours restants — ajoute ta carte pour garder tes données »
     let banner = document.getElementById('trialBanner');
     if (state === 'trialing') {
