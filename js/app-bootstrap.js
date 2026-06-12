@@ -343,13 +343,13 @@ document.addEventListener('DOMContentLoaded', () => {
   async function _exportTradesCsvFile() {
     const en = (typeof i18n !== 'undefined' && i18n.getLang && i18n.getLang() === 'en');
     try {
-      const { csv, count } = await Store.exportTradesCsv();
-      if (!count) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'No trades to export.' : 'Aucun trade à exporter.', true); return; }
+      const { csv, count, accounts } = await Store.exportTradesCsv();
+      if (!count && !accounts) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'No data to export.' : 'Aucune donnée à exporter.', true); return; }
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
       a.download = 'zeldtrade-trades-' + ((typeof UI !== 'undefined' && UI.localToday) ? UI.localToday() : new Date().toISOString().slice(0, 10)) + '.csv';
       a.click(); URL.revokeObjectURL(a.href);
-      if (typeof UI !== 'undefined' && UI.toast) UI.toast((en ? 'Exported: %n trade(s).' : 'Export : %n trade(s).').replace('%n', count));
+      if (typeof UI !== 'undefined' && UI.toast) UI.toast((en ? 'Exported: %n trade(s)' : 'Export : %n trade(s)').replace('%n', count) + (accounts ? (en ? ' · ' + accounts + ' account(s)' : ' · ' + accounts + ' compte(s)') : ''));
     } catch (e) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Export failed — try again.' : "Échec de l'export — réessaie.", true); }
   }
 

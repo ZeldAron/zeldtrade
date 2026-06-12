@@ -1073,18 +1073,28 @@ const Store = (() => {
     const propAcc = accs.filter(a => a && a.accountType === 'prop');
     const propNames = new Set(propAcc.filter(a => a.name).map(a => a.name));
     const accByName = Object.fromEntries(accs.filter(a => a && a.name).map(a => [a.name, a]));
-    const rows = (Array.isArray(trades) ? trades : []).filter(t => t && propNames.has(t.apex));
+    // Trades regroupés par compte prop. Un compte SANS trade produit quand même 1 ligne (le compte seul)
+    // → l'user récupère toujours ses comptes prop paramétrés, même sans trade associé (demande user).
+    const byAcc = {};
+    (Array.isArray(trades) ? trades : []).forEach(t => { if (t && propNames.has(t.apex)) (byAcc[t.apex] = byAcc[t.apex] || []).push(t); });
+    const rowItems = [];   // { acc, trade|null }
+    propAcc.forEach(a => {
+      const ts = (a.name && byAcc[a.name]) || [];
+      if (ts.length) ts.forEach(t => rowItems.push({ acc: a, trade: t }));
+      else rowItems.push({ acc: a, trade: null });
+    });
+    const tradeCount = rowItems.filter(r => r.trade).length;
 
-    // Colonnes journal perso : on collecte dynamiquement les clés présentes (emotion, confidence, …)
+    // Colonnes journal perso : clés présentes dans les trades (emotion, confidence, …)
     const customKeys = [];
-    rows.forEach(t => { if (t.custom) Object.keys(t.custom).forEach(k => { if (customKeys.indexOf(k) === -1) customKeys.push(k); }); });
+    rowItems.forEach(r => { if (r.trade && r.trade.custom) Object.keys(r.trade.custom).forEach(k => { if (customKeys.indexOf(k) === -1) customKeys.push(k); }); });
 
     // Résolution des URLs de screenshots (download URLs Firebase Storage) — en parallèle, déduplicées.
-    const _shotPaths = (t) => (Array.isArray(t.screenshotPaths) && t.screenshotPaths.length)
+    const _shotPaths = (t) => (t && Array.isArray(t.screenshotPaths) && t.screenshotPaths.length)
       ? t.screenshotPaths.filter(Boolean)
-      : (t.screenshotPath ? [t.screenshotPath] : []);
+      : (t && t.screenshotPath ? [t.screenshotPath] : []);
     const urlCache = {};
-    rows.forEach(t => _shotPaths(t).forEach(p => { if (!(p in urlCache)) urlCache[p] = null; }));
+    rowItems.forEach(r => _shotPaths(r.trade).forEach(p => { if (!(p in urlCache)) urlCache[p] = null; }));
     await Promise.all(Object.keys(urlCache).map(async (p) => {
       try { urlCache[p] = (typeof _fbStorage !== 'undefined' && _fbStorage) ? await _fbStorage.ref(p).getDownloadURL() : p; }
       catch (e) { urlCache[p] = '(image inaccessible)'; }
@@ -1097,13 +1107,14 @@ const Store = (() => {
       ...customKeys.map(k => 'Journal: ' + k),
       'Screenshot 1', 'Screenshot 2', 'Screenshot 3',
     ];
+    const num = (v, d) => (typeof v === 'number' ? v.toFixed(d) : (v != null ? v : ''));
     const lines = [headers.join(',')];
-    for (const t of rows) {
-      const a = accByName[t.apex] || {};
+    for (const r of rowItems) {
+      const a = r.acc || {};
+      const t = r.trade || {};
       let calc = {};
-      try { calc = (typeof Calc !== 'undefined' && Calc.trade) ? Calc.trade(t) : {}; } catch (e) {}
-      const num = (v, d) => (typeof v === 'number' ? v.toFixed(d) : (v != null ? v : ''));
-      const paths = _shotPaths(t);
+      try { calc = (r.trade && typeof Calc !== 'undefined' && Calc.trade) ? Calc.trade(r.trade) : {}; } catch (e) {}
+      const paths = _shotPaths(r.trade);
       const partialsStr = Array.isArray(t.partials) && t.partials.length
         ? t.partials.map(p => `${p.lots}@${p.price}`).join(' | ') : '';
       lines.push([
@@ -1121,7 +1132,7 @@ const Store = (() => {
         cell(paths[0] ? urlCache[paths[0]] : ''), cell(paths[1] ? urlCache[paths[1]] : ''), cell(paths[2] ? urlCache[paths[2]] : ''),
       ].join(','));
     }
-    return { csv: '﻿' + lines.join('\r\n'), count: rows.length, accounts: propAcc.length };
+    return { csv: '﻿' + lines.join('\r\n'), count: tradeCount, accounts: propAcc.length, rows: rowItems.length };
   }
 
   // ── Settings ─────────────────────────────────────────────────────────────────
