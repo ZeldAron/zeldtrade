@@ -326,7 +326,6 @@ const Store = (() => {
   const TIER_FEATURES = {
     groups:           ['funded', 'elite', 'beta'],
     exportPdf:        ['funded', 'elite', 'beta'],
-    exportCsv:        ['funded', 'elite', 'beta'],
     prioritySupport:  ['funded', 'elite', 'beta'],
     betaFeatures:     ['elite', 'beta'],
     decisiveVote:     ['elite', 'beta'],
