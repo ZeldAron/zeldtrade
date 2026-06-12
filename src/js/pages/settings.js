@@ -1811,11 +1811,7 @@
       return s;
     }
     $('btnExportCsv').addEventListener('click', async () => {
-      // v1.0.4 : gate Funded+ (même verrou que le PDF — le CSV passait sans check)
-      if (!Store.canUseFeature || !Store.canUseFeature('exportCsv')) {
-        UI.toast(t('set.export.csv.pro.only'), true);
-        return;
-      }
+      // v1.0.5 : export CSV DÉGATÉ (RGPD — exporter ses propres données est un droit, pas une feature payante).
       const _btn = $('btnExportCsv');
       try {
         if (_btn) _btn.disabled = true;
