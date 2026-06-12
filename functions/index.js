@@ -305,20 +305,12 @@ exports.analyzeChart = onCall(
       //   servir comme bucket de rate-limit.
       // Ancien code (v0.9.161) prenait parts[0] → spoofable → bypass trivial
       // en rotant la 1ère IP à chaque requête.
-      const ipRaw = request.rawRequest?.headers?.['x-forwarded-for'];
-      let ip = 'unknown';
-      if (typeof ipRaw === 'string') {
-        const parts = ipRaw.split(',').map(s => s.trim()).filter(Boolean);
-        if (parts.length >= 2) {
-          // Avant-dernière = IP trustée (vue par le LB Google)
-          ip = parts[parts.length - 2];
-        } else if (parts.length === 1) {
-          // Cas anormal (devrait pas arriver sur Cloud Run) — on prend ce qu'on a
-          ip = parts[0];
-        }
-      }
-      // Sanitize IP pour usage comme doc ID Firestore (regex perm. ipv4/ipv6 chars)
-      const ipId = ip.replace(/[^A-Za-z0-9.:_-]/g, '_').slice(0, 64) || 'unknown';
+      // M-2 (audit 2026-06-12) : bucket le burst-limit par UID (non-spoofable, auth+email_verified OBLIGATOIRES
+      // ici), et NON par l'IP XFF. L'ancien parsing (avant-dernière IP du X-Forwarded-For) reposait sur une
+      // hypothèse d'infra (nb de hops ajoutés par le LB Google) → potentiellement manipulable selon la config.
+      // L'uid du token vérifié est fiable. Le quota HEBDO par-uid reste la protection autoritaire du coût ;
+      // ce burst-limit ne fait que lisser la cadence (3 / 3 min).
+      const ipId = 'u_' + uid;
       // v0.9.216 — Système burst : 3 analyses possibles d'affilée, puis cooldown 3 min.
       // Plus user-friendly qu'un strict 1/5min, et reste un anti-bot efficace.
       const BURST_MAX      = 3;

@@ -72,8 +72,12 @@ service cloud.firestore {
                     && request.auth.uid == uid
                     && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'lastSeen', 'termsAccepted', 'newsletterOptIn', 'isTestAccount'])
                     && (!('uid' in request.resource.data)      || request.resource.data.uid == uid)
-                    && (!('email' in request.resource.data)    || (request.resource.data.email is string && request.resource.data.email.size() <= 254))
-                    && (!('username' in request.resource.data) || (request.resource.data.username is string && request.resource.data.username.size() <= 50))
+                    // C-1 défense-en-profondeur (audit 2026-06-12) : blocklist ÉTROITE des chars HTML `< >` sur
+                    // email/username. N.B. : on ne remet PAS l'allowlist stricte (regex pseudo) qui avait cassé la
+                    // modale CGU (02/06) en rejetant les pseudos à espaces/accents — un `[<>]` ne touche aucun
+                    // pseudo/email légitime, mais empêche de STOCKER un payload XSS (le rendu admin échappe déjà).
+                    && (!('email' in request.resource.data)    || (request.resource.data.email is string && request.resource.data.email.size() <= 254 && !request.resource.data.email.matches('(?s).*[<>].*')))
+                    && (!('username' in request.resource.data) || (request.resource.data.username is string && request.resource.data.username.size() <= 50 && !request.resource.data.username.matches('(?s).*[<>].*')))
                     && (!('lastSeen' in request.resource.data) || request.resource.data.lastSeen is int)
                     && (!('termsAccepted' in request.resource.data)   || request.resource.data.termsAccepted is map)
                     && (!('newsletterOptIn' in request.resource.data) || request.resource.data.newsletterOptIn is bool)
