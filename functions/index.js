@@ -49,7 +49,7 @@ const STRIPE_PRICE_FUNDED_MONTHLY = defineSecret('STRIPE_PRICE_FUNDED_MONTHLY');
 const STRIPE_PRICE_FUNDED_YEARLY  = defineSecret('STRIPE_PRICE_FUNDED_YEARLY');
 const STRIPE_PRICE_ELITE_MONTHLY  = defineSecret('STRIPE_PRICE_ELITE_MONTHLY');
 const STRIPE_PRICE_ELITE_YEARLY   = defineSecret('STRIPE_PRICE_ELITE_YEARLY');
-const STRIPE_PRICE_LIFETIME       = defineSecret('STRIPE_PRICE_LIFETIME');   // v1.0.5 : lifetime 299,90€ (one-shot)
+const STRIPE_PRICE_LIFETIME       = defineSecret('STRIPE_PRICE_LIFETIME');   // v1.0.5 : lifetime 499,90€ (one-shot)
 
 // v0.9.253 : emails exclus du compteur public d'inscrits (landing).
 // = compte admin + comptes internes/test qui ne sont PAS des bêta testeurs réels.

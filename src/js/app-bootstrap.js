@@ -480,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="onboard-plans">
               <button type="button" class="onboard-plan" data-gate-plan="funded_monthly"><span>Funded</span><small>${en ? '14-day trial, then €14.99/mo' : 'essai 14 j, puis 14,99 €/mois'}</small></button>
               <button type="button" class="onboard-plan onboard-plan-reco" data-gate-plan="elite_monthly"><span>Elite</span><small>${en ? '14-day trial, then €29.99/mo' : 'essai 14 j, puis 29,99 €/mois'}</small></button>
-              <button type="button" class="onboard-plan" data-gate-plan="lifetime"><span>${en ? 'Lifetime' : 'Accès à vie'}</span><small>${en ? '€299.90 once, no subscription' : '299,90 € une fois, sans abonnement'}</small></button>
+              <button type="button" class="onboard-plan" data-gate-plan="lifetime"><span>${en ? 'Lifetime' : 'Accès à vie'}</span><small>${en ? '€499.90 once, no subscription' : '499,90 € une fois, sans abonnement'}</small></button>
             </div>
             <button class="paywall-logout" id="gateLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
           </div>`;

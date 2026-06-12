@@ -157,13 +157,13 @@ UI.renderOffers = function () {
       ${bE.cta}
     </div>`;
 
-  // ── Card : LIFETIME (299,90 € — paiement unique) ─────────────────────────────
+  // ── Card : LIFETIME (499,90 € — paiement unique) ─────────────────────────────
   const cardLifetime = `
     <div class="pricing-card lifetime-card">
       <div class="pricing-badge-row"><span class="pricing-badge-lifetime">${isEn ? 'LIFETIME' : 'À VIE'}</span></div>
       <div class="pricing-card-name">Lifetime</div>
       <p class="pricing-card-tagline">${isEn ? 'Pay once. Yours forever.' : 'Tu paies une fois. À toi pour toujours.'}</p>
-      <div class="pricing-card-price">299,90 €<span class="price-suffix">/ ${isEn ? 'one-time' : 'une fois'}</span></div>
+      <div class="pricing-card-price">499,90 €<span class="price-suffix">/ ${isEn ? 'one-time' : 'une fois'}</span></div>
       <div class="pricing-card-perday"><span style="color:#a78bfa;font-weight:600">${isEn ? 'No subscription · unlimited' : 'Sans abonnement · illimité'}</span></div>
       <ul class="pricing-features">
         <li>${isEn ? 'Everything in Elite, forever' : 'Tout Elite, à vie'}</li>
