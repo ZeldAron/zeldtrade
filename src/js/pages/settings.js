@@ -1820,9 +1820,9 @@
       try {
         if (_btn) _btn.disabled = true;
         // v1.0.5 : CSV riche partagé (comptes prop firm + trades, tous champs + URLs screenshots).
-        const { csv, count } = await Store.exportTradesCsv();
-        if (!count) {
-          UI.toast(t('set.export.csv.empty') || 'Aucun trade à exporter.', true);
+        const { csv, count, accounts } = await Store.exportTradesCsv();
+        if (!count && !accounts) {
+          UI.toast(t('set.export.csv.empty') || 'Aucune donnée à exporter.', true);
           return;
         }
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
