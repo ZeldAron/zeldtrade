@@ -113,7 +113,7 @@ UI.renderOffers = function () {
       <p class="pricing-card-tagline">${t('off.funded.tag')}</p>
       <div class="pricing-launch">${t('off.launch')}</div>
       <div class="pricing-card-price">
-        <span data-price-monthly><s class="price-old">14,99 €</s> 8,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
+        <span data-price-monthly>14,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
         <span data-price-yearly style="display:none">${t('off.funded.yearly')}</span>
       </div>
       <div class="pricing-card-perday">
@@ -140,7 +140,7 @@ UI.renderOffers = function () {
       <p class="pricing-card-tagline">${t('off.elite.tag')}</p>
       <div class="pricing-launch">${t('off.launch')}</div>
       <div class="pricing-card-price">
-        <span data-price-monthly><s class="price-old">29,99 €</s> 17,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
+        <span data-price-monthly>29,99 €<span class="price-suffix">/ ${t('off.month')}</span></span>
         <span data-price-yearly style="display:none">${t('off.elite.yearly')}</span>
       </div>
       <div class="pricing-card-perday">

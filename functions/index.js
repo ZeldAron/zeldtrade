@@ -123,6 +123,35 @@ function weekKey() {
   return d.toISOString().split('T')[0];
 }
 
+// v1.0.5 — Clé de MOIS (UTC) + plafond fair-use mensuel pour l'accès à vie (lifetime affiché « illimité »
+// mais borné anti-abus). Compteur séparé `aiMonthly` → n'affecte PAS le quota hebdo des autres tiers.
+function monthKey() { return new Date().toISOString().slice(0, 7); }   // 'YYYY-MM'
+const LIFETIME_AI_MONTHLY_CAP = 300;
+async function _reserveLifetimeMonthly(db, uid) {
+  const ref = db.doc(`users/${uid}/data/aiMonthly`);
+  const mk  = monthKey();
+  await db.runTransaction(async (tx) => {
+    const s = await tx.get(ref);
+    const d = s.exists ? (s.data() || {}) : {};
+    const c = (d.monthKey === mk) ? (d.count || 0) : 0;
+    if (c >= LIFETIME_AI_MONTHLY_CAP) {
+      throw new HttpsError('resource-exhausted',
+        `Usage équitable : limite de ${LIFETIME_AI_MONTHLY_CAP} analyses IA/mois atteinte sur l'accès à vie. Réessaie le mois prochain.`);
+    }
+    tx.set(ref, { monthKey: mk, count: c + 1 });
+  });
+  return async () => {   // rollback (si l'analyse échoue)
+    try {
+      await db.runTransaction(async (tx) => {
+        const s = await tx.get(ref);
+        if (!s.exists) return;
+        const d = s.data() || {};
+        if (d.monthKey === mk && (d.count || 0) > 0) tx.update(ref, { count: d.count - 1 });
+      });
+    } catch (e) { console.warn('[lifetime monthly rollback] failed', e && e.message); }
+  };
+}
+
 // v0.9.355 — Détection serveur des niveaux dans la réponse LLM (mirroir du parser
 // client modal.js). Sert à REMBOURSER le quota si l'IA ne détecte RIEN (entry/SL/TP) :
 // l'user ne doit pas perdre son analyse du jour parce que l'IA a échoué. Conservateur :
@@ -411,6 +440,14 @@ exports.analyzeChart = onCall(
       skipQuota = true;
     }
 
+    // v1.0.5 — fair-use LIFETIME : le tier beta a un quota hebdo illimité, donc on borne l'accès à vie par
+    // un plafond MENSUEL (300, doc séparé `aiMonthly`). Réservé AVANT le quota hebdo → bloque si dépassé.
+    const isLifetime = _pd.lifetime === true;
+    let rollbackLifetimeMonthly = async () => {};
+    if (isLifetime && !skipQuota) {
+      rollbackLifetimeMonthly = await _reserveLifetimeMonthly(db, uid);
+    }
+
     if (!skipQuota) {
       await db.runTransaction(async (tx) => {
         const usage = await tx.get(usageRef);
@@ -434,6 +471,7 @@ exports.analyzeChart = onCall(
     // v0.9.224 : no-op si admin (skipQuota) — rien à rollback car rien incrementé.
     const rollbackQuota = async () => {
       if (skipQuota) return;
+      await rollbackLifetimeMonthly();   // fair-use lifetime : rembourse aussi le compteur mensuel
       try {
         await db.runTransaction(async (tx) => {
           const u = await tx.get(usageRef);
