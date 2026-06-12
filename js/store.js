@@ -1061,6 +1061,69 @@ const Store = (() => {
     }, null, 2);
   }
 
+  // v1.0.5 — Export CSV « trading » (1 ligne = 1 trade) : comptes PROP FIRM configurés + leurs trades,
+  // TOUS les champs (dont journal perso dynamique) + URLs des screenshots. async : getDownloadURL() par image.
+  async function exportTradesCsv() {
+    const cell = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v);
+      return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const accs    = Array.isArray(myAccounts) ? myAccounts : [];
+    const propAcc = accs.filter(a => a && a.accountType === 'prop');
+    const propNames = new Set(propAcc.filter(a => a.name).map(a => a.name));
+    const accByName = Object.fromEntries(accs.filter(a => a && a.name).map(a => [a.name, a]));
+    const rows = (Array.isArray(trades) ? trades : []).filter(t => t && propNames.has(t.apex));
+
+    // Colonnes journal perso : on collecte dynamiquement les clés présentes (emotion, confidence, …)
+    const customKeys = [];
+    rows.forEach(t => { if (t.custom) Object.keys(t.custom).forEach(k => { if (customKeys.indexOf(k) === -1) customKeys.push(k); }); });
+
+    // Résolution des URLs de screenshots (download URLs Firebase Storage) — en parallèle, déduplicées.
+    const _shotPaths = (t) => (Array.isArray(t.screenshotPaths) && t.screenshotPaths.length)
+      ? t.screenshotPaths.filter(Boolean)
+      : (t.screenshotPath ? [t.screenshotPath] : []);
+    const urlCache = {};
+    rows.forEach(t => _shotPaths(t).forEach(p => { if (!(p in urlCache)) urlCache[p] = null; }));
+    await Promise.all(Object.keys(urlCache).map(async (p) => {
+      try { urlCache[p] = (typeof _fbStorage !== 'undefined' && _fbStorage) ? await _fbStorage.ref(p).getDownloadURL() : p; }
+      catch (e) { urlCache[p] = '(image inaccessible)'; }
+    }));
+
+    const headers = [
+      'Compte', 'Prop firm', 'Type', 'Statut', 'Capital compte', 'Objectif profit', 'Drawdown max', 'Perte jour max', 'Contrats max', 'Frais/côté',
+      'Date', 'Instrument', 'Direction', 'Contrats', 'Entry', 'SL', 'TP1', 'TP2', 'TP3', 'Sortie',
+      'Résultat', 'R réalisé', 'P&L net (USD)', 'P&L manuel', 'R saisi', 'Setup', 'Notes', 'Partials',
+      ...customKeys.map(k => 'Journal: ' + k),
+      'Screenshot 1', 'Screenshot 2', 'Screenshot 3',
+    ];
+    const lines = [headers.join(',')];
+    for (const t of rows) {
+      const a = accByName[t.apex] || {};
+      let calc = {};
+      try { calc = (typeof Calc !== 'undefined' && Calc.trade) ? Calc.trade(t) : {}; } catch (e) {}
+      const num = (v, d) => (typeof v === 'number' ? v.toFixed(d) : (v != null ? v : ''));
+      const paths = _shotPaths(t);
+      const partialsStr = Array.isArray(t.partials) && t.partials.length
+        ? t.partials.map(p => `${p.lots}@${p.price}`).join(' | ') : '';
+      lines.push([
+        cell(a.name || t.apex), cell(a.firmKey || ''), cell(a.accountType || ''), cell(a.status || ''),
+        cell(a.capital != null ? a.capital : ''), cell(a.profitTarget != null ? a.profitTarget : ''),
+        cell(a.maxDrawdown != null ? a.maxDrawdown : ''), cell(a.dailyLossLimit != null ? a.dailyLossLimit : ''),
+        cell(a.maxContracts != null ? a.maxContracts : ''), cell(a.feePerSide != null ? a.feePerSide : ''),
+        cell(t.date || ''), cell(t.instrument || t.symbol || ''), cell(t.direction || ''), cell(t.contracts != null ? t.contracts : ''),
+        cell(t.entry != null ? t.entry : ''), cell(t.sl != null ? t.sl : ''), cell(t.tp1 != null ? t.tp1 : ''), cell(t.tp2 != null ? t.tp2 : ''), cell(t.tp3 != null ? t.tp3 : ''),
+        cell(t.exitPrice != null ? t.exitPrice : (t.exit != null ? t.exit : '')),
+        cell(t.outcome || ''), cell(num(calc.rr, 2) || (t.rr != null ? t.rr : '')), cell(num(calc.netPnl, 2) || (t.pnl != null ? t.pnl : '')),
+        cell(t.manualPnl != null ? t.manualPnl : ''), cell(t.rMultiple != null ? t.rMultiple : ''),
+        cell(t.setup || ''), cell(t.notes || ''), cell(partialsStr),
+        ...customKeys.map(k => cell(t.custom ? t.custom[k] : '')),
+        cell(paths[0] ? urlCache[paths[0]] : ''), cell(paths[1] ? urlCache[paths[1]] : ''), cell(paths[2] ? urlCache[paths[2]] : ''),
+      ].join(','));
+    }
+    return { csv: '﻿' + lines.join('\r\n'), count: rows.length, accounts: propAcc.length };
+  }
+
   // ── Settings ─────────────────────────────────────────────────────────────────
   function getSettings()        { return { ...settings }; }
   function getTradingTypes()    { return Array.isArray(settings.tradingTypes) ? [...settings.tradingTypes] : null; }
@@ -1607,7 +1670,7 @@ const Store = (() => {
 
   return {
     initForUser, clearLocalCache, purgeForeignCache,
-    getTrades, getTradeById, addTrade, addTradesBatch, updateTrade, deleteTrade, importTrades, clearTrades, exportJSON, exportFullJSON,
+    getTrades, getTradeById, addTrade, addTradesBatch, updateTrade, deleteTrade, importTrades, clearTrades, exportJSON, exportFullJSON, exportTradesCsv,
     newTradeId: _newTradeId, uploadTradeScreenshot, getTradeScreenshotUrl, deleteTradeScreenshot,
     getMaxScreenshots, canSaveScreenshots,
     getSettings, getTradingTypes, updateSettings, getJournalFields, JOURNAL_CUSTOM_FIELDS,

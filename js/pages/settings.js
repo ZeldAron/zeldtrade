@@ -1810,58 +1810,33 @@
       if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
       return s;
     }
-    $('btnExportCsv').addEventListener('click', () => {
+    $('btnExportCsv').addEventListener('click', async () => {
       // v1.0.4 : gate Funded+ (même verrou que le PDF — le CSV passait sans check)
       if (!Store.canUseFeature || !Store.canUseFeature('exportCsv')) {
         UI.toast(t('set.export.csv.pro.only'), true);
         return;
       }
+      const _btn = $('btnExportCsv');
       try {
-        const trades = Store.getTrades() || [];
-        if (!trades.length) {
+        if (_btn) _btn.disabled = true;
+        // v1.0.5 : CSV riche partagé (comptes prop firm + trades, tous champs + URLs screenshots).
+        const { csv, count } = await Store.exportTradesCsv();
+        if (!count) {
           UI.toast(t('set.export.csv.empty') || 'Aucun trade à exporter.', true);
           return;
         }
-        const headers = [
-          'Date', 'Compte', 'Symbole', 'Direction', 'Lot',
-          'Entry', 'SL', 'TP1', 'TP2', 'TP3', 'Sortie',
-          'Setup', 'Notes', 'Outcome', 'R', 'NetPnL_USD',
-        ];
-        const lines = [headers.join(',')];
-        for (const t of trades) {
-          let calc = {};
-          try { calc = (typeof Calc !== 'undefined' && Calc.trade) ? Calc.trade(t) : {}; } catch {}
-          lines.push([
-            _csvCell(t.date || ''),
-            _csvCell(t.apex || ''),
-            _csvCell(t.symbol || ''),
-            _csvCell(t.direction || ''),
-            _csvCell(t.contracts != null ? t.contracts : ''),
-            _csvCell(t.entry != null ? t.entry : ''),
-            _csvCell(t.sl != null ? t.sl : ''),
-            _csvCell(t.tp1 != null ? t.tp1 : ''),
-            _csvCell(t.tp2 != null ? t.tp2 : ''),
-            _csvCell(t.tp3 != null ? t.tp3 : ''),
-            _csvCell(t.exit != null ? t.exit : ''),
-            _csvCell(t.setup || ''),
-            _csvCell(t.notes || ''),
-            _csvCell(t.outcome || ''),
-            _csvCell(calc.rr != null ? calc.rr.toFixed(2) : ''),
-            _csvCell(calc.netPnl != null ? calc.netPnl.toFixed(2) : ''),
-          ].join(','));
-        }
-        // BOM UTF-8 pour Excel (sinon les accents s'affichent mal)
-        const csv  = '﻿' + lines.join('\r\n');
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
         const a    = document.createElement('a');
         a.href     = URL.createObjectURL(blob);
         a.download = 'zeldtrade-trades-' + UI.localToday() + '.csv';
         a.click();
         URL.revokeObjectURL(a.href);
-        UI.toast((t('set.export.csv.done') || 'Export CSV : %n trade(s).').replace('%n', trades.length));
+        UI.toast((t('set.export.csv.done') || 'Export CSV : %n trade(s).').replace('%n', count));
       } catch (e) {
         console.error('[ExportCSV] failed:', e);
         UI.toast('Erreur export CSV : ' + (e && e.message || ''), true);
+      } finally {
+        if (_btn) _btn.disabled = false;
       }
     });
 
