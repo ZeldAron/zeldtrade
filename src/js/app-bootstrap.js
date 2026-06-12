@@ -338,6 +338,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // v1.0.5 — Gate d'accès essai/payant : bannière (essai actif) + mur (essai expiré).
   // Idempotent : appelé au reveal + à chaque store:planChanged. Le serveur (M2) reste
   // autoritaire ; ceci n'est que l'UX (info essai + invitation à s'abonner). FR/EN inline.
+  // v1.0.5 — Export CSV « trading » (partagé par les écrans bloquants paywall/payFail). RGPD-friendly :
+  // comptes prop firm + leurs trades (tous champs) + URLs des screenshots. async (résout les URLs Storage).
+  async function _exportTradesCsvFile() {
+    const en = (typeof i18n !== 'undefined' && i18n.getLang && i18n.getLang() === 'en');
+    try {
+      const { csv, count } = await Store.exportTradesCsv();
+      if (!count) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'No trades to export.' : 'Aucun trade à exporter.', true); return; }
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      a.download = 'zeldtrade-trades-' + ((typeof UI !== 'undefined' && UI.localToday) ? UI.localToday() : new Date().toISOString().slice(0, 10)) + '.csv';
+      a.click(); URL.revokeObjectURL(a.href);
+      if (typeof UI !== 'undefined' && UI.toast) UI.toast((en ? 'Exported: %n trade(s).' : 'Export : %n trade(s).').replace('%n', count));
+    } catch (e) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Export failed — try again.' : "Échec de l'export — réessaie.", true); }
+  }
+
   let _acctGateResynced = false;   // garde-fou anti-boucle pour la resync de la gate
   function _renderAccessGate() {
     if (typeof Store === 'undefined' || !Store.getAccessState) return;
@@ -363,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <h2>${en ? 'Payment failed' : 'Paiement échoué'}</h2>
             <p>${en ? "We couldn't charge your card for your subscription. Update your payment method to keep your access — your data is safe." : "Le prélèvement de ton abonnement a échoué. Mets à jour ta carte pour conserver ton accès — tes données sont intactes."}</p>
             <button class="btn-primary" id="payFailCta" type="button">${en ? 'Update my card →' : 'Mettre à jour ma carte →'}</button>
-            <button class="paywall-export" id="payFailExport" type="button">${en ? '⤓ Export all my data' : '⤓ Exporter toutes mes données'}</button>
+            <button class="paywall-export" id="payFailExport" type="button">${en ? '⤓ Export my trades (CSV)' : '⤓ Exporter mes trades (CSV)'}</button>
             <button class="paywall-logout" id="payFailLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
           </div>`;
         document.body.appendChild(payFail);
@@ -383,15 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
         const ex = document.getElementById('payFailExport');   // RGPD : export toujours possible
-        if (ex) ex.onclick = () => {
-          try {
-            const blob = new Blob([Store.exportFullJSON()], { type: 'application/json' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-            a.download = 'zeldtrade-export-' + ((typeof UI !== 'undefined' && UI.localToday) ? UI.localToday() : new Date().toISOString().slice(0, 10)) + '.json';
-            a.click(); URL.revokeObjectURL(a.href);
-            if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Your data has been exported.' : 'Tes données ont été exportées.');
-          } catch (e) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Export failed — try again.' : "Échec de l'export — réessaie.", true); }
-        };
+        if (ex) ex.onclick = _exportTradesCsvFile;
         const lo = document.getElementById('payFailLogout');
         if (lo) lo.onclick = () => { try { Auth.logout(); } catch (e) {} };
       }
@@ -435,7 +442,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <p>${en ? 'Add a card to keep your account and all your data.' : 'Ajoute ta carte pour garder ton compte et toutes tes données.'}</p>
             <p class="paywall-warn">${en ? '⚠️ Without a card your account may be deleted. Your data is still here — subscribe to keep it.' : '⚠️ Sans carte, ton compte pourra être supprimé. Tes données sont encore là — abonne-toi pour les conserver.'}</p>
             <button class="btn-primary" id="paywallCta" type="button">${en ? 'See plans →' : 'Voir les offres →'}</button>
-            <button class="paywall-export" id="paywallExport" type="button">${en ? '⤓ Export all my data' : '⤓ Exporter toutes mes données'}</button>
+            <button class="paywall-export" id="paywallExport" type="button">${en ? '⤓ Export my trades (CSV)' : '⤓ Exporter mes trades (CSV)'}</button>
             <button class="paywall-logout" id="paywallLogout" type="button">${en ? 'Log out' : 'Se déconnecter'}</button>
           </div>`;
         document.body.appendChild(wall);
@@ -443,17 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (cta) cta.onclick = () => { wall.remove(); goOffers(); };
         // RGPD (art. 20) : l'export reste TOUJOURS possible, même bloqué → pas de données « en otage ».
         const ex = document.getElementById('paywallExport');
-        if (ex) ex.onclick = () => {
-          try {
-            const blob = new Blob([Store.exportFullJSON()], { type: 'application/json' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'zeldtrade-export-' + ((typeof UI !== 'undefined' && UI.localToday) ? UI.localToday() : new Date().toISOString().slice(0, 10)) + '.json';
-            a.click();
-            URL.revokeObjectURL(a.href);
-            if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Your data has been exported.' : 'Tes données ont été exportées.');
-          } catch (e) { if (typeof UI !== 'undefined' && UI.toast) UI.toast(en ? 'Export failed — try again.' : "Échec de l'export — réessaie.", true); }
-        };
+        if (ex) ex.onclick = _exportTradesCsvFile;
         const lo = document.getElementById('paywallLogout');
         if (lo) lo.onclick = () => { try { Auth.logout(); } catch (e) {} };
       }
