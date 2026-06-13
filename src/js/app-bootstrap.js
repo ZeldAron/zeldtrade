@@ -581,7 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const e2 = (i18n.getLang && i18n.getLang() === 'en');
       const hasCustomer = !!((typeof Store !== 'undefined' && Store.getStripeInfo && (Store.getStripeInfo() || {}).customerId));
       return (email ? `<div class="account-menu-email" title="${esc(email)}">${esc(email)}</div>` : '')
-        + bi('settings', I.settings, e2 ? 'Settings' : 'Paramètres')
+        + bi('settings', I.settings, e2 ? 'Settings' : 'Réglages')
         + `<button class="account-menu-item" type="button" data-acct="lang" role="menuitem">${I.globe}<span>${e2 ? 'Language' : 'Langue'}</span><span class="account-menu-right">${lVal()}</span>${chev}</button>`
         + bi('theme',    I.theme,    e2 ? 'Theme' : 'Thème', tVal())
         + bi('help',     I.help,     e2 ? 'Get help' : "Obtenir de l'aide")

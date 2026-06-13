@@ -15,6 +15,7 @@ function initApp() {
     offers:    'page.offers',
     settings:  'page.settings',
     tutorial:  'page.tutorial',
+    econ:      'page.econ',
   };
 
   // v0.9.271 — sous-titres contextuels d'en-tête [FR, EN] (en-têtes de page riches)
@@ -533,7 +534,12 @@ function initApp() {
 
   // Bouton langue dans Settings
   document.getElementById('btnToggleLang').addEventListener('click', () => {
-    i18n.setLang(i18n.getLang() === 'fr' ? 'en' : 'fr');
+    // v1.0.8 FIX : on lit la langue RÉELLEMENT affichée (posée par i18n.apply au chargement)
+    // au lieu de getLang() qui a un effet de bord ?lang= → le toggle FR→EN se calculait mal.
+    const cur = (document.documentElement.lang === 'en') ? 'en' : 'fr';
+    i18n.setLang(cur === 'fr' ? 'en' : 'fr');
+    // purge tout ?lang= résiduel pour qu'il n'écrase pas le choix au reload (cause du FR→EN cassé).
+    try { const u = new URL(location.href); if (u.searchParams.has('lang')) { u.searchParams.delete('lang'); history.replaceState(null, '', u.pathname + u.search + u.hash); } } catch (e) {}
     location.reload();
   });
 
