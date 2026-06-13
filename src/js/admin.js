@@ -1477,18 +1477,25 @@ const Admin = (() => {
     _cachedUsers = users; _cachedPlans = plans;
 
     const now = Date.now(), DAY = 86400000;
-    const total = users.length;
-    const a7  = users.filter(u => u.lastSeen && now - u.lastSeen <= 7 * DAY).length;
-    const a30 = users.filter(u => u.lastSeen && now - u.lastSeen <= 30 * DAY).length;
+    // v1.0.6 — stats « vrais clients » : on exclut les comptes test + l'admin
+    const isExcluded = (u) => _isTestAccount(u) || u.email === ADMIN_EMAIL;
+    const realIdx = users.map((u, i) => i).filter(i => !isExcluded(users[i]));
+    const rUsers = realIdx.map(i => users[i]);
+    const rPlans = realIdx.map(i => plans[i]);
+    const rStripes = realIdx.map(i => stripes[i]);
+    const excluded = users.length - rUsers.length;
+    const total = rUsers.length;
+    const a7  = rUsers.filter(u => u.lastSeen && now - u.lastSeen <= 7 * DAY).length;
+    const a30 = rUsers.filter(u => u.lastSeen && now - u.lastSeen <= 30 * DAY).length;
     const tiers = { basic: 0, funded: 0, elite: 0, beta: 0 };
-    plans.forEach(p => tiers[_userTier(p)]++);
+    rPlans.forEach(p => tiers[_userTier(p)]++);
     const paying = tiers.funded + tiers.elite;
     let mrr = 0, activeSubs = 0;
-    stripes.forEach(s => { if (_isActiveSub(s) && s.tier) { activeSubs++; mrr += mrrFor(s.tier, s.cycle); } });
+    rStripes.forEach(s => { if (_isActiveSub(s) && s.tier) { activeSubs++; mrr += mrrFor(s.tier, s.cycle); } });
     const conv = total ? Math.round(paying / total * 100) : 0;
-    // v1.0.6 — nouveau modèle : essais en cours + clients lifetime
-    const trials = plans.filter(p => p && p.trialEnd && p.trialEnd > now && p.plan !== 'pro').length;
-    const lifeCount = plans.filter(p => p && p.lifetime === true).length;
+    // v1.0.6 — nouveau modèle : essais en cours + clients lifetime (vrais clients)
+    const trials = rPlans.filter(p => p && p.trialEnd && p.trialEnd > now && p.plan !== 'pro').length;
+    const lifeCount = rPlans.filter(p => p && p.lifetime === true).length;
     const lifeRev = lifeCount * 499.90;
 
     // v1.0.6 — utilisateurs les plus actifs (agrégation des analyticsEvents par uid)
@@ -1501,7 +1508,7 @@ const Admin = (() => {
         counts[uid] = (counts[uid] || 0) + 1;
         const ts = _tsMs(e.ts); if (ts && ts > (last[uid] || 0)) last[uid] = ts;
       });
-      const byUid = {}; users.forEach((u, i) => { byUid[u.uid] = { u, plan: plans[i] }; });
+      const byUid = {}; realIdx.forEach(i => { byUid[users[i].uid] = { u: users[i], plan: plans[i] }; });
       topActive = Object.keys(counts).map(uid => ({ uid, n: counts[uid], last: last[uid], ref: byUid[uid] }))
         .filter(x => x.ref).sort((a, b) => b.n - a.n).slice(0, 10);
     } catch (e) {}
@@ -1548,7 +1555,7 @@ const Admin = (() => {
             <button class="btn-secondary" data-goto="revenue">Revenu &amp; abonnements →</button>
             <button class="btn-secondary" data-goto="activity">Activité détaillée →</button>
           </div>
-          <p class="ov-note">MRR au tarif courant (Funded ${_eur(PRICES.funded.monthly)}/m, Elite ${_eur(PRICES.elite.monthly)}/m). Lifetime = ${lifeCount} × 499,90 €. Montants réels dans Stripe.</p>
+          <p class="ov-note">Stats sur les <strong>vrais clients</strong>${excluded ? ` — ${excluded} compte(s) test/admin exclus` : ''}. MRR au tarif courant (Funded ${_eur(PRICES.funded.monthly)}/m, Elite ${_eur(PRICES.elite.monthly)}/m). Lifetime = ${lifeCount} × 499,90 €.</p>
         </div>
       </div>`;
     wrap.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.goto)));
