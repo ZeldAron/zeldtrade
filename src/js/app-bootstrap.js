@@ -466,9 +466,14 @@ document.addEventListener('DOMContentLoaded', () => {
       // SÉCURITÉ : ne JAMAIS bloquer un user qui a déjà un customerId Stripe (= a payé / un abo).
       // 'none' + customerId = plan momentanément non synchronisé après un checkout (chargé one-shot) → resync au lieu de gater.
       const _sinfo = (typeof Store !== 'undefined' && Store.getStripeInfo) ? (Store.getStripeInfo() || {}) : {};
-      if (_sinfo.customerId) {
+      // v1.0.6 FIX bypass : un abo réellement actif/en essai donne 'paid'/'trialing' (jamais ici).
+      // À 'none', un customerId présent peut signifier « checkout qui vient d'aboutir, webhook en
+      // retard » → on accorde le bénéfice du doute UNE SEULE fois (resync). Si après ce resync l'état
+      // reste 'none' (customerId résiduel d'un test/annulation, sans abo actif), on RE-BLOQUE.
+      if (_sinfo.customerId && !_acctGateResynced) {
+        _acctGateResynced = true;
         if (gate) gate.remove();
-        if (!_acctGateResynced && Store.resync) { _acctGateResynced = true; Store.resync().catch(() => {}); }
+        if (Store.resync) Store.resync().catch(() => {});
       } else if (!gate) {
         gate = document.createElement('div');
         gate.id = 'onboardGate';
@@ -1059,7 +1064,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function _maybeAskAcquisition(user) {
     return new Promise(async (resolve) => {
       const uid = user && user.id;
-      if (!uid || !window._fbDb) return resolve();
+      if (!uid || typeof _fbDb === 'undefined' || !_fbDb) return resolve();
       try {
         const snap = await _fbDb.collection('userEmails').doc(uid).get();
         if (snap.exists && snap.data() && snap.data().acquisitionSource) return resolve();
@@ -1097,6 +1102,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ov.querySelector('#acqSkip').addEventListener('click', () => save('skip'));
     });
   }
+
+  // v1.0.6 FIX bypass paywall : un retour arrière depuis Stripe Checkout restaure la page
+  // depuis le bfcache (gelée, SANS ré-exécuter le JS) → la gate d'accès ne se ré-évalue pas et
+  // l'app reste visible derrière → contournement. On force un reload sur restauration bfcache :
+  // la logique d'accès rejoue alors entièrement (un non-payé qui annule retombe sur la gate).
+  window.addEventListener('pageshow', (e) => {
+    if (e && e.persisted && appLaunched) { try { location.reload(); } catch (_) {} }
+  });
 
   // ── Firebase Auth state ─────────────────────────────────────────────────────
   // landingScreen retiré en v0.9.114 : si non loggé, on ouvre direct le modal login
