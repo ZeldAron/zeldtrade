@@ -133,6 +133,9 @@ const Admin = (() => {
     const m = _specialTier(u) || _TIER_META[tier];
     return `<span class="plan-tag ${m.cls}">${m.label}</span>`;
   };
+  // v1.0.6 — libellé de la source d'acquisition (« tu viens d'où ? »)
+  const _ACQ_LABELS = { discord: 'Discord', instagram: 'Instagram', word_of_mouth: 'Bouche à oreille', ads: 'Pub (Insta/Google)', other: 'Autre', skip: '(passé)' };
+  const _acqLabel = (s) => s ? (_ACQ_LABELS[s] || s) : '—';
 
   async function renderUsers() {
     const wrap = $('tabUsers');
@@ -200,6 +203,7 @@ const Admin = (() => {
         <td>
           <div class="cell-user-name">${esc(u.username)}${newsletter}</div>
           <div class="cell-user-email">${esc(u.email)}</div>
+          ${u.acquisitionSource ? `<div style="font-size:10.5px;color:var(--muted2);margin-top:2px">📍 ${esc(_acqLabel(u.acquisitionSource))}</div>` : ''}
         </td>
         <td>${_planTag(u, tier)}</td>
         <td>
@@ -1669,23 +1673,27 @@ const Admin = (() => {
     $('userDrawer').classList.add('open');
     $('drawerOverlay').classList.add('open');
 
-    let plan = null, stripe = null, trades = '—', accounts = '—', myAudit = [], myEmails = [];
+    let plan = null, stripe = null, trades = '—', accounts = '—', myAudit = [], myEmails = [], aiUse = null, myEvents = [];
     try {
       const base = _fbDb.collection('users').doc(uid).collection('data');
-      const [pS, sS, tS, aS] = await Promise.all([
+      const [pS, sS, tS, aS, aiS] = await Promise.all([
         base.doc('plan').get().catch(() => null), base.doc('stripe').get().catch(() => null),
         base.doc('trades').get().catch(() => null), base.doc('myAccounts').get().catch(() => null),
+        base.doc('aiUsage').get().catch(() => null),
       ]);
       if (pS && pS.exists) plan = pS.data();
       if (sS && sS.exists) stripe = sS.data();
       if (tS && tS.exists) trades = (tS.data().items || []).length;
       if (aS && aS.exists) accounts = (aS.data().items || []).length;
-      const [audS, emS] = await Promise.all([
+      if (aiS && aiS.exists) aiUse = aiS.data();
+      const [audS, emS, evS] = await Promise.all([
         _fbDb.collection('auditLogs').orderBy('at', 'desc').limit(200).get().catch(() => null),
         _fbDb.collection('emailEvents').where('email', '==', u.email).limit(20).get().catch(() => null),
+        _fbDb.collection('analyticsEvents').where('uid', '==', uid).limit(50).get().catch(() => null),
       ]);
       if (audS) myAudit = audS.docs.map(d => d.data()).filter(l => { const p = l.payload || {}; return p.uid === uid || p.targetUid === uid || p.email === u.email; });
       if (emS) myEmails = emS.docs.map(d => d.data());
+      if (evS) myEvents = evS.docs.map(d => d.data()).sort((a, b) => _tsMs(b.ts) - _tsMs(a.ts)).slice(0, 25);
     } catch (e) { /* best-effort */ }
 
     const tier = _userTier(plan);
@@ -1704,17 +1712,28 @@ const Admin = (() => {
     const emHtml = myEmails.length
       ? myEmails.map(e => `<span class="ev-tag ev-hard">${esc(e.evType || e.type || '?')}</span>`).join(' ')
       : '<span class="dr-ok">Aucun incident ✓</span>';
+    const aiTxt = aiUse ? String(aiUse.count != null ? aiUse.count : (aiUse.aiUsedThisWeek != null ? aiUse.aiUsedThisWeek : 0)) : '0';
+    const trialHtml = (plan && typeof plan.trialEnd === 'number')
+      ? r('Essai', `${Math.max(0, Math.ceil((plan.trialEnd - Date.now()) / 86400000))} j restants · ${formatDateShort(plan.trialEnd)}${plan.trialSource ? ' · ' + esc(plan.trialSource) : ''}`)
+      : '';
+    const evHtml = myEvents.length
+      ? myEvents.map(e => `<div class="dr-log"><code>${esc(e.name || e.event || e.type || e.label || e.action || '?')}</code> · <span style="color:var(--muted)">${formatRelative(_tsMs(e.ts))}</span></div>`).join('')
+      : '<span class="dr-empty">Aucun événement récent.</span>';
 
     $('drawerBody').innerHTML = `
       <div class="dr-sec">${_planTag(u, tier)}${u.newsletterOptIn ? ' <span class="ev-tag ev-soft">newsletter</span>' : ''}</div>
       <div class="dr-sec">
         ${r('Email', esc(u.email || '—'))}
         ${r('UID', `<code class="dr-uid">${esc(uid)}</code>`)}
+        ${r('Acquisition', esc(_acqLabel(u.acquisitionSource)))}
         ${r('Dernière activité', formatRelative(u.lastSeen))}
         ${r('Trades', trades)}
         ${r('Comptes', accounts)}
+        ${r('Analyses IA', aiTxt)}
+        ${trialHtml}
       </div>
       <div class="dr-sec"><div class="dr-sec-h">Abonnement</div>${subBlock}</div>
+      <div class="dr-sec"><div class="dr-sec-h">Activité récente</div>${evHtml}</div>
       <div class="dr-sec"><div class="dr-sec-h">Délivrabilité email</div>${emHtml}</div>
       <div class="dr-sec"><div class="dr-sec-h">Historique admin</div>${audHtml}</div>
       <div class="dr-actions">
