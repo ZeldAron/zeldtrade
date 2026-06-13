@@ -1467,6 +1467,7 @@ const Admin = (() => {
   const _isActiveSub = s => s && (s.subscriptionStatus === 'active' || s.subscriptionStatus === 'trialing');
 
   // ── VUE D'ENSEMBLE (cockpit) ──────────────────────────────────────────────
+  let _ovIncludeTest = false;   // v1.0.6 : toggle staging — inclure comptes test/admin dans les stats
   async function renderOverview() {
     const wrap = $('tabOverview');
     wrap.innerHTML = '<div class="admin-loading">Chargement…</div>';
@@ -1483,7 +1484,7 @@ const Admin = (() => {
     const now = Date.now(), DAY = 86400000;
     // v1.0.6 — stats « vrais clients » : on exclut les comptes test + l'admin
     const isExcluded = (u) => _isTestAccount(u) || u.email === ADMIN_EMAIL;
-    const realIdx = users.map((u, i) => i).filter(i => !isExcluded(users[i]));
+    const realIdx = users.map((u, i) => i).filter(i => _ovIncludeTest || !isExcluded(users[i]));
     const rUsers = realIdx.map(i => users[i]);
     const rPlans = realIdx.map(i => plans[i]);
     const rStripes = realIdx.map(i => stripes[i]);
@@ -1532,6 +1533,9 @@ const Admin = (() => {
       : `<p class="ov-note">Pas encore assez d'événements pour classer les plus actifs.</p>`;
 
     wrap.innerHTML = `
+      <label style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);margin-bottom:14px;cursor:pointer">
+        <input type="checkbox" id="ovInclTest"${_ovIncludeTest ? ' checked' : ''}> Inclure les comptes test &amp; admin${(!_ovIncludeTest && excluded) ? ` (${excluded} exclus)` : ''}
+      </label>
       <div class="ov-grid">
         ${card(total, 'Utilisateurs')}
         ${card(a7, 'Actifs 7j', 'ov-accent')}
@@ -1572,6 +1576,7 @@ const Admin = (() => {
         </div>
       </div>`;
     wrap.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.goto)));
+    const _it = wrap.querySelector('#ovInclTest'); if (_it) _it.addEventListener('change', (e) => { _ovIncludeTest = e.target.checked; renderOverview(); });
   }
   function _tierBar(label, n, total, color) {
     const pct = total ? Math.round(n / total * 100) : 0;
