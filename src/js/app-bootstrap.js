@@ -682,6 +682,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // est protégé par la rule Firestore qui block sans termsAccepted valide.
     }
 
+    // v1.0.6 : question d'attribution (« tu viens d'où ? ») — 1×/user, après le consentement.
+    try { await _maybeAskAcquisition(user); } catch (e) {}
+
     appLaunched = true;
     if (window.Analytics && Analytics.pingVisit) Analytics.pingVisit();
     // v1.0.x : on capture la promesse de chargement (Firestore) pour ne décider de
@@ -1047,6 +1050,51 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       form.addEventListener('submit', onSubmit);
+    });
+  }
+
+  // ── v1.0.6 : Attribution acquisition (« Tu viens d'où ? ») ───────────────────
+  // Affichée 1×/user (si userEmails.acquisitionSource absent), nouveaux ET existants.
+  // Stockée sur userEmails (whitelist rule), agrégée dans l'admin. Best-effort.
+  function _maybeAskAcquisition(user) {
+    return new Promise(async (resolve) => {
+      const uid = user && user.id;
+      if (!uid || !window._fbDb) return resolve();
+      try {
+        const snap = await _fbDb.collection('userEmails').doc(uid).get();
+        if (snap.exists && snap.data() && snap.data().acquisitionSource) return resolve();
+      } catch (e) { return resolve(); }
+      const en = (typeof i18n !== 'undefined' && i18n.getLang && i18n.getLang() === 'en');
+      if (loader) loader.style.display = 'none';
+      try { ZTLoader.stop(); } catch (e) {}
+      const opts = [
+        ['discord', 'Discord'],
+        ['instagram', 'Instagram'],
+        ['word_of_mouth', en ? 'Word of mouth' : 'Bouche à oreille'],
+        ['ads', en ? 'An ad (Insta / Google)' : 'Une pub (Insta / Google)'],
+        ['other', en ? 'Somewhere else' : 'Autre'],
+      ];
+      const ov = document.createElement('div');
+      ov.id = 'acqGate';
+      ov.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.8);padding:20px';
+      ov.innerHTML = `
+        <div style="background:var(--bg2,#0c0c0e);border:1px solid var(--border,rgba(255,255,255,0.12));border-radius:16px;max-width:420px;width:100%;padding:30px 26px;text-align:center">
+          <div style="font-size:30px;margin-bottom:6px">👋</div>
+          <h2 style="font-size:19px;font-weight:700;margin:0 0 6px;color:var(--text,#f5f5f7)">${en ? 'How did you hear about ZeldTrade?' : 'Tu nous as connus comment ?'}</h2>
+          <p style="font-size:13.5px;color:var(--muted,#9a9aa0);margin:0 0 20px">${en ? 'Helps us a lot — one tap.' : 'Ça nous aide beaucoup — un seul clic.'}</p>
+          <div id="acqOpts" style="display:flex;flex-direction:column;gap:9px">
+            ${opts.map(([v, l]) => `<button type="button" data-acq="${v}" style="padding:13px;border-radius:10px;border:1px solid var(--border2,rgba(255,255,255,0.18));background:var(--bg3,#161618);color:var(--text,#f5f5f7);font-size:14.5px;font-weight:500;cursor:pointer">${l}</button>`).join('')}
+          </div>
+          <button type="button" id="acqSkip" style="margin-top:16px;background:none;border:none;color:var(--muted2,#737378);font-size:12.5px;cursor:pointer;text-decoration:underline">${en ? 'Skip' : 'Passer'}</button>
+        </div>`;
+      document.body.appendChild(ov);
+      const save = async (src) => {
+        ov.querySelectorAll('button').forEach(b => { b.disabled = true; });
+        try { await _fbDb.collection('userEmails').doc(uid).set({ acquisitionSource: src }, { merge: true }); } catch (e) {}
+        ov.remove(); resolve();
+      };
+      ov.querySelector('#acqOpts').addEventListener('click', (e) => { const b = e.target.closest('[data-acq]'); if (b) save(b.dataset.acq); });
+      ov.querySelector('#acqSkip').addEventListener('click', () => save('skip'));
     });
   }
 

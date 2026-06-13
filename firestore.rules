@@ -70,7 +70,7 @@ service cloud.firestore {
       // ré-appliquer côté serveur (Cloud Function) plutôt que dans les rules.
       allow create, update: if request.auth != null
                     && request.auth.uid == uid
-                    && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'lastSeen', 'termsAccepted', 'newsletterOptIn', 'isTestAccount'])
+                    && request.resource.data.keys().hasOnly(['uid', 'email', 'username', 'lastSeen', 'termsAccepted', 'newsletterOptIn', 'isTestAccount', 'acquisitionSource'])
                     && (!('uid' in request.resource.data)      || request.resource.data.uid == uid)
                     // C-1 défense-en-profondeur (audit 2026-06-12) : blocklist ÉTROITE des chars HTML `< >` sur
                     // email/username. N.B. : on ne remet PAS l'allowlist stricte (regex pseudo) qui avait cassé la
@@ -81,6 +81,8 @@ service cloud.firestore {
                     && (!('lastSeen' in request.resource.data) || request.resource.data.lastSeen is int)
                     && (!('termsAccepted' in request.resource.data)   || request.resource.data.termsAccepted is map)
                     && (!('newsletterOptIn' in request.resource.data) || request.resource.data.newsletterOptIn is bool)
+                    // F-3 (2026-06-13) : attribution (origine de l'inscrit) — écrite 1×/user par le client, enum borné.
+                    && (!('acquisitionSource' in request.resource.data) || (request.resource.data.acquisitionSource is string && request.resource.data.acquisitionSource in ['discord', 'instagram', 'word_of_mouth', 'ads', 'other', 'skip']))
                     // F-2 (audit 2026-06-11) : isTestAccount = marqueur cosmétique posé par adminCreateTestAccount (admin SDK).
                     // Le client ne peut PAS se l'octroyer ni le modifier (anti-spoof du badge admin) : il doit rester égal à
                     // l'existant (ou false à la création). Ne casse pas les comptes test (valeur inchangée = OK).

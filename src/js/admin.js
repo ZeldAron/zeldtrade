@@ -1497,6 +1497,11 @@ const Admin = (() => {
     const trials = rPlans.filter(p => p && p.trialEnd && p.trialEnd > now && p.plan !== 'pro').length;
     const lifeCount = rPlans.filter(p => p && p.lifetime === true).length;
     const lifeRev = lifeCount * 499.90;
+    // v1.0.6 — attribution : d'où viennent les vrais inscrits
+    const ACQ = [['discord', 'Discord'], ['instagram', 'Instagram'], ['word_of_mouth', 'Bouche à oreille'], ['ads', 'Pub (Insta/Google)'], ['other', 'Autre'], ['skip', '(passé)'], ['none', 'Non renseigné']];
+    const acqCount = {}; ACQ.forEach(([k]) => acqCount[k] = 0);
+    rUsers.forEach(u => { const s = u.acquisitionSource; if (s && acqCount[s] !== undefined) acqCount[s]++; else if (s) acqCount.other++; else acqCount.none++; });
+    const ACQ_COLOR = { discord: '#5865f2', instagram: '#e1306c', ads: '#a78bfa', word_of_mouth: '#30d158', other: 'var(--muted)', skip: 'var(--muted2)', none: 'var(--muted2)' };
 
     // v1.0.6 — utilisateurs les plus actifs (agrégation des analyticsEvents par uid)
     let topActive = [];
@@ -1539,6 +1544,10 @@ const Admin = (() => {
       <div class="ov-panel" style="margin-bottom:22px">
         <h3 class="ov-h">🔥 Utilisateurs les plus actifs</h3>
         ${activePanel}
+      </div>
+      <div class="ov-panel" style="margin-bottom:22px">
+        <h3 class="ov-h">📍 Acquisition — d'où viennent les inscrits</h3>
+        ${ACQ.filter(([k]) => acqCount[k] > 0 || k === 'none').map(([k, l]) => _tierBar(l, acqCount[k], total, ACQ_COLOR[k])).join('')}
       </div>
       <div class="ov-split">
         <div class="ov-panel">
