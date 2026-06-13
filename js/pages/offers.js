@@ -163,6 +163,7 @@ UI.renderOffers = function () {
       <div class="pricing-badge-row"><span class="pricing-badge-lifetime">${isEn ? 'LIFETIME' : 'À VIE'}</span></div>
       <div class="pricing-card-name">Lifetime</div>
       <p class="pricing-card-tagline">${isEn ? 'Pay once. Yours forever.' : 'Tu paies une fois. À toi pour toujours.'}</p>
+      <div class="pricing-launch" aria-hidden="true" style="visibility:hidden">${t('off.launch')}</div>
       <div class="pricing-card-price">499,90 €<span class="price-suffix">/ ${isEn ? 'one-time' : 'une fois'}</span></div>
       <div class="pricing-card-perday"><span style="color:#a78bfa;font-weight:600">${isEn ? 'No subscription · unlimited' : 'Sans abonnement · illimité'}</span></div>
       <ul class="pricing-features">
