@@ -2030,14 +2030,14 @@ const Modal = (() => {
         if (screenshotPaths.length) dataWithId.screenshotPaths = screenshotPaths;
         saved = Store.addTrade(dataWithId);
         UI.toast(i18n.t('modal.trade.saved'));
-        // Trustpilot : invitation automatique au 3ème trade (une seule fois)
+        // Trustpilot : invitation email automatique au 5ème trade (users engagés = avis sérieux, une seule fois)
         try {
           const TP_KEY = 'zt_tp_invited';
           if (
             !localStorage.getItem(TP_KEY) &&
             typeof tp !== 'undefined' &&
             typeof Store !== 'undefined' &&
-            Store.getTrades && Store.getTrades().length === 3
+            Store.getTrades && Store.getTrades().length === 5
           ) {
             const _u = typeof _fbAuth !== 'undefined' && _fbAuth.currentUser;
             if (_u && _u.email) {
@@ -2049,6 +2049,29 @@ const Modal = (() => {
               });
               localStorage.setItem(TP_KEY, '1');
             }
+          }
+        } catch (e) {}
+        // v1.0.6 : message in-app « laisse un avis » au 5ème trade (users engagés = avis sérieux, 1×)
+        try {
+          const RV_KEY = 'zt_review_prompt';
+          if (!localStorage.getItem(RV_KEY) && typeof Store !== 'undefined' && Store.getTrades && Store.getTrades().length === 5) {
+            localStorage.setItem(RV_KEY, '1');
+            const _rvEn = typeof i18n !== 'undefined' && i18n.getLang() === 'en';
+            setTimeout(() => {
+              const _rv = document.createElement('div');
+              _rv.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--bg-2);border:1px solid rgba(255,255,255,0.14);border-radius:12px;padding:16px 20px;max-width:360px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.45);font-size:13px;color:var(--fg-dim);line-height:1.55;text-align:center';
+              _rv.innerHTML = '<div style="color:#00b67a;font-size:15px;letter-spacing:2px;margin-bottom:6px">★★★★★</div>'
+                + '<div style="font-weight:600;color:var(--fg);margin-bottom:4px">' + (_rvEn ? '5 trades logged 🎉' : '5 trades journalisés 🎉') + '</div>'
+                + (_rvEn ? 'Enjoying ZeldTrade? A 30-second review helps us a lot.' : 'ZeldTrade te plaît ? Un avis de 30 secondes nous aide énormément.')
+                + '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;align-items:center">'
+                + '<a href="https://fr.trustpilot.com/evaluate/zeldtrade.com" target="_blank" rel="noopener" id="_rvGo" style="background:#00b67a;color:#fff;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:8px">' + (_rvEn ? 'Leave a review →' : 'Laisser un avis →') + '</a>'
+                + '<button type="button" id="_rvLater" style="background:none;border:none;color:var(--fg-mute);cursor:pointer;font-size:12.5px">' + (_rvEn ? 'Later' : 'Plus tard') + '</button>'
+                + '</div>';
+              document.body.appendChild(_rv);
+              _rv.querySelector('#_rvGo') && _rv.querySelector('#_rvGo').addEventListener('click', () => _rv.remove());
+              _rv.querySelector('#_rvLater') && _rv.querySelector('#_rvLater').addEventListener('click', () => _rv.remove());
+              setTimeout(() => { if (_rv.parentNode) _rv.remove(); }, 22000);
+            }, 1200);
           }
         } catch (e) {}
         // Nudge upgrade après gros win sur compte Trader (P3 CRO)
