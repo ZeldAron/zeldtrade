@@ -1486,25 +1486,59 @@ const Admin = (() => {
     let mrr = 0, activeSubs = 0;
     stripes.forEach(s => { if (_isActiveSub(s) && s.tier) { activeSubs++; mrr += mrrFor(s.tier, s.cycle); } });
     const conv = total ? Math.round(paying / total * 100) : 0;
+    // v1.0.6 — nouveau modèle : essais en cours + clients lifetime
+    const trials = plans.filter(p => p && p.trialEnd && p.trialEnd > now && p.plan !== 'pro').length;
+    const lifeCount = plans.filter(p => p && p.lifetime === true).length;
+    const lifeRev = lifeCount * 499.90;
+
+    // v1.0.6 — utilisateurs les plus actifs (agrégation des analyticsEvents par uid)
+    let topActive = [];
+    try {
+      const evSnap = await _fbDb.collection('analyticsEvents').orderBy('ts', 'desc').limit(3000).get();
+      const counts = {}, last = {};
+      evSnap.docs.forEach(d => {
+        const e = d.data(); const uid = e.uid || e.userId; if (!uid) return;
+        counts[uid] = (counts[uid] || 0) + 1;
+        const ts = _tsMs(e.ts); if (ts && ts > (last[uid] || 0)) last[uid] = ts;
+      });
+      const byUid = {}; users.forEach((u, i) => { byUid[u.uid] = { u, plan: plans[i] }; });
+      topActive = Object.keys(counts).map(uid => ({ uid, n: counts[uid], last: last[uid], ref: byUid[uid] }))
+        .filter(x => x.ref).sort((a, b) => b.n - a.n).slice(0, 10);
+    } catch (e) {}
 
     const card = (v, l, cls) => `<div class="ov-card ${cls || ''}"><div class="ov-val">${v}</div><div class="ov-lbl">${l}</div></div>`;
+    const activeRows = topActive.map((x, i) => {
+      const u = x.ref.u, tier = _userTier(x.ref.plan);
+      return `<tr><td style="color:var(--muted2)">${i + 1}</td><td><div class="cell-user-name">${esc(u.username || '?')}</div><div class="cell-user-email">${esc(u.email || '')}</div></td><td>${_planTag(u, tier)}</td><td style="font-family:var(--font-mono)">${x.n}</td><td style="color:var(--muted)">${formatRelative(x.last)}</td></tr>`;
+    }).join('');
+    const activePanel = topActive.length
+      ? `<table class="admin-table"><thead><tr><th>#</th><th>Utilisateur</th><th>Palier</th><th>Événements</th><th>Vu</th></tr></thead><tbody>${activeRows}</tbody></table>`
+      : `<p class="ov-note">Pas encore assez d'événements pour classer les plus actifs.</p>`;
+
     wrap.innerHTML = `
       <div class="ov-grid">
         ${card(total, 'Utilisateurs')}
-        ${card(a7, 'Actifs 7j')}
+        ${card(a7, 'Actifs 7j', 'ov-accent')}
         ${card(a30, 'Actifs 30j')}
-        ${card(paying, 'Payants', 'ov-accent')}
+        ${card(paying, 'Payants')}
+        ${card(trials, 'Essais en cours', 'ov-amber')}
+        ${card(lifeCount, 'Clients Lifetime', 'ov-purple')}
         ${card(tiers.beta, 'Bêta (gratuit)')}
         ${card(_eur(mrr), 'MRR estimé', 'ov-green')}
+        ${card(_eur(lifeRev), 'Revenu Lifetime', 'ov-green')}
         ${card(conv + '%', 'Conversion payante')}
         ${card(activeSubs, 'Abos Stripe actifs')}
+      </div>
+      <div class="ov-panel" style="margin-bottom:22px">
+        <h3 class="ov-h">🔥 Utilisateurs les plus actifs</h3>
+        ${activePanel}
       </div>
       <div class="ov-split">
         <div class="ov-panel">
           <h3 class="ov-h">Répartition des paliers</h3>
           ${_tierBar('✦ Funded', tiers.funded, total, '#a78bfa')}
           ${_tierBar('✦ Elite', tiers.elite, total, '#f0b232')}
-          ${_tierBar('Bêta', tiers.beta, total, '#3fb950')}
+          ${_tierBar('Bêta', tiers.beta, total, '#30d158')}
           ${_tierBar('Basic', tiers.basic, total, 'var(--muted)')}
         </div>
         <div class="ov-panel">
@@ -1512,9 +1546,9 @@ const Admin = (() => {
           <div class="ov-links">
             <button class="btn-secondary" data-goto="users">Gérer les utilisateurs →</button>
             <button class="btn-secondary" data-goto="revenue">Revenu &amp; abonnements →</button>
-            <button class="btn-secondary" data-goto="audit">Journal d'audit &amp; emails →</button>
+            <button class="btn-secondary" data-goto="activity">Activité détaillée →</button>
           </div>
-          <p class="ov-note">MRR estimé au tarif courant (Funded ${_eur(PRICES.funded.monthly)}/m, Elite ${_eur(PRICES.elite.monthly)}/m). Montants réels dans Stripe.</p>
+          <p class="ov-note">MRR au tarif courant (Funded ${_eur(PRICES.funded.monthly)}/m, Elite ${_eur(PRICES.elite.monthly)}/m). Lifetime = ${lifeCount} × 499,90 €. Montants réels dans Stripe.</p>
         </div>
       </div>`;
     wrap.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.goto)));
