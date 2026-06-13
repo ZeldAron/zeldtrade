@@ -161,7 +161,7 @@
     'pricing.lifetime.title': { fr: "Ou l'accès à vie", en: 'Or go lifetime' },
     'pricing.lifetime.sub':   { fr: "Tu paies une fois, c'est à toi à vie — illimité, sans abonnement.", en: 'Pay once, yours forever — unlimited, no subscription.' },
     'pricing.lifetime.cta':   { fr: 'Accès à vie →', en: 'Get lifetime →' },
-    'pricing.lifetime.reassure': { fr: 'Paiement unique · accès immédiat · aucun renouvellement', en: 'One-time payment · instant access · no renewal' },
+    'pricing.lifetime.reassure': { fr: 'Paiement unique · accès immédiat', en: 'One-time payment · instant access' },
     'pricing.lifetime.badge':   { fr: 'À VIE', en: 'LIFETIME' },
     'pricing.lifetime.unit':    { fr: '/ une fois', en: '/ one-time' },
     'pricing.lifetime.tagline': { fr: 'Sans abonnement · illimité · à vie', en: 'No subscription · unlimited · forever' },
