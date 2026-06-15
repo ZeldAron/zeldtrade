@@ -3115,6 +3115,55 @@ exports.getMarketNews = onCall(
   }
 );
 
+// ─── getChartData (v1.0.8) ───────────────────────────────────────────────────
+// Proxy Yahoo Finance (le fetch navigateur est bloqué par CORS/CSP → on passe par le serveur).
+// Sert les bougies OHLC pour tracer un trade du journal sur un vrai graphique (Lightweight Charts).
+// Sécurité : symbole regex-validé (anti-SSRF — host Yahoo FIXE, pas d'URL côté client),
+// intervalle en enum, bornes temporelles en int bornées. TOUS les tiers (feature journal). Cache mémoire 60 s.
+exports.getChartData = onCall(
+  { region: 'europe-west1', cors: true },
+  async (request) => {
+    const { auth, data } = request;
+    if (!auth) throw new HttpsError('unauthenticated', 'Auth required');
+    const symbol = String((data && data.symbol) || '').trim();
+    if (!/^[A-Za-z0-9.^=-]{1,15}$/.test(symbol)) throw new HttpsError('invalid-argument', 'Bad symbol');
+    const VALID = ['1m', '2m', '5m', '15m', '30m', '60m', '90m', '1h', '1d'];
+    let interval = String((data && data.interval) || '5m');
+    if (!VALID.includes(interval)) interval = '5m';
+    const nowS = Math.floor(Date.now() / 1000);
+    let p1 = parseInt((data && data.from), 10), p2 = parseInt((data && data.to), 10);
+    if (!Number.isFinite(p1) || !Number.isFinite(p2) || p2 <= p1) throw new HttpsError('invalid-argument', 'Bad range');
+    p1 = Math.max(0, Math.min(p1, nowS)); p2 = Math.min(Math.max(p2, p1 + 60), nowS);
+
+    const key = symbol + '|' + interval + '|' + Math.round(p1 / 300) + '|' + Math.round(p2 / 300);
+    exports._chartCache = exports._chartCache || {};
+    const hit = exports._chartCache[key];
+    if (hit && (Date.now() - hit.ts) < 60000) return hit.data;
+
+    const url = 'https://query1.finance.yahoo.com/v8/finance/chart/' + encodeURIComponent(symbol)
+      + '?period1=' + p1 + '&period2=' + p2 + '&interval=' + interval;
+    let json;
+    try {
+      const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(7000) });
+      if (!res.ok) throw new Error('http ' + res.status);
+      json = await res.json();
+    } catch (e) { throw new HttpsError('unavailable', 'Chart data unavailable'); }
+
+    const r = json && json.chart && json.chart.result && json.chart.result[0];
+    if (!r || !Array.isArray(r.timestamp)) return { candles: [], symbol, interval };
+    const q = (r.indicators && r.indicators.quote && r.indicators.quote[0]) || {};
+    const candles = [];
+    for (let i = 0; i < r.timestamp.length; i++) {
+      const o = q.open && q.open[i], h = q.high && q.high[i], l = q.low && q.low[i], c = q.close && q.close[i];
+      if (o == null || h == null || l == null || c == null) continue;
+      candles.push({ time: r.timestamp[i], open: o, high: h, low: l, close: c });
+    }
+    const out = { candles, symbol, interval, currency: (r.meta && r.meta.currency) || null, tz: (r.meta && r.meta.exchangeTimezoneName) || null };
+    exports._chartCache[key] = { ts: Date.now(), data: out };
+    return out;
+  }
+);
+
 // ─── getEconCalendar (v1.0.4) ────────────────────────────────────────────────
 // Calendrier économique NATIF pour l'onglet Éco — TOUS les tiers (le calendrier reste libre,
 // remplace le widget TradingView tiers). Source : feed JSON hebdo ForexFactory

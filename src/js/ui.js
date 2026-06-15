@@ -605,7 +605,11 @@ const UI = (() => {
 
         ${infoCard}
         ${screenshotCard}
+        <div id="tradeChartBox" style="margin-top:14px"></div>
       </div>`;
+
+    // v1.0.8 : graphique du trade (vraies bougies Yahoo via CF getChartData + zones à l'heure ; fallback schématique)
+    try { if (window.TradeChart) TradeChart.render(document.getElementById('tradeChartBox'), t); } catch (e) {}
 
     // v0.9.246 : charge async chaque capture de la galerie + bind lightbox.
     if (shotPaths.length) {
